@@ -1,0 +1,2410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Aia Design System Atlas</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+</head>
+<body>
+<iframe sandbox="allow-scripts" referrerpolicy="no-referrer" title="Aia Design System Atlas" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Aia Design System Atlas&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, var(--background));
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 14px);
+  --blue: light-dark(rgb(51 156 255), rgb(51 156 255));
+  --orange: light-dark(rgb(226 85 7), rgb(251 106 34));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --red: light-dark(rgb(224 46 42), rgb(255 103 100));
+  --purple: light-dark(rgb(146 79 247), rgb(173 123 249));
+  --yellow: light-dark(rgb(255 195 0), rgb(255 210 64));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: var(--border-radius-lg, 12.5px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans) !important;
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: superellipse(1.5);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card, .progress) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress {
+  display: flex;
+  height: 6px;
+  margin-block: calc((var(--line-height-normal, 1.5em) - 6px) / 2);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+}
+
+.progress-bar {
+  height: 100%;
+  flex-shrink: 0;
+  border: 0;
+  background: var(--viz-series-1);
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: superellipse(1.5);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+  [aria-pressed=&quot;true&quot;],
+  [aria-selected=&quot;true&quot;],
+  .is-selected
+) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .btn,
+  .form-control,
+  .form-select {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .form-control,
+  .form-select {
+    font-size: max(16px, var(--font-size-normal));
+  }
+
+  .form-control[type=&quot;file&quot;]::file-selector-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .form-control-color[type=&quot;color&quot;] {
+    width: 44px;
+    height: 44px;
+  }
+
+  .form-control:is(
+    [type=&quot;date&quot;],
+    [type=&quot;datetime-local&quot;],
+    [type=&quot;month&quot;],
+    [type=&quot;time&quot;],
+    [type=&quot;week&quot;]
+  ) {
+    min-width: 0;
+    max-width: 100%;
+    padding-block: 8px;
+  }
+
+  .form-check {
+    min-height: 44px;
+    padding-inline: 15px;
+  }
+
+  .form-check-input {
+    position: relative;
+  }
+
+  .form-check-input::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    content: &quot;&quot;;
+    transform: translate(-50%, -50%);
+  }
+
+  .form-check-label {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .form-range {
+    height: 44px;
+    touch-action: pan-y;
+  }
+
+  .form-range::-webkit-slider-runnable-track {
+    height: 44px;
+  }
+
+  .form-range::-moz-range-track {
+    height: 44px;
+  }
+
+  .form-range::-webkit-slider-thumb {
+    margin-top: 12px;
+  }
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+/* Model-authored chart rules can otherwise stretch icons after these styles load. */
+svg.lucide {
+  display: block;
+  width: 16px !important;
+  height: 16px !important;
+  flex: none;
+  margin: 0 !important;
+  stroke-width: 1.6;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;aia-design-system-atlas&quot;&gt;
+  &lt;style&gt;
+    @import url(&quot;https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Montserrat:wght@500;700&amp;display=swap&quot;);
+
+    #aia-design-system-atlas {
+      --atlas-gap: 12px;
+      color: var(--foreground);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;
+    }
+
+    #aia-design-system-atlas * {
+      box-sizing: border-box;
+    }
+
+    #aia-design-system-atlas button,
+    #aia-design-system-atlas input,
+    #aia-design-system-atlas select {
+      font: inherit;
+    }
+
+    #aia-design-system-atlas .atlas-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    #aia-design-system-atlas .atlas-heading h2 {
+      margin: 0;
+      font-family: Montserrat, Inter, sans-serif;
+      font-weight: 700;
+    }
+
+    #aia-design-system-atlas .atlas-heading p {
+      max-width: 62ch;
+      margin: 4px 0 0;
+      color: var(--muted-foreground);
+    }
+
+    #aia-design-system-atlas .atlas-controls {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--card);
+    }
+
+    #aia-design-system-atlas .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #aia-design-system-atlas .control-label {
+      width: 70px;
+      color: var(--muted-foreground);
+      font-weight: 500;
+    }
+
+    #aia-design-system-atlas .atlas-control {
+      min-height: 38px;
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--secondary);
+      color: var(--secondary-foreground);
+      cursor: pointer;
+    }
+
+    #aia-design-system-atlas .atlas-control[aria-pressed=&quot;true&quot;] {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: var(--primary-foreground);
+    }
+
+    #aia-design-system-atlas .preview-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    #aia-design-system-atlas .preview-grid.is-comparison {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #aia-design-system-atlas .theme-preview {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--preview-border);
+      border-radius: 18px;
+      background: var(--preview-canvas);
+      box-shadow: var(--preview-shadow);
+      color: var(--preview-text);
+    }
+
+    #aia-design-system-atlas .theme-preview.theme-light {
+      --preview-canvas: #fafafa;
+      --preview-page: #ffffff;
+      --preview-surface: #ffffff;
+      --preview-raised: #f4f4f5;
+      --preview-well: #f4f4f5;
+      --preview-glass: rgba(255, 255, 255, 0.82);
+      --preview-text: #18181b;
+      --preview-muted: #52525b;
+      --preview-border: rgba(24, 24, 27, 0.14);
+      --preview-control-border: #71717a;
+      --preview-primary: #1a5633;
+      --preview-primary-hover: #1a3c2a;
+      --preview-primary-text: #ffffff;
+      --preview-construction: #b55211;
+      --preview-construction-text: #ffffff;
+      --preview-focus: #1a5633;
+      --preview-nav: #1c1c1e;
+      --preview-nav-text: #f7faf8;
+      --preview-nav-muted: #c7d4cc;
+      --preview-shadow: 0 8px 24px rgba(24, 24, 27, 0.14);
+      --state-red: #c62828;
+      --state-orange: #b55211;
+      --state-amber: #a16207;
+      --state-violet: #6752bf;
+      --state-green: #1a5633;
+      --state-blue: #2a5a8f;
+      --state-teal: #007a71;
+      --state-neutral: #52525b;
+      --state-ink: #ffffff;
+      --tint-red: #f6c3c3;
+      --tint-orange: #f8c9a5;
+      --tint-amber: #ffecb2;
+      --tint-violet: #dad4f5;
+      --tint-green: #c2e2d3;
+      --tint-blue: #c1d5ec;
+      --tint-teal: #c8efec;
+      --tint-neutral: #e4e4e7;
+    }
+
+    #aia-design-system-atlas .theme-preview.theme-dark {
+      --preview-canvas: #0b100d;
+      --preview-page: #111a15;
+      --preview-surface: rgba(28, 36, 31, 0.96);
+      --preview-raised: rgba(35, 48, 41, 0.94);
+      --preview-well: rgba(16, 22, 19, 0.96);
+      --preview-glass: rgba(35, 48, 41, 0.78);
+      --preview-text: #f7faf8;
+      --preview-muted: #c7d4cc;
+      --preview-border: rgba(221, 239, 230, 0.22);
+      --preview-control-border: rgba(221, 239, 230, 0.4);
+      --preview-primary: #6c9077;
+      --preview-primary-hover: #8cb4a1;
+      --preview-primary-text: #141c18;
+      --preview-construction: #c57247;
+      --preview-construction-text: #141c18;
+      --preview-focus: #2caa9f;
+      --preview-nav: #1c1c1e;
+      --preview-nav-text: #f7faf8;
+      --preview-nav-muted: #c7d4cc;
+      --preview-shadow: 0 12px 32px rgba(0, 0, 0, 0.46);
+      --state-red: #e15a52;
+      --state-orange: #e87722;
+      --state-amber: #ffca28;
+      --state-violet: #9485d6;
+      --state-green: #57b083;
+      --state-blue: #5f9fdd;
+      --state-teal: #5ec9bd;
+      --state-neutral: #9aa8a0;
+      --state-ink: #141c18;
+      --tint-red: #431414;
+      --tint-orange: #452a0d;
+      --tint-amber: #3a3a0f;
+      --tint-violet: #33204a;
+      --tint-green: #173d26;
+      --tint-blue: #17334f;
+      --tint-teal: #134841;
+      --tint-neutral: #2b2f2d;
+    }
+
+    #aia-design-system-atlas .preview-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--preview-border);
+      background: var(--preview-raised);
+      color: var(--preview-muted);
+      font-weight: 500;
+    }
+
+    #aia-design-system-atlas .preview-meta strong {
+      color: var(--preview-text);
+      font-family: Montserrat, Inter, sans-serif;
+    }
+
+    #aia-design-system-atlas .device-stage {
+      padding: 12px;
+      background:
+        linear-gradient(135deg, transparent 0 49%, var(--preview-border) 50% 51%, transparent 52%) 0 0 / 16px 16px,
+        var(--preview-canvas);
+    }
+
+    #aia-design-system-atlas .device-frame {
+      width: 100%;
+      margin-inline: auto;
+      overflow: hidden;
+      border: 1px solid var(--preview-border);
+      border-radius: 14px;
+      background: var(--preview-page);
+      box-shadow: var(--preview-shadow);
+    }
+
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] {
+      max-width: 390px;
+    }
+
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;tablet&quot;] {
+      max-width: 768px;
+    }
+
+    #aia-design-system-atlas .device-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 30px;
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--preview-border);
+      background: var(--preview-raised);
+    }
+
+    #aia-design-system-atlas .device-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--preview-muted);
+      opacity: 0.45;
+    }
+
+    #aia-design-system-atlas .screen {
+      min-height: 420px;
+      background: var(--preview-page);
+      color: var(--preview-text);
+    }
+
+    #aia-design-system-atlas .ds-page {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+    }
+
+    #aia-design-system-atlas .screen h1,
+    #aia-design-system-atlas .screen h2,
+    #aia-design-system-atlas .screen h3,
+    #aia-design-system-atlas .screen .metric {
+      margin: 0;
+      color: var(--preview-text);
+      font-family: Montserrat, Inter, sans-serif;
+      font-weight: 700;
+    }
+
+    #aia-design-system-atlas .screen h1 {
+      font-size: 24px;
+    }
+
+    #aia-design-system-atlas .screen h2 {
+      font-size: 18px;
+    }
+
+    #aia-design-system-atlas .screen h3 {
+      font-size: 14px;
+    }
+
+    #aia-design-system-atlas .screen p,
+    #aia-design-system-atlas .screen small {
+      margin: 0;
+      color: var(--preview-muted);
+    }
+
+    #aia-design-system-atlas .eyebrow {
+      color: var(--preview-primary);
+      font-weight: 500;
+    }
+
+    #aia-design-system-atlas .foundation-grid,
+    #aia-design-system-atlas .component-grid,
+    #aia-design-system-atlas .project-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    #aia-design-system-atlas .foundation-panel,
+    #aia-design-system-atlas .component-panel,
+    #aia-design-system-atlas .project-card,
+    #aia-design-system-atlas .login-card,
+    #aia-design-system-atlas .context-card {
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--preview-border);
+      border-radius: 16px;
+      background: var(--preview-surface);
+      box-shadow: 0 1px 2px color-mix(in srgb, var(--preview-text) 8%, transparent);
+    }
+
+    #aia-design-system-atlas .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 11px;
+    }
+
+    #aia-design-system-atlas .swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    #aia-design-system-atlas .swatch {
+      display: grid;
+      align-content: end;
+      min-height: 66px;
+      padding: 8px;
+      border-radius: 10px;
+      background: var(--swatch);
+      color: var(--swatch-ink, #ffffff);
+      font-size: 11px;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    }
+
+    #aia-design-system-atlas .state-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    #aia-design-system-atlas .state-token {
+      display: grid;
+      gap: 5px;
+      padding: 7px;
+      border-radius: 8px;
+      background: var(--tint);
+      color: var(--preview-text);
+      font-size: 11px;
+    }
+
+    #aia-design-system-atlas .state-token i {
+      display: block;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--solid);
+    }
+
+    #aia-design-system-atlas .type-stack {
+      display: grid;
+      gap: 8px;
+    }
+
+    #aia-design-system-atlas .type-display {
+      font-family: Montserrat, Inter, sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    #aia-design-system-atlas .type-body {
+      color: var(--preview-text);
+      font-family: Inter, sans-serif;
+      line-height: 1.5;
+    }
+
+    #aia-design-system-atlas .type-mono {
+      color: var(--preview-muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    #aia-design-system-atlas .scale-row,
+    #aia-design-system-atlas .radius-row,
+    #aia-design-system-atlas .button-row,
+    #aia-design-system-atlas .chip-row,
+    #aia-design-system-atlas .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #aia-design-system-atlas .space-step {
+      display: grid;
+      place-items: center;
+      width: var(--size);
+      height: var(--size);
+      min-width: 22px;
+      min-height: 22px;
+      border-radius: 4px;
+      background: color-mix(in srgb, var(--preview-primary) 30%, var(--preview-raised));
+      color: var(--preview-text);
+      font-size: 10px;
+    }
+
+    #aia-design-system-atlas .radius-sample {
+      display: grid;
+      width: 54px;
+      height: 42px;
+      place-items: center;
+      border: 1px solid var(--preview-border);
+      border-radius: var(--radius);
+      background: var(--preview-raised);
+      font-size: 10px;
+    }
+
+    #aia-design-system-atlas .ds-btn {
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 13px;
+      border: 1px solid var(--preview-primary);
+      border-radius: 12px;
+      background: var(--preview-primary);
+      color: var(--preview-primary-text);
+      font-weight: 500;
+    }
+
+    #aia-design-system-atlas .ds-btn.secondary {
+      border-color: var(--preview-control-border);
+      background: var(--preview-raised);
+      color: var(--preview-text);
+    }
+
+    #aia-design-system-atlas .ds-btn.construction {
+      border-color: var(--preview-construction);
+      background: var(--preview-construction);
+      color: var(--preview-construction-text);
+    }
+
+    #aia-design-system-atlas .ds-btn.critical {
+      border-color: var(--state-red);
+      background: var(--state-red);
+      color: var(--state-ink);
+    }
+
+    #aia-design-system-atlas .ds-btn.icon {
+      width: 44px;
+      padding: 0;
+    }
+
+    #aia-design-system-atlas .ds-input,
+    #aia-design-system-atlas .ds-select {
+      min-height: 44px;
+      min-width: 0;
+      flex: 1 1 140px;
+      padding: 9px 11px;
+      border: 1px solid var(--preview-control-border);
+      border-radius: 12px;
+      outline: none;
+      background: var(--preview-well);
+      color: var(--preview-text);
+    }
+
+    #aia-design-system-atlas .ds-input.focus-demo {
+      border-color: var(--preview-focus);
+      box-shadow: 0 0 0 2px var(--preview-canvas), 0 0 0 4px var(--preview-focus);
+    }
+
+    #aia-design-system-atlas .ds-chip {
+      display: inline-flex;
+      min-height: 28px;
+      align-items: center;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--chip-bg, var(--tint-teal));
+      color: var(--chip-text, var(--preview-text));
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    #aia-design-system-atlas .ds-chip.solid {
+      border-radius: 4px;
+      background: var(--chip-solid, var(--state-teal));
+      color: var(--state-ink);
+    }
+
+    #aia-design-system-atlas .feedback-stack {
+      display: grid;
+      gap: 7px;
+    }
+
+    #aia-design-system-atlas .feedback {
+      display: flex;
+      min-height: 44px;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-left: 4px solid var(--flag);
+      border-radius: 8px;
+      background: var(--feedback-bg);
+      color: var(--preview-text);
+      font-size: 12px;
+    }
+
+    #aia-design-system-atlas .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 10px;
+      font-size: 11px;
+    }
+
+    #aia-design-system-atlas .mini-table th,
+    #aia-design-system-atlas .mini-table td {
+      height: 28px;
+      padding: 5px 7px;
+      border-bottom: 1px solid var(--preview-border);
+      text-align: left;
+    }
+
+    #aia-design-system-atlas .mini-table th {
+      background: var(--preview-raised);
+      color: var(--preview-muted);
+      font-weight: 500;
+    }
+
+    #aia-design-system-atlas .mini-table td {
+      background: var(--preview-surface);
+    }
+
+    #aia-design-system-atlas .empty-state {
+      display: grid;
+      min-height: 118px;
+      place-items: center;
+      padding: 14px;
+      border: 1px dashed var(--preview-border);
+      border-radius: 16px;
+      color: var(--preview-muted);
+      text-align: center;
+    }
+
+    #aia-design-system-atlas .shell-layout {
+      display: grid;
+      grid-template-columns: 176px minmax(0, 1fr);
+      min-height: 490px;
+    }
+
+    #aia-design-system-atlas .shell-sidebar {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      padding: 13px 10px;
+      background: var(--preview-nav);
+      color: var(--preview-nav-text);
+    }
+
+    #aia-design-system-atlas .brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 44px;
+      color: var(--preview-nav-text);
+      font-family: Montserrat, Inter, sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    #aia-design-system-atlas .brand-glyph {
+      width: 29px;
+      height: 31px;
+      color: var(--preview-construction);
+      flex: 0 0 auto;
+    }
+
+    #aia-design-system-atlas .brand-glyph svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    #aia-design-system-atlas .nav-group {
+      display: grid;
+      align-content: start;
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    #aia-design-system-atlas .nav-label {
+      margin: 7px 8px 2px;
+      color: var(--preview-nav-muted);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    #aia-design-system-atlas .nav-item {
+      display: flex;
+      min-height: 37px;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 8px;
+      border-radius: 8px;
+      color: var(--preview-nav-muted);
+      font-size: 11px;
+    }
+
+    #aia-design-system-atlas .nav-item.active {
+      background: var(--preview-primary);
+      color: var(--preview-primary-text);
+    }
+
+    #aia-design-system-atlas .nav-icon {
+      display: grid;
+      width: 20px;
+      height: 20px;
+      place-items: center;
+      border-radius: 6px;
+      background: color-mix(in srgb, currentColor 12%, transparent);
+      font-size: 10px;
+    }
+
+    #aia-design-system-atlas .account-row {
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.13);
+    }
+
+    #aia-design-system-atlas .shell-main {
+      min-width: 0;
+      background: var(--preview-canvas);
+    }
+
+    #aia-design-system-atlas .mobile-shellbar {
+      display: none;
+      min-height: 58px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 12px;
+      background: var(--preview-nav);
+      color: var(--preview-nav-text);
+    }
+
+    #aia-design-system-atlas .context-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--preview-border);
+      background: var(--preview-glass);
+      color: var(--preview-muted);
+    }
+
+    #aia-design-system-atlas .context-path {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      font-size: 11px;
+    }
+
+    #aia-design-system-atlas .week-pill {
+      display: inline-flex;
+      min-height: 34px;
+      align-items: center;
+      padding: 6px 10px;
+      border: 1px solid var(--preview-control-border);
+      border-radius: 999px;
+      background: var(--preview-raised);
+      color: var(--preview-text);
+      font-size: 11px;
+    }
+
+    #aia-design-system-atlas .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    #aia-design-system-atlas .metric-card {
+      padding: 12px;
+      border: 1px solid var(--preview-border);
+      border-radius: 14px;
+      background: var(--preview-surface);
+    }
+
+    #aia-design-system-atlas .metric {
+      margin-top: 5px;
+      font-size: 23px;
+    }
+
+    #aia-design-system-atlas .login-screen {
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(280px, 0.88fr);
+      min-height: 490px;
+      background: var(--preview-canvas);
+    }
+
+    #aia-design-system-atlas .login-brand {
+      display: grid;
+      align-content: center;
+      gap: 16px;
+      padding: 34px;
+      background:
+        radial-gradient(circle at 20% 10%, color-mix(in srgb, var(--preview-primary) 26%, transparent), transparent 43%),
+        var(--preview-nav);
+      color: var(--preview-nav-text);
+    }
+
+    #aia-design-system-atlas .login-brand h1,
+    #aia-design-system-atlas .login-brand p {
+      color: inherit;
+    }
+
+    #aia-design-system-atlas .login-brand p {
+      max-width: 32ch;
+      color: var(--preview-nav-muted);
+    }
+
+    #aia-design-system-atlas .login-form-zone {
+      display: grid;
+      align-content: center;
+      gap: 12px;
+      padding: 24px;
+    }
+
+    #aia-design-system-atlas .login-card {
+      display: grid;
+      gap: 12px;
+    }
+
+    #aia-design-system-atlas .field-label {
+      display: grid;
+      gap: 5px;
+      color: var(--preview-text);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    #aia-design-system-atlas .password-wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 44px;
+    }
+
+    #aia-design-system-atlas .password-wrap .ds-input {
+      border-radius: 12px 0 0 12px;
+    }
+
+    #aia-design-system-atlas .password-wrap .ds-btn {
+      border-radius: 0 12px 12px 0;
+    }
+
+    #aia-design-system-atlas .login-foot,
+    #aia-design-system-atlas .project-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    #aia-design-system-atlas .text-link {
+      color: var(--preview-primary);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    #aia-design-system-atlas .project-card {
+      display: grid;
+      gap: 10px;
+    }
+
+    #aia-design-system-atlas .project-card-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 7px;
+    }
+
+    #aia-design-system-atlas .project-card .ds-btn {
+      width: 100%;
+    }
+
+    #aia-design-system-atlas .project-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--preview-muted);
+      font-size: 11px;
+    }
+
+    #aia-design-system-atlas .modal-sample {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid var(--preview-border);
+      border-radius: 24px;
+      background: var(--preview-raised);
+      box-shadow: var(--preview-shadow);
+    }
+
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;tablet&quot;] .shell-layout,
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .shell-layout {
+      grid-template-columns: 1fr;
+    }
+
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;tablet&quot;] .shell-sidebar,
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .shell-sidebar {
+      display: none;
+    }
+
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;tablet&quot;] .mobile-shellbar,
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .mobile-shellbar {
+      display: flex;
+    }
+
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;tablet&quot;] .dashboard-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .foundation-grid,
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .component-grid,
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .project-grid,
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .swatch-grid,
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .state-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;tablet&quot;] .login-screen,
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .login-screen {
+      grid-template-columns: 1fr;
+    }
+
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;tablet&quot;] .login-brand {
+      min-height: 190px;
+      padding: 24px;
+    }
+
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .login-brand {
+      min-height: 155px;
+      padding: 20px;
+    }
+
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .login-form-zone,
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .ds-page {
+      padding: 13px;
+    }
+
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .project-toolbar {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .project-toolbar .ds-input,
+    #aia-design-system-atlas .device-frame[data-viewport=&quot;mobile&quot;] .project-toolbar .ds-btn {
+      width: 100%;
+    }
+
+    @media (max-width: 820px) {
+      #aia-design-system-atlas .preview-grid.is-comparison {
+        grid-template-columns: 1fr;
+      }
+
+      #aia-design-system-atlas .atlas-heading {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 560px) {
+      #aia-design-system-atlas .control-label {
+        width: 100%;
+      }
+
+      #aia-design-system-atlas .foundation-grid,
+      #aia-design-system-atlas .component-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  &lt;/style&gt;
+
+  &lt;div class=&quot;atlas-heading&quot;&gt;
+    &lt;div&gt;
+      &lt;h2&gt;Last Planner AIA · sistema visual propuesto&lt;/h2&gt;
+      &lt;p&gt;Explora los mismos fundamentos y componentes en claro/oscuro y en los tres tamaños contractuales.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;atlas-controls&quot; aria-label=&quot;Controles de la vista previa&quot;&gt;
+    &lt;div class=&quot;control-row&quot; role=&quot;group&quot; aria-label=&quot;Tema&quot;&gt;
+      &lt;span class=&quot;control-label&quot;&gt;Tema&lt;/span&gt;
+      &lt;button class=&quot;atlas-control&quot; type=&quot;button&quot; data-theme-choice=&quot;both&quot; aria-pressed=&quot;true&quot;&gt;Ambos&lt;/button&gt;
+      &lt;button class=&quot;atlas-control&quot; type=&quot;button&quot; data-theme-choice=&quot;light&quot; aria-pressed=&quot;false&quot;&gt;Claro&lt;/button&gt;
+      &lt;button class=&quot;atlas-control&quot; type=&quot;button&quot; data-theme-choice=&quot;dark&quot; aria-pressed=&quot;false&quot;&gt;Oscuro&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;control-row&quot; role=&quot;group&quot; aria-label=&quot;Viewport&quot;&gt;
+      &lt;span class=&quot;control-label&quot;&gt;Pantalla&lt;/span&gt;
+      &lt;button class=&quot;atlas-control&quot; type=&quot;button&quot; data-viewport-choice=&quot;mobile&quot; aria-pressed=&quot;false&quot;&gt;Móvil · 390&lt;/button&gt;
+      &lt;button class=&quot;atlas-control&quot; type=&quot;button&quot; data-viewport-choice=&quot;tablet&quot; aria-pressed=&quot;false&quot;&gt;Tablet · 768&lt;/button&gt;
+      &lt;button class=&quot;atlas-control&quot; type=&quot;button&quot; data-viewport-choice=&quot;desktop&quot; aria-pressed=&quot;true&quot;&gt;Desktop · 1180&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;control-row&quot; role=&quot;group&quot; aria-label=&quot;Sección del sistema&quot;&gt;
+      &lt;span class=&quot;control-label&quot;&gt;Sección&lt;/span&gt;
+      &lt;button class=&quot;atlas-control&quot; type=&quot;button&quot; data-section-choice=&quot;foundations&quot; aria-pressed=&quot;true&quot;&gt;Fundamentos&lt;/button&gt;
+      &lt;button class=&quot;atlas-control&quot; type=&quot;button&quot; data-section-choice=&quot;components&quot; aria-pressed=&quot;false&quot;&gt;Componentes&lt;/button&gt;
+      &lt;button class=&quot;atlas-control&quot; type=&quot;button&quot; data-section-choice=&quot;shell&quot; aria-pressed=&quot;false&quot;&gt;Shell&lt;/button&gt;
+      &lt;button class=&quot;atlas-control&quot; type=&quot;button&quot; data-section-choice=&quot;login&quot; aria-pressed=&quot;false&quot;&gt;Login&lt;/button&gt;
+      &lt;button class=&quot;atlas-control&quot; type=&quot;button&quot; data-section-choice=&quot;projects&quot; aria-pressed=&quot;false&quot;&gt;Proyectos&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;preview-grid is-comparison&quot; data-preview-grid aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+
+  &lt;script&gt;
+    (() =&gt; {
+      const root = document.getElementById(&quot;aia-design-system-atlas&quot;);
+      if (!root) return;
+
+      const state = {
+        theme: &quot;both&quot;,
+        viewport: &quot;desktop&quot;,
+        section: &quot;foundations&quot;
+      };
+
+      const viewportLabels = {
+        mobile: &quot;Móvil · 390 px&quot;,
+        tablet: &quot;Tablet · 768 px&quot;,
+        desktop: &quot;Desktop · 1180 px&quot;
+      };
+
+      const sectionLabels = {
+        foundations: &quot;Fundamentos&quot;,
+        components: &quot;Componentes&quot;,
+        shell: &quot;Shell adaptable&quot;,
+        login: &quot;Acceso&quot;,
+        projects: &quot;Selector de proyectos&quot;
+      };
+
+      const glyph = `
+        &lt;span class=&quot;brand-glyph&quot; aria-hidden=&quot;true&quot;&gt;
+          &lt;svg viewBox=&quot;216 128 624 647&quot;&gt;&lt;g fill=&quot;currentColor&quot; stroke=&quot;currentColor&quot;&gt;&lt;path d=&quot;M256 240 a72 72 0 0 1 144 0 V544 H256 Z&quot;&gt;&lt;/path&gt;&lt;path d=&quot;M256 544 H640 V688 H328 A72 72 0 0 1 256 616 Z&quot;&gt;&lt;/path&gt;&lt;path d=&quot;M490 512 H640 V656 H490 A72 72 0 0 1 490 512 Z&quot;&gt;&lt;/path&gt;&lt;path stroke-width=&quot;36&quot; stroke-linejoin=&quot;round&quot; d=&quot;M658 370 L782 543.5 L658 717 Z&quot;&gt;&lt;/path&gt;&lt;/g&gt;&lt;/svg&gt;
+        &lt;/span&gt;`;
+
+      const foundations = () =&gt; `
+        &lt;div class=&quot;ds-page&quot;&gt;
+          &lt;div&gt;&lt;span class=&quot;eyebrow&quot;&gt;01 · Fundamentos&lt;/span&gt;&lt;h1&gt;Sala de Control Serena&lt;/h1&gt;&lt;p&gt;Identidad AIA contenida, legibilidad operativa y color reservado para contexto o decisión.&lt;/p&gt;&lt;/div&gt;
+          &lt;div class=&quot;foundation-grid&quot;&gt;
+            &lt;section class=&quot;foundation-panel&quot;&gt;
+              &lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Color de marca&lt;/h2&gt;&lt;small&gt;roles, no decoración&lt;/small&gt;&lt;/div&gt;
+              &lt;div class=&quot;swatch-grid&quot;&gt;
+                &lt;div class=&quot;swatch&quot; style=&quot;--swatch:#1a5633&quot;&gt;Corporativo&lt;br&gt;#1A5633&lt;/div&gt;
+                &lt;div class=&quot;swatch&quot; style=&quot;--swatch:#b55211&quot;&gt;Construcción&lt;br&gt;#B55211&lt;/div&gt;
+                &lt;div class=&quot;swatch&quot; style=&quot;--swatch:#00a499;--swatch-ink:#141c18&quot;&gt;Proyectos&lt;br&gt;#00A499&lt;/div&gt;
+                &lt;div class=&quot;swatch&quot; style=&quot;--swatch:#6752bf&quot;&gt;Arquitectura&lt;br&gt;#6752BF&lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/section&gt;
+            &lt;section class=&quot;foundation-panel&quot;&gt;
+              &lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Superficies activas&lt;/h2&gt;&lt;small&gt;canvas · página · panel · pozo&lt;/small&gt;&lt;/div&gt;
+              &lt;div class=&quot;swatch-grid&quot;&gt;
+                &lt;div class=&quot;swatch&quot; style=&quot;--swatch:var(--preview-canvas);--swatch-ink:var(--preview-text)&quot;&gt;Canvas&lt;/div&gt;
+                &lt;div class=&quot;swatch&quot; style=&quot;--swatch:var(--preview-page);--swatch-ink:var(--preview-text)&quot;&gt;Página&lt;/div&gt;
+                &lt;div class=&quot;swatch&quot; style=&quot;--swatch:var(--preview-raised);--swatch-ink:var(--preview-text)&quot;&gt;Elevada&lt;/div&gt;
+                &lt;div class=&quot;swatch&quot; style=&quot;--swatch:var(--preview-well);--swatch-ink:var(--preview-text)&quot;&gt;Pozo&lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/section&gt;
+            &lt;section class=&quot;foundation-panel&quot;&gt;
+              &lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Estados nominales&lt;/h2&gt;&lt;small&gt;matiz + gravedad&lt;/small&gt;&lt;/div&gt;
+              &lt;div class=&quot;state-grid&quot;&gt;
+                &lt;span class=&quot;state-token&quot; style=&quot;--tint:var(--tint-red);--solid:var(--state-red)&quot;&gt;&lt;i&gt;&lt;/i&gt;Rojo&lt;/span&gt;
+                &lt;span class=&quot;state-token&quot; style=&quot;--tint:var(--tint-orange);--solid:var(--state-orange)&quot;&gt;&lt;i&gt;&lt;/i&gt;Naranja&lt;/span&gt;
+                &lt;span class=&quot;state-token&quot; style=&quot;--tint:var(--tint-amber);--solid:var(--state-amber)&quot;&gt;&lt;i&gt;&lt;/i&gt;Ámbar&lt;/span&gt;
+                &lt;span class=&quot;state-token&quot; style=&quot;--tint:var(--tint-violet);--solid:var(--state-violet)&quot;&gt;&lt;i&gt;&lt;/i&gt;Violeta&lt;/span&gt;
+                &lt;span class=&quot;state-token&quot; style=&quot;--tint:var(--tint-green);--solid:var(--state-green)&quot;&gt;&lt;i&gt;&lt;/i&gt;Verde&lt;/span&gt;
+                &lt;span class=&quot;state-token&quot; style=&quot;--tint:var(--tint-blue);--solid:var(--state-blue)&quot;&gt;&lt;i&gt;&lt;/i&gt;Azul&lt;/span&gt;
+                &lt;span class=&quot;state-token&quot; style=&quot;--tint:var(--tint-teal);--solid:var(--state-teal)&quot;&gt;&lt;i&gt;&lt;/i&gt;Teal&lt;/span&gt;
+                &lt;span class=&quot;state-token&quot; style=&quot;--tint:var(--tint-neutral);--solid:var(--state-neutral)&quot;&gt;&lt;i&gt;&lt;/i&gt;Neutro&lt;/span&gt;
+              &lt;/div&gt;
+            &lt;/section&gt;
+            &lt;section class=&quot;foundation-panel&quot;&gt;
+              &lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Tipografía&lt;/h2&gt;&lt;small&gt;Montserrat + Inter + mono&lt;/small&gt;&lt;/div&gt;
+              &lt;div class=&quot;type-stack&quot;&gt;
+                &lt;div class=&quot;type-display&quot;&gt;Decidir antes de escalar&lt;/div&gt;
+                &lt;div class=&quot;type-body&quot;&gt;Inter mantiene formularios, navegación y datos claros bajo presión.&lt;/div&gt;
+                &lt;div class=&quot;type-mono&quot;&gt;SEMANA_32 · PROJECT_ID_73&lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/section&gt;
+            &lt;section class=&quot;foundation-panel&quot;&gt;
+              &lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Espaciado&lt;/h2&gt;&lt;small&gt;base 4 px&lt;/small&gt;&lt;/div&gt;
+              &lt;div class=&quot;scale-row&quot;&gt;
+                &lt;span class=&quot;space-step&quot; style=&quot;--size:22px&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;space-step&quot; style=&quot;--size:26px&quot;&gt;8&lt;/span&gt;&lt;span class=&quot;space-step&quot; style=&quot;--size:30px&quot;&gt;12&lt;/span&gt;&lt;span class=&quot;space-step&quot; style=&quot;--size:34px&quot;&gt;16&lt;/span&gt;&lt;span class=&quot;space-step&quot; style=&quot;--size:42px&quot;&gt;24&lt;/span&gt;&lt;span class=&quot;space-step&quot; style=&quot;--size:50px&quot;&gt;32&lt;/span&gt;
+              &lt;/div&gt;
+            &lt;/section&gt;
+            &lt;section class=&quot;foundation-panel&quot;&gt;
+              &lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Forma y elevación&lt;/h2&gt;&lt;small&gt;control · tarjeta · panel&lt;/small&gt;&lt;/div&gt;
+              &lt;div class=&quot;radius-row&quot;&gt;
+                &lt;span class=&quot;radius-sample&quot; style=&quot;--radius:4px&quot;&gt;dato&lt;/span&gt;&lt;span class=&quot;radius-sample&quot; style=&quot;--radius:12px&quot;&gt;control&lt;/span&gt;&lt;span class=&quot;radius-sample&quot; style=&quot;--radius:16px&quot;&gt;card&lt;/span&gt;&lt;span class=&quot;radius-sample&quot; style=&quot;--radius:24px;box-shadow:var(--preview-shadow)&quot;&gt;panel&lt;/span&gt;
+              &lt;/div&gt;
+            &lt;/section&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;`;
+
+      const components = () =&gt; `
+        &lt;div class=&quot;ds-page&quot;&gt;
+          &lt;div&gt;&lt;span class=&quot;eyebrow&quot;&gt;02 · Componentes&lt;/span&gt;&lt;h1&gt;Primitivas reutilizables&lt;/h1&gt;&lt;p&gt;La forma anuncia la función: controles hundidos, tarjetas contenidas y datos rectos.&lt;/p&gt;&lt;/div&gt;
+          &lt;div class=&quot;component-grid&quot;&gt;
+            &lt;section class=&quot;component-panel&quot;&gt;
+              &lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Acciones&lt;/h2&gt;&lt;small&gt;44 px mínimo&lt;/small&gt;&lt;/div&gt;
+              &lt;div class=&quot;button-row&quot;&gt;&lt;button class=&quot;ds-btn&quot;&gt;Primaria&lt;/button&gt;&lt;button class=&quot;ds-btn secondary&quot;&gt;Secundaria&lt;/button&gt;&lt;button class=&quot;ds-btn construction&quot;&gt;Construcción&lt;/button&gt;&lt;button class=&quot;ds-btn critical&quot;&gt;Crítica&lt;/button&gt;&lt;button class=&quot;ds-btn secondary icon&quot; aria-label=&quot;Más opciones&quot;&gt;•••&lt;/button&gt;&lt;/div&gt;
+            &lt;/section&gt;
+            &lt;section class=&quot;component-panel&quot;&gt;
+              &lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Campos&lt;/h2&gt;&lt;small&gt;pozo + borde de control&lt;/small&gt;&lt;/div&gt;
+              &lt;div class=&quot;form-row&quot;&gt;&lt;input class=&quot;ds-input&quot; value=&quot;Proyecto Da Porto&quot; aria-label=&quot;Proyecto&quot;&gt;&lt;select class=&quot;ds-select&quot; aria-label=&quot;Semana&quot;&gt;&lt;option&gt;Semana 32&lt;/option&gt;&lt;/select&gt;&lt;input class=&quot;ds-input focus-demo&quot; value=&quot;Foco visible&quot; aria-label=&quot;Ejemplo de foco&quot;&gt;&lt;/div&gt;
+            &lt;/section&gt;
+            &lt;section class=&quot;component-panel&quot;&gt;
+              &lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Estados y chips&lt;/h2&gt;&lt;small&gt;texto + color&lt;/small&gt;&lt;/div&gt;
+              &lt;div class=&quot;chip-row&quot;&gt;&lt;span class=&quot;ds-chip solid&quot; style=&quot;--chip-solid:var(--state-green)&quot;&gt;Controlado&lt;/span&gt;&lt;span class=&quot;ds-chip solid&quot; style=&quot;--chip-solid:var(--state-blue)&quot;&gt;En marcha&lt;/span&gt;&lt;span class=&quot;ds-chip solid&quot; style=&quot;--chip-solid:var(--state-amber)&quot;&gt;Por resolver&lt;/span&gt;&lt;span class=&quot;ds-chip solid&quot; style=&quot;--chip-solid:var(--state-red)&quot;&gt;Bloqueado&lt;/span&gt;&lt;span class=&quot;ds-chip&quot; style=&quot;--chip-bg:var(--tint-neutral)&quot;&gt;Sin datos&lt;/span&gt;&lt;/div&gt;
+            &lt;/section&gt;
+            &lt;section class=&quot;component-panel&quot;&gt;
+              &lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Feedback&lt;/h2&gt;&lt;small&gt;status y alert&lt;/small&gt;&lt;/div&gt;
+              &lt;div class=&quot;feedback-stack&quot;&gt;&lt;div class=&quot;feedback&quot; style=&quot;--flag:var(--state-teal);--feedback-bg:var(--tint-teal)&quot;&gt;Información contextual disponible.&lt;/div&gt;&lt;div class=&quot;feedback&quot; style=&quot;--flag:var(--state-green);--feedback-bg:var(--tint-green)&quot;&gt;Cambios guardados correctamente.&lt;/div&gt;&lt;div class=&quot;feedback&quot; style=&quot;--flag:var(--state-amber);--feedback-bg:var(--tint-amber)&quot;&gt;Revisa los campos pendientes.&lt;/div&gt;&lt;div class=&quot;feedback&quot; style=&quot;--flag:var(--state-red);--feedback-bg:var(--tint-red)&quot;&gt;No pudimos completar la operación.&lt;/div&gt;&lt;/div&gt;
+            &lt;/section&gt;
+            &lt;section class=&quot;component-panel&quot;&gt;
+              &lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Datos densos&lt;/h2&gt;&lt;small&gt;lectura antes que ornamento&lt;/small&gt;&lt;/div&gt;
+              &lt;table class=&quot;mini-table&quot;&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Actividad&lt;/th&gt;&lt;th&gt;Estado&lt;/th&gt;&lt;th&gt;PAC&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Estructura torre 2&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;ds-chip solid&quot; style=&quot;--chip-solid:var(--state-blue)&quot;&gt;En marcha&lt;/span&gt;&lt;/td&gt;&lt;td&gt;92%&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Red eléctrica&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;ds-chip solid&quot; style=&quot;--chip-solid:var(--state-amber)&quot;&gt;Atención&lt;/span&gt;&lt;/td&gt;&lt;td&gt;71%&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Acabados norte&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;ds-chip solid&quot; style=&quot;--chip-solid:var(--state-red)&quot;&gt;Bloqueado&lt;/span&gt;&lt;/td&gt;&lt;td&gt;48%&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+            &lt;/section&gt;
+            &lt;section class=&quot;component-panel&quot;&gt;
+              &lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Estados de superficie&lt;/h2&gt;&lt;small&gt;loading · vacío · error&lt;/small&gt;&lt;/div&gt;
+              &lt;div class=&quot;empty-state&quot;&gt;&lt;div&gt;&lt;strong&gt;Sin proyectos asignados&lt;/strong&gt;&lt;p&gt;Solicita acceso al administrador.&lt;/p&gt;&lt;button class=&quot;ds-btn secondary&quot; style=&quot;margin-top:8px&quot;&gt;Reintentar&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
+            &lt;/section&gt;
+            &lt;section class=&quot;component-panel&quot;&gt;
+              &lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Modal&lt;/h2&gt;&lt;small&gt;elevación techo&lt;/small&gt;&lt;/div&gt;
+              &lt;div class=&quot;modal-sample&quot;&gt;&lt;h3&gt;Cambiar semana activa&lt;/h3&gt;&lt;p&gt;El contexto se aplicará a todos los módulos del proyecto.&lt;/p&gt;&lt;select class=&quot;ds-select&quot; aria-label=&quot;Nueva semana&quot;&gt;&lt;option&gt;Semana 33&lt;/option&gt;&lt;/select&gt;&lt;div class=&quot;button-row&quot;&gt;&lt;button class=&quot;ds-btn secondary&quot;&gt;Cancelar&lt;/button&gt;&lt;button class=&quot;ds-btn&quot;&gt;Aplicar&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
+            &lt;/section&gt;
+            &lt;section class=&quot;component-panel&quot;&gt;
+              &lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Densidad adaptable&lt;/h2&gt;&lt;small&gt;compacta ↔ táctil&lt;/small&gt;&lt;/div&gt;
+              &lt;p&gt;Desktop maximiza lectura de datos; tablet y móvil mantienen objetivos táctiles y convierten tablas en tarjetas cuando corresponde.&lt;/p&gt;
+            &lt;/section&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;`;
+
+      const sidebar = () =&gt; `
+        &lt;aside class=&quot;shell-sidebar&quot;&gt;
+          &lt;div&gt;&lt;div class=&quot;brand-lockup&quot;&gt;${glyph}&lt;span&gt;Last Planner AIA&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;nav-group&quot;&gt;&lt;div class=&quot;nav-label&quot;&gt;Información&lt;/div&gt;&lt;div class=&quot;nav-item active&quot;&gt;&lt;span class=&quot;nav-icon&quot;&gt;⌂&lt;/span&gt;Resumen&lt;/div&gt;&lt;div class=&quot;nav-item&quot;&gt;&lt;span class=&quot;nav-icon&quot;&gt;◎&lt;/span&gt;Semanas&lt;/div&gt;&lt;div class=&quot;nav-item&quot;&gt;&lt;span class=&quot;nav-icon&quot;&gt;▥&lt;/span&gt;Indicadores&lt;/div&gt;&lt;div class=&quot;nav-label&quot;&gt;Obra&lt;/div&gt;&lt;div class=&quot;nav-item&quot;&gt;&lt;span class=&quot;nav-icon&quot;&gt;↗&lt;/span&gt;Programa general&lt;/div&gt;&lt;div class=&quot;nav-item&quot;&gt;&lt;span class=&quot;nav-icon&quot;&gt;✓&lt;/span&gt;Programación semanal&lt;/div&gt;&lt;div class=&quot;nav-label&quot;&gt;Compras&lt;/div&gt;&lt;div class=&quot;nav-item&quot;&gt;&lt;span class=&quot;nav-icon&quot;&gt;◇&lt;/span&gt;Plan de compras&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+          &lt;div&gt;&lt;/div&gt;
+          &lt;div class=&quot;account-row&quot;&gt;&lt;div class=&quot;nav-item&quot;&gt;&lt;span class=&quot;nav-icon&quot;&gt;FB&lt;/span&gt;Felipe Benítez&lt;/div&gt;&lt;/div&gt;
+        &lt;/aside&gt;`;
+
+      const mobileBar = () =&gt; `&lt;div class=&quot;mobile-shellbar&quot;&gt;&lt;div class=&quot;brand-lockup&quot;&gt;${glyph}&lt;span&gt;Last Planner AIA&lt;/span&gt;&lt;/div&gt;&lt;button class=&quot;ds-btn secondary icon&quot; aria-label=&quot;Abrir navegación&quot;&gt;☰&lt;/button&gt;&lt;/div&gt;`;
+
+      const shell = () =&gt; `
+        &lt;div class=&quot;shell-layout&quot;&gt;
+          ${sidebar()}
+          &lt;main class=&quot;shell-main&quot;&gt;
+            ${mobileBar()}
+            &lt;div class=&quot;context-bar&quot;&gt;&lt;div class=&quot;context-path&quot;&gt;&lt;strong&gt;Da Porto&lt;/strong&gt;&lt;span&gt;›&lt;/span&gt;&lt;span&gt;Programa general&lt;/span&gt;&lt;span&gt;›&lt;/span&gt;&lt;span&gt;Construcción&lt;/span&gt;&lt;/div&gt;&lt;button class=&quot;week-pill&quot;&gt;Semana 32 · 04–10 ago ▾&lt;/button&gt;&lt;/div&gt;
+            &lt;div class=&quot;ds-page&quot;&gt;&lt;div&gt;&lt;span class=&quot;eyebrow&quot;&gt;03 · Shell adaptable&lt;/span&gt;&lt;h1&gt;Resumen del proyecto&lt;/h1&gt;&lt;p&gt;El contexto permanece visible; la navegación cambia de rail a drawer bajo 1180 px.&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;dashboard-grid&quot;&gt;&lt;div class=&quot;metric-card&quot;&gt;&lt;small&gt;PAC semanal&lt;/small&gt;&lt;div class=&quot;metric&quot;&gt;92%&lt;/div&gt;&lt;span class=&quot;ds-chip solid&quot; style=&quot;--chip-solid:var(--state-green)&quot;&gt;Controlado&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;metric-card&quot;&gt;&lt;small&gt;Restricciones&lt;/small&gt;&lt;div class=&quot;metric&quot;&gt;14&lt;/div&gt;&lt;span class=&quot;ds-chip solid&quot; style=&quot;--chip-solid:var(--state-amber)&quot;&gt;5 por resolver&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;metric-card&quot;&gt;&lt;small&gt;Plan de compras&lt;/small&gt;&lt;div class=&quot;metric&quot;&gt;87%&lt;/div&gt;&lt;span class=&quot;ds-chip solid&quot; style=&quot;--chip-solid:var(--state-blue)&quot;&gt;En marcha&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;context-card&quot;&gt;&lt;div class=&quot;panel-head&quot;&gt;&lt;h2&gt;Próximas decisiones&lt;/h2&gt;&lt;button class=&quot;ds-btn secondary&quot;&gt;Ver módulo&lt;/button&gt;&lt;/div&gt;&lt;table class=&quot;mini-table&quot;&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Frente&lt;/th&gt;&lt;th&gt;Responsable&lt;/th&gt;&lt;th&gt;Estado&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Torre 2&lt;/td&gt;&lt;td&gt;Equipo estructura&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;ds-chip solid&quot; style=&quot;--chip-solid:var(--state-amber)&quot;&gt;Atención&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Sótano norte&lt;/td&gt;&lt;td&gt;Instalaciones&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;ds-chip solid&quot; style=&quot;--chip-solid:var(--state-blue)&quot;&gt;En marcha&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Fachada&lt;/td&gt;&lt;td&gt;Compras&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;ds-chip solid&quot; style=&quot;--chip-solid:var(--state-red)&quot;&gt;Bloqueado&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;/div&gt;
+          &lt;/main&gt;
+        &lt;/div&gt;`;
+
+      const login = () =&gt; `
+        &lt;div class=&quot;login-screen&quot;&gt;
+          &lt;section class=&quot;login-brand&quot;&gt;&lt;div class=&quot;brand-lockup&quot;&gt;${glyph}&lt;span&gt;Last Planner AIA&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span class=&quot;eyebrow&quot;&gt;Construyendo con +CERTEZA&lt;/span&gt;&lt;h1&gt;Anticipa lo crítico.&lt;br&gt;Decide con contexto.&lt;/h1&gt;&lt;p&gt;Planificación colaborativa para equipos de arquitectura, ingeniería y construcción.&lt;/p&gt;&lt;/div&gt;&lt;/section&gt;
+          &lt;section class=&quot;login-form-zone&quot;&gt;&lt;div class=&quot;login-card&quot;&gt;&lt;div&gt;&lt;span class=&quot;eyebrow&quot;&gt;04 · Acceso&lt;/span&gt;&lt;h2&gt;Bienvenido&lt;/h2&gt;&lt;p&gt;Ingresa con tu cuenta AIA.&lt;/p&gt;&lt;/div&gt;&lt;label class=&quot;field-label&quot;&gt;Usuario&lt;input class=&quot;ds-input&quot; value=&quot;felipe.benitez&quot; aria-label=&quot;Usuario&quot;&gt;&lt;/label&gt;&lt;label class=&quot;field-label&quot;&gt;Contraseña&lt;span class=&quot;password-wrap&quot;&gt;&lt;input class=&quot;ds-input&quot; value=&quot;••••••••••&quot; aria-label=&quot;Contraseña&quot;&gt;&lt;button class=&quot;ds-btn secondary icon&quot; aria-label=&quot;Mostrar contraseña&quot;&gt;◉&lt;/button&gt;&lt;/span&gt;&lt;/label&gt;&lt;div class=&quot;feedback&quot; style=&quot;--flag:var(--state-teal);--feedback-bg:var(--tint-teal)&quot;&gt;Tu sesión anterior terminó por inactividad.&lt;/div&gt;&lt;button class=&quot;ds-btn&quot;&gt;Iniciar sesión →&lt;/button&gt;&lt;div class=&quot;login-foot&quot;&gt;&lt;span class=&quot;text-link&quot;&gt;¿Olvidaste tu contraseña?&lt;/span&gt;&lt;button class=&quot;ds-btn secondary icon&quot; aria-label=&quot;Cambiar tema&quot;&gt;◐&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;small&gt;Arquitectos e Ingenieros Asociados&lt;/small&gt;&lt;/section&gt;
+        &lt;/div&gt;`;
+
+      const projects = () =&gt; `
+        &lt;div class=&quot;shell-layout&quot;&gt;
+          ${sidebar()}
+          &lt;main class=&quot;shell-main&quot;&gt;${mobileBar()}&lt;div class=&quot;ds-page&quot;&gt;&lt;div class=&quot;project-toolbar&quot;&gt;&lt;div&gt;&lt;span class=&quot;eyebrow&quot;&gt;05 · Selector&lt;/span&gt;&lt;h1&gt;Tus proyectos&lt;/h1&gt;&lt;p&gt;3 proyectos disponibles&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;form-row&quot;&gt;&lt;input class=&quot;ds-input&quot; placeholder=&quot;Buscar proyecto…&quot; aria-label=&quot;Buscar proyecto&quot;&gt;&lt;button class=&quot;ds-btn secondary&quot;&gt;Control Tower&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;project-grid&quot;&gt;&lt;article class=&quot;project-card&quot;&gt;&lt;div class=&quot;project-card-head&quot;&gt;&lt;h2&gt;Da Porto&lt;/h2&gt;&lt;div class=&quot;chip-row&quot;&gt;&lt;span class=&quot;ds-chip&quot; style=&quot;--chip-bg:var(--preview-construction);--chip-text:var(--preview-construction-text)&quot;&gt;Construcción&lt;/span&gt;&lt;span class=&quot;ds-chip&quot; style=&quot;--chip-bg:var(--tint-green)&quot;&gt;Activo&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;project-meta&quot;&gt;◉ Rol · Administrador de obra&lt;/div&gt;&lt;button class=&quot;ds-btn&quot;&gt;Ingresar al proyecto →&lt;/button&gt;&lt;/article&gt;&lt;article class=&quot;project-card&quot;&gt;&lt;div class=&quot;project-card-head&quot;&gt;&lt;h2&gt;Metrolinea Conf. E2&lt;/h2&gt;&lt;div class=&quot;chip-row&quot;&gt;&lt;span class=&quot;ds-chip&quot; style=&quot;--chip-bg:var(--tint-neutral)&quot;&gt;Pre-Construcción&lt;/span&gt;&lt;span class=&quot;ds-chip&quot; style=&quot;--chip-bg:var(--tint-green)&quot;&gt;Activo&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;project-meta&quot;&gt;◉ Rol · Responsable&lt;/div&gt;&lt;button class=&quot;ds-btn&quot;&gt;Ingresar al proyecto →&lt;/button&gt;&lt;/article&gt;&lt;article class=&quot;project-card&quot;&gt;&lt;div class=&quot;project-card-head&quot;&gt;&lt;h2&gt;JMC Etapa 1&lt;/h2&gt;&lt;div class=&quot;chip-row&quot;&gt;&lt;span class=&quot;ds-chip&quot; style=&quot;--chip-bg:var(--preview-construction);--chip-text:var(--preview-construction-text)&quot;&gt;Construcción&lt;/span&gt;&lt;span class=&quot;ds-chip&quot; style=&quot;--chip-bg:var(--tint-green)&quot;&gt;Activo&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;project-meta&quot;&gt;◉ Rol · Consulta&lt;/div&gt;&lt;button class=&quot;ds-btn&quot;&gt;Ingresar al proyecto →&lt;/button&gt;&lt;/article&gt;&lt;/div&gt;&lt;/div&gt;&lt;/main&gt;
+        &lt;/div&gt;`;
+
+      const screenFor = (section) =&gt; {
+        if (section === &quot;components&quot;) return components();
+        if (section === &quot;shell&quot;) return shell();
+        if (section === &quot;login&quot;) return login();
+        if (section === &quot;projects&quot;) return projects();
+        return foundations();
+      };
+
+      const preview = (theme) =&gt; `
+        &lt;article class=&quot;theme-preview theme-${theme}&quot;&gt;
+          &lt;div class=&quot;preview-meta&quot;&gt;&lt;strong&gt;${theme === &quot;light&quot; ? &quot;Modo claro&quot; : &quot;Modo oscuro&quot;}&lt;/strong&gt;&lt;span&gt;${viewportLabels[state.viewport]}&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;device-stage&quot;&gt;&lt;div class=&quot;device-frame&quot; data-viewport=&quot;${state.viewport}&quot;&gt;&lt;div class=&quot;device-bar&quot;&gt;&lt;i class=&quot;device-dot&quot;&gt;&lt;/i&gt;&lt;i class=&quot;device-dot&quot;&gt;&lt;/i&gt;&lt;i class=&quot;device-dot&quot;&gt;&lt;/i&gt;&lt;small style=&quot;margin-left:auto&quot;&gt;${sectionLabels[state.section]}&lt;/small&gt;&lt;/div&gt;&lt;div class=&quot;screen&quot;&gt;${screenFor(state.section)}&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+        &lt;/article&gt;`;
+
+      const render = () =&gt; {
+        const themes = state.theme === &quot;both&quot; ? [&quot;light&quot;, &quot;dark&quot;] : [state.theme];
+        const grid = root.querySelector(&quot;[data-preview-grid]&quot;);
+        grid.classList.toggle(&quot;is-comparison&quot;, themes.length === 2);
+        grid.innerHTML = themes.map(preview).join(&quot;&quot;);
+
+        root.querySelectorAll(&quot;[data-theme-choice]&quot;).forEach((button) =&gt; {
+          button.setAttribute(&quot;aria-pressed&quot;, String(button.dataset.themeChoice === state.theme));
+        });
+        root.querySelectorAll(&quot;[data-viewport-choice]&quot;).forEach((button) =&gt; {
+          button.setAttribute(&quot;aria-pressed&quot;, String(button.dataset.viewportChoice === state.viewport));
+        });
+        root.querySelectorAll(&quot;[data-section-choice]&quot;).forEach((button) =&gt; {
+          button.setAttribute(&quot;aria-pressed&quot;, String(button.dataset.sectionChoice === state.section));
+        });
+      };
+
+      root.querySelectorAll(&quot;[data-theme-choice]&quot;).forEach((button) =&gt; {
+        button.addEventListener(&quot;click&quot;, () =&gt; {
+          state.theme = button.dataset.themeChoice;
+          render();
+        });
+      });
+
+      root.querySelectorAll(&quot;[data-viewport-choice]&quot;).forEach((button) =&gt; {
+        button.addEventListener(&quot;click&quot;, () =&gt; {
+          state.viewport = button.dataset.viewportChoice;
+          render();
+        });
+      });
+
+      root.querySelectorAll(&quot;[data-section-choice]&quot;).forEach((button) =&gt; {
+        button.addEventListener(&quot;click&quot;, () =&gt; {
+          state.section = button.dataset.sectionChoice;
+          render();
+        });
+      });
+
+      render();
+    })();
+  &lt;/script&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+  let lastPointerWasTouch = false;
+  let pinnedByTouch = false;
+
+  const getTrigger = (target) =&gt;
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest(&quot;[data-tooltip]&quot;)
+      : null;
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    pinnedByTouch = false;
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handlePointer = (event) =&gt; {
+    lastPointerWasTouch =
+      event.type === &quot;pointerdown&quot; &amp;&amp; event.pointerType === &quot;touch&quot;;
+  };
+  const handleTouchClick = (event) =&gt; {
+    const isTouch = event.pointerType === &quot;touch&quot; || lastPointerWasTouch;
+    lastPointerWasTouch = false;
+    if (!isTouch || event.detail === 0) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (
+      trigger == null ||
+      !trigger.isConnected ||
+      getContent(trigger).length === 0 ||
+      (pinnedByTouch &amp;&amp; activeTrigger === trigger)
+    ) {
+      if (pinnedByTouch) {
+        closeTooltip();
+      }
+      return;
+    }
+    openTooltip(trigger);
+    pinnedByTouch = activeTrigger === trigger;
+    window.setTimeout(() =&gt; {
+      if (activeTrigger === trigger &amp;&amp; !trigger.isConnected) {
+        closeTooltip(false);
+      }
+    }, 0);
+  };
+  const handleLeave = (event) =&gt; {
+    if (pinnedByTouch) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    lastPointerWasTouch = false;
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    lastPointerWasTouch = false;
+    document.removeEventListener(&quot;pointerover&quot;, handlePointerOpen);
+    document.removeEventListener(&quot;pointerdown&quot;, handlePointer);
+    document.removeEventListener(&quot;pointercancel&quot;, handlePointer);
+    document.removeEventListener(&quot;click&quot;, handleTouchClick);
+    document.removeEventListener(&quot;pointerout&quot;, handleLeave);
+    document.removeEventListener(&quot;focusin&quot;, handleFocusIn);
+    document.removeEventListener(&quot;focusout&quot;, handleLeave);
+    document.removeEventListener(&quot;keydown&quot;, handleKeyDown);
+    document.removeEventListener(&quot;contextmenu&quot;, handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener(&quot;pointerover&quot;, handlePointerOpen);
+  document.addEventListener(&quot;pointerdown&quot;, handlePointer);
+  document.addEventListener(&quot;pointercancel&quot;, handlePointer);
+  document.addEventListener(&quot;click&quot;, handleTouchClick);
+  document.addEventListener(&quot;pointerout&quot;, handleLeave);
+  document.addEventListener(&quot;focusin&quot;, handleFocusIn);
+  document.addEventListener(&quot;focusout&quot;, handleLeave);
+  document.addEventListener(&quot;keydown&quot;, handleKeyDown);
+  document.addEventListener(&quot;contextmenu&quot;, handleContextMenu);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</body>
+</html>
