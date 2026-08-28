@@ -242,10 +242,11 @@ Para desarrollo con recarga automática:
 npm --prefix frontend run dev
 ```
 
-Vite sirve el shell en `http://localhost:5173/app/`. Como el cliente usa las APIs del mismo origen,
-el flujo integrado de sesión y autenticación se valida con el build PHP en
-`http://localhost:8081/app`; las vistas y módulos todavía no migrados continúan en sus URLs Docker
-habituales bajo `http://localhost:8081`.
+Vite sirve únicamente la UI del shell en `http://localhost:5173/app/`; este comando no configura
+un proxy hacia PHP. Para probar login, selector de proyecto y APIs, usa el build integrado en
+Docker en `http://localhost:8081/app`, o configura externamente un proxy de desarrollo —esa
+configuración queda fuera de este frente—. Las vistas y módulos todavía no migrados continúan en
+sus URLs Docker habituales bajo `http://localhost:8081`.
 
 Desde la raíz del repositorio, los gates del frontend son:
 
