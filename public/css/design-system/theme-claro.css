@@ -50,21 +50,21 @@
     --ds-active-state-tint-teal: var(--ds-state-tint-teal-light);
     --ds-active-state-tint-neutral: var(--ds-state-tint-neutral-light);
     --ds-active-state-solid-red: var(--ds-state-solid-red-light);
-    --ds-active-state-solid-red-text: var(--ds-state-solid-red-text-light);
+    --ds-active-state-solid-red-text: var(--ds-state-solid-red-light-text);
     --ds-active-state-solid-orange: var(--ds-state-solid-orange-light);
-    --ds-active-state-solid-orange-text: var(--ds-state-solid-orange-text-light);
+    --ds-active-state-solid-orange-text: var(--ds-state-solid-orange-light-text);
     --ds-active-state-solid-amber: var(--ds-state-solid-amber-light);
-    --ds-active-state-solid-amber-text: var(--ds-state-solid-amber-text-light);
+    --ds-active-state-solid-amber-text: var(--ds-state-solid-amber-light-text);
     --ds-active-state-solid-violet: var(--ds-state-solid-violet-light);
-    --ds-active-state-solid-violet-text: var(--ds-state-solid-violet-text-light);
+    --ds-active-state-solid-violet-text: var(--ds-state-solid-violet-light-text);
     --ds-active-state-solid-green: var(--ds-state-solid-green-light);
-    --ds-active-state-solid-green-text: var(--ds-state-solid-green-text-light);
+    --ds-active-state-solid-green-text: var(--ds-state-solid-green-light-text);
     --ds-active-state-solid-blue: var(--ds-state-solid-blue-light);
-    --ds-active-state-solid-blue-text: var(--ds-state-solid-blue-text-light);
+    --ds-active-state-solid-blue-text: var(--ds-state-solid-blue-light-text);
     --ds-active-state-solid-teal: var(--ds-state-solid-teal-light);
-    --ds-active-state-solid-teal-text: var(--ds-state-solid-teal-text-light);
+    --ds-active-state-solid-teal-text: var(--ds-state-solid-teal-light-text);
     --ds-active-state-solid-neutral: var(--ds-state-solid-neutral-light);
-    --ds-active-state-solid-neutral-text: var(--ds-state-solid-neutral-text-light);
+    --ds-active-state-solid-neutral-text: var(--ds-state-solid-neutral-light-text);
 
     /* Bandera de gravedad por tema (spec temas D4/D7): en claro apunta a los
        valores -light (espejo de dark), mismo patrón que el vocabulario de

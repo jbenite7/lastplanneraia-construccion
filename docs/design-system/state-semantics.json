@@ -198,7 +198,8 @@
           "key": "prog-lista-para-confirmar",
           "level": "healthy",
           "hue": "green",
-          "displayShort": "Por confirmar"
+          "displayShort": "Por confirmar",
+          "note": "rail ready derogado por spec 2026-08-28 D5 (la bandera no tiene gradación: lo positivo vive en chip y tinte)"
         },
         {
           "label": "Incumplida (RC)",
@@ -223,7 +224,8 @@
           "label": "Cumplida Control",
           "key": "cal-cumplida-control",
           "level": "healthy",
-          "hue": "green"
+          "hue": "green",
+          "note": "rail ready derogado por spec 2026-08-28 D5 (la bandera no tiene gradación: lo positivo vive en chip y tinte)"
         },
         {
           "label": "Trabajo No Planificado",

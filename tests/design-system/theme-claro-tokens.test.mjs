@@ -465,6 +465,11 @@ test('theme-claro re-vincula los tintes de estado a la paleta -light', () => {
   for (const hue of ['red', 'orange', 'amber', 'violet', 'green', 'blue', 'teal', 'neutral']) {
     assert.match(css, new RegExp(`--ds-active-state-tint-${hue}\\s*:\\s*var\\(--ds-state-tint-${hue}-light\\)`));
     assert.match(css, new RegExp(`--ds-active-state-solid-${hue}\\s*:\\s*var\\(--ds-state-solid-${hue}-light\\)`));
+    assert.match(
+      css,
+      new RegExp(`--ds-active-state-solid-${hue}-text\\s*:\\s*var\\(--ds-state-solid-${hue}-light-text\\)`),
+      `--ds-active-state-solid-${hue}-text debe apuntar a --ds-state-solid-${hue}-light-text (no -text-light)`,
+    );
   }
   assert.match(css, /--ds-active-shell-background\s*:\s*linear-gradient/,
     'el shell claro es neutro: sin radial verde (D11)');

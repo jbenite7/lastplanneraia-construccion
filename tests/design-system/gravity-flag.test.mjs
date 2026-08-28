@@ -24,3 +24,11 @@ test('el color de la bandera es por nivel, no por matiz (D4)', () => {
   assert.match(tokens, /--ds-flag-attention-bg\s*:\s*var\(--ds-state-solid-amber\)/);
   assert.match(tokens, /--ds-flag-attention-bg-light\s*:\s*var\(--ds-state-solid-amber-light\)/);
 });
+
+test('en tema claro el glifo de atencion usa trazo claro (WCAG 1.4.11)', () => {
+  assert.match(
+    css,
+    /\[data-aia-theme="light"\]\s*\.aia-flag--attention\s*\{[^}]*stroke='%23ffffff'/,
+    'el fondo claro de atencion (#a16207) contra el trazo oscuro base (#3a2c04) da 2.77:1; se necesita override con trazo claro',
+  );
+});

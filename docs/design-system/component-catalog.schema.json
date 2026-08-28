@@ -82,6 +82,13 @@
         },
         "cssFile": {
           "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "shipped",
+            "planned"
+          ]
         }
       }
     },

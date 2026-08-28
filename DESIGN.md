@@ -771,7 +771,9 @@ legacy-overrides` (DS-006). El tema de entrada lo aplica
 `public/js/modules/aia_ui/theme-bootstrap.js`: claro por defecto, sin flash, con la
 preferencia del usuario persistida por aparato (spec 2026-08-28); oscuro es opción
 de primera clase y se alterna con `public/js/modules/aia_ui/theme-toggle.js`. El
-manejo de `prefers-reduced-motion` vive en `public/js/modules/aia_ui/theme.js`.
+manejo de `prefers-reduced-motion` vive en `public/js/modules/aia_ui/theme.js`, y **hoy todavía**
+fuerza `data-aia-theme="dark"` sin condición en 7 vistas reales (ver `TASKS.md` §Bloqueantes); su
+retiro es prerequisito del plan de Programa General.
 
 #### Primitivas nuevas (spec de forma 2026-08-28)
 

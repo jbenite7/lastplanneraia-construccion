@@ -223,11 +223,11 @@ test('programación semanal declara las etiquetas de sus dos fases', async () =>
     { label: 'Ejecución con restricciones', key: 'prog-ejecucion-con-restricciones', level: 'urgent', hue: 'orange', displayShort: 'Con restricciones' },
     { label: 'Condiciones Pendientes', key: 'prog-condiciones-pendientes', level: 'attention', hue: 'amber', displayShort: 'Condiciones' },
     { label: 'Por Comprometer', key: 'prog-sin-compromiso', level: 'attention', hue: 'violet', note: 'Matiz reasignado el 2026-08-19 por decision del usuario: compartia ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo fondo. Violeta porque en /plan-compras ya significa «no puedo comprometerme con lo que tengo», que es el mismo gesto.' },
-    { label: 'Lista para Confirmar', key: 'prog-lista-para-confirmar', level: 'healthy', hue: 'green', displayShort: 'Por confirmar' },
+    { label: 'Lista para Confirmar', key: 'prog-lista-para-confirmar', level: 'healthy', hue: 'green', displayShort: 'Por confirmar', note: 'rail ready derogado por spec 2026-08-28 D5 (la bandera no tiene gradación: lo positivo vive en chip y tinte)' },
     { label: 'Incumplida (RC)', key: 'cal-incumplida-critica', level: 'urgent', hue: 'red' },
     { label: 'Incumplida', key: 'cal-incumplida', level: 'attention', hue: 'amber' },
     { label: 'Sin Calificar', key: 'cal-sin-calificar', level: 'attention', hue: 'neutral', note: 'Matiz reasignado el 2026-08-19 por decision del usuario: compartia ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo fondo. Gris porque es ausencia de dato, no un problema.' },
-    { label: 'Cumplida Control', key: 'cal-cumplida-control', level: 'healthy', hue: 'green' },
+    { label: 'Cumplida Control', key: 'cal-cumplida-control', level: 'healthy', hue: 'green', note: 'rail ready derogado por spec 2026-08-28 D5 (la bandera no tiene gradación: lo positivo vive en chip y tinte)' },
     { label: 'Trabajo No Planificado', key: 'cal-tnp', level: 'neutral', hue: 'blue', displayShort: 'TNP' },
   ]);
 });

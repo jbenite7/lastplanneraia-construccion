@@ -74,7 +74,9 @@ Este directorio define la parte versionada del design system. Stitch y `docs/bra
   agregador si el manifiesto falta, no parsea o declara un vendor desconocido.
 - `public/js/modules/aia_ui/theme-bootstrap.js`: aplica claro por defecto o la preferencia persistida (por aparato) antes de la primera hoja de estilo y evita flash de tema (spec 2026-08-28).
 - `public/js/modules/aia_ui/theme-toggle.js`: alterna entre claro y oscuro; ambos son de primera clase.
-- `public/js/modules/aia_ui/theme.js`: aplica reduced motion después del bootstrap.
+- `public/js/modules/aia_ui/theme.js`: aplica reduced motion después del bootstrap, y **hoy
+  todavía** fuerza `data-aia-theme="dark"` sin condición en 7 vistas reales (ver `TASKS.md`
+  §Bloqueantes); su retiro es prerequisito del plan de Programa General.
 - `scripts/design-system-audit.mjs`: gate estatico de deuda visual.
 - `audit-baseline.json` y `exceptions.json`: deuda congelada y excepciones exactas.
 - `phpstan-baseline.json`: cinco fingerprints legacy tolerados; cualquier hallazgo nuevo bloquea CI.

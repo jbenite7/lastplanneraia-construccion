@@ -339,7 +339,8 @@
       "shape": {
         "radius": "--ds-radius-data",
         "border": "--ds-border-width",
-        "floor": "rest"
+        "floor": "rest",
+        "status": "planned"
       }
     },
     {
