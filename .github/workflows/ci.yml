@@ -125,8 +125,28 @@ jobs:
 
   design-system-runtime:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 60 -> 90 con la matriz de temas (D16, 2026-08-28). No es una medicion: es el
+    # margen que pide la spec al desdoblar el job. Las dos patas corren EN
+    # PARALELO, asi que el reloj de cada una no deberia moverse; el margen cubre
+    # que compartan runners y cache de gha, no que se sumen.
+    timeout-minutes: 90
     needs: design-system-static
+    # D16 (spec temas 2026-08-28): el carril corre los DOS temas completos, no
+    # solo el visual. Se desdobla el job entero y no un paso a proposito -- los
+    # gates de a11y, teclado, reflow y presupuesto tambien viven aqui, y un tema
+    # cuya evidencia solo cubre las capturas no esta cubierto.
+    #
+    # `fail-fast: false` para que un rojo en claro no cancele la pata oscura: son
+    # dos veredictos distintos y el diagnostico necesita los dos.
+    strategy:
+      fail-fast: false
+      matrix:
+        theme: [light, dark]
+    env:
+      # Lo consumen los carriles visuales (`*.visual.mjs`) para elegir QUE
+      # escenarios del manifiesto corre esta pata. Sin el correrian los 44 en
+      # cada una.
+      E2E_THEME: ${{ matrix.theme }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -142,7 +162,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          CI_RUN_ID=run-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}
+          # El tema entra en el identificador de la corrida (D16, 2026-08-28)
+          # para que las dos patas de la matriz no compartan ni contenedores ni
+          # procedencia: `COMPOSE_PROJECT_NAME` se deriva de aqui, asi que basta
+          # con sufijar este. Sigue cumpliendo el patron que exige el esquema de
+          # runtime-budget (`^run-[a-z0-9][a-z0-9-]{5,48}$`).
+          CI_RUN_ID=run-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${{ matrix.theme }}
           COMPOSE_PROJECT_NAME=lps-aia-design-system-ci-${CI_RUN_ID}
           provenance="$(node scripts/design-system-ci-preflight.mjs --print-provenance)"
           CI_GIT_SHA="$(awk -F= '$1 == "CI_GIT_SHA" { print $2 }' <<< "${provenance}")"
@@ -276,7 +301,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: full-app-flow-receipt
+          name: full-app-flow-receipt-${{ matrix.theme }}
           path: docs/design-system/evidence/full-app-flow.json
           if-no-files-found: error
       # `gate-receipt.mjs` escribe el recibo DENTRO del arbol, y eso lo ensucia.
@@ -318,7 +343,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: semanal-roles-phases-receipt
+          name: semanal-roles-phases-receipt-${{ matrix.theme }}
           path: docs/design-system/evidence/semanal-roles-phases.json
           if-no-files-found: error
       - name: Restore the worktree after writing the semanal receipt
@@ -348,7 +373,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: runtime-budgets-receipt
+          name: runtime-budgets-receipt-${{ matrix.theme }}
           path: docs/design-system/evidence/runtime-budgets.json
           if-no-files-found: error
       - name: Restore the worktree after writing the runtime-budgets receipt
@@ -375,6 +400,24 @@ jobs:
           npm run test:visual:pilot
           npm run test:a11y:pilot
           npm run test:hue:pilot
+      # Va AQUI, pegado al gate y no al final del job, porque `test-output/` es un
+      # directorio compartido que cada suite sobrescribe. `pilot-lab-gates` no
+      # bloquea (continue-on-error), asi que el job sigue, «Collect keyboard and
+      # reflow evidence» pisa esa carpeta, y para cuando corren los dos pasos de
+      # evidencia del final ya no queda rastro del piloto. Medido el 2026-08-28: un
+      # golden del piloto en rojo y su artefacto sin una sola captura suya, asi que
+      # no habia forma de aprobar el golden nuevo sin volver a correr el CI a
+      # ciegas. Un gate que falla y no puede mostrar por que no es un gate.
+      - name: Preserve pilot lab evidence
+        if: steps.pilot-lab-gates.outcome == 'failure'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: design-system-pilot-lab-evidence-${{ matrix.theme }}
+          path: |
+            test-results/
+            test-output/
+          if-no-files-found: warn
+          retention-days: 7
       - name: Collect keyboard and reflow evidence
         id: keyboard-reflow-evidence
         continue-on-error: true
@@ -385,7 +428,7 @@ jobs:
         if: steps.keyboard-reflow-evidence.outcome == 'failure'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: design-system-keyboard-reflow-evidence
+          name: design-system-keyboard-reflow-evidence-${{ matrix.theme }}
           path: |
             test-results/
             test-output/
@@ -497,7 +540,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: design-system-failure-evidence
+          name: design-system-failure-evidence-${{ matrix.theme }}
           path: |
             test-results/
             test-output/

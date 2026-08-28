@@ -47,6 +47,11 @@
         "status": "approved",
         "familyId": "shell-navigation",
         "candidateId": "adaptive-shell"
+      },
+      "shape": {
+        "radius": "--ds-radius-none",
+        "border": "none",
+        "floor": "rest"
       }
     },
     {
@@ -92,6 +97,11 @@
         "status": "approved",
         "familyId": "page-structure",
         "candidateId": "inline-header"
+      },
+      "shape": {
+        "radius": "--ds-radius-none",
+        "border": "none",
+        "floor": "rest"
       }
     },
     {
@@ -141,6 +151,11 @@
         "status": "approved",
         "familyId": "actions",
         "candidateId": "solid-outline"
+      },
+      "shape": {
+        "radius": "--ds-radius-panel",
+        "border": "--ds-border-width",
+        "floor": "rest"
       }
     },
     {
@@ -196,6 +211,11 @@
         "status": "approved",
         "familyId": "actions",
         "candidateId": "solid-outline"
+      },
+      "shape": {
+        "radius": "--ds-radius-control",
+        "border": "--ds-border-width",
+        "floor": "rest"
       }
     },
     {
@@ -257,6 +277,11 @@
         "status": "approved",
         "familyId": "forms-filters",
         "candidateId": "inline-fields"
+      },
+      "shape": {
+        "radius": "--ds-radius-control",
+        "border": "--ds-border-width",
+        "floor": "rest"
       }
     },
     {
@@ -310,6 +335,12 @@
         "status": "approved",
         "familyId": "states-feedback",
         "candidateId": "tinted-status"
+      },
+      "shape": {
+        "radius": "--ds-radius-data",
+        "border": "--ds-border-width",
+        "floor": "rest",
+        "status": "planned"
       }
     },
     {
@@ -357,6 +388,11 @@
         "status": "approved",
         "familyId": "states-feedback",
         "candidateId": "severity-rail"
+      },
+      "shape": {
+        "radius": "--ds-radius-none",
+        "border": "none",
+        "floor": "rest"
       }
     },
     {
@@ -403,6 +439,11 @@
         "status": "approved",
         "familyId": "data-display",
         "candidateId": "responsive-shell"
+      },
+      "shape": {
+        "radius": "--ds-radius-card",
+        "border": "--ds-border-width",
+        "floor": "rest"
       }
     },
     {
@@ -454,6 +495,11 @@
         "status": "approved",
         "familyId": "data-display",
         "candidateId": "responsive-shell"
+      },
+      "shape": {
+        "radius": "--ds-radius-table",
+        "border": "--ds-border-width",
+        "floor": "rest"
       }
     },
     {
@@ -507,6 +553,11 @@
         "status": "approved",
         "familyId": "overlays",
         "candidateId": "modal-drawer"
+      },
+      "shape": {
+        "radius": "--ds-radius-modal",
+        "border": "--ds-border-width",
+        "floor": "top"
       }
     },
     {
@@ -564,6 +615,11 @@
         "status": "approved",
         "familyId": "bi-primitives",
         "candidateId": "accessible-figure"
+      },
+      "shape": {
+        "radius": "--ds-radius-none",
+        "border": "none",
+        "floor": "rest"
       }
     },
     {
@@ -630,6 +686,11 @@
         "status": "approved",
         "familyId": "shell-navigation",
         "candidateId": "adaptive-shell"
+      },
+      "shape": {
+        "radius": "--ds-radius-none",
+        "border": "none",
+        "floor": "rest"
       }
     },
     {
@@ -676,6 +737,11 @@
         "status": "approved",
         "familyId": "page-structure",
         "candidateId": "inline-header"
+      },
+      "shape": {
+        "radius": "--ds-radius-none",
+        "border": "none",
+        "floor": "rest"
       }
     },
     {
@@ -724,6 +790,11 @@
         "status": "approved",
         "familyId": "actions",
         "candidateId": "solid-outline"
+      },
+      "shape": {
+        "radius": "--ds-radius-none",
+        "border": "none",
+        "floor": "none"
       }
     },
     {
@@ -775,6 +846,11 @@
         "status": "approved",
         "familyId": "forms-filters",
         "candidateId": "inline-fields"
+      },
+      "shape": {
+        "radius": "--ds-radius-control",
+        "border": "--ds-border-width",
+        "floor": "rest"
       }
     },
     {
@@ -825,6 +901,11 @@
         "status": "approved",
         "familyId": "forms-filters",
         "candidateId": "inline-fields"
+      },
+      "shape": {
+        "radius": "--ds-radius-pill",
+        "border": "--ds-border-width",
+        "floor": "rest"
       }
     },
     {
@@ -874,6 +955,11 @@
         "status": "approved",
         "familyId": "forms-filters",
         "candidateId": "inline-fields"
+      },
+      "shape": {
+        "radius": "--ds-radius-control",
+        "border": "--ds-border-width",
+        "floor": "rest"
       }
     },
     {
@@ -927,6 +1013,11 @@
         "status": "approved",
         "familyId": "states-feedback",
         "candidateId": "tinted-status"
+      },
+      "shape": {
+        "radius": "--ds-radius-none",
+        "border": "--ds-border-width",
+        "floor": "rest"
       }
     },
     {
@@ -976,6 +1067,11 @@
         "status": "approved",
         "familyId": "states-feedback",
         "candidateId": "tinted-status"
+      },
+      "shape": {
+        "radius": "--ds-radius-progress",
+        "border": "none",
+        "floor": "rest"
       }
     },
     {
@@ -1025,6 +1121,11 @@
         "status": "approved",
         "familyId": "states-feedback",
         "candidateId": "tinted-status"
+      },
+      "shape": {
+        "radius": "--ds-radius-none",
+        "border": "none",
+        "floor": "none"
       }
     },
     {
@@ -1077,6 +1178,11 @@
         "status": "approved",
         "familyId": "overlays",
         "candidateId": "modal-drawer"
+      },
+      "shape": {
+        "radius": "--ds-radius-popover",
+        "border": "--ds-border-width",
+        "floor": "float"
       }
     },
     {
@@ -1128,6 +1234,11 @@
         "status": "approved",
         "familyId": "overlays",
         "candidateId": "modal-drawer"
+      },
+      "shape": {
+        "radius": "--ds-radius-popover",
+        "border": "--ds-border-width",
+        "floor": "float"
       }
     },
     {
@@ -1179,6 +1290,11 @@
         "status": "approved",
         "familyId": "states-feedback",
         "candidateId": "tinted-status"
+      },
+      "shape": {
+        "radius": "--ds-radius-popover",
+        "border": "--ds-border-width",
+        "floor": "float"
       }
     },
     {
@@ -1230,6 +1346,11 @@
         "status": "approved",
         "familyId": "vendor-adapters",
         "candidateId": "canonical-skin"
+      },
+      "shape": {
+        "radius": "--ds-radius-table",
+        "border": "--ds-border-width",
+        "floor": "rest"
       }
     },
     {
@@ -1278,6 +1399,11 @@
         "status": "not-required",
         "familyId": "vendor-adapters",
         "candidateId": null
+      },
+      "shape": {
+        "radius": "--ds-radius-table",
+        "border": "--ds-border-width",
+        "floor": "rest"
       }
     },
     {
@@ -1329,6 +1455,11 @@
         "status": "approved",
         "familyId": "vendor-adapters",
         "candidateId": "canonical-skin"
+      },
+      "shape": {
+        "radius": "--ds-radius-control",
+        "border": "--ds-border-width",
+        "floor": "rest"
       }
     },
     {
@@ -1384,6 +1515,11 @@
         "status": "approved",
         "familyId": "bi-primitives",
         "candidateId": "accessible-figure"
+      },
+      "shape": {
+        "radius": "--ds-radius-card",
+        "border": "--ds-border-width",
+        "floor": "rest"
       }
     },
     {
@@ -1430,6 +1566,11 @@
         "status": "approved",
         "familyId": "bi-primitives",
         "candidateId": "accessible-figure"
+      },
+      "shape": {
+        "radius": "--ds-radius-none",
+        "border": "none",
+        "floor": "none"
       }
     },
     {
@@ -1478,6 +1619,11 @@
         "status": "approved",
         "familyId": "bi-primitives",
         "candidateId": "accessible-figure"
+      },
+      "shape": {
+        "radius": "--ds-radius-popover",
+        "border": "--ds-border-width",
+        "floor": "float"
       }
     }
   ]

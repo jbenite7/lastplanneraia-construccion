@@ -13,6 +13,19 @@ const FAMILIES = [
   'vendor-adapters', 'bi-primitives',
 ];
 
+// D12/D16: el tema ya no es uno solo, y el laboratorio arranca en el default del
+// producto (claro). Afirmar 'dark' a secas fallaba en las dos patas de la matriz;
+// mismo patron ya corregido en design-system-lab.mjs.
+const E2E_THEME = process.env.E2E_THEME === 'dark' ? 'dark' : 'light';
+
+async function forceTheme(page, theme) {
+  await page.evaluate((t) => {
+    try { localStorage.setItem('aia-theme', t); } catch (_) { /* sin persistencia */ }
+    document.documentElement.setAttribute('data-aia-theme', t);
+    document.documentElement.classList.toggle('aia-theme-dark', t === 'dark');
+  }, theme);
+}
+
 // Excepción registrada en DESIGN.md §5 bis («Excepción al mínimo de 44 px»):
 // en la familia de tablas densas desktop —operadas con ratón, sin equivalente
 // móvil por contrato de AGENTS.md— el suelo es el de WCAG 2.2 SC 2.5.8 (AA),
@@ -79,7 +92,8 @@ for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
     await loginAndSelectProject(page, PROJECTS[0], ADMIN);
     await page.goto('/internal/design-system', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
+    await forceTheme(page, E2E_THEME);
+    await expect(page.locator('html')).toHaveAttribute('data-aia-theme', E2E_THEME);
 
     for (const family of FAMILIES) {
       await page.locator(`[data-lab-family-link][data-family-target="${family}"]`).click();

@@ -244,13 +244,13 @@
     'prog-ejecucion-con-restricciones': { level: 'urgent', hue: 'orange', short: 'Con restricciones' },
     'prog-condiciones-pendientes': { level: 'attention', hue: 'amber', short: 'Condiciones' },
     'prog-sin-compromiso': { level: 'attention', hue: 'violet' },
-    // rail:'ready' — marcador positivo escaso (Felipe, 2026-08-20): filete
-    // verde fino SOLO en lo activamente listo, declarado por estado.
-    'prog-lista-para-confirmar': { level: 'healthy', hue: 'green', rail: 'ready', short: 'Por confirmar' },
+    // rail:'ready' derogado por spec 2026-08-28 D5: la bandera no tiene
+    // gradacion, lo positivo vive en chip y tinte (antes filete verde fino).
+    'prog-lista-para-confirmar': { level: 'healthy', hue: 'green', short: 'Por confirmar' },
     'cal-incumplida-critica': { level: 'urgent', hue: 'red' },
     'cal-incumplida': { level: 'attention', hue: 'amber' },
     'cal-sin-calificar': { level: 'attention', hue: 'neutral' },
-    'cal-cumplida-control': { level: 'healthy', hue: 'green', rail: 'ready' },
+    'cal-cumplida-control': { level: 'healthy', hue: 'green' },
     'cal-tnp': { level: 'neutral', hue: 'blue', short: 'TNP' },
     neutral: { level: 'neutral', hue: 'neutral' },
   };

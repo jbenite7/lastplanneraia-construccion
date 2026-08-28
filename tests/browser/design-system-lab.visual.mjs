@@ -19,7 +19,18 @@ const APPROVED_BY_FAMILY = new Map(
 );
 const FAMILY_COUNT = new Set(MANIFEST.scenarios.map(({ family }) => family)).size;
 const STATES_FEEDBACK_FAMILY = 'states-feedback';
-const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(({ theme }) => theme === 'dark');
+// D16 (spec temas 2026-08-28): el carril deja de estar clavado en un tema. Hasta
+// hoy este filtro era `theme === 'dark'` porque dark era el unico tema del
+// producto; desde Task 6 el claro es el de entrada, y quien decide que se
+// captura pasa a ser el manifiesto, no esta linea.
+//
+// `E2E_THEME` NO decide que tema se pinta —eso lo dice cada escenario— sino que
+// SUBCONJUNTO corre esta invocacion: el job de CI se desdobla por matriz y cada
+// pata mide el suyo. Sin la variable corren todos, que es lo que quiere una
+// corrida local.
+const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(
+  ({ theme }) => !process.env.E2E_THEME || theme === process.env.E2E_THEME,
+);
 const EVIDENCE_DIR = process.env.DESIGN_SYSTEM_EVIDENCE_DIR
   ? path.resolve(process.env.DESIGN_SYSTEM_EVIDENCE_DIR)
   : null;
@@ -51,9 +62,26 @@ async function openLaboratory(page, scenario) {
 }
 
 async function freezeTheme(page, theme) {
-  // F0/Task 8: dark es el unico tema y se aplica sin conmutacion (theme.js
-  // ya no expone setTheme, y localStorage.aia-theme quedo obsoleto). VISUAL_SCENARIOS
-  // ya filtra theme === 'dark' arriba, asi que esto solo confirma el estado.
+  // D16 (spec temas 2026-08-28). Este comentario decia que «dark es el unico
+  // tema y se aplica sin conmutacion», y por eso la funcion solo AFIRMABA el
+  // estado. Dejo de ser cierto con Task 6: hay dos temas, `aia-theme` en
+  // localStorage vuelve a mandar y el de entrada es el claro. Un escenario tiene
+  // que MATERIALIZAR su tema antes de la captura, no darlo por hecho.
+  //
+  // Se aplica en vivo en lugar de recargar A PROPOSITO: la recarga devolveria la
+  // densidad a su valor inicial —se marca en la linea justo anterior a esta
+  // llamada— y el escenario perderia la mitad de su definicion. Las tres lineas
+  // replican exactamente lo que hace public/js/modules/aia_ui/theme-bootstrap.js:
+  // el atributo Y la clase, porque las hojas leen los dos.
+  await page.evaluate((value) => {
+    try {
+      localStorage.setItem('aia-theme', value);
+    } catch (_) {
+      /* privado/bloqueado */
+    }
+    document.documentElement.setAttribute('data-aia-theme', value);
+    document.documentElement.classList.toggle('aia-theme-dark', value === 'dark');
+  }, theme);
   await expect(page.locator('html')).toHaveAttribute('data-aia-theme', theme);
 }
 
@@ -126,6 +154,17 @@ async function assertStatesFeedbackVisualContract(page, panel) {
   expect(contract.statusInsidePanel).toBe(true);
   expect(contract.spinnerPrecedesLabel).toBe(true);
   expect(contract.centerDelta).toBeLessThanOrEqual(1);
+}
+
+// Playwright sale con error si un archivo no registra NI UN test ("no tests
+// found"), asi que una pata de la matriz cuyo tema aun no tiene escenarios en el
+// manifiesto pondria el job en rojo sin que nada este roto. Este marcador la deja
+// en verde y ADEMAS deja dicho en el informe por que no midio nada, que es justo
+// lo que hoy pasa con `light`: los goldens claros no existen todavia porque la
+// pagina no rinde en claro (ver el comentario largo de
+// tests/design-system/visual-ci-contract.test.mjs).
+if (VISUAL_SCENARIOS.length === 0) {
+  test.skip(`sin escenarios visuales para el tema "${process.env.E2E_THEME}"`, () => {});
 }
 
 for (const scenario of VISUAL_SCENARIOS) {

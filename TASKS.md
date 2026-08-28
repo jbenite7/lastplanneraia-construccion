@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-27
+updated: 2026-08-28
 ---
 
 # Tareas
@@ -100,7 +100,73 @@ decidido de antemano), y se revirtió por decisión de Felipe. Detalle completo 
 
 ## Bloqueantes
 
-**Ninguno. El atasco de publicación se desatascó el 2026-08-24**: por orden de Felipe se
+**2026-08-28 — `theme.js` deshace el claro de entrada (D12) en 7 páginas reales; bloquea el
+arranque del plan de Programa General, no la fase cero actual.** Destapado ejecutando el goal
+[[goals/temas-y-forma-fase-cero/goal]] (Task 6): `public/js/modules/aia_ui/theme.js` es un
+script vestigial de la época de un solo tema (F0/Task 9) que fuerza `data-aia-theme="dark"`
+sin condición — nunca lee `localStorage`, nunca respeta el default. Además publica
+`window.AiaDesignSystem.getTheme()`, del cual depende un «gate del shell» sin explorar
+(comentario en `views/plan-compras/app.view.php:40`: «sin él, el gate del shell se queda
+esperando ese global»), así que no se puede retirar sin más — el arreglo correcto exige
+entender ese gate primero.
+
+Dos mecanismos distintos, verificados en el código real:
+- **Override** (`theme-bootstrap.js` corre primero, `theme.js` lo pisa después):
+  `views/plan-compras/app.view.php`, `views/bi/control-tower-piloto.php`.
+- **Ausencia** (`theme-bootstrap.js` nunca se carga, solo `theme.js`):
+  `views/auth/login.view.php`, `views/auth/password-reset.view.php`,
+  `views/auth/password-forgot.view.php`, `views/core/project_selector.view.php`,
+  `views/bi/_layout.php`.
+
+Resultado observable en las 7: siempre oscuro, pese a que D12 (spec
+[[docs/superpowers/specs/2026-08-28-temas-claro-oscuro-end-to-end-design]]) diga claro. **No
+bloquea el cierre de la fase cero** — ninguna de sus tareas restantes renderiza estas páginas.
+**Sí bloquea el plan de Programa General**, el primer módulo: sin resolver esto, D12 nunca se
+manifiesta en producción aunque los tests del design system pasen en verde. Detalle completo,
+con la investigación y el ruling, en el ledger del goal
+(`.superpowers/sdd/2026-08-28-fase-cero-temas-y-forma/progress.md`, sección Task 6).
+
+**Ampliado 2026-08-28 (Task 9, mismo goal): el mismo origen bloquea además D16 (CI corre ambos
+temas completos).** Al intentar generar los goldens `light` del carril visual, se midió que el
+laboratorio de diseño (`/internal/design-system`) tampoco rinde en claro, por una causa distinta
+a `theme.js` pero de la misma familia:
+
+- **`public/css/design-system/laboratory-foundation.css`** ata los tokens oscuros a `:root` a
+  secas dentro de `@layer theme`, sin condicionar. **Corregido 2026-08-28 (revisión de Task 9):
+  no es un empate de especificidad con `theme-claro.css` — esa hoja NO SE CARGA en el laboratorio
+  en absoluto.** Verificado en `DesignSystemHeadComponent::renderLaboratory()` (emite solo
+  `theme-bootstrap.js`, `tokens.css` y `lab-entrypoint.css`) y en los ~19 `@import` de
+  `lab-entrypoint.css`, ninguno hacia `theme-claro.css`. `laboratory-foundation.css` es la única
+  fuente de `--ds-active-*` en esa página. De 18 capturas «claras» intentadas, **9 salieron byte a
+  byte idénticas a su gemela oscura** (inspección visual de `actions-light-1180x820.png`: fondo
+  oscuro). **El arreglo no es solo condicionar el bloque a `[data-aia-theme="dark"]`** — hecho así
+  a solas, el laboratorio se queda sin ningún token declarado en claro (se rompe, no se aclara).
+  Hace falta además enlazar `theme-claro.css` en `lab-entrypoint.css`.
+- Cabo suelto relacionado: `theme-claro.css` ofrece el gancho `.aia-theme-light`, pero
+  `theme-bootstrap.js` (Task 6) solo conmuta `aia-theme-dark` y nunca añade el gancho claro — ese
+  camino tampoco entra hasta que se añada.
+- **Programa General queda confirmado como una de las 7 páginas de `theme.js`** (arriba): poner
+  `aia-theme: light` en `localStorage` y recargar no mueve el atributo — sigue saliendo
+  `data-aia-theme="dark"`, verificado con la suite Playwright.
+
+Ningún golden `light` se comiteó (el implementador los generó, confirmó que eran capturas oscuras
+disfrazadas, y los borró en vez de fabricar evidencia de cobertura falsa). La matriz de CI, el
+carril dark restaurado (17/20 escenarios que antes NUNCA llegaban a capturar) y el contrato
+generalizado sí quedaron hechos — D16 cierra con alcance dark-only hasta que este bloqueo se
+resuelva. Detalle: `.superpowers/sdd/2026-08-28-fase-cero-temas-y-forma/task-9-report.md` y
+sección Task 9 del ledger del mismo goal.
+
+**Decisión de Felipe (2026-08-28), sobre el costo de la matriz doble: mantenerla en
+`[light, dark]` desde ya, contra la recomendación de reducirla a `[dark]` mientras el claro no
+rinde.** El costo (el job `design-system-runtime` completo se dobla en cada corrida — solo los
+dos `.visual.mjs` leen `E2E_THEME`, el resto de gates no distingue tema) se paga desde ahora sin
+contrapartida hasta que este bloqueo se resuelva. Los 5 goldens dark con deriva de Tasks 1-8
+(3 laboratorio + 2 piloto) también fueron aprobados por Felipe tras revisar la galería — golden
+base (macOS) actualizado, `goldenPlatforms.linux` deliberadamente sin tocar (se actualiza desde
+una corrida real de Actions si el gate Linux repite la deriva, para no repetir la trampa de golden
+Linux desincronizado ya medida y cerrada el 2026-08-24). Commit `717d8a87`.
+
+**El atasco de publicación anterior se desatascó el 2026-08-24**: por orden de Felipe se
 consolidaron **trece** ramas en `main` (`6c736d91`) y se retiraron todas las ramas y worktrees.
 `main` salió del rojo — el runner de tests PHP da 29/29 con **0 sospechosos**. El cierre, con lo que
 los merges destaparon, en
@@ -128,6 +194,32 @@ estado por defecto mientras Felipe no reparta.
 </details>
 
 ## Ahora
+
+- [ ] **CI · regenerar el presupuesto de runtime a la generación 0.5.0 — decisión de Felipe del
+  2026-08-28, con su método ya fijado.** El gate `runtime-budgets` está en rojo en el PR #18 por
+  `cssGzipBytes`: **131.451 B medidos contra 128.266 + 2.048 de tolerancia** (+3.185 B, ~2,5 %). No
+  es una regresión: es el CSS nuevo de la fase cero de temas y forma (24 tokens de estado claro,
+  `gravity-flag.css`, tokens de forma/tabla/densidad, `--ds-color-surface-well-*`), todo ello
+  posterior a la baseline 0.4.0.
+
+  **El método NO es negociable y está escrito en el propio script** (`scripts/design-system-runtime-budget.mjs`,
+  comentario de la generación `0.4.0`): la baseline se mide **en el mismo entorno donde el gate la
+  verifica**, es decir en una corrida real de GitHub Actions, nunca en la máquina local. Ese fue
+  exactamente el defecto que obligó a saltar de 0.3.5 a 0.4.0 (`initializationMs` agrupa por
+  máquina antes que por código: 191-268 ms local contra 596-1.071 ms en Actions), y repetirlo sería
+  volver a caer en una trampa ya medida y ya corregida una vez.
+
+  Qué hace falta, en concreto: bajar el `design-system-runtime-budget.json` completo de una corrida
+  verde de Actions (el workflow de hoy sube el *recibo* del gate, con el resultado agregado, pero
+  **no** el measurement con las seis métricas — puede que haya que añadir ese artefacto al job
+  primero), escribir `docs/design-system/runtime-measurements/0.5.0-measurement.json` y su
+  `0.5.0-recovery-manifest.json`, declarar `'0.5.0'` en `BASELINE_GENERATIONS`, y apuntar
+  `test:runtime-budget:check` a la baseline nueva. Con la atribución escrita al lado, como se hizo
+  en [[docs/design-system/runtime-measurements/2026-08-24-atribucion-0.4.0]].
+
+  **No se hizo dentro de la fase cero a propósito**: fabricar la baseline con datos parciales o
+  medidos localmente es «actualizar el baseline a mano para forzar verde», que el goal de ese
+  frente prohíbe explícitamente.
 
 - [ ] **Terminar la biblia de flujos T3 (PDC v2)** — [[docs/superpowers/plans/2026-08-04-biblia-t3-pdc]].
   Presupuesto y Seguimiento se cerraron el 2026-08-25 (`PDC-006` a `PDC-015`, 11 de 70 rutas). Falta
@@ -307,7 +399,33 @@ estado por defecto mientras Felipe no reparta.
   el mismo turno a propósito**: reordenar 400 líneas de historia ajena a mano arriesga perder
   contenido, y eso pide su propia pasada con verificación.
 
+- [x] 2026-08-28 — **Corregido: la entrada de este mismo día sobre el `.env` roto dentro del
+  contenedor duplicaba una trampa ya fichada.** Al verificar visualmente la Task 10 del goal
+  [[goals/temas-y-forma-fase-cero/goal]] con `LPS_CODE_ROOT="$(pwd)" docker compose up -d app`, la
+  puerta de desarrollo se cerró sin explicación (`DEV_DOOR`/`DEV_DOOR_USERS` quedan `(unset)`
+  porque el symlink de `.env` apunta a una ruta del host que no existe dentro del contenedor cuando
+  este monta un worktree). Esto ya está fichado con su mecanismo completo y su remedio en
+  [[memoria/trampas/env-enlazado-se-rompe-dentro-del-contenedor]] (2026-08-21). **Dato nuevo que sí
+  vale la pena anotar:** el remedio prescrito ahí (copia temporal del `.env`, borrarla al terminar)
+  requiere tocar un archivo con secretos — en esta sesión ese comando específico fue denegado sin
+  autorización explícita, así que se usó la pila aislada de CI (`docker-compose.ci.yml`) como
+  alternativa, que no depende del symlink en absoluto. Vale como tercera vía cuando la copia
+  temporal no está autorizada.
+
 ## Diferibles
+
+- [ ] 2026-08-28 — **El botón de colapsar el sidebar del laboratorio no responde a Enter por
+  teclado** (`design-system-lab-keyboard.mjs:83`, ambas patas del CI, tema claro y oscuro). El test
+  enfoca `[data-sidebar-toggle]` y presiona Enter; `data-sidebar-state` se queda en `expanded` en
+  vez de pasar a `collapsed`. El botón es nativo (`<button type="button">`,
+  `src/View/Components/DesignSystemComponent.php:432`) y el listener solo escucha `click`
+  (`public/js/modules/aia_ui/sidebar_navigation.js:127`) — un `<button>` nativo sí dispara `click`
+  al presionar Enter en un navegador real, así que hace falta reproducirlo en Playwright para saber
+  si es el propio test o el componente. **No es una regresión de fase cero**: el mismo assert ya
+  existía antes, pero el test moría dos líneas más arriba por el tema hardcodeado (`data-aia-theme`
+  fijo en `'dark'`) — al arreglar eso en `b97a1b54` el test avanzó y recién ahora se ve este fallo.
+  No bloquea el gate (vive en `keyboard-reflow-evidence`, no bloqueante por diseño). Fuera de
+  alcance de `docs/superpowers/plans/2026-08-28-fase-cero-temas-y-forma.md`.
 
 - [ ] 2026-08-27 — **ESLint instalado en `ct-app/` y `pdc-app/` (rama `eslint-ct-pdc-app`); `pdc-app`
   destapó 39 hallazgos reales sin arreglar.** Ninguna de las dos SPA tenía ESLint configurado
@@ -628,6 +746,32 @@ estado por defecto mientras Felipe no reparta.
 necesita autorización propia y explícita de Felipe, siempre, y publicar en `main` no la concede.
 
 ## Hechas (últimas 10)
+
+- [x] 2026-08-28 — **Fase cero de temas y forma, CERRADA — las 11 tareas del plan, PR abierto
+  contra `main`.** Ejecutada de corrido con `subagent-driven-development` sobre el goal
+  [[goals/temas-y-forma-fase-cero/goal]], las dos specs hermanas
+  [[docs/superpowers/specs/2026-08-28-temas-claro-oscuro-end-to-end-design|temas]] (D1-D24) y
+  [[docs/superpowers/specs/2026-08-28-forma-bordes-radios-relieves-design|forma]] (F1-F40), y el
+  plan único [[docs/superpowers/plans/2026-08-28-fase-cero-temas-y-forma]]. Detalle completo,
+  rulings y hallazgos por tarea en el ledger
+  (`.superpowers/sdd/2026-08-28-fase-cero-temas-y-forma/progress.md`); resumen de producto en
+  [[CHANGELOG]]. Verificación de cierre: 600/600 tests de design-system, 8/8 suite estática, 29/29 +
+  58/58 PHP `puro`; `check:frontend` no pasa pero es deuda preexistente ya presente en el commit
+  base, no una regresión de este plan (verificado comparando biome sobre los mismos archivos:
+  504 errores antes, 500 después).
+
+  **Dos bloqueos de producto quedaron destapados y documentados, no resueltos aquí** (fuera del
+  alcance de una fase cero de tokens): `theme.js` fuerza oscuro en 7 páginas reales y
+  `laboratory-foundation.css` no rinde el tema claro en el laboratorio de diseño — ver §Bloqueantes
+  arriba. D16 (CI corre ambos temas) cierra con alcance dark-only por esa misma causa, con la
+  matriz `[light, dark]` corriendo de todos modos por decisión explícita de Felipe (costo de CI
+  doblado sin contrapartida hasta que se resuelva).
+
+  **Pendientes que este frente deja para la serie por módulo** (Programa General primero, luego
+  Programación Intermedia → Semanal → PDC/SPA → resto → admin → Torre de Control): la edición del
+  manual de marca AIA con la rampa de paleta propuesta (D20 — **pide visto de Felipe en su propia
+  sesión, línea roja explícita del goal**), y la recogida del botón «volver a oscuro» de la nav al
+  menú de usuario tras el primer mes de estreno (D13).
 
 - [x] 2026-08-25 — **La spec `cierre-prelanzamiento-pdc` se midió condición por condición: estaba
   bien marcada, y el que se contradecía era el inventario.** Encargo de verificar una contradicción

@@ -82,11 +82,11 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-1180x820.png",
-      "sha256": "c363cca93ff70573adebcb1be42245ad6ed3a974f17a162e07672d47c82bd608",
+      "sha256": "0f154eb638251210c7507dee1e9e624dbce5630fc777b39d39a6ab8ffc00c022",
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/linux/programa-general-dark-1180x820.png",
-          "sha256": "947265c4142f13936bb6e412c3c9a8a90c007607400bdf249aa0a3302af58334"
+          "sha256": "a7e5b37ff8f65d0eb07ed3e1644a248a6c84f4fffd4b54930d6105db2d4a730d"
         }
       }
     },
@@ -104,11 +104,11 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-1440x900.png",
-      "sha256": "0cb6fc104fba51b7674a70b17d9685d82f30de9290f9be408ec6c9a7310715f5",
+      "sha256": "c74c332ebc768bdcea9d49c6f08e11cf9f3915c3f113a43bfc713587abf9079c",
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/linux/programa-general-dark-1440x900.png",
-          "sha256": "07a4b402a2c3496408397ea7f23b3ee0be63d1738f52abf406344d9fd3971c54"
+          "sha256": "607f4e867c6fb16c4c24179c49359befa28fbf1bf49fdb6bd84f0a0d0f5d2e4e"
         }
       }
     }

@@ -80,7 +80,7 @@
   }
   .aia-shell {
     min-height: 100vh;
-    background: var(--ds-shell-background);
+    background: var(--ds-active-shell-background);
     background-color: var(--ds-active-bg-canvas);
     color: var(--ds-active-text-primary);
     font-family: var(--ds-font-body);
@@ -178,6 +178,10 @@
     color: var(--ds-active-action-text);
     text-decoration: none;
   }
+  .aia-btn:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+  }
   .aia-btn:focus-visible,
   .aia-input:focus-visible,
   .aia-select:focus-visible,
@@ -226,7 +230,7 @@
     width: 100%;
     border: var(--ds-border-width) solid var(--ds-active-border);
     border-radius: var(--ds-radius-control);
-    background: var(--ds-active-surface);
+    background: var(--ds-input-well-bg);
     color: var(--ds-active-text-primary);
     font-family: var(--ds-font-body);
     padding: var(--ds-field-padding-block) var(--ds-space-3);
@@ -285,6 +289,12 @@
     justify-items: center;
     max-width: 42rem;
   }
+  .aia-shell {
+    scrollbar-color: var(--ds-active-border-control) transparent;
+  }
+  .aia-table-shell, .aia-grid-shell, .aia-page {
+    scrollbar-color: var(--ds-active-border-control) transparent;
+  }
 }
 @layer utilities {
   .aia-visually-hidden {
@@ -314,6 +324,16 @@
       animation-duration: var(--ds-motion-reduced-duration) !important;
       animation-iteration-count: 1 !important;
     }
+  }
+  .aia-cell-numeric {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .aia-cell-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
   }
 }
 @layer utilities {

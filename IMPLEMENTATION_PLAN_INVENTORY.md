@@ -41,13 +41,22 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_132 trabajos · 53 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_141 trabajos · 53 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
 | Trabajo | Documentos | Archivado |
 |---|---|---|
+| Fase cero de temas y forma | [[docs/superpowers/plans/2026-08-28-fase-cero-temas-y-forma|plan]] | — |
+| Forma, bordes, radios y relieves — spec en construcción | [[docs/superpowers/specs/2026-08-28-forma-bordes-radios-relieves-design|spec]] | — |
+| Temas claro y oscuro end to end — spec en construcción | [[docs/superpowers/specs/2026-08-28-temas-claro-oscuro-end-to-end-design|spec]] | — |
+| Ola 1 — La Torre escribe · Etapa piloto · Plan de implementación | [[docs/superpowers/plans/2026-08-26-ola1-torre-etapa-piloto|plan]] | — |
+| Tarea cero — una sola lista canónica de pantallas · Plan de implementación | [[docs/superpowers/plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas|plan]] | — |
+| La v0 del producto — Design · **spec v1** | [[docs/superpowers/specs/2026-08-26-v0-del-producto-design|spec]] | — |
+| Bitácora del avance editado a mano | [[docs/superpowers/plans/2026-08-25-bitacora-avance-manual|plan]] | — |
+| Bitácora del avance editado a mano en Programa General | [[docs/superpowers/specs/2026-08-25-bitacora-ediciones-manuales-carryover-design|spec]] | — |
 | El estado real de los 127 planes y specs | [[docs/superpowers/specs/2026-08-25-estado-real-de-planes-y-specs-design|spec]] · [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs|plan]] | — |
+| El mapa único del trabajo vivo — Design | [[docs/superpowers/specs/2026-08-25-mapa-unico-del-trabajo-vivo-design|spec]] | — |
 | Estado consolidado del repositorio — la spec única | [[docs/superpowers/specs/2026-08-24-estado-consolidado-del-repo-design|spec]] | — |
 | P1 · Desagüe y consolidación de ramas | [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|plan]] | — |
 | P2 · El CI en verde y los presupuestos | [[docs/superpowers/plans/2026-08-24-p2-ci-en-verde-y-presupuestos|plan]] | — |

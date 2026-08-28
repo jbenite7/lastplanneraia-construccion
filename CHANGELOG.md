@@ -28,6 +28,40 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Añadido: fase cero de temas y forma (2026-08-28)
+
+Capa compartida de tokens que dos specs hermanas necesitan antes de que cualquier módulo de
+producto las consuma: [[docs/superpowers/specs/2026-08-28-temas-claro-oscuro-end-to-end-design|temas
+claro/oscuro]] (24 decisiones — claro pasa a ser el tema de entrada del producto, D12) y
+[[docs/superpowers/specs/2026-08-28-forma-bordes-radios-relieves-design|forma, bordes, radios,
+relieves]] (40 decisiones — «el marco abraza, el dato es recto»), ejecutadas como un solo plan de
+11 tareas: [[docs/superpowers/plans/2026-08-28-fase-cero-temas-y-forma]].
+
+- **Ambos temas son contractuales** (no solo oscuro): 24 tokens de estado calibrados para el
+  tema claro, capa activa (`--ds-active-state-*`) que resuelve por tema, tema por defecto invertido
+  a claro con persistencia por aparato (`localStorage['aia-theme']`) y conmutador
+  (`window.aiaThemeToggle()`).
+- **Bandera de gravedad** (`.aia-flag--urgent`/`--attention`) sustituye al filete lateral como
+  indicador de severidad, con glifo dibujado (octágono/reloj) en ambos temas.
+- **Contrato de forma**: pisos de elevación con nombre (reposo/flotante/techo), radio de dato
+  endurecido para tablas (12px celdas, 11px cabecera), guard de forma en el catálogo de 29
+  familias de componentes (`shape-contract.test.mjs`).
+- **CI corre la matriz `[light, dark]`** en el job `design-system-runtime` — hoy con cobertura
+  visual real solo en oscuro: el laboratorio de diseño y Programa General no rinden el tema claro
+  todavía (deuda de producto documentada en [[TASKS]] §Bloqueantes, fuera de este plan), decisión
+  de Felipe de mantener la matriz completa desde ya pese al costo de CI doblado sin contrapartida
+  hasta que ese bloqueo se resuelva.
+- **`rail:"ready"` derogado** (D5): el filete positivo se retira del contrato de estado y de sus
+  dos consumidores reales (`programacion_intermedia`/`programacion_semanal`); el nivel `healthy`
+  sigue con su chip y tinte verdes.
+
+Verificación de cierre: `node --test 'tests/design-system/*.test.mjs'` 600/600,
+`npm run test:design-system:static` 8/8, `scripts/run-php-tests.php --nivel=puro` 29/29 +
+PHPUnit 58/58. `npm run check:frontend` no pasa (919 errores en 123 archivos) pero es deuda
+preexistente del repo, no una regresión de este plan — verificado comparando biome sobre el mismo
+conjunto de 9 archivos modificados contra su versión en el commit base: 504 errores antes, 500
+después (11 archivos, incluidos 2 nuevos).
+
 ### Añadido: ESLint en ct-app/ y pdc-app/ (2026-08-27)
 
 Ninguna de las dos SPA (`ct-app/`, `pdc-app/`) tenía ESLint configurado; lo disparó una revisión de

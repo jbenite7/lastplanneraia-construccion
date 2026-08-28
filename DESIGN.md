@@ -767,10 +767,27 @@ con fallback fail-safe al agregador si el manifiesto falta o declara un vendor
 desconocido. Las superficies **no** migradas siguen consumiendo el agregador
 congelado y equivalente (ver `goals/segmentacion-entrypoint-css/`). La cascada de
 capas es fija: `reset, vendor, theme, base, layout, components, utilities, module,
-legacy-overrides` (DS-006). El tema por defecto lo aplica
-`public/js/modules/aia_ui/theme-bootstrap.js` (dark sin flash); dark queda aplicado
-de forma incondicional y sin conmutador, y el manejo de `prefers-reduced-motion`
-vive en `public/js/modules/aia_ui/theme.js`.
+legacy-overrides` (DS-006). El tema de entrada lo aplica
+`public/js/modules/aia_ui/theme-bootstrap.js`: claro por defecto, sin flash, con la
+preferencia del usuario persistida por aparato (spec 2026-08-28); oscuro es opción
+de primera clase y se alterna con `public/js/modules/aia_ui/theme-toggle.js`. El
+manejo de `prefers-reduced-motion` vive en `public/js/modules/aia_ui/theme.js`, y **hoy todavía**
+fuerza `data-aia-theme="dark"` sin condición en 7 vistas reales (ver `TASKS.md` §Bloqueantes); su
+retiro es prerequisito del plan de Programa General.
+
+#### Primitivas nuevas (spec de forma 2026-08-28)
+
+- `.aia-flag--urgent` / `.aia-flag--attention`: bandera de gravedad con glifo
+  (`public/css/design-system/components/gravity-flag.css`); reemplaza al riel
+  `rail: "ready"` derogado — lo positivo se lee en chip y tinte, no en la bandera.
+- `.aia-cell-numeric` / `.aia-cell-clamp`: celdas de dato con cifras tabulares y
+  recorte controlado en tablas y grillas.
+- `--ds-radius-data`: radio de esquina para superficies de dato (`public/css/tokens.css`).
+- `--ds-elevation-rest` / `--ds-elevation-float` / `--ds-elevation-top`: los tres
+  pisos de elevación como rango (reposo/flotante/techo), nunca decoración suelta.
+- `[data-density="projector"]`: preset de densidad para proyección.
+- `--ds-active-state-*`: vocabulario único para pintar estado por tema; nunca
+  consumir los tokens crudos `--ds-state-*` directamente en un módulo.
 
 #### Entregas sin capa
 

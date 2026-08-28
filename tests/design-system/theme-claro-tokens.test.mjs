@@ -246,26 +246,6 @@ test('acentos de dominio light usan los valores del manual AIA v1.0 (no del siti
   }
 });
 
-test('los estados light ya declarados en tokens.css se cablean a los activos, no se re-declaran con otro valor', { skip: !temaClaroExiste && 'theme-claro.css no existe' }, () => {
-  const NIVELES = ['success', 'warning', 'critical', 'info'];
-  for (const nivel of NIVELES) {
-    for (const canal of ['bg', 'text']) {
-      const tokenBase = `--ds-color-state-${nivel}-${canal}-light`;
-      const valorBase = valorDeclarado(tokensCss, tokenBase);
-      assert.ok(valorBase, `tokens.css no declara ${tokenBase} — se esperaba que ya existiera`);
-      // theme-claro.css no debe redeclarar el mismo token con un valor distinto.
-      const redeclarado = valorDeclarado(temaClaroCss, tokenBase);
-      if (redeclarado) {
-        assert.equal(
-          redeclarado,
-          valorBase,
-          `${tokenBase} se redeclara en theme-claro.css con un valor distinto al de tokens.css`,
-        );
-      }
-    }
-  }
-});
-
 test('--ds-color-action-primary-hover-light existe y su contraste con el texto primario de acción es >=4.5:1', { skip: !temaClaroExiste && 'theme-claro.css no existe' }, () => {
   const hover = resolverToken('--ds-color-action-primary-hover-light', [temaClaroCss, tokensCss]);
   assert.ok(hover, '--ds-color-action-primary-hover-light no está declarado');
@@ -327,16 +307,6 @@ test('pares de contraste WCAG del tema claro', { skip: !temaClaroExiste && 'them
     await t.test(`${nombre} >= 3:1`, () => {
       const r = ratioContraste(fg, bg);
       assert.ok(r >= 3, `${nombre} da ${r.toFixed(2)}:1 — se esperaba >=3:1`);
-    });
-  }
-
-  const NIVELES = ['success', 'warning', 'critical', 'info'];
-  for (const nivel of NIVELES) {
-    await t.test(`estado ${nivel} light: bg/text >= 4.5:1`, () => {
-      const bg = resolver(`--ds-color-state-${nivel}-bg-light`);
-      const text = resolver(`--ds-color-state-${nivel}-text-light`);
-      const r = ratioContraste(text, bg);
-      assert.ok(r >= 4.5, `estado ${nivel} light da ${r.toFixed(2)}:1 — se esperaba >=4.5:1`);
     });
   }
 });
@@ -488,4 +458,25 @@ test('ct-app/src no declara hex literales fuera de sus archivos de tokens', () =
     '',
     `ct-app/src tiene hex literales fuera de tokens.css:\n${salida}`,
   );
+});
+
+test('theme-claro re-vincula los tintes de estado a la paleta -light', () => {
+  const css = readFileSync('public/css/design-system/theme-claro.css', 'utf8');
+  for (const hue of ['red', 'orange', 'amber', 'violet', 'green', 'blue', 'teal', 'neutral']) {
+    assert.match(css, new RegExp(`--ds-active-state-tint-${hue}\\s*:\\s*var\\(--ds-state-tint-${hue}-light\\)`));
+    assert.match(css, new RegExp(`--ds-active-state-solid-${hue}\\s*:\\s*var\\(--ds-state-solid-${hue}-light\\)`));
+    assert.match(
+      css,
+      new RegExp(`--ds-active-state-solid-${hue}-text\\s*:\\s*var\\(--ds-state-solid-${hue}-light-text\\)`),
+      `--ds-active-state-solid-${hue}-text debe apuntar a --ds-state-solid-${hue}-light-text (no -text-light)`,
+    );
+  }
+  assert.match(css, /--ds-active-shell-background\s*:\s*linear-gradient/,
+    'el shell claro es neutro: sin radial verde (D11)');
+});
+
+test('theme-overrides ancla los --ds-active-state-* oscuros a los valores vigentes', () => {
+  const css = readFileSync('public/css/design-system/entrypoints/theme-overrides.css', 'utf8');
+  assert.match(css, /--ds-active-state-tint-red\s*:\s*var\(--ds-state-tint-red\)/);
+  assert.match(css, /--ds-active-state-solid-red\s*:\s*var\(--ds-state-solid-red\)/);
 });

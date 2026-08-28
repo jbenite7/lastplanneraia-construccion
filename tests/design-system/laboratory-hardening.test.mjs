@@ -129,7 +129,6 @@ test('the shared core and production dark mapping resolve visual values through 
     read('public/css/aia-design-system.css'),
   ]);
   const governedTokens = [
-    '--ds-shell-background',
     '--ds-content-max-width',
     '--ds-page-padding',
     '--ds-card-padding',
@@ -143,9 +142,14 @@ test('the shared core and production dark mapping resolve visual values through 
     '--ds-chip-padding-inline',
     '--ds-alert-padding-inline',
     '--ds-empty-min-height',
+    // Task 2: --ds-shell-background fue reemplazado por --ds-active-shell-background,
+    // resuelto por tema (bloques theme-claro/theme-overrides) en vez de tokens.css --
+    // se gobierna igual, contra la unión de las dos fuentes, para no perder cobertura neta.
+    '--ds-active-shell-background',
   ];
+  const declarationSource = `${tokens}\n${applicationEntrypoint}`;
   for (const token of governedTokens) {
-    assert.match(tokens, new RegExp(`${token}:\\s*`), `missing ${token}`);
+    assert.match(declarationSource, new RegExp(`${token}:\\s*`), `missing ${token}`);
     assert.match(core, new RegExp(`var\\(${token.replaceAll('-', '\\-')}\\)`), `core does not consume ${token}`);
   }
   for (const literal of [

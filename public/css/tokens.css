@@ -183,6 +183,14 @@
     --ds-color-surface-dark: rgba(28, 36, 31, 0.92);
     --ds-color-surface-raised-dark: rgba(35, 48, 41, 0.86);
     --ds-color-surface-glass-dark: rgba(35, 48, 41, 0.66);
+    /* Pozo (F10): un paso HUNDIDO respecto a la superficie, no elevado. En
+       penumbra hundir es OSCURECER, asi que no sirve `surface-raised-dark`
+       (luminancia 0.0232 contra 0.0153 de la superficie: se lee elevado, justo
+       lo contrario de lo que pide F10). Medido sobre `bg-page-dark`: la
+       superficie compone a rgb(27,35,30) y este pozo a rgb(16,22,19). El texto
+       primario sube de 15.30:1 a 17.44:1 sobre el, asi que el arreglo tampoco
+       cuesta contraste. */
+    --ds-color-surface-well-dark: rgba(16, 22, 19, 0.92);
 
     /* TEMA CLARO (Task 8, entrada 18 de la Bitacora del piloto). Anclado a la
        paleta medida en aia.com.co (neutros zinc, casi acromaticos): estos son
@@ -196,6 +204,12 @@
     --ds-color-surface-light: #ffffff;
     --ds-color-surface-raised-light: #f4f4f5;
     --ds-color-surface-glass-light: rgba(255, 255, 255, 0.8);
+    /* Pozo claro: mismo valor que `surface-raised-light` a proposito. En claro
+       hundir es oscurecer, y ese token ya lo hacia (#f4f4f5 contra #ffffff), asi
+       que el tema claro no cambia ni un pixel con el arreglo del pozo oscuro.
+       Vive aparte porque el ROL es otro: si la superficie elevada se recalibra,
+       el pozo no tiene por que seguirla. */
+    --ds-color-surface-well-light: #f4f4f5;
 
     --ds-color-text-primary: #141c18;
     --ds-color-text-secondary: #52645a;
@@ -300,26 +314,19 @@
     --ds-color-cell-success-bg: #2e7b4d;
     --ds-color-cell-info-bg: #207a6e;
 
-    /* RESERVA SIN CABLEAR — no los consume nadie (medido el 2026-08-03: un grep
-       sobre todo el repositorio devuelve solo estas ocho declaraciones).
-       Se pensaron para impresos y XLSX, donde el fondo es papel. Ese uso existe
-       —`src/Controllers/Gestion/ReportController.php` exporta con PhpSpreadsheet
-       y pinta los estados de fila— pero el cable nunca se conectó: el
-       exportador lleva su propia paleta ARGB escrita a mano, con valores que no
-       coinciden con estos. Hay, por tanto, dos paletas claras para lo mismo.
-       Unificarlas cambiaría el aspecto de los Excel ya repartidos, así que es
-       decisión aparte y no se toma de oficio (usuario, 2026-08-03).
-       Mientras tanto: NO son de pantalla. La escala de pantalla es la de
-       arriba, invertida a oscuro. Contexto en DESIGN.md §2 y en
-       memoria/trampas/comentario-de-token-afirma-uso-inexistente.md */
-    --ds-color-state-success-bg-light: #ddefe6;
-    --ds-color-state-success-text-light: #1a5633;
-    --ds-color-state-warning-bg-light: #fff8e1;
-    --ds-color-state-warning-text-light: #5d4200;
-    --ds-color-state-critical-bg-light: #fdecec;
-    --ds-color-state-critical-text-light: #8f1d1d;
-    --ds-color-state-info-bg-light: #e3f9f7;
-    --ds-color-state-info-text-light: #006d66;
+    /* Retirados 2026-08-28 (Task 7, temas-y-forma-fase-cero, D17): existian
+       aqui `--ds-color-state-{success,warning,critical,info}-{bg,text}-light`,
+       una "RESERVA SIN CABLEAR" que un grep literal (2026-08-03) creyo sin
+       consumidor. Era falso: `tests/design-system/theme-claro-tokens.test.mjs`
+       SI los consumia, construyendo el nombre por interpolacion de plantilla
+       (`--ds-color-state-${nivel}-${canal}-light`), invisible a ese grep. La
+       intencion de D17 (unificar; el exportador de Excel tenia su propia
+       paleta ARGB divergente, ver `ReportController::STATE_FILLS`) seguia
+       valida, asi que se retiraron los 8 tokens Y el bloque de test que los
+       protegia (dos `test()`/`t.test()` que iteraban NIVELES × {bg,text}) en
+       el mismo cambio. Contexto: DESIGN.md §2,
+       memoria/trampas/comentario-de-token-afirma-uso-inexistente.md,
+       task-7-report.md del mismo frente. */
 
     /* ========================================
      PALETA DE MATICES DE ESTADO (un matiz, un estado)
@@ -423,6 +430,57 @@
     --ds-state-row-blue: #1e2c40;
     --ds-state-row-green: #20362a;
     --ds-state-row-neutral: #262b28;
+
+    /* PALETA CLARA DE ESTADO (specs 2026-08-28, D5/D6/D7 temas + F-tabla forma).
+       Tintes de fila: interpolación t=0,5 entre muy_claro y claro del manual —
+       primer punto medido donde los 28 pares se distinguen (dE-OK >= 0,035) con
+       texto #1a1a1a a 11,2:1. El azul va a t=0,7 (rampa --aia-blue-* rescatada,
+       rebautizada «En marcha») para despegar del violeta (dE 0,0364).
+       Chips: tono principal de cada familia con texto blanco; ámbar, teal y azul
+       usan un peldaño más oscuro que su principal porque el principal falla AA
+       con blanco (azul 4,06:1; medición en paleta-clara-estado.test.mjs).
+       El texto sobre tinte claro es el texto normal (#1a1a1a): NO nace una
+       familia de textos pastel claros (consecuencia 6 de la spec de temas). */
+    --ds-state-tint-red-light: #f6c3c3;
+    --ds-state-tint-orange-light: #f8c9a5;
+    --ds-state-tint-amber-light: #ffecb2;
+    --ds-state-tint-violet-light: #dad4f5;
+    --ds-state-tint-green-light: #c2e2d3;
+    --ds-state-tint-blue-light: #c1d5ec;
+    --ds-state-tint-teal-light: #c8efec;
+    --ds-state-tint-neutral-light: #e4e4e7;
+
+    --ds-state-solid-red-light: #c62828;
+    --ds-state-solid-red-light-text: #ffffff;
+    --ds-state-solid-orange-light: #b55211;
+    --ds-state-solid-orange-light-text: #ffffff;
+    --ds-state-solid-amber-light: #a16207;
+    --ds-state-solid-amber-light-text: #ffffff;
+    --ds-state-solid-violet-light: #6752bf;
+    --ds-state-solid-violet-light-text: #ffffff;
+    --ds-state-solid-green-light: #1a5633;
+    --ds-state-solid-green-light-text: #ffffff;
+    --ds-state-solid-blue-light: #2a5a8f;
+    --ds-state-solid-blue-light-text: #ffffff;
+    --ds-state-solid-teal-light: #007a71;
+    --ds-state-solid-teal-light-text: #ffffff;
+    --ds-state-solid-neutral-light: #52525b;
+    --ds-state-solid-neutral-light-text: #ffffff;
+
+    /* BANDERA DE GRAVEDAD (spec temas D2-D5, D8; spec forma F3). Sustituye al
+       filete --ds-severity-rail-* (su retiro efectivo va con el plan de PG, que
+       es quien lo consume hoy). Color por NIVEL (D4): rojo urgente, ámbar
+       atención — ratifica «urgencia now siempre usa critical en el acento».
+       Solo dos niveles (D5): la ausencia es la señal de calma. */
+    --ds-flag-width: 26px;
+    --ds-flag-urgent-bg: var(--ds-state-solid-red);
+    --ds-flag-urgent-ink: var(--ds-state-solid-red-text);
+    --ds-flag-attention-bg: var(--ds-state-solid-amber);
+    --ds-flag-attention-ink: var(--ds-state-solid-amber-text);
+    --ds-flag-urgent-bg-light: var(--ds-state-solid-red-light);
+    --ds-flag-urgent-ink-light: var(--ds-state-solid-red-light-text);
+    --ds-flag-attention-bg-light: var(--ds-state-solid-amber-light);
+    --ds-flag-attention-ink-light: var(--ds-state-solid-amber-light-text);
 
     /* Filete de gravedad. Es el eje ORDINAL del sistema, y existe porque el
        color no lo tiene: las ocho anclas de arriba se eligieron equiluminantes
@@ -548,15 +606,46 @@
     --ds-radius-search: var(--ds-radius-md);
     --ds-radius-progress: var(--ds-radius-pill);
 
+    /* Radio de DATO (spec forma F1/F2): chips de estado, celdas destacadas y
+       banderas — «el marco abraza, el dato es recto». Los controles y marcos
+       conservan su escala; SOLO el vocabulario de la tabla usa este. */
+    --ds-radius-data: 0.25rem;
+
     --ds-shadow-xs: 0 1px 2px rgba(20, 28, 24, 0.4);
     --ds-shadow-sm: 0 2px 6px rgba(20, 28, 24, 0.5);
     --ds-shadow-md: 0 8px 24px rgba(20, 28, 24, 0.6);
     --ds-shadow-lg: 0 16px 48px rgba(20, 28, 24, 0.7);
     --ds-shadow-xl: 0 24px 72px rgba(20, 28, 24, 0.8);
+
+    /* Sombras de tinta para papel (spec temas D10): las de penumbra manchan
+       sobre blanco. theme-claro re-vincula --ds-shadow-* a estas. */
+    --ds-shadow-xs-light: 0 1px 2px rgba(24, 24, 27, 0.06);
+    --ds-shadow-sm-light: 0 1px 3px rgba(24, 24, 27, 0.08);
+    --ds-shadow-md-light: 0 8px 24px rgba(24, 24, 27, 0.14);
+    --ds-shadow-lg-light: 0 16px 48px rgba(24, 24, 27, 0.2);
+    --ds-shadow-xl-light: 0 24px 72px rgba(24, 24, 27, 0.26);
+
+    /* Tres pisos de elevación (F7): la sombra dice qué ES la pieza.
+       reposo = pegado al papel · flotante = menús y avisos · techo = modal.
+       Los --ds-shadow-* quedan como materia prima; los módulos consumen ESTOS. */
+    --ds-elevation-rest: var(--ds-shadow-xs);
+    --ds-elevation-float: var(--ds-shadow-md);
+    --ds-elevation-top: var(--ds-shadow-lg);
+
+    /* Pozo del campo (F10): el fondo un paso hundido — dos canales dicen
+       «aquí se escribe» junto al borde de control medido.
+       Apuntaba a `--ds-active-surface-raised`, y eso cumplia F10 en claro e
+       invertia la señal en oscuro (ahi «raised» es mas CLARO que la superficie,
+       asi que el campo se leia elevado). Corregido el 2026-08-28 con un token
+       de rol propio, hundido por construccion en los dos temas. */
+    --ds-input-well-bg: var(--ds-active-surface-well);
+
     --ds-focus-ring-width: 4px;
     --ds-outline-width: calc(var(--ds-focus-ring-width) / 2);
     --ds-outline-offset: calc(var(--ds-focus-ring-width) / 2);
-    --ds-shadow-focus: 0 0 0 var(--ds-focus-ring-width) var(--ds-active-focus-ring);
+    /* Foco DOBLE (F20): halo del color del fondo + anillo de marca. Visible
+       sobre los ocho tintes y los dos temas por construcción. */
+    --ds-shadow-focus: 0 0 0 2px var(--ds-active-bg-canvas), 0 0 0 4px var(--ds-active-focus-ring);
 
     --ds-blur-glass: 18px;
     --ds-motion-fast: 140ms ease;
@@ -704,13 +793,16 @@
        --ds-table-row-h queda EXACTAMENTE en el mínimo — sin margen — así que ningún
        control futuro dentro de una fila puede medir menos. Encabezado con el mismo piso
        de 24px como base, pero crece con `height: auto` si el texto necesita dos líneas
-       legibles — nunca trunca de forma ambigua. Texto de celda 13px (dato principal,
-       cuerpo); texto de cabecera 12px (secundario). Piso duro de fuente 11px, reservado
-       a elementos secundarios — el dato principal no baja de 13px. Contraste AA (4.5:1),
-       foco visible, orden de foco, teclado y `prefers-reduced-motion` no se relajan. */
+       legibles — nunca trunca de forma ambigua. Piso duro de fuente 11px, reservado
+       a elementos secundarios. Contraste AA (4.5:1), foco visible, orden de foco,
+       teclado y `prefers-reduced-motion` no se relajan.
+       Re-medido (spec forma 2026-08-28 F31/F33, decisión de Felipe: densidad primero —
+       dato 12px, cabecera 11px un peldaño abajo, jerarquía por tamaño en la dirección
+       correcta). El dato principal deja de anclar en 13px: baja a 12px, y la cabecera
+       a 11px, manteniendo un peldaño de diferencia entre ambos. */
     --ds-table-row-h:              1.5rem;    /* 24px — EN el suelo AA (SC 2.5.8), sin margen */
     --ds-table-header-h:           1.5rem;    /* 24px, base — crece con `height: auto` si envuelve */
-    --ds-table-cell-font-size:     0.8125rem; /* 13px, cuerpo/dato principal */
+    --ds-table-cell-font-size:     0.75rem;   /* F31: dato 12px (decisión de Felipe, densidad primero) */
     /* Interlineado de celda (2026-08-20, defecto reportado por Felipe: la fila se
        ve demasiado alta para la pantalla). Medido antes: el line-height heredado
        resolvia a 21px sobre una fuente de 13px — ratio 1,6, que es interlineado
@@ -721,8 +813,14 @@
        negocia. No baja de 1,25: por debajo, las tildes y los descendentes de una
        fuente de 13px se tocan entre lineas. */
     --ds-table-cell-line-h:        1.25;
-    --ds-table-header-font-size:   0.75rem;   /* 12px, cabecera/secundario */
+    --ds-table-header-font-size:   0.6875rem; /* F33: cabecera 11px, un peldaño bajo el dato */
     --ds-table-font-size-floor:    0.6875rem; /* 11px, piso duro — solo secundarios, nunca el dato principal */
+    --ds-table-chapter-font-size:  0.8125rem; /* F36: capítulo 13px negrilla + filete */
+    --ds-table-cell-pad-x-edge:    1rem;      /* F35: perímetro 16px contra el marco */
+    --ds-table-row-h-read:         2rem;      /* F34: listado cómodo 32px */
+    --ds-table-row-h-touch:        1.75rem;   /* F11: hoja táctil 28px (decisión de Felipe; su edición vive en el panel táctil — plan de PG) */
+    --ds-table-row-h-projector:    2.25rem;   /* F40: preset proyector, fila 36px */
+    --ds-table-cell-font-size-projector: 0.9375rem; /* F40: letra 15px en pared */
     --ds-table-cell-pad-x:   0.625rem; /* 10px, escala de /plan-compras */
     /* Task 8 (2026-08-05, C-16): la cabecera pagaba el mismo relleno horizontal que la
        celda (10px por lado = 20px por columna), pero su texto va centrado y las líneas
@@ -824,5 +922,14 @@
     --ds-density-active-gap: var(--ds-density-compact-gap);
     --ds-density-active-padding-block: var(--ds-density-compact-padding-block);
     --ds-density-active-padding-inline: var(--ds-density-compact-padding-inline);
+  }
+
+  /* F40: preset proyector — fila y cabecera de tabla crecen a 36px y la letra a 15px,
+     para lectura a distancia en pared. Solo re-encaja el Table contract; la escala de
+     densidad general (arriba) no tiene peldaño de proyector propio. */
+  [data-density="projector"] {
+    --ds-table-row-h: var(--ds-table-row-h-projector);
+    --ds-table-header-h: var(--ds-table-row-h-projector);
+    --ds-table-cell-font-size: var(--ds-table-cell-font-size-projector);
   }
 }

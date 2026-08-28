@@ -278,12 +278,14 @@ any apply/delete needs a Plannotator gate, verifiable backup, and restore plan p
 
 ### Design system
 
-`docs/design-system/README.md` describes it as the non-negotiable, contractual layer (tokens, dark
+`docs/design-system/README.md` describes it as the non-negotiable, contractual layer (tokens,
 desktop-only scope, accessibility floor, glass-effect rules) — distinct from `docs/brand/` and Stitch
-mockups, which are just visual inputs, not contracts. Design-system work defaults to dark, with `1180x820` as the
-canonical validation viewport (see AGENTS.md's UI routing section). The `linen` theme was removed
-from the product on 2026-07-25 (DS-030) and there is no theme switcher, so light-mode work means
-rebuilding it.
+mockups, which are just visual inputs, not contracts. Both themes are contractual (spec 2026-08-28):
+light is the product's entry theme and dark is a first-class option, toggled via
+`public/js/modules/aia_ui/theme-toggle.js` and persisted per device. `1180x820` remains the
+canonical desktop validation viewport (see AGENTS.md's UI routing section). The unrelated `linen`
+theme was removed from the product on 2026-07-25 (DS-030) and stays retired — it is not the light
+theme reintroduced by the 2026-08-28 spec, which is a new build, not a revival.
 
 ### `goals/` workflow
 

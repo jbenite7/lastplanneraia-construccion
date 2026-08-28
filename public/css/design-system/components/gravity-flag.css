@@ -1,0 +1,53 @@
+/* public/css/design-system/components/gravity-flag.css
+   Bandera de gravedad: pestaña sólida de altura completa al inicio de la fila,
+   con glifo dibujado (octágono de pare = urgente; reloj = atención — D8, mezcla
+   elegida por Felipe). La esquina superior del marco pertenece a la cabecera
+   (F3): la bandera nunca la toca. */
+@layer components {
+  .aia-flag {
+    position: relative;
+    padding-inline-start: var(--ds-flag-width);
+  }
+
+  .aia-flag::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: var(--ds-flag-width);
+    background-color: var(--_flag-bg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 14px 14px;
+    background-image: var(--_flag-glyph);
+  }
+
+  .aia-flag--urgent {
+    --_flag-bg: var(--ds-active-flag-urgent-bg);
+    /* Octágono de pare, trazo 2px, tinta del nivel. currentColor no sirve en
+       data-URI: el trazo va literal por tema vía los dos bloques de abajo. */
+    --_flag-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M8 3h8l5 5v8l-5 5H8l-5-5V8z'/%3E%3Cpath d='M12 8v5'/%3E%3Ccircle cx='12' cy='16.5' r='0.5' fill='%23ffffff'/%3E%3C/svg%3E");
+  }
+
+  .aia-flag--attention {
+    --_flag-bg: var(--ds-active-flag-attention-bg);
+    /* Reloj: el tiempo se acaba. Tinta oscura sobre ámbar. */
+    --_flag-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233a2c04' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3.5 2.5'/%3E%3C/svg%3E");
+  }
+
+  /* En penumbra la tinta del octágono es la oscura del chip rojo (#3c0a06). */
+  :root .aia-flag--urgent,
+  [data-aia-theme="dark"] .aia-flag--urgent {
+    --_flag-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233c0a06' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M8 3h8l5 5v8l-5 5H8l-5-5V8z'/%3E%3Cpath d='M12 8v5'/%3E%3Ccircle cx='12' cy='16.5' r='0.5' fill='%233c0a06'/%3E%3C/svg%3E");
+  }
+  [data-aia-theme="light"] .aia-flag--urgent {
+    --_flag-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M8 3h8l5 5v8l-5 5H8l-5-5V8z'/%3E%3Cpath d='M12 8v5'/%3E%3Ccircle cx='12' cy='16.5' r='0.5' fill='%23ffffff'/%3E%3C/svg%3E");
+  }
+
+  /* En tema claro el fondo de atención (#a16207) contra el trazo oscuro del
+     glifo base (#3a2c04) da 2.77:1 -- falla WCAG 1.4.11. Trazo claro
+     (#ffffff) sube el contraste a 4.92:1. */
+  [data-aia-theme="light"] .aia-flag--attention {
+    --_flag-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3.5 2.5'/%3E%3C/svg%3E");
+  }
+}

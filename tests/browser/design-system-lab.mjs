@@ -25,6 +25,16 @@ const VIEWPORTS = [
   { width: 1440, height: 900 },
 ];
 
+const E2E_THEME = process.env.E2E_THEME === 'dark' ? 'dark' : 'light';
+
+async function forceTheme(page, theme) {
+  await page.evaluate((t) => {
+    try { localStorage.setItem('aia-theme', t); } catch (_) { /* sin persistencia */ }
+    document.documentElement.setAttribute('data-aia-theme', t);
+    document.documentElement.classList.toggle('aia-theme-dark', t === 'dark');
+  }, theme);
+}
+
 function contrastRatio(foreground, background) {
   const channels = (color) => (color.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
   const luminance = (color) => {
@@ -101,6 +111,7 @@ test('laboratory first paint stays within the desktop performance budget', async
     { waitUntil: 'domcontentloaded' },
   );
   await page.evaluate(() => document.fonts.ready);
+  await forceTheme(page, E2E_THEME);
   await page.waitForTimeout(500);
 
   const metrics = await page.evaluate(() => ({
@@ -117,7 +128,7 @@ test('laboratory first paint stays within the desktop performance budget', async
   });
 
   expect(response?.status()).toBe(200);
-  await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
+  await expect(page.locator('html')).toHaveAttribute('data-aia-theme', E2E_THEME);
   await expect(page.locator('[data-family="bi-primitives"]')).toBeVisible();
   expect(metrics.visibleFamilies).toBe(1);
   expect(metrics.cumulativeLayoutShift).toBeLessThanOrEqual(0.1);
@@ -133,9 +144,10 @@ test('admin laboratory is deterministic across themes and viewports', async ({ p
 
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
-    // F0/Task 8: dark es el unico tema, aplicado sin conmutacion. El bucle
-    // sobrevive como marcador de "sobre cada tema gobernado" (hoy uno solo).
-    for (const theme of ['dark']) {
+    // D12/D16: ambos temas son contractuales — el bucle ahora cubre los dos,
+    // forzando cada uno activamente en vez de depender del default de la corrida.
+    for (const theme of ['dark', 'light']) {
+      await forceTheme(page, theme);
       await expect(page.locator('html')).toHaveAttribute('data-aia-theme', theme);
       const overflow = await page.evaluate(() => (
         document.documentElement.scrollWidth - document.documentElement.clientWidth
@@ -145,10 +157,11 @@ test('admin laboratory is deterministic across themes and viewports', async ({ p
   }
 });
 
-test('defaults to dark and maps responsive density by viewport', async ({ page }) => {
+test('defaults to the runtime theme and maps responsive density by viewport', async ({ page }) => {
   await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
-  await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
+  await forceTheme(page, E2E_THEME);
+  await expect(page.locator('html')).toHaveAttribute('data-aia-theme', E2E_THEME);
   const foundations = page.locator('[data-family="foundations"]');
   await expect(foundations).toHaveAttribute('data-active-candidate', 'foundation-inventory-action-color');
   await expect(foundations).toHaveAttribute('data-family-status', 'candidate');
@@ -307,7 +320,7 @@ test('severity and urgency blocks keep distinct semantic backgrounds', async ({ 
   expect(new Set(mappedColors.map(({ background }) => background)).size).toBeGreaterThanOrEqual(3);
 });
 
-test('state headings and canonical spinner remain legible across desktop dark viewports', async ({ page }) => {
+test('state headings and canonical spinner remain legible across desktop viewports', async ({ page }) => {
   await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   await page.goto(
@@ -317,10 +330,11 @@ test('state headings and canonical spinner remain legible across desktop dark vi
   const family = page.locator('[data-family="states-feedback"]');
   const heading = family.locator('#state-semantics-title');
   const loading = family.locator('[data-ui-group="loading-spinner"][role="status"]');
+  await forceTheme(page, E2E_THEME);
 
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
-    await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
+    await expect(page.locator('html')).toHaveAttribute('data-aia-theme', E2E_THEME);
     const colors = await heading.evaluate((element) => {
       let background = element.parentElement;
       while (background && getComputedStyle(background).backgroundColor === 'rgba(0, 0, 0, 0)') {
@@ -364,6 +378,7 @@ test('density selector shows and applies the touch and compact contracts', async
 
 test('dark appearance applies distinct accessible brand variants', async ({ page }) => {
   await openAs(page, ADMIN);
+  await forceTheme(page, 'dark');
   const swatches = page.locator('[data-family="foundations"] .ds-swatch');
   const dark = await swatches.evaluateAll((elements) => (
     elements.map((element) => getComputedStyle(element).backgroundColor)
@@ -620,7 +635,7 @@ test('form controls, Select2 multi and active pagination preserve readable inset
   expect(contrastRatio(paginationColors.foreground, paginationColors.background)).toBeGreaterThanOrEqual(4.5);
 });
 
-test('laboratory scroll and file alignment hold across desktop dark viewports', async ({ page }) => {
+test('laboratory scroll and file alignment hold across desktop viewports', async ({ page }) => {
   await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   await page.goto(
@@ -629,10 +644,11 @@ test('laboratory scroll and file alignment hold across desktop dark viewports', 
   );
   await selectFamily(page, 'forms-filters');
   const family = page.locator('[data-family="forms-filters"]');
+  await forceTheme(page, E2E_THEME);
 
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
-    await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
+    await expect(page.locator('html')).toHaveAttribute('data-aia-theme', E2E_THEME);
     const geometry = await family.evaluate((element) => {
       const file = element.querySelector('.aia-input[type="file"]');
       const code = element.querySelector('.aia-input[aria-describedby="code-help"]');

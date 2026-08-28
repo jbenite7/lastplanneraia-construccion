@@ -24,6 +24,7 @@ const EXPECTED_DARK_DECLARATIONS = {
   '--ds-active-bg-page': 'var(--ds-color-bg-page-dark)',
   '--ds-active-surface': 'var(--ds-color-surface-dark)',
   '--ds-active-surface-raised': 'var(--ds-color-surface-raised-dark)',
+  '--ds-active-surface-well': 'var(--ds-color-surface-well-dark)',
   '--ds-active-surface-glass': 'var(--ds-color-surface-glass-dark)',
   '--ds-active-text-primary': 'var(--ds-color-text-primary-dark)',
   '--ds-active-text-secondary': 'var(--ds-color-text-secondary-dark)',
@@ -51,6 +52,41 @@ const EXPECTED_DARK_DECLARATIONS = {
   '--ds-active-nav-text': 'var(--ds-active-text-primary)',
   '--ds-active-nav-text-muted': 'var(--ds-active-text-secondary)',
   '--ds-active-nav-mark-filter': 'invert(1) brightness(1.15)',
+
+  // Vocabulario de estado por tema (spec temas D7): la capa activa que los
+  // módulos consumen. En penumbra apunta a los valores vigentes (D18).
+  '--ds-active-state-tint-red': 'var(--ds-state-tint-red)',
+  '--ds-active-state-tint-orange': 'var(--ds-state-tint-orange)',
+  '--ds-active-state-tint-amber': 'var(--ds-state-tint-amber)',
+  '--ds-active-state-tint-violet': 'var(--ds-state-tint-violet)',
+  '--ds-active-state-tint-green': 'var(--ds-state-tint-green)',
+  '--ds-active-state-tint-blue': 'var(--ds-state-tint-blue)',
+  '--ds-active-state-tint-teal': 'var(--ds-state-tint-teal)',
+  '--ds-active-state-tint-neutral': 'var(--ds-state-tint-neutral)',
+  '--ds-active-state-solid-red': 'var(--ds-state-solid-red)',
+  '--ds-active-state-solid-red-text': 'var(--ds-state-solid-red-text)',
+  '--ds-active-state-solid-orange': 'var(--ds-state-solid-orange)',
+  '--ds-active-state-solid-orange-text': 'var(--ds-state-solid-orange-text)',
+  '--ds-active-state-solid-amber': 'var(--ds-state-solid-amber)',
+  '--ds-active-state-solid-amber-text': 'var(--ds-state-solid-amber-text)',
+  '--ds-active-state-solid-violet': 'var(--ds-state-solid-violet)',
+  '--ds-active-state-solid-violet-text': 'var(--ds-state-solid-violet-text)',
+  '--ds-active-state-solid-green': 'var(--ds-state-solid-green)',
+  '--ds-active-state-solid-green-text': 'var(--ds-state-solid-green-text)',
+  '--ds-active-state-solid-blue': 'var(--ds-state-solid-blue)',
+  '--ds-active-state-solid-blue-text': 'var(--ds-state-solid-blue-text)',
+  '--ds-active-state-solid-teal': 'var(--ds-state-solid-teal)',
+  '--ds-active-state-solid-teal-text': 'var(--ds-state-solid-teal-text)',
+  '--ds-active-state-solid-neutral': 'var(--ds-state-solid-neutral)',
+  '--ds-active-state-solid-neutral-text': 'var(--ds-state-solid-neutral-text)',
+
+  // Bandera de gravedad por tema (spec temas D4/D7): en penumbra apunta a los
+  // valores vigentes, mismo patron que el vocabulario de estado de arriba.
+  '--ds-active-flag-urgent-bg': 'var(--ds-flag-urgent-bg)',
+  '--ds-active-flag-urgent-ink': 'var(--ds-flag-urgent-ink)',
+  '--ds-active-flag-attention-bg': 'var(--ds-flag-attention-bg)',
+  '--ds-active-flag-attention-ink': 'var(--ds-flag-attention-ink)',
+  '--ds-active-shell-background': 'var(--ds-shell-background)',
 };
 
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

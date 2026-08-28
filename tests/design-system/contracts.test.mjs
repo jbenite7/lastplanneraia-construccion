@@ -103,7 +103,7 @@ function runGate(args, options) {
   });
 }
 const componentContractFields = [
-  'id', 'family', 'kind', 'maturity', 'visualApproval', 'purpose', 'doNotUseFor', 'api', 'markup',
+  'id', 'family', 'kind', 'maturity', 'visualApproval', 'shape', 'purpose', 'doNotUseFor', 'api', 'markup',
   'variants', 'states', 'densities', 'tokens', 'responsive', 'accessibility',
   'testSelector', 'consumers', 'replacement', 'golden',
 ];

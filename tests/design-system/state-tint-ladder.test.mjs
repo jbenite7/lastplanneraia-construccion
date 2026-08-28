@@ -38,6 +38,16 @@ const ANCHORS = {
 
 const TINT_NAMES = Object.keys(ANCHORS).map((hue) => `--ds-state-tint-${hue}`);
 
+// Task 1 añadió los ocho tintes -light (paleta para tema claro). El guard
+// de paleta solo comprueba los ocho base porque son los que contiene el
+// contrato (state-semantics.json): la paleta se cierra por 8 anclas y no hay
+// 16. Los -light son variantes del mismo tinte, no nuevas anclas.
+// La lista de nombres permitidos en SHEETS se amplía para aceptarlos.
+const TINT_NAMES_EXTENDED = [
+  ...TINT_NAMES,
+  ...Object.keys(ANCHORS).map((hue) => `--ds-state-tint-${hue}-light`),
+];
+
 // Toda hoja que pueda nombrar un tinte de estado. El guard anterior solo leia
 // `tokens.css`, que es justo el archivo donde un consumidor NO vive: el nombre
 // roto aparece en la hoja del modulo, no en la de los tokens.
@@ -66,10 +76,12 @@ test('la paleta de matices declara las ocho anclas con su hex exacto', async () 
 // La paleta se cierra por arriba y por abajo: ni falta ninguna de las ocho ni
 // sobra una novena. Un `--ds-state-tint-*` nuevo es un matiz nuevo, y eso es un
 // cambio de vocabulario que se decide en el contrato, no en una hoja.
+// Task 1 añadió los ocho tintes -light para el tema claro, así que la paleta
+// ahora publica 16 tintes: los 8 base (oscuros) + 8 -light (claros).
 test('la paleta no publica ningun tinte de estado fuera de las ocho anclas', async () => {
   const tokens = await read('public/css/tokens.css');
   const declared = [...tokens.matchAll(/^\s*(--ds-state-tint-[\w-]+)\s*:/gm)].map(([, name]) => name);
-  assert.deepEqual([...declared].sort(), [...TINT_NAMES].sort());
+  assert.deepEqual([...declared].sort(), [...TINT_NAMES_EXTENDED].sort());
 });
 
 // Un consumidor que se quede apuntando a un nombre retirado recibe la cadena
@@ -82,7 +94,7 @@ test('la paleta no publica ningun tinte de estado fuera de las ocho anclas', asy
 // para una reintroduccion futura. Si un comentario necesita hablar de un nombre
 // retirado, lo describe en palabras; el token literal no vuelve a escribirse.
 test('ninguna hoja nombra un tinte de estado que no exista', async () => {
-  const allowed = new Set(TINT_NAMES);
+  const allowed = new Set(TINT_NAMES_EXTENDED);
   const offenders = [];
   for (const sheet of SHEETS) {
     const css = await read(sheet);

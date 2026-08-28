@@ -800,10 +800,9 @@
     'alert-2-3-weeks': { level: 'attention', hue: 'teal', short: 'En riesgo' },
     'alert-4-6-weeks': { level: 'healthy', hue: 'neutral', short: 'Pendiente' },
     'execution-blocked': { level: 'urgent', hue: 'blue', short: 'En ejecución' },
-    // rail:'ready' — marcador positivo escaso (Felipe, 2026-08-20): filete
-    // verde fino SOLO en lo activamente listo. Se declara por estado y no se
-    // deriva de nivel+matiz: hay estados green+healthy que no lo llevan.
-    'liberated-control': { level: 'healthy', hue: 'green', rail: 'ready', short: 'Por comprometer' },
+    // rail:'ready' derogado por spec 2026-08-28 D5: la bandera no tiene
+    // gradacion, lo positivo vive en chip y tinte (antes filete verde fino).
+    'liberated-control': { level: 'healthy', hue: 'green', short: 'Por comprometer' },
     neutral: { level: 'neutral', hue: 'neutral' },
   };
 

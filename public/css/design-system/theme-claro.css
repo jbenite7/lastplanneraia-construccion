@@ -20,6 +20,7 @@
     --ds-active-bg-page: var(--ds-color-bg-page-light);
     --ds-active-surface: var(--ds-color-surface-light);
     --ds-active-surface-raised: var(--ds-color-surface-raised-light);
+    --ds-active-surface-well: var(--ds-color-surface-well-light);
     --ds-active-surface-glass: var(--ds-color-surface-glass-light);
     --ds-active-text-primary: var(--ds-color-text-primary-light);
     --ds-active-text-secondary: var(--ds-color-text-secondary-light);
@@ -29,6 +30,55 @@
     --ds-active-action-primary: var(--ds-color-action-primary-bg-light);
     --ds-active-action-primary-hover: var(--ds-color-action-primary-hover-light);
     --ds-active-action-text: var(--ds-color-action-primary-text-light);
+
+    /* Sombras de tinta para papel (spec temas D10): las de penumbra manchan
+       sobre blanco — este bloque re-vincula --ds-shadow-* a la escala -light
+       declarada en tokens.css. El oscuro no se toca desde aquí. */
+    --ds-shadow-xs: var(--ds-shadow-xs-light);
+    --ds-shadow-sm: var(--ds-shadow-sm-light);
+    --ds-shadow-md: var(--ds-shadow-md-light);
+    --ds-shadow-lg: var(--ds-shadow-lg-light);
+    --ds-shadow-xl: var(--ds-shadow-xl-light);
+
+    /* Vocabulario de estado por tema (spec temas D7): la capa activa que los
+       módulos consumen. En claro apunta a los valores -light (espejo de dark). */
+    --ds-active-state-tint-red: var(--ds-state-tint-red-light);
+    --ds-active-state-tint-orange: var(--ds-state-tint-orange-light);
+    --ds-active-state-tint-amber: var(--ds-state-tint-amber-light);
+    --ds-active-state-tint-violet: var(--ds-state-tint-violet-light);
+    --ds-active-state-tint-green: var(--ds-state-tint-green-light);
+    --ds-active-state-tint-blue: var(--ds-state-tint-blue-light);
+    --ds-active-state-tint-teal: var(--ds-state-tint-teal-light);
+    --ds-active-state-tint-neutral: var(--ds-state-tint-neutral-light);
+    --ds-active-state-solid-red: var(--ds-state-solid-red-light);
+    --ds-active-state-solid-red-text: var(--ds-state-solid-red-light-text);
+    --ds-active-state-solid-orange: var(--ds-state-solid-orange-light);
+    --ds-active-state-solid-orange-text: var(--ds-state-solid-orange-light-text);
+    --ds-active-state-solid-amber: var(--ds-state-solid-amber-light);
+    --ds-active-state-solid-amber-text: var(--ds-state-solid-amber-light-text);
+    --ds-active-state-solid-violet: var(--ds-state-solid-violet-light);
+    --ds-active-state-solid-violet-text: var(--ds-state-solid-violet-light-text);
+    --ds-active-state-solid-green: var(--ds-state-solid-green-light);
+    --ds-active-state-solid-green-text: var(--ds-state-solid-green-light-text);
+    --ds-active-state-solid-blue: var(--ds-state-solid-blue-light);
+    --ds-active-state-solid-blue-text: var(--ds-state-solid-blue-light-text);
+    --ds-active-state-solid-teal: var(--ds-state-solid-teal-light);
+    --ds-active-state-solid-teal-text: var(--ds-state-solid-teal-light-text);
+    --ds-active-state-solid-neutral: var(--ds-state-solid-neutral-light);
+    --ds-active-state-solid-neutral-text: var(--ds-state-solid-neutral-light-text);
+
+    /* Bandera de gravedad por tema (spec temas D4/D7): en claro apunta a los
+       valores -light (espejo de dark), mismo patrón que el vocabulario de
+       estado de arriba. */
+    --ds-active-flag-urgent-bg: var(--ds-flag-urgent-bg-light);
+    --ds-active-flag-urgent-ink: var(--ds-flag-urgent-ink-light);
+    --ds-active-flag-attention-bg: var(--ds-flag-attention-bg-light);
+    --ds-active-flag-attention-ink: var(--ds-flag-attention-ink-light);
+
+    /* Lienzo neutro (D11): sin el radial verde — el contraste no depende de la
+       zona de pantalla y el tinte verde de «controlado» no se diluye. */
+    --ds-active-shell-background:
+      linear-gradient(180deg, var(--ds-color-bg-page-light), var(--ds-color-bg-canvas-light));
 
     /* Reconciliación (entrada 23): los acentos de dominio en claro usan el tono
        PRINCIPAL del manual (mas oscuro que el on-dark), asi que el texto se

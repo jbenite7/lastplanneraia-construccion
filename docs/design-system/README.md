@@ -18,13 +18,18 @@ Este directorio define la parte versionada del design system. Stitch y `docs/bra
 - Usar Montserrat para titulos, metricas y jerarquia de alto impacto.
 - Usar Inter para cuerpo, navegacion, formularios, tablas, grillas y ayudas.
 - Mantener densidad operativa: la UI debe ayudar a leer, decidir y actuar.
-- En este repositorio, dark es el tema por defecto y el que se valida; `1180x820` es
-  el viewport canónico de validación. `linen` fue retirado del producto en F0 del goal
-  `dark-mode-todos-los-modulos` y no existe conmutador de tema: un tema claro no está
-  prohibido, pero hay que reconstruirlo.
+- **Ambos temas son contractuales** (spec 2026-08-28): claro es la cara del producto
+  y el tema de entrada; oscuro es opción de primera clase. El CI corre los gates
+  visuales en los dos (matriz por tema). 1180×820 sigue siendo el viewport canónico
+  de escritorio; el programa móvil quedó absorbido por este frente (D21) y sus
+  viewports se validan por módulo según su plan.
 - Diseñar según los criterios accesibles definidos para el alcance, con foco visible, targets tactiles de 44px y `prefers-reduced-motion`.
 - Usar glass solo para jerarquia: shell, nav, modales, paneles y cards. Tablas y grillas priorizan legibilidad.
 - No crear componentes visuales ad hoc en modulos migrados. Registrar excepciones en `exceptions.json`.
+- **La forma anuncia la función** (spec de forma 2026-08-28): rejilla = se edita;
+  renglones = se lee; punteado = recibe; deslizar = pasa ya; píldora = se toca;
+  recto = se lee; hundido = recibe o está presionado; la elevación es rango
+  (reposo/flotante/techo), nunca decoración.
 
 ## Archivos canonicos
 
@@ -67,8 +72,11 @@ Este directorio define la parte versionada del design system. Stitch y `docs/bra
   `vendors[]` de los manifiestos es ejecutable vía
   `DesignSystemHeadComponent::renderForModule()`, con fallback fail-safe al
   agregador si el manifiesto falta, no parsea o declara un vendor desconocido.
-- `public/js/modules/aia_ui/theme-bootstrap.js`: aplica dark por defecto o la preferencia persistida antes de la primera hoja de estilo y evita flash de tema.
-- `public/js/modules/aia_ui/theme.js`: aplica dark de forma incondicional (sin conmutador) y reduced motion después del bootstrap.
+- `public/js/modules/aia_ui/theme-bootstrap.js`: aplica claro por defecto o la preferencia persistida (por aparato) antes de la primera hoja de estilo y evita flash de tema (spec 2026-08-28).
+- `public/js/modules/aia_ui/theme-toggle.js`: alterna entre claro y oscuro; ambos son de primera clase.
+- `public/js/modules/aia_ui/theme.js`: aplica reduced motion después del bootstrap, y **hoy
+  todavía** fuerza `data-aia-theme="dark"` sin condición en 7 vistas reales (ver `TASKS.md`
+  §Bloqueantes); su retiro es prerequisito del plan de Programa General.
 - `scripts/design-system-audit.mjs`: gate estatico de deuda visual.
 - `audit-baseline.json` y `exceptions.json`: deuda congelada y excepciones exactas.
 - `phpstan-baseline.json`: cinco fingerprints legacy tolerados; cualquier hallazgo nuevo bloquea CI.

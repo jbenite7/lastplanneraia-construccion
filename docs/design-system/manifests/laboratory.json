@@ -303,11 +303,11 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-dark-1440x900.png",
-      "sha256": "39d9837c417681aa6d5e9255272e51ddd9b4a593ab7e16bb4033cbd53787d4b7",
+      "sha256": "00eb605b1b1745320fc6822993bdc9f5149e88d3385f72d81ee5e94468a124ec",
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/foundations-dark-1440x900.png",
-          "sha256": "4c27dee435706d3bca1fb74f5048fbf07644584b4def71fe9e2e9985ac17195e"
+          "sha256": "3ad9131d5c062e9d070a63e02145150c2f914e398ae37b6ac167e7b00118977e"
         }
       }
     },
@@ -503,11 +503,11 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-1180x820.png",
-      "sha256": "0eb762a0d59c57b6c9801629fcb70c022332241582e5f2aaaf5b12d256d7cb15",
+      "sha256": "c3e0aace23942cd97d6be13fbde250b4659fd7ecfb4395fbb52d9cb3082555ae",
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/vendor-adapters-dark-1180x820.png",
-          "sha256": "4d2c3f104265600484f06cdce3598a8231b11c228a985a3aae4d542c35cf5da0"
+          "sha256": "85c79ea7ed603e67214ad1051353cb7e655cc02bdd6a9a8b915ab96dcb9ecebf"
         }
       }
     },
@@ -525,11 +525,11 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-1440x900.png",
-      "sha256": "0387ec787e84afc6f3bbf1ac4e65a64b19158345fae9e1e98253789a3573d281",
+      "sha256": "e3b25e54e6327dbf7f3a147f5c5ff023d41bcab04b6b11fc19f9085dab26cc03",
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/vendor-adapters-dark-1440x900.png",
-          "sha256": "8f6397146ecccbef92588405933dd6918c0dfeb999183fec767e68a2657bfecd"
+          "sha256": "104315b46299c1e1114d4fafee4454a86835d6727789fa2d3401504fe61d3007"
         }
       }
     }

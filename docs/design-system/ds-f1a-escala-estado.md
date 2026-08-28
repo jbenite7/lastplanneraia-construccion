@@ -27,7 +27,7 @@ resumen: La escala de estado — contrato DS-F1a
 | Canal | Qué dice | Cuándo aparece |
 |---|---|---|
 | **Fondo de la celda** | Qué estado es y en qué horizonte cae | Siempre |
-| **Barra al borde de la fila** | Cuánto pesa | Solo en el 21,3% que pide algo |
+| **Barra — bandera de 26px al inicio de la fila, con glifo** (spec 2026-08-28 D2-D8; antes al borde de la fila) | Cuánto pesa | Solo en el 21,3% que pide algo |
 
 ### Por qué el fondo no puede llevar la gravedad
 

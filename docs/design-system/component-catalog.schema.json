@@ -56,6 +56,42 @@
         }
       }
     },
+    "shape": {
+      "type": "object",
+      "required": [
+        "radius",
+        "border",
+        "floor"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "radius": {
+          "type": "string",
+          "pattern": "^--ds-radius-"
+        },
+        "border": {
+          "type": "string"
+        },
+        "floor": {
+          "enum": [
+            "rest",
+            "float",
+            "top",
+            "none"
+          ]
+        },
+        "cssFile": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "shipped",
+            "planned"
+          ]
+        }
+      }
+    },
     "component": {
       "type": "object",
       "required": [
@@ -64,6 +100,7 @@
         "kind",
         "maturity",
         "visualApproval",
+        "shape",
         "purpose",
         "doNotUseFor",
         "api",
@@ -105,6 +142,9 @@
         },
         "visualApproval": {
           "$ref": "#/$defs/visualApproval"
+        },
+        "shape": {
+          "$ref": "#/$defs/shape"
         },
         "purpose": {
           "type": "string"

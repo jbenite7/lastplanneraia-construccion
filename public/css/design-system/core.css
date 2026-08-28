@@ -101,12 +101,12 @@
   .aia-shell {
     min-height: 100vh;
     /* El shorthand `background` resetea background-color a su initial
-       (transparent) porque --ds-shell-background solo trae capas de
+       (transparent) porque --ds-active-shell-background solo trae capas de
        background-image (gradientes), sin color. background-color debe
        declararse DESPUES del shorthand para sobrevivir: si fuera antes, el
        shorthand (que viene despues en la cascada) la resetearia de nuevo a
        transparent. Ver f1-shell-background-report.md. */
-    background: var(--ds-shell-background);
+    background: var(--ds-active-shell-background);
     background-color: var(--ds-active-bg-canvas);
     color: var(--ds-active-text-primary);
     font-family: var(--ds-font-body);
@@ -224,6 +224,12 @@
     text-decoration: none;
   }
 
+  /* F9: plano que se hunde — el clic se ve como se siente. Contacto, no vuelo. */
+  .aia-btn:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+  }
+
   .aia-btn:focus-visible,
   .aia-input:focus-visible,
   .aia-select:focus-visible,
@@ -300,7 +306,7 @@
     width: 100%;
     border: var(--ds-border-width) solid var(--ds-active-border);
     border-radius: var(--ds-radius-control);
-    background: var(--ds-active-surface);
+    background: var(--ds-input-well-bg);
     color: var(--ds-active-text-primary);
     font-family: var(--ds-font-body);
     padding: var(--ds-field-padding-block) var(--ds-space-3);
@@ -375,6 +381,14 @@
     justify-items: center;
     max-width: 42rem;
   }
+
+  /* F29: scroll teñido a tamaño nativo — color del tema, agarre del sistema. */
+  .aia-shell {
+    scrollbar-color: var(--ds-active-border-control) transparent;
+  }
+  .aia-table-shell, .aia-grid-shell, .aia-page {
+    scrollbar-color: var(--ds-active-border-control) transparent;
+  }
 }
 
 @layer utilities {
@@ -407,6 +421,21 @@
       animation-duration: var(--ds-motion-reduced-duration) !important;
       animation-iteration-count: 1 !important;
     }
+  }
+
+  /* F32: columnas de cifras — unidades bajo unidades. */
+  .aia-cell-numeric {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  /* F13: el texto libre de celda se poda a tres líneas; el completo vive en
+     tooltip, panel y exportación (patrón displayShort extendido). */
+  .aia-cell-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
   }
 }
 
