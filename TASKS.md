@@ -414,6 +414,19 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] 2026-08-28 — **El botón de colapsar el sidebar del laboratorio no responde a Enter por
+  teclado** (`design-system-lab-keyboard.mjs:83`, ambas patas del CI, tema claro y oscuro). El test
+  enfoca `[data-sidebar-toggle]` y presiona Enter; `data-sidebar-state` se queda en `expanded` en
+  vez de pasar a `collapsed`. El botón es nativo (`<button type="button">`,
+  `src/View/Components/DesignSystemComponent.php:432`) y el listener solo escucha `click`
+  (`public/js/modules/aia_ui/sidebar_navigation.js:127`) — un `<button>` nativo sí dispara `click`
+  al presionar Enter en un navegador real, así que hace falta reproducirlo en Playwright para saber
+  si es el propio test o el componente. **No es una regresión de fase cero**: el mismo assert ya
+  existía antes, pero el test moría dos líneas más arriba por el tema hardcodeado (`data-aia-theme`
+  fijo en `'dark'`) — al arreglar eso en `b97a1b54` el test avanzó y recién ahora se ve este fallo.
+  No bloquea el gate (vive en `keyboard-reflow-evidence`, no bloqueante por diseño). Fuera de
+  alcance de `docs/superpowers/plans/2026-08-28-fase-cero-temas-y-forma.md`.
+
 - [ ] 2026-08-27 — **ESLint instalado en `ct-app/` y `pdc-app/` (rama `eslint-ct-pdc-app`); `pdc-app`
   destapó 39 hallazgos reales sin arreglar.** Ninguna de las dos SPA tenía ESLint configurado
   (`biome.json` de la raíz solo cubre `public/js`, `public/css`, `admin/public/css` — no las SPA); lo
