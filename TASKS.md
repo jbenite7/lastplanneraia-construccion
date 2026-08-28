@@ -373,6 +373,21 @@ estado por defecto mientras Felipe no reparta.
   el mismo turno a propósito**: reordenar 400 líneas de historia ajena a mano arriesga perder
   contenido, y eso pide su propia pasada con verificación.
 
+- [ ] **CLAUDE.md · el patrón «enlaza el `.env` de la raíz» se rompe en silencio cuando el
+  contenedor monta un worktree.** Medido el 2026-08-28 al intentar verificar visualmente la Task 10
+  del goal [[goals/temas-y-forma-fase-cero/goal]]: `.env` en un worktree es un symlink absoluto al
+  `.env` de la raíz (`~/Developer/lps-aia/.env`). Cuando se reapunta el contenedor compartido a ese
+  worktree con `LPS_CODE_ROOT="$(pwd)" docker compose up -d app` (el propio flujo que documenta
+  CLAUDE.md para "ver tu rama en el navegador"), el contenedor monta el worktree completo en
+  `/var/www/html` — y el destino del symlink (`/Users/felipebenitez/Developer/lps-aia/.env`) no
+  existe en el filesystem del contenedor en ese modo. `Dotenv::safeLoad()` no truena: `DEV_DOOR` y
+  `DEV_DOOR_USERS` quedan `(unset)`, la puerta de desarrollo se cierra sin explicación, y el síntoma
+  (`/dev/entrar` redirige a `/login`) no se parece en nada a la causa — mismo patrón que la trampa ya
+  documentada de `ln -s` a destino inexistente, pero disparado por un flujo distinto y no cubierto
+  por esa nota. Se rodeó usando la pila aislada de CI (`docker-compose.ci.yml`, puerto 18081), que no
+  depende de ese symlink. No se corrigió: toca `CLAUDE.md` y posiblemente el patrón de symlink mismo,
+  fuera del alcance de este frente.
+
 ## Diferibles
 
 - [ ] 2026-08-27 — **ESLint instalado en `ct-app/` y `pdc-app/` (rama `eslint-ct-pdc-app`); `pdc-app`
