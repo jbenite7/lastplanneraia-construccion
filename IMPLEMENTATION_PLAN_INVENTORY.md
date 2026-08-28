@@ -41,7 +41,7 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_142 trabajos · 53 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_143 trabajos · 53 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
@@ -49,7 +49,8 @@ _142 trabajos · 53 con spec y plan emparejados · 20 archivados en `docs/archiv
 |---|---|---|
 | Fase cero de temas y forma | [[docs/superpowers/plans/2026-08-28-fase-cero-temas-y-forma|plan]] | — |
 | Forma, bordes, radios y relieves — spec en construcción | [[docs/superpowers/specs/2026-08-28-forma-bordes-radios-relieves-design|spec]] | — |
-| Migración a React + TypeScript — diseño v0 | [[docs/superpowers/specs/2026-08-28-migracion-react-typescript-design|spec]] | — |
+| Migración a React + TypeScript — diseño v0.1 | [[docs/superpowers/specs/2026-08-28-migracion-react-typescript-design|spec]] | — |
+| Shell mínimo React | [[docs/superpowers/plans/2026-08-28-shell-minimo-react|plan]] | — |
 | Temas claro y oscuro end to end — spec en construcción | [[docs/superpowers/specs/2026-08-28-temas-claro-oscuro-end-to-end-design|spec]] | — |
 | Ola 1 — La Torre escribe · Etapa piloto · Plan de implementación | [[docs/superpowers/plans/2026-08-26-ola1-torre-etapa-piloto|plan]] | — |
 | Tarea cero — una sola lista canónica de pantallas · Plan de implementación | [[docs/superpowers/plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas|plan]] | — |
