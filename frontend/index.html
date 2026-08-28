@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Last Planner AIA</title>
+    <script>
+      try {
+        var tema = localStorage.getItem('aia-theme');
+        document.documentElement.setAttribute('data-aia-theme', tema === 'dark' ? 'dark' : 'light');
+        if (tema === 'dark') document.documentElement.classList.add('aia-theme-dark');
+      } catch (error) {}
+    </script>
     <link rel="stylesheet" href="/css/tokens.css" />
     <link rel="stylesheet" href="/css/aia-design-system.css" />
   </head>

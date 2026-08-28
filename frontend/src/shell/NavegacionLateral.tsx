@@ -1,4 +1,5 @@
 import type { Sesion } from '../lib/api/esquemas/sesion';
+import { ConmutadorTema } from './ConmutadorTema';
 
 type EntradaNavegacion = {
   id: string;
@@ -113,6 +114,10 @@ export function NavegacionLateral({ sesion }: { sesion: Sesion }) {
           );
         })}
       </nav>
+
+      <footer className="aia-sidebar__footer">
+        <ConmutadorTema />
+      </footer>
     </aside>
   );
 }
