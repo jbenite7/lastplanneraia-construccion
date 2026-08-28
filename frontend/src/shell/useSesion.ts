@@ -9,15 +9,20 @@ import { EsquemaSesion, type Sesion } from '../lib/api/esquemas/sesion';
 export function useSesion(): {
   sesion: Sesion | null;
   cargando: boolean;
+  error: Error | null;
   recargar: () => Promise<void>;
 } {
   const [sesion, setSesion] = useState<Sesion | null>(null);
   const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   const recargar = useCallback(async () => {
     setCargando(true);
+    setError(null);
     try {
       setSesion(await pedir('/api/session', EsquemaSesion));
+    } catch (causa) {
+      setError(causa instanceof Error ? causa : new Error('No se pudo consultar la sesión'));
     } finally {
       setCargando(false);
     }
@@ -27,5 +32,5 @@ export function useSesion(): {
     void recargar();
   }, [recargar]);
 
-  return { sesion, cargando, recargar };
+  return { sesion, cargando, error, recargar };
 }

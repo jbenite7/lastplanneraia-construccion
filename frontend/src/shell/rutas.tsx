@@ -8,10 +8,21 @@ import { useSesion } from './useSesion';
  * El orden importa — sin proyecto en sesión, ningún módulo puede consultar datos.
  */
 export function Rutas() {
-  const { sesion, cargando, recargar } = useSesion();
+  const { sesion, cargando, error, recargar } = useSesion();
 
   if (cargando) {
     return <p role="status">Cargando…</p>;
+  }
+
+  if (error) {
+    return (
+      <section role="alert">
+        <p>No pudimos conectar con la aplicación. Inténtalo de nuevo.</p>
+        <button type="button" onClick={() => void recargar()}>
+          Reintentar
+        </button>
+      </section>
+    );
   }
 
   if (!sesion?.authenticated) {
