@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && tsc -p tsconfig.node.json && vite build && rm -f ../public/ct-app/index.html",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "eslint ."
   },
   "type": "module",
   "license": "ISC",
@@ -16,6 +17,12 @@
     "react-router-dom": "^7.18.1"
   },
   "devDependencies": {
+    "@babel/core": "^8.0.1",
+    "@babel/eslint-parser": "^8.0.1",
+    "@babel/plugin-syntax-jsx": "^8.0.1",
+    "@babel/preset-typescript": "^8.0.1",
+    "@eslint/js": "^10.0.1",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.6",
@@ -23,6 +30,10 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "eslint": "^10.9.1",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.11.0",
     "jsdom": "^30.0.1",
     "typescript": "^7.0.2",
     "vite": "^8.1.5",

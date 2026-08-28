@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-26
+updated: 2026-08-27
 ---
 
 # Tareas
@@ -317,6 +317,48 @@ estado por defecto mientras Felipe no reparta.
   contenido, y eso pide su propia pasada con verificación.
 
 ## Diferibles
+
+- [ ] 2026-08-27 — **ESLint instalado en `ct-app/` y `pdc-app/` (rama `eslint-ct-pdc-app`); `pdc-app`
+  destapó 39 hallazgos reales sin arreglar.** Ninguna de las dos SPA tenía ESLint configurado
+  (`biome.json` de la raíz solo cubre `public/js`, `public/css`, `admin/public/css` — no las SPA); lo
+  disparó una revisión de `react-reviewer` del 2026-08-27 sobre `Semaforo.tsx`/`Pareto.tsx` que
+  marcó como HIGH que las reglas de hooks dependían solo de revisión manual. Instalados
+  `eslint` + `eslint-plugin-react-hooks` + `eslint-plugin-jsx-a11y` en las dos, con `npm run lint`.
+  **Sin `typescript-eslint` a propósito:** rechaza correr contra TypeScript 7 (el compilador nativo
+  que ya usan ambas SPA) con un hard-stop, no un warning — issue
+  [typescript-eslint/typescript-eslint#10940](https://github.com/typescript-eslint/typescript-eslint/issues/10940),
+  sin ETA de soporte. Probé aislarlo con `overrides` de npm (TS7 para `tsc`/build, TS6 solo para el
+  linter) y no es viable: `typescript` es peerDependency pura del lado del linter, así que npm nunca
+  crea la copia anidada que el override necesita para tener efecto. La alternativa real —el alias
+  global que documenta Microsoft, renombrando el paquete `typescript` del proyecto— toca el pipeline
+  de compilación real de ambas SPA y se descartó por desproporcionado para «instalar un linter»;
+  decisión confirmada con Felipe. En su lugar, el parser es `@babel/eslint-parser` +
+  `@babel/preset-typescript` (parseo sintáctico puro, sin depender de la API del compilador TS, igual
+  que ya hace Vite/esbuild en el build). Costo: `no-undef`/`no-unused-vars` quedan apagadas —sin
+  info de tipos, un import o una interfaz usados solo como tipo salen como falso positivo—; `tsc` en
+  build ya cubre ambos casos con tipos de verdad.
+  - **`ct-app/` corre limpio: 35 archivos, 0 hallazgos.**
+  - **`pdc-app/` no: 24 errores + 15 warnings en 12 de 85 archivos**, sin tocar — el pedido explícito
+    era documentar, no arreglar sin revisar. Por regla: 18 `react-hooks/set-state-in-effect`
+    (`setState` síncrono dentro de un efecto — patrón nuevo del ruleset `recommended-latest` de
+    react-hooks v7, alineado a React Compiler), 15 `react-hooks/exhaustive-deps`, 3
+    `react-hooks/rules-of-hooks`, 2 `jsx-a11y/no-static-element-interactions`, 1
+    `jsx-a11y/click-events-have-key-events`. **Los 3 `rules-of-hooks` de `src/lib/agGrid.ts:310-312`
+    son falso positivo, no bug:** el hook custom se llama `usaAnchoContenedor` (español, «usa») y la
+    regla solo reconoce el prefijo inglés `use` como hook custom válido — cualquier hook nombrado en
+    español dispara esto. Revisar si conviene una convención de nombres para hooks custom o vivir con
+    el ruido. Archivos con hallazgos reales (deps arrays / setState-en-efecto):
+    `src/components/ListaBuscable.tsx`, `src/components/SubpaquetesPanel.tsx`,
+    `src/pages/ComparativoPresupuesto.tsx`, `src/pages/ImportarPresupuesto.tsx`,
+    `src/pages/MaestroInsumos.tsx`, `src/pages/PaquetesAsistente.tsx`,
+    `src/pages/PaquetesContratacion.tsx`, `src/pages/PasosContratacion.tsx`,
+    `src/pages/PlanFechas.tsx`, `src/pages/Seguimiento.tsx`, `src/pages/VisorPresupuesto.tsx`.
+  - **Decisión: no se integró a `npm run check:frontend` ni a `.github/workflows/ci.yml`.**
+    `check:frontend` es específicamente biome sobre PHP-side JS, dominio distinto. Y el CI del repo
+    hoy no corre build, test ni lint de ninguna de las dos SPA — meter solo un gate de lint sería
+    prematuro (bloquearía CI por deuda preexistente de `pdc-app` sin que build/test estén cubiertos
+    tampoco) e inconsistente. Revisar cuando exista integración CI real de las SPA.
+  - No bloqueante para el piloto Ola 1 (`ola1-torre-piloto`) — deuda de infraestructura de calidad.
 
 - [ ] 2026-08-26 — **Cuatro tokens decididos el 2026-08-11 y nunca definidos** (`D-F1-3`): la
   decisión fue «definirlos como tokens de verdad» y hoy `--aia-text-muted`, `--aia-warning-soft-bg`,
