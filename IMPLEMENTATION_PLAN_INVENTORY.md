@@ -53,6 +53,8 @@ _132 trabajos · 53 con spec y plan emparejados · 20 archivados en `docs/archiv
 | P2 · El CI en verde y los presupuestos | [[docs/superpowers/plans/2026-08-24-p2-ci-en-verde-y-presupuestos|plan]] | — |
 | P3 · Programa Design System · DS-F1 → DS-F3 | [[docs/superpowers/plans/2026-08-24-p3-design-system-contrato-y-control|plan]] | — |
 | P4 · Móvil y tema claro · MO-F2b → MO-F3 | [[docs/superpowers/plans/2026-08-24-p4-movil-y-tema-claro|plan]] | — |
+| Temas claro y oscuro end to end — 24 decisiones (aprobada 2026-08-28; absorbe el programa móvil por D21 y sucede a P4 en ese alcance) | [[docs/superpowers/specs/2026-08-28-temas-claro-oscuro-end-to-end-design|spec]] · [[docs/superpowers/plans/2026-08-28-fase-cero-temas-y-forma|plan fase cero]] | — |
+| Forma, bordes, radios y relieves — 40 decisiones (aprobada 2026-08-28; hermana de la de temas, serie por módulo tras la fase cero) | [[docs/superpowers/specs/2026-08-28-forma-bordes-radios-relieves-design|spec]] · [[docs/superpowers/plans/2026-08-28-fase-cero-temas-y-forma|plan fase cero]] | — |
 | P5 · Cierre hasta producción · CP-F-C → CP-F-E | [[docs/superpowers/plans/2026-08-24-p5-cierre-hasta-produccion|plan]] | — |
 | P6 · Higiene documental y de coordinación | [[docs/superpowers/plans/2026-08-24-p6-higiene-documental-y-coordinacion|plan]] | — |
 | Pendientes del frente de tablas | [[docs/superpowers/specs/2026-08-24-pendientes-frente-tablas-design|spec]] · [[docs/superpowers/plans/2026-08-24-pendientes-frente-tablas|plan]] | — |
