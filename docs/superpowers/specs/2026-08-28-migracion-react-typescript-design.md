@@ -8,11 +8,13 @@ fuente: "sesión de brainstorming con Felipe, 2026-08-28, tras el cierre de la f
 resumen: "Convergencia del frontend a una SPA única React + TypeScript, con PHP reducido a API. Shell primero, módulos después, sitio viejo conviviendo hasta que el último cruce."
 ---
 
-# Migración a React + TypeScript — diseño v0
+# Migración a React + TypeScript — diseño v0.1
 
-> **Estado: borrador (v0).** Las 8 decisiones de Felipe están tomadas y son firmes.
-> Lo que falta antes de un plan ejecutable está listado en «Preguntas abiertas»; ninguna
-> de ellas invalida las decisiones, pero R6 (grilla) puede encarecerse según su respuesta.
+> **Estado: borrador, sin revisión de Felipe todavía.** 12 decisiones tomadas y ninguna pregunta
+> bloqueante abierta: la v0 dejó cuatro preguntas, se respondieron en la misma sesión y
+> produjeron R9–R12. Queda una sola incógnita, no bloqueante: cuánto toma el shell mínimo, que se
+> estima al escribir su plan. **Sigue siendo un borrador** — no es contrato hasta que Felipe lo
+> lea y lo apruebe.
 
 ## Por qué
 
@@ -52,7 +54,7 @@ Vitest. Esta spec generaliza y corrige ese patrón, no lo inventa.
 63 tokens, 7 guards, ambos temas contractuales. Los componentes React consumen esos mismos tokens
 — sin esa capa, cada módulo migrado habría reinventado su color y su forma.
 
-## Las 8 decisiones
+## Las 12 decisiones
 
 ### R1 — Destino: una sola SPA; el PHP queda como API pura
 
@@ -104,19 +106,20 @@ El shell v1 contiene **exactamente cinco piezas** y nada más:
 5. Enrutado con guardas de sesión y RBAC, leyendo las capacidades que el PHP ya expone.
 
 **Fuera del shell v1, explícitamente:** notificaciones, búsqueda global, preferencias de usuario,
-laboratorio del design system en React. Ninguna tiene usuarios hasta que haya módulos que las
-necesiten; incluirlas solo aleja el estreno.
+laboratorio del design system en React, catálogo visual de componentes (R11), y las pantallas de
+recuperación de clave (R12). Ninguna tiene usuarios hasta que haya módulos que las necesiten;
+incluirlas solo aleja el estreno.
 
 ### R6 — Grilla: AG Grid Community para todo
 
 Un solo vendor de grilla, MIT, gratis, ya probado en `pdc-app` (`ag-grid-community` ^36.0.2).
 Retira Handsontable del producto y con él la exposición de licencia.
 
-**El riesgo que hay que cerrar antes de reescribir la primera grilla:** el copy/paste de rangos
-estilo Excel y la selección de rangos son features de AG Grid **Enterprise** (de pago). Hay que
-preguntarle a los residentes si de verdad los usan o si la edición celda a celda basta. Si los
-usan de verdad, la decisión se revisa con el costo sobre la mesa (~1.000 USD/desarrollador,
-licencia perpetua por versión) — no se resuelve reescribiendo la feature a mano.
+**Lo que se pierde y lo que no.** Medido en el código el 2026-08-28: los tres módulos declaran
+`search`, `manualColumnResize`, `filters`, `dropdownMenu`, `contextMenu`, `columnSorting` y
+`hiddenColumns` — todo cubierto por Community. Lo que **no** declaran pero está activo por
+defecto en Handsontable, y nadie desactivó nunca: el pegado de bloques multi-celda y el
+`fillHandle` (arrastrar la esquina para repetir). Ambos son AG Grid **Enterprise**.
 
 **Descartado:** licencia comercial de Handsontable (~890 USD/dev/año). Mantiene dos vendors de
 grilla en el producto para siempre y es un gasto recurrente contra uno perpetuo.
@@ -145,6 +148,60 @@ Tres capas, las tres con precedente en el repo:
 **Descartado explícitamente: el gate de cobertura mínima (el clásico 80 %).** Empuja a escribir
 tests tautológicos que suben el número sin atrapar nada; este repo ya midió esa trampa. La
 exigencia es test de contrato por endpoint migrado, que sí atrapa roturas reales.
+
+### R9 — Se arranca con Community; Enterprise solo si los residentes lo reclaman
+
+No se compra por adelantado ni se pregunta antes de construir. Programa General estrena con
+Community; si al usarlo los residentes piden el pegado de bloques o el arrastre, **se compra la
+licencia en ese momento** (~1.000 USD/desarrollador, perpetua por versión).
+
+**El porqué que lo hace seguro:** pasar de Community a Enterprise es cambiar la dependencia y
+activar módulos — no es reescribir la grilla. El costo de equivocarse hacia abajo es un pago
+diferido, no trabajo perdido.
+
+**Lo que NO se hace:** reescribir a mano el pegado de bloques para evitar la licencia. Sería
+reimplementar mal lo que el vendor ya resolvió, en el módulo más crítico del producto.
+
+### R10 — El panel de administración migra de último, y se revisa cuando llegue el turno
+
+`admin/` es arquitectónicamente otra aplicación: front controller propio (`admin/index.php`),
+router propio, modelos propios, 16 páginas y ~10.000 líneas. Solo la tocan administradores, y
+solo cuando entra un usuario nuevo o arranca una obra.
+
+Va al final de la secuencia **con una condición escrita**: cuando llegue su turno se decide si
+migrarla o dejarla, con la información que exista entonces. No se compromete hoy.
+
+**El porqué:** los cuatro dolores pesan donde se trabaja a diario. Migrarla antes gasta el
+recurso más escaso —tu atención de aprobación— en la superficie de menor uso.
+
+### R11 — El código lo sostienen Felipe y uno o dos desarrolladores
+
+No es una nota de recursos: fija cuánta ceremonia lleva el diseño.
+
+- **Documentación de arranque, sí.** Alguien que no vivió estas decisiones tiene que poder
+  entrar: `frontend/AGENTS.md` con las reglas del stack, y un README que explique cómo correr y
+  cómo está organizado.
+- **Coordinación ligera, no ceremonia de equipo grande.** Revisión entre pares en los frentes de
+  riesgo; nada de procesos que solo se justifican con más gente.
+- **El techo de 300 líneas es guía, no gate automático.** Con humanos revisando, un archivo de
+  340 líneas bien cohesionado no necesita partirse para satisfacer un contador.
+- **Catálogo visual de componentes en React: no en el shell v1.** Es caro de construir y su valor
+  aparece cuando entra gente nueva a menudo. Se reconsidera si el equipo crece.
+
+### R12 — El shell v1 se lleva entrar y elegir proyecto; recuperar clave viene después
+
+De las cuatro pantallas de entrada que hoy fuerzan el tema oscuro, el shell v1 se lleva las dos
+del camino diario: **login** y **selector de proyecto**. `password-forgot` y `password-reset`
+siguen en PHP y se migran en el frente siguiente.
+
+**El porqué:** recuperar clave toca correo, tokens y expiración. Ese camino ya cambió una vez en
+este repo por un problema de entrega difícil de diagnosticar (`MAIL_TRANSPORT`, 2026-08-18) y
+quedó cubierto con su propia prueba. Meterlo en el frente que debe estrenar rápido es sumar el
+riesgo más caro al momento menos oportuno.
+
+**Lo que cuesta, dicho claro:** hasta que se migren, un usuario que recupera su clave ve esas dos
+pantallas en oscuro y luego entra a un sistema claro. Es una inconsistencia visible pero de baja
+frecuencia — se usan pocas veces al año y se llega a ellas por correo, no por el menú.
 
 ## Arquitectura
 
@@ -237,7 +294,9 @@ cambiar antes de migrarse. Cada módulo trae los suyos; el shell arranca con los
 | 3 | Programación Semanal | El corazón del negocio (Last Planner); se hace con dos módulos de experiencia encima |
 | 4 | Programación Intermedia | Hermana de Semanal, reusa casi todo lo aprendido |
 | 5 | BI y Control Tower | CT ya es React: mudanza, no reescritura |
-| 6 | Gestión, admin y el resto | Pantallas simples, van rápido al final |
+| 6 | Gestión y el resto de pantallas | Simples, van rápido |
+| 7 | Recuperación de clave (`password-forgot`, `password-reset`) | Diferidas del shell v1 por R12; se migran con el camino de correo probado aparte |
+| 8 | Panel de administración (`admin/`) | R10: se revisa al llegar el turno, no se compromete hoy |
 | — | PDC | Se absorbe cuando le toque mantenimiento propio (R4) |
 
 El sitio PHP muere cuando el último módulo cruza. No antes, y sin fecha forzada.
@@ -250,8 +309,9 @@ menos impulso.
 
 Lo que hace el código nuevo legible para un asistente — el dolor 1, atacado directamente:
 
-- **Archivos chicos, un solo trabajo cada uno.** Techo blando: 300 líneas. Un archivo de 5.000
-  líneas no cabe en la cabeza de nadie, humano o no.
+- **Archivos chicos, un solo trabajo cada uno.** Guía: 300 líneas, no gate automático (R11). Un
+  archivo de 5.000 líneas no cabe en la cabeza de nadie, humano o no; uno de 340 bien cohesionado
+  no necesita partirse para satisfacer un contador.
 - **Nombres del negocio, no del framework.** `RestriccionLiberada`, `SemanaComprometida`. El
   `GLOSARIO.md` existente es el diccionario.
 - **`DESIGN.md` como contrato de consumo**, igual que hoy: el asistente lee qué componente usar
@@ -281,24 +341,32 @@ SPA. Los gates de diseño existentes siguen midiendo lo mismo, porque los tokens
 | Riesgo | Mitigación |
 |---|---|
 | **Los 3 módulos de programación son el 70 % del esfuerzo** (15.977 líneas) | Se atacan tercero y cuarto, con el shell y un módulo de experiencia encima. No son el primer frente |
-| **AG Grid Community puede no cubrir el copy/paste de rangos** | Validar con los residentes ANTES de reescribir la primera grilla (ver Preguntas abiertas) |
+| **AG Grid Community puede no cubrir el pegado de bloques ni el arrastre** | R9: se estrena con Community y se compra Enterprise si lo reclaman. Es cambio de dependencia, no reescritura — el costo de equivocarse es un pago diferido |
 | **Migración larga sin valor visible** | R5 lo ataca de frente: shell mínimo y estrenar con un módulo real adentro |
 | **El equipo no conoce React** | Los frentes 1 y 2 son también el aprendizaje; `pdc-app` sirve de referencia viva |
 | **Deriva entre los dos mundos durante la convivencia** | Tokens compartidos (una sola fuente) + tests de contrato sobre los mismos endpoints |
 
 ## Preguntas abiertas
 
-Ninguna invalida las decisiones; se responden antes o durante el primer plan.
+La v0 dejó cuatro. Tres se cerraron en la misma sesión y quedaron como decisiones:
 
-1. **¿Los residentes usan copy/paste de rangos estilo Excel en las hojas de programación?**
-   Decide si AG Grid Community basta o si R6 se revisa con el costo de Enterprise sobre la mesa.
-   **Se responde preguntándoles, antes de reescribir la primera grilla.**
-2. **¿Cuánto toma el shell mínimo?** Se estima al escribir su plan, no aquí.
-3. **¿El login React reusa la vista PHP de recuperación de clave, o se migra también?** Afecta el
-   alcance exacto del shell v1.
-4. **¿Qué pasa con `admin/`?** Es una mini-app PHP arquitectónicamente aislada (su propio front
-   controller, router y modelos). Puede migrarse al final, quedarse en PHP indefinidamente, o
-   salir del alcance. No se decidió en esta sesión.
+| Pregunta de la v0 | Cómo cerró |
+|---|---|
+| ¿Usan copy/paste de rangos estilo Excel? | **R9** — no se pregunta ni se compra por adelantado: se estrena con Community y se compra si lo reclaman |
+| ¿El shell v1 se lleva recuperación de clave? | **R12** — no; entra y elige proyecto, el resto en el frente siguiente |
+| ¿Qué pasa con `admin/`? | **R10** — migra de último, con revisión al llegar el turno |
+
+**Queda una, no bloqueante:**
+
+1. **¿Cuánto toma el shell mínimo?** Se estima al escribir su plan, no aquí. No bloquea nada:
+   el plan es el siguiente paso de todos modos.
+
+**Y una que aparecerá al escribir ese plan, anotada para no olvidarla:** qué pasa con los goldens
+visuales y las pruebas de extremo a extremo durante la convivencia. Los goldens actuales apuntan
+a rutas PHP; cuando un módulo cruza a React, sus capturas cambian de superficie. La fase cero dejó
+la matriz por tema montada y el patrón de aprobación de goldens ya probado, así que es trabajo
+conocido — pero hay que decidir si el golden viejo se archiva o se reemplaza en el momento del
+cruce.
 
 ## Qué sigue
 
