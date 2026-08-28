@@ -400,6 +400,24 @@ jobs:
           npm run test:visual:pilot
           npm run test:a11y:pilot
           npm run test:hue:pilot
+      # Va AQUI, pegado al gate y no al final del job, porque `test-output/` es un
+      # directorio compartido que cada suite sobrescribe. `pilot-lab-gates` no
+      # bloquea (continue-on-error), asi que el job sigue, «Collect keyboard and
+      # reflow evidence» pisa esa carpeta, y para cuando corren los dos pasos de
+      # evidencia del final ya no queda rastro del piloto. Medido el 2026-08-28: un
+      # golden del piloto en rojo y su artefacto sin una sola captura suya, asi que
+      # no habia forma de aprobar el golden nuevo sin volver a correr el CI a
+      # ciegas. Un gate que falla y no puede mostrar por que no es un gate.
+      - name: Preserve pilot lab evidence
+        if: steps.pilot-lab-gates.outcome == 'failure'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: design-system-pilot-lab-evidence-${{ matrix.theme }}
+          path: |
+            test-results/
+            test-output/
+          if-no-files-found: warn
+          retention-days: 7
       - name: Collect keyboard and reflow evidence
         id: keyboard-reflow-evidence
         continue-on-error: true

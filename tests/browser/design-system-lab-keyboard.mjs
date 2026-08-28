@@ -8,11 +8,25 @@ const VIEWPORTS = [
   { width: 1440, height: 900 },
 ];
 
+// D12/D16: el tema ya no es uno solo, y el laboratorio arranca en el default del
+// producto (claro). Afirmar 'dark' a secas fallaba en las dos patas de la matriz;
+// mismo patron ya corregido en design-system-lab.mjs.
+const E2E_THEME = process.env.E2E_THEME === 'dark' ? 'dark' : 'light';
+
+async function forceTheme(page, theme) {
+  await page.evaluate((t) => {
+    try { localStorage.setItem('aia-theme', t); } catch (_) { /* sin persistencia */ }
+    document.documentElement.setAttribute('data-aia-theme', t);
+    document.documentElement.classList.toggle('aia-theme-dark', t === 'dark');
+  }, theme);
+}
+
 async function openLaboratory(page, viewport) {
   await page.setViewportSize(viewport);
   await loginAndSelectProject(page, PROJECTS[0], ADMIN);
   await page.goto('/internal/design-system', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
+  await forceTheme(page, E2E_THEME);
+  await expect(page.locator('html')).toHaveAttribute('data-aia-theme', E2E_THEME);
 }
 
 async function tabSequence(page, scope, required) {
