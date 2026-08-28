@@ -9,7 +9,14 @@ const MANIFEST = JSON.parse(readFileSync(
   'utf8',
 ));
 const ADMIN = { username: 'test.A', password: 'aia2026' };
-const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(({ theme }) => theme === 'dark');
+// D16 (spec temas 2026-08-28): el carril visual corre AMBOS temas. `E2E_THEME`
+// no elige el tema que se pinta —eso lo dice cada escenario, y `storeTheme` mas
+// abajo ya lo materializa de verdad con recarga— sino que subconjunto corre esta
+// invocacion, para que las dos patas de la matriz de CI midan la suya. Sin la
+// variable corren los dos, que es lo que quiere una corrida local.
+const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(
+  ({ theme }) => !process.env.E2E_THEME || theme === process.env.E2E_THEME,
+);
 
 // Filas fijas que cubren la escala de estado de Programa General.
 //
@@ -73,6 +80,17 @@ async function expectLegendContained(page) {
       return box.left >= boundary.left - 1 && box.right <= boundary.right + 1;
     });
   })).toBe(true);
+}
+
+// Playwright sale con error si un archivo no registra NI UN test ("no tests
+// found"), asi que una pata de la matriz cuyo tema aun no tiene escenarios en el
+// manifiesto pondria el job en rojo sin que nada este roto. Este marcador la deja
+// en verde y ADEMAS deja dicho en el informe por que no midio nada, que es justo
+// lo que hoy pasa con `light`: los goldens claros no existen todavia porque la
+// pagina no rinde en claro (ver el comentario largo de
+// tests/design-system/visual-ci-contract.test.mjs).
+if (VISUAL_SCENARIOS.length === 0) {
+  test.skip(`sin escenarios visuales para el tema "${process.env.E2E_THEME}"`, () => {});
 }
 
 for (const scenario of VISUAL_SCENARIOS) {

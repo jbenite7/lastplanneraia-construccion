@@ -19,19 +19,78 @@ const requiredViewports = homologationViewports();
 
 const viewportKey = ({ width, height }) => `${width}x${height}`;
 
-function assertDarkPilotMatrix(scenarios, expectedPerViewport, viewports) {
-  assert.deepEqual([...new Set(scenarios.map(({ theme }) => theme))], ['dark']);
+// D16 (spec temas 2026-08-28): el carril visual debe llegar a correr AMBOS temas
+// completos. Esta funcion se llamaba `assertDarkPilotMatrix` y clavaba
+// `themes === ['dark']` en su cuerpo: era correcta mientras dark fue el unico
+// tema del producto, y desde que Task 6 puso el claro por defecto habria
+// congelado la mitad del sistema sin evidencia.
+//
+// Lo que cambia es DONDE se declara el tema exigido: antes estaba escrito dentro
+// del guard y valia para todos; ahora cada modulo trae el suyo (ver las dos
+// constantes de abajo). Sigue siendo un guard ESTRICTO, y por eso no pasa a
+// "acepta cualquier tema":
+//   · cada modulo declara SU conjunto exacto de temas, y el manifiesto debe
+//     traer ese y no otro — ni uno de mas (un tema inventado no entra por la
+//     puerta de atras) ni uno de menos (no se cierra un carril dejando el
+//     manifiesto a medias);
+//   · cada tema fija su censo EXACTO por viewport. La cifra es el punto: un
+//     "ambos temas presentes" flojo dejaria pasar un manifiesto con veinte
+//     escenarios oscuros y tres claros, es decir diecisiete superficies claras
+//     sin golden. Al estar clavada, mover la cobertura de un tema obliga a
+//     editar estas constantes y a justificarlo.
+// Hoy los dos modulos siguen siendo SOLO oscuros, y eso NO es la meta de D16:
+// es lo que se pudo medir el 2026-08-28 al intentar capturar los goldens claros.
+// Los dos bloqueos son de producto, no de este carril, y cada uno se comprobo
+// contra el codigo y contra una captura real:
+//
+//   · LABORATORIO (`/internal/design-system`). `laboratory-foundation.css` ata
+//     los tokens oscuros a `:root` a secas dentro de `@layer theme`;
+//     `theme-claro.css` ata los claros a `[data-aia-theme="light"]` en ESA MISMA
+//     capa. `:root` y un selector de atributo pesan igual (0,1,0), asi que
+//     desempata el orden de carga y gana la hoja del laboratorio: la pagina se
+//     queda oscura por mucho que el atributo diga "light". Medido: de 18
+//     capturas claras, 9 salieron byte a byte identicas a su gemela oscura y las
+//     otras 9 solo diferian por deriva ajena al tema. (De paso: `theme-claro.css`
+//     tambien ofrece el gancho `.aia-theme-light`, pero `theme-bootstrap.js` solo
+//     conmuta la clase `aia-theme-dark` y nunca anade esa otra, asi que ese
+//     segundo camino tampoco entra.)
+//
+//   · PROGRAMA GENERAL (`/programa-general`). Es una pagina legada que carga
+//     `public/js/linksComunesHead2.js`, y ese cargador trae
+//     `public/js/modules/aia_ui/theme.js`, que fija `data-aia-theme="dark"` a
+//     pelo y expone `getTheme() => "dark"`. Poner `aia-theme: light` en
+//     localStorage y recargar NO la mueve.
+//
+// Por eso el censo se declara POR MODULO y por tema en vez de con una constante
+// global: cuando cada bloqueo se levante, se anade `light: N` aqui y el gate
+// empieza a exigir esa cobertura. Mientras tanto el guard sigue siendo estricto
+// —el conjunto de temas y la cifra por viewport son exactos—, pero no miente
+// diciendo que el claro ya esta cubierto.
+const LABORATORY_SCENARIOS_PER_VIEWPORT = { dark: 10 };
+const PILOT_SCENARIOS_PER_VIEWPORT = { dark: 1 };
+
+// `expectedPerViewport` es un mapa tema -> cuantos escenarios por viewport. Sus
+// claves son ADEMAS la lista de temas exigidos, para que no puedan desalinearse.
+function assertPilotMatrix(scenarios, expectedPerViewport, viewports) {
+  const themes = Object.keys(expectedPerViewport);
+  assert.deepEqual(
+    [...new Set(scenarios.map(({ theme }) => theme))].sort(),
+    [...themes].sort(),
+  );
   assert.deepEqual(
     [...new Set(scenarios.map(({ viewport }) => viewportKey(viewport)))].sort(),
     [...viewports].sort(),
   );
 
-  for (const viewport of viewports) {
-    assert.equal(
-      scenarios.filter((scenario) => viewportKey(scenario.viewport) === viewport).length,
-      expectedPerViewport,
-      `dark ${viewport}`,
-    );
+  for (const theme of themes) {
+    for (const viewport of viewports) {
+      assert.equal(
+        scenarios.filter((scenario) => scenario.theme === theme
+          && viewportKey(scenario.viewport) === viewport).length,
+        expectedPerViewport[theme],
+        `${theme} ${viewport}`,
+      );
+    }
   }
 }
 
@@ -51,8 +110,13 @@ test('visual regression contract covers the approved laboratory matrix', async (
       (family) => homologation.families.find(({ id }) => id === family).viewports,
     ),
   )];
-  assert.equal(manifest.scenarios.length, familyCount * declaredViewports.length);
-  assertDarkPilotMatrix(manifest.scenarios, familyCount, declaredViewports);
+  assert.equal(familyCount, LABORATORY_SCENARIOS_PER_VIEWPORT.dark);
+  assert.equal(
+    manifest.scenarios.length,
+    declaredViewports.length
+      * Object.values(LABORATORY_SCENARIOS_PER_VIEWPORT).reduce((a, b) => a + b, 0),
+  );
+  assertPilotMatrix(manifest.scenarios, LABORATORY_SCENARIOS_PER_VIEWPORT, declaredViewports);
 });
 
 test('visual regression contract covers the Programa General pilot matrix', async () => {
@@ -62,8 +126,12 @@ test('visual regression contract covers the Programa General pilot matrix', asyn
   ]);
   assert.match(source, /toHaveScreenshot/);
   assert.match(source, /MANIFEST\.scenarios/);
-  assert.equal(manifest.scenarios.length, requiredViewports.length);
-  assertDarkPilotMatrix(manifest.scenarios, 1, requiredViewports);
+  assert.equal(
+    manifest.scenarios.length,
+    requiredViewports.length
+      * Object.values(PILOT_SCENARIOS_PER_VIEWPORT).reduce((a, b) => a + b, 0),
+  );
+  assertPilotMatrix(manifest.scenarios, PILOT_SCENARIOS_PER_VIEWPORT, requiredViewports);
 });
 
 test('CI is reproducible, least-privileged and has no deployment path', async () => {
