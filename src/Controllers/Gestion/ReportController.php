@@ -17,6 +17,26 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use TableResolver;
 class ReportController extends BaseController
 {
+    /**
+     * Paleta de estado del exportador — la MISMA rampa clara calibrada de
+     * pantalla (spec temas 2026-08-28, D17: unificar; retira la divergencia
+     * documentada el 2026-08-03). Espejo ARGB de --ds-state-tint-*-light.
+     *
+     * Fuente de matiz por estado: docs/design-system/state-semantics.json
+     * (moduleMappings), módulo `programacion-intermedia` para las filas
+     * prefijadas `pi-*` (mapeo 1:1 exacto por clave).
+     */
+    public const STATE_FILLS = [
+        'red' => 'FFF6C3C3',
+        'orange' => 'FFF8C9A5',
+        'amber' => 'FFFFECB2',
+        'violet' => 'FFDAD4F5',
+        'green' => 'FFC2E2D3',
+        'blue' => 'FFC1D5EC',
+        'teal' => 'FFC8EFEC',
+        'neutral' => 'FFE4E4E7',
+    ];
+
     private $reportProcessor;
 
     public function __construct()
@@ -377,12 +397,18 @@ class ReportController extends BaseController
 
             $rowPalette = [
                 'pdc-header' => ['fill' => 'FF035766', 'font' => 'FFFFFFFF', 'bold' => true],
-                'pdc-critical-delay' => ['fill' => 'FFF3E8FF', 'font' => 'FF6B21A8', 'bold' => true],
+                'pdc-critical-delay' => ['fill' => self::STATE_FILLS['red'], 'font' => 'FF6B21A8', 'bold' => true],
+                // pdc-delayed: sin matiz limpio — prog-sin-compromiso (violet) y
+                // cal-incumplida (amber) comparten este bucket con matices distintos
+                // en state-semantics.json. Sin decision, se conserva el ARGB previo.
                 'pdc-delayed' => ['fill' => 'FFFEE2E2', 'font' => 'FF991B1B', 'bold' => false],
-                'pdc-warning' => ['fill' => 'FFFEF9C3', 'font' => 'FF854D0E', 'bold' => false],
+                'pdc-warning' => ['fill' => self::STATE_FILLS['neutral'], 'font' => 'FF854D0E', 'bold' => false],
+                // pdc-attention: sin estado de state-semantics.json que lo referencie
+                // (solo lo usa la logica interna "faltan 2 semanas" de este reporte).
+                // Sin decision, se conserva el ARGB previo.
                 'pdc-attention' => ['fill' => 'FFDBEAFE', 'font' => 'FF1E40AF', 'bold' => false],
-                'pdc-ok' => ['fill' => 'FFDCFCE7', 'font' => 'FF166534', 'bold' => false],
-                'pdc-neutral' => ['fill' => 'FFF1F5F9', 'font' => 'FF475569', 'bold' => false],
+                'pdc-ok' => ['fill' => self::STATE_FILLS['green'], 'font' => 'FF166534', 'bold' => false],
+                'pdc-neutral' => ['fill' => self::STATE_FILLS['neutral'], 'font' => 'FF475569', 'bold' => false],
             ];
 
             foreach ($corteRowStyles as $index => $styleKey) {
@@ -753,16 +779,19 @@ class ReportController extends BaseController
             ],
         ];
 
+        // pi-* mapea 1:1 por clave a programacion-intermedia en
+        // docs/design-system/state-semantics.json (moduleMappings): mismo
+        // sufijo, mismo matiz, sin ambiguedad.
         $rowPalette = [
-            'pi-blocked-overdue-critical' => ['fill' => 'FFFEE2E2', 'font' => 'FF991B1B', 'bold' => true],
-            'pi-blocked-overdue' => ['fill' => 'FFFFEDD5', 'font' => 'FF9A3412', 'bold' => false],
-            'pi-blocked-due' => ['fill' => 'FFFEF3C7', 'font' => 'FF92400E', 'bold' => false],
-            'pi-alert-1-week' => ['fill' => 'FFFEF9C3', 'font' => 'FF854D0E', 'bold' => false],
-            'pi-alert-2-3-weeks' => ['fill' => 'FFECFCCB', 'font' => 'FF3F6212', 'bold' => false],
-            'pi-alert-4-6-weeks' => ['fill' => 'FFDCFCE7', 'font' => 'FF166534', 'bold' => false],
-            'pi-execution-blocked' => ['fill' => 'FFFED7AA', 'font' => 'FF9A3412', 'bold' => false],
-            'pi-liberated-control' => ['fill' => 'FFE0F2FE', 'font' => 'FF0C4A6E', 'bold' => false],
-            'pi-neutral' => ['fill' => 'FFF1F5F9', 'font' => 'FF475569', 'bold' => false],
+            'pi-blocked-overdue-critical' => ['fill' => self::STATE_FILLS['red'], 'font' => 'FF991B1B', 'bold' => true],
+            'pi-blocked-overdue' => ['fill' => self::STATE_FILLS['orange'], 'font' => 'FF9A3412', 'bold' => false],
+            'pi-blocked-due' => ['fill' => self::STATE_FILLS['violet'], 'font' => 'FF92400E', 'bold' => false],
+            'pi-alert-1-week' => ['fill' => self::STATE_FILLS['amber'], 'font' => 'FF854D0E', 'bold' => false],
+            'pi-alert-2-3-weeks' => ['fill' => self::STATE_FILLS['teal'], 'font' => 'FF3F6212', 'bold' => false],
+            'pi-alert-4-6-weeks' => ['fill' => self::STATE_FILLS['neutral'], 'font' => 'FF166534', 'bold' => false],
+            'pi-execution-blocked' => ['fill' => self::STATE_FILLS['blue'], 'font' => 'FF9A3412', 'bold' => false],
+            'pi-liberated-control' => ['fill' => self::STATE_FILLS['green'], 'font' => 'FF0C4A6E', 'bold' => false],
+            'pi-neutral' => ['fill' => self::STATE_FILLS['neutral'], 'font' => 'FF475569', 'bold' => false],
         ];
 
         // Apply borders if we have data rows (starting at A4)
@@ -1133,12 +1162,18 @@ class ReportController extends BaseController
 
             $rowPalette = [
                 'pdc-header' => ['fill' => 'FF035766', 'font' => 'FFFFFFFF', 'bold' => true],
-                'pdc-critical-delay' => ['fill' => 'FFF3E8FF', 'font' => 'FF6B21A8', 'bold' => true],
+                'pdc-critical-delay' => ['fill' => self::STATE_FILLS['red'], 'font' => 'FF6B21A8', 'bold' => true],
+                // pdc-delayed: sin matiz limpio — prog-sin-compromiso (violet) y
+                // cal-incumplida (amber) comparten este bucket con matices distintos
+                // en state-semantics.json. Sin decision, se conserva el ARGB previo.
                 'pdc-delayed' => ['fill' => 'FFFEE2E2', 'font' => 'FF991B1B', 'bold' => false],
-                'pdc-warning' => ['fill' => 'FFFEF9C3', 'font' => 'FF854D0E', 'bold' => false],
+                'pdc-warning' => ['fill' => self::STATE_FILLS['neutral'], 'font' => 'FF854D0E', 'bold' => false],
+                // pdc-attention: sin estado de state-semantics.json que lo referencie
+                // (solo lo usa la logica interna "faltan 2 semanas" de este reporte).
+                // Sin decision, se conserva el ARGB previo.
                 'pdc-attention' => ['fill' => 'FFDBEAFE', 'font' => 'FF1E40AF', 'bold' => false],
-                'pdc-ok' => ['fill' => 'FFDCFCE7', 'font' => 'FF166534', 'bold' => false],
-                'pdc-neutral' => ['fill' => 'FFF1F5F9', 'font' => 'FF475569', 'bold' => false],
+                'pdc-ok' => ['fill' => self::STATE_FILLS['green'], 'font' => 'FF166534', 'bold' => false],
+                'pdc-neutral' => ['fill' => self::STATE_FILLS['neutral'], 'font' => 'FF475569', 'bold' => false],
             ];
 
             foreach ($compromisosRowStyles as $index => $styleKey) {
@@ -1344,6 +1379,10 @@ class ReportController extends BaseController
         $hojaActiva->freezePane('A2');
 
         // Conditional Formatting
+        // Los 5 estados de control-cambios (En Estudio/Aprobado/Aprobado con
+        // Restricciones/No Aprobado/Desistido) solo declaran `level` en
+        // docs/design-system/state-semantics.json — no tienen matiz asignado
+        // ahi. Sin decision, se conserva el ARGB previo tal cual.
         $formatoCondicionalEstudio = new Style(false, true);
         $formatoCondicionalEstudio->getFill()->setFillType(Fill::FILL_SOLID)->getEndColor()->setARGB('FFC5D9F1');
         $formatoCondicionalEstudio->getFont()->setBold(true);

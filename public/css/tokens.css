@@ -300,18 +300,25 @@
     --ds-color-cell-success-bg: #2e7b4d;
     --ds-color-cell-info-bg: #207a6e;
 
-    /* RESERVA SIN CABLEAR — no los consume nadie (medido el 2026-08-03: un grep
-       sobre todo el repositorio devuelve solo estas ocho declaraciones).
-       Se pensaron para impresos y XLSX, donde el fondo es papel. Ese uso existe
-       —`src/Controllers/Gestion/ReportController.php` exporta con PhpSpreadsheet
-       y pinta los estados de fila— pero el cable nunca se conectó: el
-       exportador lleva su propia paleta ARGB escrita a mano, con valores que no
-       coinciden con estos. Hay, por tanto, dos paletas claras para lo mismo.
-       Unificarlas cambiaría el aspecto de los Excel ya repartidos, así que es
-       decisión aparte y no se toma de oficio (usuario, 2026-08-03).
+    /* RESERVA SIN CABLEAR — no los consume nadie en produccion (medido el
+       2026-08-03: un grep literal sobre todo el repositorio devuelve solo
+       estas ocho declaraciones). Se pensaron para impresos y XLSX, donde el
+       fondo es papel. Ese uso existe —`src/Controllers/Gestion/ReportController.php`
+       exporta con PhpSpreadsheet y pinta los estados de fila— pero el cable
+       nunca se conectó: el exportador lleva su propia paleta ARGB escrita a
+       mano, con valores que no coinciden con estos. Hay, por tanto, dos
+       paletas claras para lo mismo. Unificarlas cambiaría el aspecto de los
+       Excel ya repartidos, así que es decisión aparte y no se toma de oficio
+       (usuario, 2026-08-03).
        Mientras tanto: NO son de pantalla. La escala de pantalla es la de
        arriba, invertida a oscuro. Contexto en DESIGN.md §2 y en
-       memoria/trampas/comentario-de-token-afirma-uso-inexistente.md */
+       memoria/trampas/comentario-de-token-afirma-uso-inexistente.md
+       Corregido 2026-08-28 (Task 7, temas-y-forma-fase-cero): la premisa de
+       "cero consumidores" es falsa — `tests/design-system/theme-claro-tokens.test.mjs`
+       SI los consume, pero construye el nombre por interpolacion de plantilla
+       (`--ds-color-state-${nivel}-${canal}-light`), que un grep literal del
+       texto exacto no encuentra. Borrarlos rompe 8 aserciones ahi. Ver
+       task-7-report.md del mismo frente para el detalle. */
     --ds-color-state-success-bg-light: #ddefe6;
     --ds-color-state-success-text-light: #1a5633;
     --ds-color-state-warning-bg-light: #fff8e1;
