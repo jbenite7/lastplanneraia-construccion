@@ -234,14 +234,19 @@ test('the shared head applies the persisted theme before the first stylesheet ca
     php.indexOf('theme-bootstrap.js') < php.indexOf('/css/aia-design-system.css'),
     'theme bootstrap must precede the design-system stylesheet',
   );
-  // F0/Task 8 retiro el conmutador de tema: el bootstrap ya no lee
-  // localStorage.aia-theme (una clave obsoleta heredada de un usuario que
-  // uso el toggle antes de esta tarea no debe poder devolver ninguna ruta a
-  // claro) ni conoce "linen" — aplica dark de forma incondicional.
-  assert.doesNotMatch(bootstrap, /localStorage/);
+  // F0/Task 8 (plan anterior) retiro el conmutador de tema que existia entonces:
+  // el bootstrap no leia localStorage.aia-theme ni conocia "linen", y aplicaba
+  // dark de forma incondicional. Invertido el 2026-08-28 (D12/D14, spec temas
+  // y forma, decision de Felipe): el default del producto pasa a claro y la
+  // eleccion manual vuelve a persistir por aparato via localStorage — ver
+  // tests/design-system/theme-default-claro.test.mjs para el contrato nuevo.
+  // Lo que SIGUE sin cambiar, y este test lo sigue vigilando: cero referencia a
+  // "linen" (retirado en DS-030, no resucita) y aplicacion sincrona antes del
+  // primer paint (sin DOMContentLoaded/rAF/setTimeout, para evitar el flash).
+  assert.match(bootstrap, /localStorage\.getItem\(['"]aia-theme['"]\)/);
   assert.doesNotMatch(bootstrap, /linen/);
-  assert.match(bootstrap, /setAttribute\(['"]data-aia-theme['"], ['"]dark['"]\)/);
-  assert.match(bootstrap, /classList\.add\(['"]aia-theme-dark['"]\)/);
+  assert.match(bootstrap, /setAttribute\(['"]data-aia-theme['"],\s*theme\)/);
+  assert.match(bootstrap, /classList\.toggle\(['"]aia-theme-dark['"],\s*theme === ['"]dark['"]\)/);
   assert.doesNotMatch(bootstrap, /DOMContentLoaded|requestAnimationFrame|setTimeout/);
 
   const render = 'require "src/View/Components/DesignSystemHeadComponent.php";'
