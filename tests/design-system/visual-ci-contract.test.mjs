@@ -260,6 +260,38 @@ test('CI separates the cumulative runtime lane from the non-cumulative admin DB 
   assert.match(compose, /MYSQL_ROOT_HOST:\s*["']%["']/);
 });
 
+test('CI attests runtime grants without sharing the admin DB lane', async () => {
+  const workflow = await read('.github/workflows/ci.yml');
+  const steps = parseJobSteps(workflow, 'design-system-runtime');
+  const runtimeGrantsIndex = steps.findIndex(({ id }) => id === 'runtime-grants');
+  const phpSuiteIndex = steps.findIndex(({ id }) => id === 'php-suite');
+  const runtimeGrants = steps[runtimeGrantsIndex];
+  const admin = steps.find(({ id }) => id === 'php-admin-db');
+
+  assert.ok(runtimeGrants, 'runtime grants must be attested in an explicit CI step');
+  assert.ok(runtimeGrantsIndex < phpSuiteIndex, 'runtime grants must be attested before the PHP suite');
+  assert.equal(runtimeGrants?.['continue-on-error'], true);
+  assert.equal(
+    runtimeGrants?.run,
+    'docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php scripts/security/audit-runtime-db-grants.php --live',
+  );
+  assert.doesNotMatch(runtimeGrants?.run ?? '', /root|CI_DB_ADMIN_PASS|-e\s+DB_(?:USER|PASS)|LPS_ADMIN_DB_LANE/);
+  assert.equal(runtimeGrants?.env, undefined, 'runtime attestation inherits only app runtime credentials');
+
+  assert.ok(admin, 'the isolated admin DB lane must remain explicit');
+  assert.deepEqual(admin?.env, {
+    DB_USER: 'root',
+    DB_PASS: 'ci-admin-only-password',
+    LPS_ADMIN_DB_LANE: '1',
+  });
+  for (const step of steps.filter(({ id }) => id !== 'php-admin-db')) {
+    assert.doesNotMatch(JSON.stringify(step), /"(?:DB_USER|DB_PASS|LPS_ADMIN_DB_LANE)":/);
+  }
+
+  assert.match(workflow, /G_RUNTIME_GRANTS:\s*\$\{\{ steps\.runtime-grants\.outcome \}\}/);
+  assert.match(workflow, /\$G_RUNTIME_GRANTS/);
+});
+
 test('runtime CI continuously enforces the Programa General persistence boundary', async () => {
   const workflow = await read('.github/workflows/ci.yml');
 

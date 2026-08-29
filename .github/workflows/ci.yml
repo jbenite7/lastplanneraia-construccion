@@ -259,6 +259,10 @@ jobs:
         id: phpstan-pdc
         continue-on-error: true
         run: npm run test:pdc:phpstan
+      - name: Atestar grants efectivos de runtime
+        id: runtime-grants
+        continue-on-error: true
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php scripts/security/audit-runtime-db-grants.php --live
       # Sustituye a los tres tests que antes se listaban aquí a mano (test_global_table_safety,
       # test_dev_door_guard, test_dev_door_http): los tres siguen corriendo, ahora dentro de la
       # selección del runner junto a los ~70 que nadie ejecutaba automáticamente. El paso
@@ -475,6 +479,7 @@ jobs:
         env:
           G_PHPSTAN_BASELINE: ${{ steps.phpstan-baseline.outcome }}
           G_PHPSTAN_PDC: ${{ steps.phpstan-pdc.outcome }}
+          G_RUNTIME_GRANTS: ${{ steps.runtime-grants.outcome }}
           G_PHP_SUITE: ${{ steps.php-suite.outcome }}
           G_PHP_ADMIN_DB: ${{ steps.php-admin-db.outcome }}
           G_FULL_APP_FLOW: ${{ steps.full-app-flow.outcome }}
@@ -496,6 +501,7 @@ jobs:
             echo "| --- | --- |"
             echo "| Enforce PHPStan baseline | ${G_PHPSTAN_BASELINE} |"
             echo "| Enforce PHPStan level 6 on the PDC module | ${G_PHPSTAN_PDC} |"
+            echo "| Atestar grants efectivos de runtime | ${G_RUNTIME_GRANTS} |"
             echo "| Correr la suite PHP completa que el CI puede honrar | ${G_PHP_SUITE} |"
             echo "| Correr fixtures de migración con admin efímero | ${G_PHP_ADMIN_DB} |"
             echo "| Enforce full-app-flow gate | ${G_FULL_APP_FLOW} |"
@@ -539,7 +545,7 @@ jobs:
             echo "_Sin \`test-output/design-system-runtime-budget.json\`: \`Measure runtime budgets\` no llegó a escribirlo._" >> "$GITHUB_STEP_SUMMARY"
           fi
           failed=0
-          for outcome in "$G_PHPSTAN_BASELINE" "$G_PHPSTAN_PDC" "$G_PHP_SUITE" "$G_PHP_ADMIN_DB" "$G_FULL_APP_FLOW" \
+          for outcome in "$G_PHPSTAN_BASELINE" "$G_PHPSTAN_PDC" "$G_RUNTIME_GRANTS" "$G_PHP_SUITE" "$G_PHP_ADMIN_DB" "$G_FULL_APP_FLOW" \
             "$G_SEMANAL_ROLES_PHASES" "$G_RUNTIME_BUDGET_MEASURE" "$G_RUNTIME_BUDGET_CHECK" \
             "$G_LABORATORY_GATES" "$G_PILOT_LAB_GATES" "$G_PG_PERSISTENCE_RBAC"; do
             if [ "$outcome" = "failure" ]; then
