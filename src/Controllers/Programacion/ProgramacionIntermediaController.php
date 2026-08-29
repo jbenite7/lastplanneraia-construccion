@@ -1179,37 +1179,14 @@ class ProgramacionIntermediaController extends BaseController
     private function ensureSharedConstraintTables(string $dbPrefix): bool
     {
         try {
-            $sqlShared = "CREATE TABLE IF NOT EXISTS " . TableResolver::resolveByPrefix($dbPrefix, 'pi_shared_constraints') . " (
-                Id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                Semana INT NOT NULL,
-                Restriccion VARCHAR(40) NOT NULL,
-                ValorObjetivo VARCHAR(20) NOT NULL,
-                Nota TEXT NULL,
-                CreadoPor VARCHAR(120) NULL,
-                CreadoEn DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                ActualizadoEn DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                INDEX idx_semana (Semana),
-                INDEX idx_restriccion (Restriccion)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+            $tables = [
+                TableResolver::resolveByPrefix($dbPrefix, 'pi_shared_constraints'),
+                TableResolver::resolveByPrefix($dbPrefix, 'pi_shared_constraint_links'),
+            ];
 
-            $sqlLinks = "CREATE TABLE IF NOT EXISTS " . TableResolver::resolveByPrefix($dbPrefix, 'pi_shared_constraint_links') . " (
-                Id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                SharedConstraintId BIGINT UNSIGNED NOT NULL,
-                Semana INT NOT NULL,
-                ConsecutivoEnPrograma VARCHAR(64) NOT NULL,
-                ValorAplicado VARCHAR(20) NOT NULL,
-                OverrideLocal TINYINT(1) NOT NULL DEFAULT 0,
-                AplicadoEn DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                INDEX idx_shared (SharedConstraintId),
-                INDEX idx_semana_consecutivo (Semana, ConsecutivoEnPrograma)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-
-            $this->db->queryWithProject($sqlShared);
-            $this->db->queryWithProject($sqlLinks);
-
-            return true;
+            return $this->db->tableScopeCatalog()->hasOnlyProjectTables($tables);
         } catch (\Throwable $e) {
-            error_log('ensureSharedConstraintTables warning: ' . $e->getMessage());
+            error_log('ensureSharedConstraintTables warning: tablas contractuales no disponibles.');
 
             return false;
         }

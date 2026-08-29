@@ -1559,7 +1559,7 @@ class GeneralApiController extends BaseController
                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )";
 
-            $stmt = $this->db->queryWithProject($sql, [ $proyectoId, $semanaObjetivo, $actividadConsecutivo, $actividadNombre, $actividadTokens, $actividadPosicionPg, $actividadVecinos, $actividadCapitulo, $engineUsado, $procesoSugerido, $confianza, $reglaAplicada, $candidatosAlternativos, $explicacion, $decisionUsuario, $procesoFinal, $procesoFinalId, $usuarioId, ]);
+            $stmt = $this->db->query($sql, [ $proyectoId, $semanaObjetivo, $actividadConsecutivo, $actividadNombre, $actividadTokens, $actividadPosicionPg, $actividadVecinos, $actividadCapitulo, $engineUsado, $procesoSugerido, $confianza, $reglaAplicada, $candidatosAlternativos, $explicacion, $decisionUsuario, $procesoFinal, $procesoFinalId, $usuarioId, ]);
 
             $insertedId = $this->db->lastInsertId();
 

@@ -70,6 +70,30 @@ final class TableScopeCatalog
             ?? throw new DomainException("Tabla no clasificada en el schema: {$key}");
     }
 
+    public function hasTable(string $table): bool
+    {
+        $key = strtolower(trim($table, " `\t\n\r\0\x0B"));
+
+        return isset($this->kinds[$key]);
+    }
+
+    /** @param list<string> $tables */
+    public function hasOnlyProjectTables(array $tables): bool
+    {
+        if ($tables === []) {
+            return false;
+        }
+
+        foreach ($tables as $table) {
+            $key = strtolower(trim($table, " `\t\n\r\0\x0B"));
+            if (($this->kinds[$key] ?? null) !== TableScopeKind::Project) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /** @return list<string> */
     public function projectScopedTables(): array
     {

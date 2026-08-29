@@ -22,18 +22,36 @@ $findings = [];
 function auditPhpFiles(string $root): array
 {
     $files = [];
-    foreach (['src', 'admin/src', 'admin/async', 'scripts', 'database/migrations'] as $directory) {
+    foreach (glob($root . '/*.php') ?: [] as $path) {
+        $canonical = realpath($path);
+        if ($canonical !== false) {
+            $files[$canonical] = true;
+        }
+    }
+
+    $excludedDirectories = ['vendor', 'node_modules', 'tests', 'coverage', 'dist', 'build', '.cache'];
+    foreach (['src', 'public', 'views', 'admin', 'scripts', 'database'] as $directory) {
         $path = $root . '/' . $directory;
         if (!is_dir($path)) {
             continue;
         }
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
+        $filter = new RecursiveCallbackFilterIterator(
+            new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
+            static function (SplFileInfo $file) use ($excludedDirectories): bool {
+                return !$file->isDir() || !in_array($file->getFilename(), $excludedDirectories, true);
+            },
+        );
+        $iterator = new RecursiveIteratorIterator($filter);
         foreach ($iterator as $file) {
             if ($file->isFile() && strtolower($file->getExtension()) === 'php') {
-                $files[] = $file->getPathname();
+                $canonical = $file->getRealPath();
+                if ($canonical !== false) {
+                    $files[$canonical] = true;
+                }
             }
         }
     }
+    $files = array_keys($files);
     sort($files);
 
     return $files;
@@ -355,8 +373,13 @@ function auditSystemRunnerCallerAllowed(string $relative): bool
 
 function auditTokenNamesClass(PhpToken $token, string $class): bool
 {
-    return in_array($token->id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)
-        && str_ends_with(ltrim($token->text, '\\'), $class);
+    if (!in_array($token->id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+        return false;
+    }
+
+    $parts = explode('\\', ltrim($token->text, '\\'));
+
+    return end($parts) === $class;
 }
 
 /** @param list<PhpToken> $tokens */
@@ -457,6 +480,15 @@ foreach (auditPhpFiles($root) as $path) {
     $runnerVariables = [];
     $trustedTableHelpers = auditTrustedTableHelpers($tokens);
 
+    if (!auditSystemRunnerCallerAllowed($relative)
+        && $relative !== 'src/Security/DataScope/SystemScopeRunner.php') {
+        foreach ($tokens as $token) {
+            if (auditTokenNamesClass($token, 'SystemScopeRunner')) {
+                $findings[] = "{$relative}:{$token->line}:system-runner-no-autorizado";
+            }
+        }
+    }
+
     foreach ($tokens as $index => $token) {
         if (in_array($token->id, [T_CLASS, T_INTERFACE, T_TRAIT, T_ENUM], true)) {
             $previous = auditPreviousMeaningful($tokens, $index - 1);
@@ -540,8 +572,7 @@ foreach (auditPhpFiles($root) as $path) {
                         $findings[] = "{$relative}:{$token->line}:identity-usa-queryWithProject";
                     }
                 } catch (Throwable) {
-                    // Una forma SQL resuelta que el catálogo no reconoce no puede
-                    // demostrarse Identity. El preflight autoritativo la rechazará.
+                    $findings[] = "{$relative}:{$token->line}:queryWithProject-sql-no-clasificable";
                 }
             }
             if (isset($arguments[2]) && auditContainsDirectProjectRequest($arguments[2])) {
@@ -579,6 +610,7 @@ foreach (auditPhpFiles($root) as $path) {
     }
 }
 
+$findings = array_values(array_unique($findings));
 sort($findings);
 $expectedRaw = getenv('LPS_AUDIT_EXPECT');
 if ($expectedRaw !== false) {

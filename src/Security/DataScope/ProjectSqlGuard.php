@@ -262,7 +262,18 @@ final class ProjectSqlGuard
                 static fn(array $reference): bool => $reference['kind'] === TableScopeKind::Project,
             ));
             if ($sources !== []) {
-                [$sql, $params] = $this->guardProjectReferences($sql, $params, $scope, $sources);
+                $sourceTokens = $this->tokenize($sql);
+                if ($this->hasDerivedTable($sourceTokens)) {
+                    [$sql, $params] = $this->guardDerivedProjectReferences(
+                        $sql,
+                        $params,
+                        $scope,
+                        $sources,
+                        $sourceTokens,
+                    );
+                } else {
+                    [$sql, $params] = $this->guardProjectReferences($sql, $params, $scope, $sources);
+                }
             }
             return [$sql, $params];
         }
@@ -359,6 +370,201 @@ final class ProjectSqlGuard
     }
 
     /**
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     */
+    private function hasDerivedTable(array $tokens): bool
+    {
+        foreach ($tokens as $index => $token) {
+            if ($token['type'] !== 'word'
+                || !in_array(strtoupper($token['value']), ['FROM', 'JOIN'], true)) {
+                continue;
+            }
+            $next = $this->nextSignificantIndex($tokens, $index + 1);
+            if ($next !== null && $tokens[$next]['raw'] === '(') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @return array{0: string, 1: int}
+     */
+    private function derivedAliasAfterClose(array $tokens, int $close): array
+    {
+        $alias = $this->nextSignificantIndex($tokens, $close + 1);
+        if ($alias !== null && $tokens[$alias]['type'] === 'word'
+            && strtoupper($tokens[$alias]['value']) === 'AS') {
+            $alias = $this->nextSignificantIndex($tokens, $alias + 1);
+        }
+        if ($alias === null || !$this->isIdentifier($tokens[$alias])) {
+            throw new DomainException('La tabla derivada exige un alias demostrable.');
+        }
+
+        return [strtolower($tokens[$alias]['value']), $alias];
+    }
+
+    /**
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @param list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}> $sourceReferences
+     * @return array<string, string> alias derivado => alias Project que aporta project_id
+     */
+    private function derivedProjectAliasSources(array $tokens, array $sourceReferences): array
+    {
+        $derived = [];
+        foreach ($tokens as $index => $token) {
+            if ($token['type'] !== 'word'
+                || !in_array(strtoupper($token['value']), ['FROM', 'JOIN'], true)) {
+                continue;
+            }
+            $open = $this->nextSignificantIndex($tokens, $index + 1);
+            if ($open === null || $tokens[$open]['raw'] !== '(') {
+                continue;
+            }
+            $select = $this->nextSignificantIndex($tokens, $open + 1);
+            if ($select === null || $tokens[$select]['type'] !== 'word'
+                || strtoupper($tokens[$select]['value']) !== 'SELECT') {
+                continue;
+            }
+            $close = $this->matchingClose($tokens, $open);
+            [$derivedAlias] = $this->derivedAliasAfterClose($tokens, $close);
+            if (isset($derived[$derivedAlias])) {
+                throw new ProjectScopeViolation("Alias de tabla derivada ambiguo: {$derivedAlias}");
+            }
+
+            $subqueryDepth = $tokens[$select]['depth'];
+            $from = $this->findKeywordAtDepth($tokens, 'FROM', $subqueryDepth, $select + 1);
+            if ($from === null || $from >= $close) {
+                throw new DomainException("La tabla derivada {$derivedAlias} exige un FROM demostrable.");
+            }
+            $directProjectReferences = array_values(array_filter(
+                $sourceReferences,
+                static fn(array $reference): bool => $reference['kind'] === TableScopeKind::Project
+                    && $reference['depth'] === $subqueryDepth
+                    && $reference['start'] > $tokens[$open]['start']
+                    && $reference['end'] < $tokens[$close]['end'],
+            ));
+            if ($directProjectReferences === []) {
+                continue;
+            }
+
+            $expressions = $this->splitRangeByComma(
+                $tokens,
+                $select + 1,
+                $from - 1,
+                $subqueryDepth,
+            );
+            foreach ($expressions as $expressionRange) {
+                $expression = $this->significantTokensInRange($tokens, $expressionRange);
+                if ($expression !== [] && $tokens[$expression[0]]['type'] === 'word'
+                    && strtoupper($tokens[$expression[0]]['value']) === 'DISTINCT') {
+                    array_shift($expression);
+                }
+                if (count($expression) === 1
+                    && $this->isIdentifier($tokens[$expression[0]])
+                    && strtolower($tokens[$expression[0]]['value']) === 'project_id'
+                    && count($directProjectReferences) === 1) {
+                    $derived[$derivedAlias] = $this->projectReferenceKey($directProjectReferences[0]);
+                    break;
+                }
+                if (count($expression) === 3
+                    && $this->isIdentifier($tokens[$expression[0]])
+                    && $tokens[$expression[1]]['raw'] === '.'
+                    && $this->isIdentifier($tokens[$expression[2]])
+                    && strtolower($tokens[$expression[2]]['value']) === 'project_id') {
+                    $sourceAlias = strtolower($tokens[$expression[0]]['value']);
+                    foreach ($directProjectReferences as $reference) {
+                        if (strtolower($reference['alias']) === $sourceAlias) {
+                            $derived[$derivedAlias] = $this->projectReferenceKey($reference);
+                            break 2;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $derived;
+    }
+
+    /**
+     * Las formas derivadas admitidas son deliberadamente más estrictas que una tabla simple:
+     * no se inyecta scope dentro de subqueries. Cada raíz Project debe demostrar un placeholder
+     * canónico o una relación project_id con una raíz ya acotada.
+     *
+     * @param array<mixed> $params
+     * @param list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}> $references
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @return array{string, array<mixed>}
+     */
+    private function guardDerivedProjectReferences(
+        string $sql,
+        array $params,
+        ProjectScope $scope,
+        array $references,
+        array $tokens,
+    ): array {
+        $physicalAliases = [];
+        foreach ($references as $reference) {
+            $physicalAliases[$this->projectReferenceKey($reference)] = true;
+        }
+
+        $derivedSources = $this->derivedProjectAliasSources($tokens, $references);
+        $projectAliases = array_values(array_unique(array_merge(
+            array_keys($physicalAliases),
+            array_keys($derivedSources),
+        )));
+        $comparisons = $this->projectComparisons($tokens, $projectAliases, $references);
+        $anchored = [];
+        $relations = [];
+        foreach ($comparisons as $comparison) {
+            if ($comparison['kind'] === 'placeholder') {
+                if ($comparison['alias'] === null) {
+                    throw new ProjectScopeViolation('project_id no puede asociarse a una raíz derivada única.');
+                }
+                $this->assertScopePlaceholder(
+                    $comparison['placeholder'],
+                    $tokens,
+                    $params,
+                    $scope->projectId(),
+                );
+                $anchored[$comparison['alias']] = true;
+                continue;
+            }
+            $relations[] = [$comparison['alias'], $comparison['rightAlias']];
+        }
+
+        do {
+            $changed = false;
+            foreach ($derivedSources as $derivedAlias => $sourceAlias) {
+                if (isset($anchored[$sourceAlias]) && !isset($anchored[$derivedAlias])) {
+                    $anchored[$derivedAlias] = true;
+                    $changed = true;
+                }
+            }
+            foreach ($relations as [$left, $right]) {
+                if (isset($anchored[$left]) && !isset($anchored[$right])) {
+                    $anchored[$right] = true;
+                    $changed = true;
+                }
+                if (isset($anchored[$right]) && !isset($anchored[$left])) {
+                    $anchored[$left] = true;
+                    $changed = true;
+                }
+            }
+        } while ($changed);
+
+        foreach (array_keys($physicalAliases) as $alias) {
+            if (!isset($anchored[$alias])) {
+                throw new ProjectScopeViolation("La raíz derivada {$alias} no tiene un project_id canónico demostrable.");
+            }
+        }
+
+        return [$sql, $params];
+    }
+
+    /**
      * @param array<mixed> $params
      * @param list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}> $references
      * @return array{string, array<mixed>}
@@ -449,9 +655,10 @@ final class ProjectSqlGuard
     /**
      * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
      * @param list<string> $projectAliases
+     * @param list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}> $references
      * @return list<array{kind: string, alias: string|null, rightAlias?: string, placeholder?: int, predicate: string, lhsStart: int, lhsEnd: int}>
      */
-    private function projectComparisons(array $tokens, array $projectAliases): array
+    private function projectComparisons(array $tokens, array $projectAliases, array $references = []): array
     {
         $comparisons = [];
         foreach ($tokens as $index => $token) {
@@ -460,6 +667,15 @@ final class ProjectSqlGuard
             }
 
             [$alias, $lhsStart] = $this->columnQualifier($tokens, $index);
+            if ($references !== []) {
+                $alias = $this->resolveProjectComparisonAlias(
+                    $tokens,
+                    $index,
+                    $alias,
+                    $projectAliases,
+                    $references,
+                );
+            }
             if ($alias !== null && !in_array($alias, $projectAliases, true)) {
                 continue;
             }
@@ -500,6 +716,15 @@ final class ProjectSqlGuard
                     && $this->isIdentifier($tokens[$rightColumn])
                     && strtolower($tokens[$rightColumn]['value']) === 'project_id') {
                     $rightAlias = strtolower($tokens[$right]['value']);
+                    if ($references !== []) {
+                        $rightAlias = $this->resolveProjectComparisonAlias(
+                            $tokens,
+                            $rightColumn,
+                            $rightAlias,
+                            $projectAliases,
+                            $references,
+                        );
+                    }
                     if ($alias === null || !in_array($rightAlias, $projectAliases, true)) {
                         throw new ProjectScopeViolation('Relación project_id ambigua o fuera de las tablas de proyecto.');
                     }
@@ -520,6 +745,97 @@ final class ProjectSqlGuard
         }
 
         return $comparisons;
+    }
+
+    /**
+     * @param array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null} $reference
+     */
+    private function projectReferenceKey(array $reference): string
+    {
+        return strtolower($reference['alias']) . '@' . $reference['start'];
+    }
+
+    /**
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @param list<string> $projectAliases
+     * @param list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}> $references
+     */
+    private function resolveProjectComparisonAlias(
+        array $tokens,
+        int $column,
+        ?string $sqlAlias,
+        array $projectAliases,
+        array $references,
+    ): ?string {
+        if ($sqlAlias === null) {
+            return $this->inferUnqualifiedProjectAlias($tokens, $column, $references);
+        }
+
+        $candidates = $this->projectReferencesInSelect($tokens, $column, $references, $sqlAlias);
+        if (count($candidates) === 1) {
+            return $this->projectReferenceKey($candidates[0]);
+        }
+        if ($candidates !== []) {
+            throw new ProjectScopeViolation("Alias project_id ambiguo dentro del SELECT: {$sqlAlias}");
+        }
+
+        return in_array($sqlAlias, $projectAliases, true) ? $sqlAlias : null;
+    }
+
+    /**
+     * Resuelve un project_id no calificado solo dentro del SELECT más cercano y únicamente
+     * cuando allí existe una sola raíz física Project. Los hermanos y padres no cuentan.
+     *
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @param list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}> $references
+     */
+    private function inferUnqualifiedProjectAlias(array $tokens, int $column, array $references): ?string
+    {
+        $references = $this->projectReferencesInSelect($tokens, $column, $references);
+
+        return count($references) === 1 ? $this->projectReferenceKey($references[0]) : null;
+    }
+
+    /**
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @param list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}> $references
+     * @return list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}>
+     */
+    private function projectReferencesInSelect(
+        array $tokens,
+        int $column,
+        array $references,
+        ?string $sqlAlias = null,
+    ): array {
+        $rangeStart = 0;
+        $rangeEnd = PHP_INT_MAX;
+
+        for ($index = $column - 1; $index >= 0; $index--) {
+            if ($tokens[$index]['raw'] !== '(' || $tokens[$index]['depth'] >= $tokens[$column]['depth']) {
+                continue;
+            }
+            $select = $this->nextSignificantIndex($tokens, $index + 1);
+            if ($select === null || $tokens[$select]['type'] !== 'word'
+                || strtoupper($tokens[$select]['value']) !== 'SELECT') {
+                continue;
+            }
+            $close = $this->matchingClose($tokens, $index);
+            if ($close <= $column) {
+                continue;
+            }
+            $rangeStart = $tokens[$index]['start'];
+            $rangeEnd = $tokens[$close]['end'];
+            break;
+        }
+
+        return array_values(array_filter(
+            $references,
+            static fn(array $reference): bool => $reference['kind'] === TableScopeKind::Project
+                && $reference['depth'] === $tokens[$column]['depth']
+                && $reference['start'] > $rangeStart
+                && $reference['end'] < $rangeEnd
+                && ($sqlAlias === null || strtolower($reference['alias']) === $sqlAlias),
+        ));
     }
 
     /**
@@ -627,13 +943,29 @@ final class ProjectSqlGuard
             if (!in_array($keyword, ['FROM', 'JOIN', 'UPDATE', 'INTO'], true)) {
                 continue;
             }
+            if ($keyword === 'UPDATE' && $operation !== 'UPDATE') {
+                continue;
+            }
             if ($keyword === 'INTO' && !in_array($operation, ['INSERT', 'REPLACE'], true)) {
                 continue;
             }
 
             $tableIndex = $this->nextSignificantIndex($tokens, $index + 1);
-            if ($tableIndex === null || $tokens[$tableIndex]['raw'] === '(') {
+            if ($tableIndex === null) {
                 throw new DomainException("Forma de tabla derivada no soportada después de {$keyword}.");
+            }
+            if ($tokens[$tableIndex]['raw'] === '(') {
+                if (!in_array($keyword, ['FROM', 'JOIN'], true)) {
+                    throw new DomainException("Forma de tabla derivada no soportada después de {$keyword}.");
+                }
+                $select = $this->nextSignificantIndex($tokens, $tableIndex + 1);
+                if ($select === null || $tokens[$select]['type'] !== 'word'
+                    || strtoupper($tokens[$select]['value']) !== 'SELECT') {
+                    throw new DomainException("La tabla derivada después de {$keyword} exige un SELECT demostrable.");
+                }
+                $close = $this->matchingClose($tokens, $tableIndex);
+                $this->derivedAliasAfterClose($tokens, $close);
+                continue;
             }
             if (!$this->isIdentifier($tokens[$tableIndex])) {
                 throw new DomainException("Identificador de tabla no demostrable después de {$keyword}.");
@@ -1006,7 +1338,8 @@ final class ProjectSqlGuard
                 return true;
             }
         }
-        return false;
+
+        return isset($this->derivedProjectAliasSources($tokens, $sourceReferences)[$qualifier]);
     }
 
     /** @return array{0: string|null, 1: int} */

@@ -51,6 +51,18 @@ try {
         throw new RuntimeException('La consulta project-scoped no lanzó MissingProjectScope.');
     });
 
+    wrapperCheck('query rejects the absent or unclassified decision table before PDO', static function () use ($db): void {
+        try {
+            $db->query(
+                'INSERT INTO general_decision_log (proyecto_id) VALUES (?)',
+                [73],
+            );
+        } catch (DomainException) {
+            return;
+        }
+        throw new RuntimeException('El INSERT sin clasificación alcanzó PDO.');
+    });
+
     wrapperCheck('identity override cannot create project authority', static function () use ($db): void {
         try {
             $db->queryWithProject('SELECT COUNT(*) FROM general_usuarios', [], 73);

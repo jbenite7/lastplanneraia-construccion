@@ -280,16 +280,7 @@ class PgBreadcrumbController
 
     private function tableExists(string $table): bool
     {
-        try {
-            $stmt = $this->db->queryWithProject(
-                "SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :t",
-                [':t' => $table]
-            );
-            $row = $stmt->fetch();
-            return (int) ($row['cnt'] ?? 0) > 0;
-        } catch (\Throwable $e) {
-            return false;
-        }
+        return $this->db->tableScopeCatalog()->hasTable($table);
     }
 
     private function jsonResponse(array $data): void

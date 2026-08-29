@@ -38,4 +38,32 @@ final class TableScopeCatalogTest extends TestCase
         $this->expectException(\DomainException::class);
         $catalog->kind('tabla_inventada');
     }
+
+    public function testCompruebaExistenciaSinConsultarInformationSchemaDesdeElCaller(): void
+    {
+        $catalog = TableScopeCatalog::fromRows([
+            ['TABLE_NAME' => 'programa', 'has_project_id' => 1],
+            ['TABLE_NAME' => 'general_usuarios', 'has_project_id' => 0],
+        ]);
+
+        self::assertTrue($catalog->hasTable('programa'));
+        self::assertTrue($catalog->hasTable('`GENERAL_USUARIOS`'));
+        self::assertFalse($catalog->hasTable('tabla_inventada'));
+    }
+
+    public function testExigeQueTodasLasTablasEsperadasExistanYSeanProject(): void
+    {
+        $catalog = TableScopeCatalog::fromRows([
+            ['TABLE_NAME' => 'programa', 'has_project_id' => 1],
+            ['TABLE_NAME' => 'auto_program_log', 'has_project_id' => 1],
+            ['TABLE_NAME' => 'general_usuarios', 'has_project_id' => 0],
+            ['TABLE_NAME' => 'backup_fuera_de_runtime', 'has_project_id' => 0],
+        ]);
+
+        self::assertTrue($catalog->hasOnlyProjectTables(['programa', 'auto_program_log']));
+        self::assertFalse($catalog->hasOnlyProjectTables([]));
+        self::assertFalse($catalog->hasOnlyProjectTables(['programa', 'tabla_inventada']));
+        self::assertFalse($catalog->hasOnlyProjectTables(['programa', 'general_usuarios']));
+        self::assertFalse($catalog->hasOnlyProjectTables(['programa', 'backup_fuera_de_runtime']));
+    }
 }
