@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: revision
+estado: aprobado
 fecha: 2026-08-28
 areas: [arquitectura, frontend, rbac, seguridad, design-system]
 fuente: "sesión de brainstorming con Felipe, 2026-08-28; seis secciones aprobadas en chat"
@@ -10,8 +10,8 @@ resumen: "Cierre de paridad funcional del shell React frente al shell legacy, co
 
 # Paridad del shell React y RLS — diseño
 
-> **Estado:** las seis secciones del diseño fueron aprobadas por Felipe en la sesión del
-> 2026-08-28. Este archivo queda en `revision` hasta que Felipe revise la transcripción escrita.
+> **Estado:** las seis secciones y esta transcripción escrita fueron aprobadas por Felipe en la
+> sesión del 2026-08-28.
 
 ## Relación con el frente anterior
 
