@@ -339,3 +339,62 @@ permite atribuirlos al baseline ni descartarlos como regresiones sin una compara
 - El intento de PHPStan mediante `docker compose run --rm --no-deps app` no fue evidencia válida:
   ese contenedor efímero no montó el worktree y reportó que la ruta no existía. El gate válido se
   ejecutó en el servicio `app`, cuyo `/var/www/html` estaba verificado contra este worktree.
+
+## Ronda correctiva 2/5 — bridge por alias derivado
+
+Base verificada: `f4011c8da2c6c7c5a9a977aac75d2515b42d9278`, branch contractual y worktree
+limpio antes de iniciar.
+
+### RED y causa raíz
+
+Se agregaron juntos el rechazo adversarial y su control positivo. El comando focal ejecutó dos
+casos: el control con filtros explícitos en ambos `SELECT` pasó, pero el bridge exacto
+
+`SELECT a.Semana FROM programa a INNER JOIN (SELECT project_id FROM auto_program_log b WHERE b.project_id IN (?, ?)) d ON d.project_id = a.project_id`
+
+no lanzó `ProjectScopeViolation`: `2 tests, 4 assertions, 1 failure`. La causa fue una arista
+incondicional exclusiva de `guardForProjects()`: una raíz física anclada dentro del subquery
+marcaba como anclado su alias derivado; la relación local externa podía entonces transferir ese
+estado a la raíz física externa. La corrección de la ronda 1 había separado relaciones físicas
+correlacionadas, pero no esta arista indirecta.
+
+### GREEN mínimo y no regresión
+
+- Se eliminó solo la propagación `raíz interna -> alias derivado` en `guardForProjects()`. El
+  parser, tokenizer, catálogo, rewriter y `guard()` single-project quedan intactos; este último
+  conserva sus contratos legacy de derived/outer join.
+- El bridge sin filtro externo ahora falla cerrado. La forma equivalente con listas hostiles en
+  ambos bloques se acepta y reescribe ambas listas a `[27,73]`: `2 tests, 4 assertions`, PASS.
+- Guard completo: `53 tests, 81 assertions`, PASS, incluidos los cuatro casos correlacionados de
+  la ronda 1 y los contratos derived/CTE/INNER/LEFT/RIGHT existentes.
+- DatabaseWrapper: `7 checks`, PASS; aislamiento A/B/C: PASS; MetricExecutor:
+  `4 tests, 24 assertions`, PASS; PDC positivo: `46 PASS` con cleanup exacto.
+- Seis consumidores BI exigidos: filters `3 PASS`, governance PASS, activity timeline PASS,
+  chart-values `4 PASS`, CNP PASS y CNC PASS.
+- PHPStan sobre `ProjectSqlGuard.php`: `No errors`; lint de los dos PHP tocados: PASS; callsite
+  audit: `0 hallazgos`; `git diff --check`: limpio.
+
+### Runner amplio del HEAD de ronda 2
+
+Comando:
+
+`LPS_CODE_ROOT="$(pwd)" docker compose exec -T app php scripts/run-php-tests.php --nivel=datos-proyecto`
+
+Artefacto completo ignorado:
+`.superpowers/sdd/2026-08-28-rls-aplicacion-fail-closed/task-6-wide-runner-round-2-head.log`
+(`825` líneas, `56,890` bytes, SHA-256
+`a43a55828ead765e94143dd3388d2fb4d24193e16af202b7e5d9c4689dd829cb`).
+
+Resultado exacto: **135 total; 72 pasaron; 62 fallaron; 1 sospechoso**. PHPUnit:
+**156 tests; 315 assertions; 10 errors**. Los dos tests nuevos explican la diferencia de dos tests
+y cuatro assertions frente al artefacto de ronda 1.
+
+La comparación de los dos artefactos confirma que la lista de 62 fallos, el sospechoso y los diez
+errores PHPUnit conserva los mismos nombres y primeras causas granulares de las tres tablas
+precedentes; las diferencias adicionales son conteos PHPUnit, tiempo, números de línea desplazados
+y un token aleatorio de fixture. El artefacto nuevo contiene nuevamente cada salida y stack
+completos. No se ejecutó una comparación baseline y no se etiqueta ningún rojo como preexistente.
+
+Estado de la ronda: `DONE_WITH_CONCERNS`; el bypass queda cubierto en RED/GREEN y todos los focos
+Task 6 pasan, mientras el gate amplio conserva los 62 fallos, un sospechoso y diez errores cuya
+atribución sigue indeterminada.

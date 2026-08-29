@@ -687,6 +687,35 @@ final class ProjectSqlGuardTest extends TestCase
         self::assertSame([27, 73, 27, 73], $guarded->params);
     }
 
+    public function testMultiProjectBoundaryRejectsDerivedAliasBridgingInnerAuthorityToOuterRoot(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guardForProjects(
+            'SELECT a.Semana FROM programa a INNER JOIN (SELECT project_id FROM auto_program_log b WHERE b.project_id IN (?, ?)) d ON d.project_id = a.project_id',
+            [27, 73],
+            new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
+            $this->catalog,
+        );
+    }
+
+    public function testMultiProjectBoundaryAcceptsDerivedJoinWhenBothSelectBlocksAreIndependentlyAnchored(): void
+    {
+        $guarded = $this->guard->guardForProjects(
+            'SELECT a.Semana FROM programa a INNER JOIN (SELECT project_id FROM auto_program_log b WHERE b.project_id IN (?, ?, ?)) d ON d.project_id = a.project_id WHERE a.project_id IN (?, ?, ?)',
+            [27, 73, 91, 27, 73, 91],
+            new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
+            $this->catalog,
+        );
+
+        self::assertStringContainsString(
+            'SELECT project_id FROM auto_program_log b WHERE b.project_id IN (?, ?)',
+            $guarded->sql,
+        );
+        self::assertStringContainsString('WHERE a.project_id IN (?, ?)', $guarded->sql);
+        self::assertSame([27, 73, 27, 73], $guarded->params);
+    }
+
     public function testMultiProjectBoundaryClassifiesPhysicalRootsInsideCtePipeline(): void
     {
         $sql = "WITH filtered AS (

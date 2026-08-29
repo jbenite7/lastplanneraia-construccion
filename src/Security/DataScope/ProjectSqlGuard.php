@@ -199,14 +199,10 @@ final class ProjectSqlGuard
                 ...$this->relationPropagationEdges($relation, $tokens, $projectReferences, $derivedSources),
             );
         }
+        // Un alias derivado pertenece al SELECT consumidor y nunca hereda autoridad de la raíz
+        // física que vive dentro de su subquery. Cada raíz se ancla en su propio bloque.
         do {
             $changed = false;
-            foreach ($derivedSources as $derivedAlias => $sourceAlias) {
-                if (isset($anchored[$sourceAlias]) && !isset($anchored[$derivedAlias])) {
-                    $anchored[$derivedAlias] = true;
-                    $changed = true;
-                }
-            }
             foreach ($propagationEdges as [$source, $destination]) {
                 if (isset($anchored[$source]) && !isset($anchored[$destination])) {
                     $anchored[$destination] = true;
