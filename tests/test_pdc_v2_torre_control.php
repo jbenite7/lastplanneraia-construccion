@@ -15,6 +15,9 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 
 use App\Services\Pdc\SeguimientoService;
+use App\Security\DataScope\MultiProjectScope;
+use App\Security\DataScope\ProjectScope;
+use App\Security\DataScope\SystemScopeRunner;
 
 $failures = [];
 $assert = static function (bool $c, string $m) use (&$failures): void {
@@ -29,16 +32,26 @@ $assert = static function (bool $c, string $m) use (&$failures): void {
 $db = Database::getInstance();
 $A = 999950;
 $B = 999951;
+$C = 999952;
 $HOY = '2026-07-30';
+$context = $db->dataScope();
+$contextSnapshot = $context->current();
+if ($contextSnapshot !== null) {
+    $context->clear();
+}
+$runner = new SystemScopeRunner($context);
 
-$limpiar = static function () use ($db, $A, $B): void {
-    foreach ([$A, $B] as $p) {
-        $db->query('DELETE FROM pdc_plan_paso WHERE project_id = ?', [$p]);
-        $db->query('DELETE FROM pdc_plan_paquete WHERE project_id = ?', [$p]);
-        $db->query('DELETE FROM pdc_subpaquete WHERE project_id = ?', [$p]);
-    }
-    $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'test-b3'");
+$limpiar = static function () use ($runner, $db, $A, $B): void {
+    $runner->run('test:pdc-torre:cleanup', static function () use ($db, $A, $B): void {
+        foreach ([$A, $B] as $p) {
+            $db->query('DELETE FROM pdc_plan_paso WHERE project_id = ?', [$p]);
+            $db->query('DELETE FROM pdc_plan_paquete WHERE project_id = ?', [$p]);
+            $db->query('DELETE FROM pdc_subpaquete WHERE project_id = ?', [$p]);
+        }
+        $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'test-b3'");
+    });
 };
+try {
 $limpiar();
 
 // --- Fixture ---------------------------------------------------------------------------------
@@ -74,28 +87,38 @@ $planPaso = static function (int $p, int $paq, int $sub, int $orden, string $pas
     );
 };
 
-$paqA = $nuevoPaquete('TEST B3 A');
-$paqB = $nuevoPaquete('TEST B3 B');
+[$paqA, $paqB] = $runner->run(
+    'test:pdc-torre:seed',
+    static function () use ($nuevoPaquete, $planPaquete, $planPaso, $db, $A, $B): array {
+        $paqA = $nuevoPaquete('TEST B3 A');
+        $paqB = $nuevoPaquete('TEST B3 B');
 
-$planPaquete($A, $paqA, 0);
-$planPaso($A, $paqA, 0, 1, 'Pliegos', '2026-07-29');     // vencido
-$planPaso($A, $paqA, 0, 2, 'Propuestas', '2026-08-09');  // a 10 días → sem2
+        $planPaquete($A, $paqA, 0);
+        $planPaso($A, $paqA, 0, 1, 'Pliegos', '2026-07-29');
+        $planPaso($A, $paqA, 0, 2, 'Propuestas', '2026-08-09');
 
-foreach ([1, 2] as $lote) {
-    $db->query(
-        'INSERT INTO pdc_subpaquete
-            (project_id, paquete_id, nombre, modalidad_contratacion, es_resto, orden, creado_por, updated_at)
-         VALUES (?, ?, ?, "contrato", 0, ?, "test-b3", NOW())',
-        [$B, $paqB, "Lote {$lote}", $lote],
-    );
-    $sub = (int) $db->lastInsertId();
-    $planPaquete($B, $paqB, $sub);
-    $planPaso($B, $paqB, $sub, 1, 'Pliegos', '2026-07-28'); // vencido
-}
+        foreach ([1, 2] as $lote) {
+            $db->query(
+                'INSERT INTO pdc_subpaquete
+                    (project_id, paquete_id, nombre, modalidad_contratacion, es_resto, orden, creado_por, updated_at)
+                 VALUES (?, ?, ?, "contrato", 0, ?, "test-b3", NOW())',
+                [$B, $paqB, "Lote {$lote}", $lote],
+            );
+            $sub = (int) $db->lastInsertId();
+            $planPaquete($B, $paqB, $sub);
+            $planPaso($B, $paqB, $sub, 1, 'Pliegos', '2026-07-28');
+        }
+
+        return [$paqA, $paqB];
+    },
+);
 
 // --- El agregado multi-obra ------------------------------------------------------------------
 $svc = new SeguimientoService($db);
-$agg = $svc->vencimientosAgregados([$A, $B], $HOY);
+$scopeAB = new MultiProjectScope([$A, $B], 'fixture-pdc-torre', 'R', 'test:test_pdc_v2_torre_control:agregado');
+$scopeA = new MultiProjectScope([$A], 'fixture-pdc-torre', 'R', 'test:test_pdc_v2_torre_control:detalle-a');
+$scopeB = new MultiProjectScope([$B], 'fixture-pdc-torre', 'R', 'test:test_pdc_v2_torre_control:detalle-b');
+$agg = $svc->vencimientosAgregados($scopeAB, $HOY);
 
 $assert($agg['hoy'] === $HOY, 'el agregado devuelve la fecha de corte que se le pasó');
 $assert(($agg['por_obra'][$A]['conteos']['vencido'] ?? -1) === 1, 'obra A: un paso vencido');
@@ -109,7 +132,12 @@ $assert(($agg['por_obra'][$B]['conteos']['vencido'] ?? -1) === 2, 'obra B: dos p
 $assert(($agg['totales']['vencido'] ?? -1) === 3, 'los totales suman las dos obras');
 
 // Punto 3 de la condición de hecho: Torre y módulo coinciden para la misma obra el mismo día.
-$modulo = $svc->vencimientos($A, [], $HOY);
+$context->bind(new ProjectScope($A, 'fixture-pdc-torre', 'R'));
+try {
+    $modulo = $svc->vencimientos($A, [], $HOY);
+} finally {
+    $context->clear();
+}
 $assert(
     $modulo['conteos'] === $agg['por_obra'][$A]['conteos'],
     'los conteos de la Torre coinciden exactamente con los de la pestaña del módulo',
@@ -123,18 +151,45 @@ $assert(isset($agg['por_responsable'][0]), 'carga por responsable: los pasos sin
 $assert(($agg['por_responsable'][0]['pendientes'] ?? -1) === 4, 'carga por responsable: los cuatro pasos del fixture no tienen responsable');
 
 // --- El drill-down al paquete ------------------------------------------------------------------
-$detalle = $svc->detalleDestinos([$A], $HOY);
+$detalle = $svc->detalleDestinos($scopeA, $HOY);
 $assert(count($detalle) === 2, 'el detalle de la obra A trae sus dos pasos pendientes');
 $assert(isset($detalle[0]['paquete'], $detalle[0]['estado']), 'cada fila del detalle trae paquete y estado');
 $assert($detalle[0]['estado'] === 'vencido', 'el detalle viene ordenado por fecha: primero lo vencido');
 $assert(!array_key_exists('proveedor', $detalle[0]), 'el detalle NO trae proveedor');
 
-$detalleB = $svc->detalleDestinos([$B], $HOY);
+$detalleB = $svc->detalleDestinos($scopeB, $HOY);
 $assert(($detalleB[0]['lote'] ?? null) !== null, 'el detalle de un paquete partido nombra su lote');
+
+// Los agregados BI conservan los oráculos legacy single-project, pero nunca crean autoridad desde
+// esos enteros. C queda expresamente fuera del scope y no puede aparecer en ningún mapa.
+$cobertura = $svc->coberturaPorProyecto($scopeAB);
+$desactualizados = $svc->paquetesDesactualizadosPorProyecto($scopeAB);
+$paquetesLegacy = new \App\Services\Pdc\PaquetesService($db);
+foreach ([$A, $B] as $projectId) {
+    $context->bind(new ProjectScope($projectId, 'fixture-pdc-torre', 'R'));
+    try {
+        $legacyCoverage = $paquetesLegacy->resumen($projectId) ?? ['cobertura' => 0.0, 'coberturaValor' => 0.0];
+        $legacyDesactualizados = count($svc->paquetesDesactualizados($projectId));
+    } finally {
+        $context->clear();
+    }
+    $assert(
+        ($cobertura[$projectId] ?? null) === [
+            'cobertura' => (float) $legacyCoverage['cobertura'],
+            'coberturaValor' => (float) $legacyCoverage['coberturaValor'],
+        ],
+        "cobertura multiproyecto conserva el resultado legacy de la obra {$projectId}",
+    );
+    $assert(
+        ($desactualizados[$projectId] ?? -1) === $legacyDesactualizados,
+        "desactualizados multiproyecto conserva el resultado legacy de la obra {$projectId}",
+    );
+}
+$assert(!isset($cobertura[$C], $desactualizados[$C], $agg['por_obra'][$C]), 'la obra C no aparece fuera del scope A/B');
 
 // --- El informe de la Torre ya no lee el PDC viejo -------------------------------------------
 $ct = new \App\Services\ControlTowerService($db);
-$brief = $ct->getBrief('pdc', [$A, $B], '1', 'A');
+$brief = $ct->getBrief($scopeAB, 'pdc', '1', 'A');
 
 $assert($brief['respuesta'] === 'BIEN', 'el brief responde BIEN');
 $assert(count($brief['scorecard']) > 0, 'el scorecard trae indicadores');
@@ -178,6 +233,17 @@ $assert(
     'el lineage ya no describe el campo del PDC viejo',
 );
 
-$limpiar();
+} finally {
+    if ($context->current() !== null) {
+        $context->clear();
+    }
+    try {
+        $limpiar();
+    } finally {
+        if ($contextSnapshot !== null) {
+            $context->bind($contextSnapshot);
+        }
+    }
+}
 fwrite(STDOUT, $failures === [] ? "\nOK\n" : "\n" . count($failures) . " fallos\n");
 exit($failures === [] ? 0 : 1);

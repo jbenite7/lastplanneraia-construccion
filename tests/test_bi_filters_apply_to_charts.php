@@ -8,6 +8,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/support/BiContractFixture.php';
 
 use App\Services\ControlTowerService;
+use App\Security\DataScope\MultiProjectScope;
+use App\Security\DataScope\SystemScopeRunner;
 
 $db = \Database::getInstance();
 BiContractFixture::seedCausalRows($db);
@@ -17,6 +19,15 @@ BiContractFixture::seedCausalRows($db);
 // sembrarlas explícitamente.
 BiContractFixture::seedProgramSnapshots($db);
 $bi = new ControlTowerService();
+$scope = static fn(array $ids, string $case): MultiProjectScope => new MultiProjectScope(
+    $ids,
+    'fixture-bi-filters',
+    'R',
+    'test:test_bi_filters_apply_to_charts:' . $case,
+);
+$globalRead = static function (callable $read) use ($db): mixed {
+    return (new SystemScopeRunner($db->dataScope()))->run('test:bi-filters:discovery', $read);
+};
 
 function lastNumericPoint(array $values): float
 {
@@ -35,7 +46,7 @@ function lastNumericPoint(array $values): float
 // descubrimiento se conserva — solo el universo es determinista.
 $fixtureProjectsSql = BiContractFixture::PROYECTO_A . ', ' . BiContractFixture::PROYECTO_B;
 
-$context = $db->query(
+$context = $globalRead(static fn() => $db->query(
     "SELECT project_id, Semana, sub_contratista, responsable_aia, COUNT(*) AS rows_count
      FROM bi_pg_semana
      WHERE project_id IN ({$fixtureProjectsSql})
@@ -44,7 +55,7 @@ $context = $db->query(
      GROUP BY project_id, Semana, sub_contratista, responsable_aia
      ORDER BY rows_count DESC, project_id, Semana, sub_contratista, responsable_aia
      LIMIT 1",
-)->fetch(PDO::FETCH_ASSOC);
+)->fetch(PDO::FETCH_ASSOC));
 
 if (!$context) {
     echo "FAIL: no BI context with subcontractor and responsible data\n";
@@ -58,8 +69,9 @@ $filters = [
     'resp' => (string) $context['responsable_aia'],
 ];
 
-$brief = $bi->getBrief('programa-general', [$projectId], $semana, 'R', $filters);
-$expectedStmt = $db->prepare(
+$brief = $bi->getBrief($scope([$projectId], 'programa'), 'programa-general', $semana, 'R', $filters);
+$expectedStmt = $db->queryForProjects(
+    $scope([$projectId], 'oracle-programa'),
     "SELECT COUNT(*) AS total,
             SUM(CASE
                 WHEN pc.Ruta_Critica = 1
@@ -102,13 +114,13 @@ $expectedStmt = $db->prepare(
        AND COALESCE(pc.Titulo, 0) = 0
        AND LOWER(COALESCE(pc.Sub_Contratista, '')) LIKE ?
        AND LOWER(COALESCE(pc.Responsable_AIA, '')) LIKE ?",
-);
-$expectedStmt->execute([
+    [
     $projectId,
     $semana,
     '%' . strtolower($filters['sub']) . '%',
     '%' . strtolower($filters['resp']) . '%',
-]);
+    ],
+);
 $expected = $expectedStmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
 $gauge = $brief['charts']['programa-gauge']['datasets'][0]['data'] ?? [];
@@ -152,7 +164,7 @@ foreach ($mandatoryCharts as $chartId) {
 
 $rangeProjects = [BiContractFixture::PROYECTO_A, BiContractFixture::PROYECTO_B];
 $rangeFilters = ['desde' => '2026-07-06', 'hasta' => '2026-07-26'];
-$rangeBrief = $bi->getBrief('programa-general', $rangeProjects, '', 'R', $rangeFilters);
+$rangeBrief = $bi->getBrief($scope($rangeProjects, 'range-brief'), 'programa-general', '', 'R', $rangeFilters);
 if (($rangeBrief['filters']['date_range_overrides_semana'] ?? false) !== true) {
     $failures[] = 'date range did not override semana';
 }
@@ -160,7 +172,7 @@ if (($rangeBrief['raw_row_count'] ?? 0) <= 0) {
     $failures[] = 'multi-project date range returned no BI rows';
 }
 
-$options = $bi->getFilterOptions([$projectId], $semana, []);
+$options = $bi->getFilterOptions($scope([$projectId], 'filter-options'), $semana, []);
 if (!in_array($filters['sub'], $options['subcontratistas'] ?? [], true)) {
     $failures[] = 'subcontractor options do not include filtered subcontractor';
 }
@@ -168,7 +180,7 @@ if (!in_array($filters['resp'], $options['responsables'] ?? [], true)) {
     $failures[] = 'responsible options do not include filtered responsible';
 }
 
-$causalContext = $db->query(
+$causalContext = $globalRead(static fn() => $db->query(
     "SELECT ps.project_id, ps.Semana, ps.Sub_Contratista, ps.Responsable_AIA, ps.Actividad, ps.Ubicacion
      FROM programacion_semanal ps
      WHERE ps.project_id IN ({$fixtureProjectsSql})
@@ -178,14 +190,15 @@ $causalContext = $db->query(
        AND COALESCE(TRIM(ps.Actividad), '') <> ''
      ORDER BY ps.project_id, ps.Semana, ps.Consecutivo
      LIMIT 1",
-)->fetch(PDO::FETCH_ASSOC);
+)->fetch(PDO::FETCH_ASSOC));
 if (!$causalContext) {
     $failures[] = 'no CNP causal context with sub/responsible/activity filters';
 } else {
     $causalActivityText = trim(strip_tags(html_entity_decode((string) $causalContext['Actividad'], ENT_QUOTES | ENT_HTML5, 'UTF-8')));
     $causalFilters = ['sub' => $causalContext['Sub_Contratista'], 'resp' => $causalContext['Responsable_AIA'], 'etapa' => substr($causalActivityText, 0, 12)];
-    $cnpDetail = $bi->getProgramaCnpDetail([(int) $causalContext['project_id']], (string) $causalContext['Semana'], $causalFilters);
-    $cnpChart = $bi->getBrief('programa-general', [(int) $causalContext['project_id']], (string) $causalContext['Semana'], 'R', $causalFilters)['charts']['programa-cnp']['datasets'][0]['data'] ?? [];
+    $causalScope = $scope([(int) $causalContext['project_id']], 'causal');
+    $cnpDetail = $bi->getProgramaCnpDetail($causalScope, (string) $causalContext['Semana'], $causalFilters);
+    $cnpChart = $bi->getBrief($causalScope, 'programa-general', (string) $causalContext['Semana'], 'R', $causalFilters)['charts']['programa-cnp']['datasets'][0]['data'] ?? [];
     if ((int) ($cnpDetail['summary']['total'] ?? -1) !== (int) array_sum($cnpChart)) $failures[] = 'CNP detail total does not match chart under semana/sub/resp/etapa filters';
     foreach ($cnpDetail['activities'] ?? [] as $activity) {
         $matchesStage = str_contains(strtolower($activity['activity']), strtolower($causalFilters['etapa']))
@@ -196,13 +209,13 @@ if (!$causalContext) {
     }
 }
 
-$rangeCnp = $bi->getProgramaCnpDetail($rangeProjects, '', $rangeFilters);
-$rangeCnpChart = $bi->getBrief('programa-general', $rangeProjects, '', 'R', $rangeFilters)['charts']['programa-cnp']['datasets'][0]['data'] ?? [];
+$rangeCnp = $bi->getProgramaCnpDetail($scope($rangeProjects, 'range-cnp-detail'), '', $rangeFilters);
+$rangeCnpChart = $bi->getBrief($scope($rangeProjects, 'range-cnp-chart'), 'programa-general', '', 'R', $rangeFilters)['charts']['programa-cnp']['datasets'][0]['data'] ?? [];
 if ((int) ($rangeCnp['summary']['total'] ?? -1) !== (int) array_sum($rangeCnpChart)) {
     $failures[] = 'CNP multi-project date-range detail total does not match chart';
 }
 
-$radarContext = $db->query(
+$radarContext = $globalRead(static fn() => $db->query(
     "SELECT ps.project_id, ps.Semana, ps.Sub_Contratista, ps.Responsable_AIA, ps.Actividad, ps.Ubicacion
      FROM programacion_semanal ps
      WHERE ps.project_id IN ({$fixtureProjectsSql})
@@ -212,7 +225,7 @@ $radarContext = $db->query(
        AND COALESCE(TRIM(ps.Actividad), '') <> ''
      ORDER BY ps.project_id, ps.Semana, ps.Consecutivo
      LIMIT 1",
-)->fetch(PDO::FETCH_ASSOC);
+)->fetch(PDO::FETCH_ASSOC));
 if (!$radarContext) {
     $failures[] = 'no operational context available to verify radar filters';
 } else {
@@ -222,7 +235,7 @@ if (!$radarContext) {
         'resp' => (string) $radarContext['Responsable_AIA'],
         'etapa' => $stage,
     ];
-    $radarDetail = $bi->getProgramaRadarDetail([(int) $radarContext['project_id']], (string) $radarContext['Semana'], $radarFilters);
+    $radarDetail = $bi->getProgramaRadarDetail($scope([(int) $radarContext['project_id']], 'radar'), (string) $radarContext['Semana'], $radarFilters);
     foreach ($radarDetail['records'] ?? [] as $record) {
         // El contrato del filtro `etapa` en el radar es actividad O ubicación (igual que en el
         // detalle CNP de arriba); espejarlo solo contra la actividad daba falsos rojos.
@@ -240,7 +253,8 @@ if (!$radarContext) {
     }
 }
 
-$rangeRadarExpectedStatement = $db->prepare(
+$rangeRadarExpectedStatement = $db->queryForProjects(
+    $scope($rangeProjects, 'range-radar-oracle'),
     "SELECT COUNT(*)
      FROM programacion_semanal ps
      WHERE ps.project_id IN (?, ?)
@@ -252,10 +266,10 @@ $rangeRadarExpectedStatement = $db->prepare(
              AND sa.Fecha_Inicio_Sem <= ?
              AND sa.Fecha_Fin_Sem >= ?
        )",
+    [$rangeProjects[0], $rangeProjects[1], $rangeFilters['hasta'], $rangeFilters['desde']],
 );
-$rangeRadarExpectedStatement->execute([$rangeProjects[0], $rangeProjects[1], $rangeFilters['hasta'], $rangeFilters['desde']]);
 $rangeRadarExpected = $rangeRadarExpectedStatement->fetchColumn();
-$rangeRadar = $bi->getProgramaRadarDetail($rangeProjects, '', $rangeFilters, 'productividad', 100, 0);
+$rangeRadar = $bi->getProgramaRadarDetail($scope($rangeProjects, 'range-radar'), '', $rangeFilters, 'productividad', 100, 0);
 if ((int) ($rangeRadar['summary']['total_population'] ?? -1) !== (int) $rangeRadarExpected) {
     $failures[] = 'radar detail did not apply the multi-project date range to operational rows';
 }
@@ -267,30 +281,30 @@ if ((bool) ($rangeRadar['pagination']['has_more'] ?? false) !== ((int) $rangeRad
     $failures[] = 'radar detail pagination does not report remaining active commitments';
 }
 
-$cncNa = $db->query(
+$cncNa = $globalRead(static fn() => $db->query(
     "SELECT project_id, Semana, Consecutivo FROM programacion_semanal
      WHERE project_id IN ({$fixtureProjectsSql})
        AND Activa = 'NA' AND COALESCE(TRIM(CNC), '') <> '' LIMIT 1",
-)->fetch(PDO::FETCH_ASSOC);
+)->fetch(PDO::FETCH_ASSOC));
 if (!$cncNa) {
     $failures[] = 'no CNC NA context available to verify inclusion';
 } else {
-    $cncDetail = $bi->getProgramaCncDetail([(int) $cncNa['project_id']], (string) $cncNa['Semana']);
+    $cncDetail = $bi->getProgramaCncDetail($scope([(int) $cncNa['project_id']], 'cnc-na'), (string) $cncNa['Semana']);
     $included = array_filter($cncDetail['activities'] ?? [], static fn(array $row): bool => (int) $row['consecutivo'] === (int) $cncNa['Consecutivo']);
     if (!$included) $failures[] = 'CNC detail excluded an Activa=NA row with CNC cause';
 }
 
-$excludedCnp = $db->query(
+$excludedCnp = $globalRead(static fn() => $db->query(
     "SELECT project_id, Semana, Consecutivo FROM programacion_semanal
      WHERE project_id IN ({$fixtureProjectsSql})
        AND Activa IN ('1', 'NA') AND COALESCE(TRIM(CNP), '') <> '' LIMIT 1",
-)->fetch(PDO::FETCH_ASSOC);
+)->fetch(PDO::FETCH_ASSOC));
 if (!$excludedCnp) {
     // El fixture siembra 'CI.CNP.STALE.A' justo para este escenario: si no aparece, el chequeo
     // quedaría vacío en silencio.
     $failures[] = 'no active row with stale CNP available to verify causal universe exclusion';
 } else {
-    $detail = $bi->getProgramaCnpDetail([(int) $excludedCnp['project_id']], (string) $excludedCnp['Semana']);
+    $detail = $bi->getProgramaCnpDetail($scope([(int) $excludedCnp['project_id']], 'excluded-cnp'), (string) $excludedCnp['Semana']);
     foreach ($detail['activities'] ?? [] as $activity) {
         if ((int) $activity['consecutivo'] === (int) $excludedCnp['Consecutivo']) {
             $failures[] = 'CNP detail included an active row that is outside its causal universe'; break;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Bi;
 
+use App\Security\DataScope\MultiProjectScope;
+
 /**
  * BI Risk Scoring Service.
  *
@@ -26,8 +28,8 @@ class RiskScoringService
      * Get top risks for a report, ordered by risk_score descending.
      */
     public function getTopRisks(
+        MultiProjectScope $scope,
         string $reportKey,
-        array|int $projectIds,
         string $semana,
         int $limit = 10,
         array $filters = [],
@@ -38,13 +40,7 @@ class RiskScoringService
         }
 
         $riskType = $this->mapReportToRiskType($reportKey);
-        $projectIds = array_values(array_filter(
-            array_map('intval', is_array($projectIds) ? $projectIds : [$projectIds]),
-            static fn(int $projectId): bool => $projectId > 0,
-        ));
-        if ($projectIds === []) {
-            return [];
-        }
+        $projectIds = $scope->projectIds();
 
         $placeholders = implode(',', array_fill(0, count($projectIds), '?'));
         $riskWhere = $riskType === null ? '' : ' AND risk_type = ?';
@@ -70,10 +66,11 @@ class RiskScoringService
             $params[] = $riskType;
         }
         $contextWhere = $this->contextualRiskWhere($filters, $params);
-        $rows = $this->db->prepare(
+        $rows = $this->db->queryForProjects(
+            $scope,
             "SELECT * FROM bi_riesgos WHERE project_id IN ({$placeholders}){$rangeWhere}{$riskWhere}{$contextWhere} ORDER BY risk_score_100 DESC LIMIT {$sqlLimit}",
+            $params,
         );
-        $rows->execute($params);
 
         $risks = [];
         foreach ($rows->fetchAll(\PDO::FETCH_ASSOC) as $row) {

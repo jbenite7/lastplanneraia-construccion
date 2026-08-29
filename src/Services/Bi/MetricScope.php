@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Bi;
 
-use InvalidArgumentException;
+use App\Security\DataScope\MultiProjectScope;
 
 /**
  * Alcance de ejecucion de una metrica: que proyectos y que rango de fechas cubre.
@@ -15,37 +15,23 @@ use InvalidArgumentException;
  */
 final class MetricScope
 {
-    /** @var list<int> */
-    private readonly array $projectIds;
-
-    /**
-     * @param list<mixed> $projectIds proyectos incluidos en el calculo, nunca vacio
-     */
     public function __construct(
-        array $projectIds,
+        private readonly MultiProjectScope $authority,
         private readonly ?string $startDate = null,
         private readonly ?string $endDate = null,
         private readonly ?string $week = null,
     ) {
-        if ($projectIds === []) {
-            throw new InvalidArgumentException('MetricScope requiere al menos un project_id.');
-        }
-
-        $normalized = [];
-        foreach ($projectIds as $projectId) {
-            if (!is_int($projectId) && !(is_string($projectId) && ctype_digit($projectId))) {
-                throw new InvalidArgumentException('MetricScope solo acepta project_id numericos.');
-            }
-            $normalized[] = (int) $projectId;
-        }
-
-        $this->projectIds = array_values(array_unique($normalized));
     }
 
     /** @return list<int> */
     public function projectIds(): array
     {
-        return $this->projectIds;
+        return $this->authority->projectIds();
+    }
+
+    public function authority(): MultiProjectScope
+    {
+        return $this->authority;
     }
 
     public function startDate(): ?string

@@ -14,6 +14,27 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/support/BiContractFixture.php';
 
 use App\Services\ControlTowerService;
+use App\Security\DataScope\MultiProjectScope;
+use App\Security\DataScope\ProjectScope;
+use App\Security\DataScope\SystemScopeRunner;
+
+function cncGlobalRead(\Database $db, string $case, callable $read): mixed
+{
+    return (new SystemScopeRunner($db->dataScope()))->run(
+        'test:test_bi_programa_general_cnc:discovery:' . $case,
+        $read,
+    );
+}
+
+function cncProjectRead(\Database $db, int $projectId, callable $read): mixed
+{
+    $db->dataScope()->bind(new ProjectScope($projectId, 'fixture-bi-cnc', 'R'));
+    try {
+        return $read();
+    } finally {
+        $db->dataScope()->clear();
+    }
+}
 
 $db = \Database::getInstance();
 BiContractFixture::seedCausalRows($db);
@@ -96,7 +117,8 @@ function cncDirectRows(\Database $db, array $projectIds, string $semana, array $
         $params[] = '%' . strtolower($stage) . '%';
     }
 
-    $statement = $db->prepare(
+    $statement = $db->queryForProjects(
+        new MultiProjectScope($projectIds, 'fixture-bi-cnc', 'R', 'test:test_bi_programa_general_cnc:oracle'),
         'SELECT ps.project_id, ps.Semana, ps.Consecutivo, ps.Actividad, ps.Ubicacion,
                 ps.Categoria_CNC, ps.CNC, ps.Observaciones_CNC, ps.Compromiso,
                 ps.Ejecutado_Real, ps.P_Completado, ps.PAC, ps.Unidad, ps.Critica,
@@ -106,8 +128,8 @@ function cncDirectRows(\Database $db, array $projectIds, string $semana, array $
          LEFT JOIN semanas_activas sa ON sa.project_id = ps.project_id AND sa.Semana = ps.Semana
          WHERE ' . implode(' AND ', $where) . '
          ORDER BY ps.project_id, ps.Semana, ps.Consecutivo',
+        $params,
     );
-    $statement->execute($params);
 
     return $statement->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -232,8 +254,9 @@ function cncAssertScenario(
     string $semana,
     array $filters,
 ): void {
+    $scope = new MultiProjectScope($projectIds, 'fixture-bi-cnc', 'R', 'test:test_bi_programa_general_cnc:' . $label);
     $expected = cncExpected(cncDirectRows($db, $projectIds, $semana, $filters));
-    $brief = $bi->getBrief('programa-general', $projectIds, $semana, 'R', $filters);
+    $brief = $bi->getBrief($scope, 'programa-general', $semana, 'R', $filters);
     $chart = $brief['charts']['programa-cnc'] ?? [];
     $metrics = $chart['metrics'] ?? [];
 
@@ -260,12 +283,12 @@ function cncAssertScenario(
         }
     }
 
-    $detail = $bi->getProgramaCncDetail($projectIds, $semana, $filters, '', 2, 0);
+    $detail = $bi->getProgramaCncDetail($scope, $semana, $filters, '', 2, 0);
     cncAssert($failures, (int) ($detail['pagination']['total'] ?? -1) === $expected['summary']['total'], "{$label}: detail total differs from chart/source");
     $all = [];
     $offset = 0;
     do {
-        $page = $bi->getProgramaCncDetail($projectIds, $semana, $filters, '', 2, $offset, $offset === 0);
+        $page = $bi->getProgramaCncDetail($scope, $semana, $filters, '', 2, $offset, $offset === 0);
         array_push($all, ...($page['activities'] ?? []));
         $hasMore = (bool) ($page['pagination']['has_more'] ?? false);
         $next = (int) ($page['pagination']['next_offset'] ?? $offset);
@@ -299,7 +322,7 @@ function cncAssertScenario(
 
     $leadingCategory = array_key_first($expected['categories']);
     if ($leadingCategory !== null) {
-        $categoryPage = $bi->getProgramaCncDetail($projectIds, $semana, $filters, $leadingCategory, 1, 0);
+        $categoryPage = $bi->getProgramaCncDetail($scope, $semana, $filters, $leadingCategory, 1, 0);
         cncAssert($failures, (int) ($categoryPage['pagination']['total'] ?? -1) === (int) $expected['categories'][$leadingCategory], "{$label}: category total differs");
         foreach ($categoryPage['activities'] ?? [] as $activity) {
             cncAssert($failures, ($activity['category_canonical'] ?? '') === $leadingCategory, "{$label}: category filter leaked another category");
@@ -307,13 +330,13 @@ function cncAssertScenario(
     }
 }
 
-$context = $db->query("SELECT project_id, Semana FROM programacion_semanal WHERE Activa IN ('1','NA') AND COALESCE(TRIM(CNC), '') <> '' ORDER BY project_id, Semana, Consecutivo LIMIT 1")->fetch(PDO::FETCH_ASSOC) ?: [];
+$context = cncGlobalRead($db, 'context', static fn() => $db->query("SELECT project_id, Semana FROM programacion_semanal WHERE Activa IN ('1','NA') AND COALESCE(TRIM(CNC), '') <> '' ORDER BY project_id, Semana, Consecutivo LIMIT 1")->fetch(PDO::FETCH_ASSOC)) ?: [];
 $projectId = (int) ($context['project_id'] ?? 0);
 $week = (string) ($context['Semana'] ?? '');
 $canonicalRows = cncDirectRows($db, [$projectId], $week);
 cncAssert($failures, $projectId > 0 && $canonicalRows !== [], 'canonical CI fixture must expose a CNC population');
 
-$duplicateGroups = $db->query(
+$duplicateGroups = cncGlobalRead($db, 'duplicate-groups', static fn() => $db->query(
     "SELECT COUNT(*) FROM (
         SELECT project_id, Semana, Consecutivo
         FROM programacion_semanal
@@ -321,12 +344,14 @@ $duplicateGroups = $db->query(
         GROUP BY project_id, Semana, Consecutivo
         HAVING COUNT(*) > 1
     ) duplicate_cnc",
-)->fetchColumn();
+)->fetchColumn());
 cncAssert($failures, (int) $duplicateGroups === 0, 'CNC source grain contains duplicates');
 
-$weekRangeStatement = $db->prepare('SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM semanas_activas WHERE project_id = ? AND Semana = ? LIMIT 1');
-$weekRangeStatement->execute([$projectId, $week]);
-$weekRange = $weekRangeStatement->fetch(PDO::FETCH_ASSOC) ?: [];
+$weekRange = cncProjectRead($db, $projectId, static function () use ($db, $projectId, $week): array {
+    $statement = $db->prepare('SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM semanas_activas WHERE project_id = ? AND Semana = ? LIMIT 1');
+    $statement->execute([$projectId, $week]);
+    return $statement->fetch(PDO::FETCH_ASSOC) ?: [];
+});
 $firstRow = $canonicalRows[0] ?? [];
 $responsible = trim((string) ($firstRow['Responsable_AIA'] ?? ''));
 $subcontractor = trim((string) ($firstRow['Sub_Contratista'] ?? ''));

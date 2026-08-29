@@ -8,6 +8,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/support/BiContractFixture.php';
 
 use App\Security\RbacService;
+use App\Security\DataScope\MultiProjectScope;
 use App\Services\Bi\StorytellingService;
 use App\Support\BiProjectScope;
 use App\View\Components\BiAccessComponent;
@@ -33,6 +34,53 @@ if ($projects === []) {
 $authorizedIds = array_map('intval', array_column($projects, 'project_id'));
 $firstProjectId = $authorizedIds[0] ?? 0;
 $session = ['usuario' => $fixtureIdentity, 'project_id' => $firstProjectId];
+
+try {
+    $resolvedWithoutIdentity = $scope->resolve('', ['project_id' => 73]);
+    if ($resolvedWithoutIdentity !== []) {
+        $failures[] = 'resolve() authorized a session without user identity';
+    }
+} catch (\DomainException) {
+    $failures[] = 'resolve() did not preserve the empty-array adapter contract without user identity';
+}
+
+try {
+    $resolvedWithoutSelection = $scope->resolve('', ['usuario' => $fixtureIdentity]);
+    if ($resolvedWithoutSelection !== []) {
+        $failures[] = 'resolve() selected the first globally authorized project without an explicit selection';
+    }
+} catch (\DomainException) {
+    $failures[] = 'resolve() did not return an empty adapter result without an explicit project selection';
+}
+
+try {
+    $multiProjectScope = $scope->scope([73, 27], $session, 'test:bi-project-scope');
+    if (!$multiProjectScope instanceof MultiProjectScope) {
+        $failures[] = 'scope() did not return a MultiProjectScope';
+    } elseif ($multiProjectScope->projectIds() !== [27, 73]) {
+        $failures[] = 'scope() did not normalize and sort authorized project IDs';
+    }
+} catch (\Throwable $error) {
+    $failures[] = 'scope() rejected authorized projects 73/27: ' . $error->getMessage();
+}
+
+try {
+    $scope->scope([73, 999999], $session, 'test:bi-project-scope:mixed');
+    $failures[] = 'scope() accepted an authorized/foreign project set';
+} catch (\DomainException) {
+    // Expected: the authority set is membership-derived and cannot include 999999.
+} catch (\Throwable $error) {
+    $failures[] = 'scope() used the wrong failure type for an unauthorized set: ' . $error::class;
+}
+
+try {
+    $scope->scope('', ['project_id' => 73], 'test:bi-project-scope:empty-user');
+    $failures[] = 'scope() accepted an empty authority set without user identity';
+} catch (\DomainException) {
+    // Expected: public BI boundary fails closed before MultiProjectScope construction.
+} catch (\Throwable $error) {
+    $failures[] = 'scope() used the wrong failure type for an empty authority set: ' . $error::class;
+}
 
 if ($firstProjectId > 0 && $scope->resolve((string) $firstProjectId, $session) !== [$firstProjectId]) {
     $failures[] = 'authorized requested project was not preserved';

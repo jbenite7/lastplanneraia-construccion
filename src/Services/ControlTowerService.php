@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Security\DataScope\MultiProjectScope;
 use App\Services\Bi\RiskScoringService;
 use App\Services\Bi\StorytellingService;
 use App\Services\Bi\LineageService;
@@ -27,6 +28,7 @@ class ControlTowerService
     private ForecastService $forecast;
     private ActionRecommendationService $actionRec;
     private LineaBaseContractualService $lineaBase;
+    private ?MultiProjectScope $queryScope = null;
 
     public function __construct()
     {
@@ -44,14 +46,21 @@ class ControlTowerService
      *
      * @param string $reportKey One of: overview, programa-general, intermedia,
      *                          semanal, pdc, cic, cip, curva-s
-     * @param array|int $projectIds Single or multiple project IDs
+     * @param MultiProjectScope $scope Authorized project set
      * @param string $semana     Week ID (integer, from semanas_activas.Semana)
      * @param string $role       Project role or MULTI for consolidated scope
      * @return array             Full 7-section brief
      */
-    public function getBrief(string $reportKey, array|int $projectIds, string $semana, string $role = 'R', array $filters = []): array
+    public function getBrief(MultiProjectScope $scope, string $reportKey, string $semana, string $role = 'R', array $filters = []): array
     {
-        $projectIds = is_array($projectIds) ? $projectIds : [$projectIds];
+        return $this->withQueryScope(
+            $scope,
+            fn(): array => $this->getBriefScoped($scope->projectIds(), $reportKey, $semana, $role, $filters),
+        );
+    }
+
+    private function getBriefScoped(array $projectIds, string $reportKey, string $semana, string $role, array $filters): array
+    {
         $filters = $this->normalizeFilters($filters);
         $data = $this->fetchReportData($reportKey, $projectIds, $semana, $filters);
         $activitySnapshot = $reportKey === 'programa-general'
@@ -64,7 +73,13 @@ class ControlTowerService
         }
         $drivers = $this->composeDrivers($reportKey, $data);
         $risks = $this->composeRisks($reportKey, $projectIds, $semana, $filters);
-        $actions = $this->actionRec->recommend($reportKey, $data, $projectIds, $semana, $filters);
+        $actions = $this->actionRec->recommend(
+            $this->currentQueryScope(),
+            $reportKey,
+            $data,
+            $semana,
+            $filters,
+        );
         $lineage = $this->lineage->getForReport($reportKey);
 
         $firstId = $projectIds[0];
@@ -93,9 +108,16 @@ class ControlTowerService
         ];
     }
 
-    public function getFilterOptions(array|int $projectIds, string $semana = '', array $filters = []): array
+    public function getFilterOptions(MultiProjectScope $scope, string $semana = '', array $filters = []): array
     {
-        $projectIds = is_array($projectIds) ? $projectIds : [$projectIds];
+        return $this->withQueryScope(
+            $scope,
+            fn(): array => $this->getFilterOptionsScoped($scope->projectIds(), $semana, $filters),
+        );
+    }
+
+    private function getFilterOptionsScoped(array $projectIds, string $semana, array $filters): array
+    {
         $filters = $this->normalizeFilters($filters);
         $scopeFilters = array_merge($filters, ['sub' => '', 'resp' => '', 'etapa' => '']);
 
@@ -115,9 +137,16 @@ class ControlTowerService
         ];
     }
 
-    public function getProgramaComplianceDetail(array|int $projectIds, string $semana, array $filters = [], int $limit = 50): array
+    public function getProgramaComplianceDetail(MultiProjectScope $scope, string $semana, array $filters = [], int $limit = 50): array
     {
-        $projectIds = is_array($projectIds) ? $projectIds : [$projectIds];
+        return $this->withQueryScope(
+            $scope,
+            fn(): array => $this->getProgramaComplianceDetailScoped($scope->projectIds(), $semana, $filters, $limit),
+        );
+    }
+
+    private function getProgramaComplianceDetailScoped(array $projectIds, string $semana, array $filters, int $limit): array
+    {
         $filters = $this->normalizeFilters($filters);
         $trend = $this->fetchProgramaGeneralTrend($projectIds, $semana, $filters);
         $payload = $this->programaCompliancePayload($trend);
@@ -132,7 +161,7 @@ class ControlTowerService
     }
 
     public function getProgramaProgressDetail(
-        array|int $projectIds,
+        MultiProjectScope $scope,
         string $semana,
         array $filters = [],
         int $limit = 50,
@@ -141,7 +170,29 @@ class ControlTowerService
         bool $criticalOnly = false,
     ): array
     {
-        $projectIds = is_array($projectIds) ? $projectIds : [$projectIds];
+        return $this->withQueryScope(
+            $scope,
+            fn(): array => $this->getProgramaProgressDetailScoped(
+                $scope->projectIds(),
+                $semana,
+                $filters,
+                $limit,
+                $offset,
+                $sort,
+                $criticalOnly,
+            ),
+        );
+    }
+
+    private function getProgramaProgressDetailScoped(
+        array $projectIds,
+        string $semana,
+        array $filters,
+        int $limit,
+        int $offset,
+        string $sort,
+        bool $criticalOnly,
+    ): array {
         $filters = $this->normalizeFilters($filters);
         $limit = max(1, min(100, $limit));
         $offset = max(0, $offset);
@@ -188,13 +239,31 @@ class ControlTowerService
     }
 
     public function getProgramaDelayDetail(
-        array|int $projectIds,
+        MultiProjectScope $scope,
         string $semana,
         array $filters = [],
         int $limit = 50,
         int $offset = 0,
     ): array {
-        $projectIds = is_array($projectIds) ? $projectIds : [$projectIds];
+        return $this->withQueryScope(
+            $scope,
+            fn(): array => $this->getProgramaDelayDetailScoped(
+                $scope->projectIds(),
+                $semana,
+                $filters,
+                $limit,
+                $offset,
+            ),
+        );
+    }
+
+    private function getProgramaDelayDetailScoped(
+        array $projectIds,
+        string $semana,
+        array $filters,
+        int $limit,
+        int $offset,
+    ): array {
         $filters = $this->normalizeFilters($filters);
         $limit = max(1, min(100, $limit));
         $offset = max(0, $offset);
@@ -239,7 +308,7 @@ class ControlTowerService
     }
 
     public function getProgramaRadarDetail(
-        array|int $projectIds,
+        MultiProjectScope $scope,
         string $semana,
         array $filters = [],
         string $axis = 'productividad',
@@ -247,7 +316,27 @@ class ControlTowerService
         int $offset = 0,
     ): array
     {
-        $projectIds = is_array($projectIds) ? $projectIds : [$projectIds];
+        return $this->withQueryScope(
+            $scope,
+            fn(): array => $this->getProgramaRadarDetailScoped(
+                $scope->projectIds(),
+                $semana,
+                $filters,
+                $axis,
+                $limit,
+                $offset,
+            ),
+        );
+    }
+
+    private function getProgramaRadarDetailScoped(
+        array $projectIds,
+        string $semana,
+        array $filters,
+        string $axis,
+        int $limit,
+        int $offset,
+    ): array {
         $filters = $this->normalizeFilters($filters);
         $axis = in_array($axis, ['productividad', 'eficiencia', 'desempeno'], true) ? $axis : 'productividad';
         $limit = max(1, min(100, $limit));
@@ -293,7 +382,7 @@ class ControlTowerService
     }
 
     public function getProgramaCnpDetail(
-        array|int $projectIds,
+        MultiProjectScope $scope,
         string $semana,
         array $filters = [],
         string $category = '',
@@ -302,11 +391,23 @@ class ControlTowerService
         bool $includeSummary = true,
     ): array
     {
-        return $this->getProgramaCausalDetail('cnp', $projectIds, $semana, $filters, $category, $limit, $offset, $includeSummary);
+        return $this->withQueryScope(
+            $scope,
+            fn(): array => $this->getProgramaCausalDetail(
+                'cnp',
+                $scope->projectIds(),
+                $semana,
+                $filters,
+                $category,
+                $limit,
+                $offset,
+                $includeSummary,
+            ),
+        );
     }
 
     public function getProgramaCncDetail(
-        array|int $projectIds,
+        MultiProjectScope $scope,
         string $semana,
         array $filters = [],
         string $category = '',
@@ -315,7 +416,19 @@ class ControlTowerService
         bool $includeSummary = true,
     ): array
     {
-        return $this->getProgramaCausalDetail('cnc', $projectIds, $semana, $filters, $category, $limit, $offset, $includeSummary);
+        return $this->withQueryScope(
+            $scope,
+            fn(): array => $this->getProgramaCausalDetail(
+                'cnc',
+                $scope->projectIds(),
+                $semana,
+                $filters,
+                $category,
+                $limit,
+                $offset,
+                $includeSummary,
+            ),
+        );
     }
 
     // -----------------------------------------------------------------
@@ -529,9 +642,10 @@ class ControlTowerService
     private function fetchPdc(array $projectIds, string $semana, array $filters): array
     {
         $seguimiento = new \App\Services\Pdc\SeguimientoService($this->db);
-        $paquetes    = new \App\Services\Pdc\PaquetesService($this->db);
 
-        $agg = $seguimiento->vencimientosAgregados($projectIds);
+        $agg = $seguimiento->vencimientosAgregados($this->currentQueryScope());
+        $cobertura = $seguimiento->coberturaPorProyecto($this->currentQueryScope());
+        $desactualizados = $seguimiento->paquetesDesactualizadosPorProyecto($this->currentQueryScope());
         $nombres = $this->nombresDeProyecto($projectIds);
 
         $filas = [];
@@ -539,7 +653,7 @@ class ControlTowerService
             $pid = (int) $pid;
             $obra = $agg['por_obra'][$pid] ?? ['conteos' => [], 'destinos' => 0, 'pasos' => 0];
             $c = $obra['conteos'];
-            $resumen = $paquetes->resumen($pid) ?? [];
+            $resumen = $cobertura[$pid] ?? [];
 
             $filas[] = [
                 'project_id'      => $pid,
@@ -550,7 +664,7 @@ class ControlTowerService
                 'en_riesgo'       => (int) ($c['sem1'] ?? 0) + (int) ($c['sem2'] ?? 0) + (int) ($c['sem3'] ?? 0),
                 'destinos'        => (int) $obra['destinos'],
                 'pasos'           => (int) $obra['pasos'],
-                'sin_mirar'       => count($seguimiento->paquetesDesactualizados($pid)),
+                'sin_mirar'       => (int) ($desactualizados[$pid] ?? 0),
                 'hoy'             => $agg['hoy'],
             ];
         }
@@ -566,7 +680,9 @@ class ControlTowerService
      */
     private function pdcBreakdown(array $projectIds): array
     {
-        $agg = (new \App\Services\Pdc\SeguimientoService($this->db))->vencimientosAgregados($projectIds);
+        $agg = (new \App\Services\Pdc\SeguimientoService($this->db))->vencimientosAgregados(
+            $this->currentQueryScope(),
+        );
 
         return [
             // El horizonte completo (vencido · sem1 · sem2 · sem3 · sem6 · adelante · sin fecha).
@@ -592,7 +708,7 @@ class ControlTowerService
         }
 
         $ph = implode(',', array_fill(0, count($ids), '?'));
-        $rows = $this->queryAll(
+        $rows = $this->queryIdentity(
             "SELECT ID, Proyecto_Proceso FROM general_proyectos_procesos WHERE ID IN ({$ph})",
             $ids,
         );
@@ -850,7 +966,13 @@ class ControlTowerService
 
     private function composeRisks(string $reportKey, array $projectIds, string $semana, array $filters): array
     {
-        return $this->riskScoring->getTopRisks($reportKey, $projectIds, $semana, 10, $filters);
+        return $this->riskScoring->getTopRisks(
+            $this->currentQueryScope(),
+            $reportKey,
+            $semana,
+            10,
+            $filters,
+        );
     }
 
     private function composeCharts(string $reportKey, array $data, array $scorecard, array $projectIds, string $semana, array $filters): array
@@ -1189,15 +1311,11 @@ class ControlTowerService
         [$where, $params] = $this->buildFilteredWhere($projectIds, '', $filters, 'pc', [
             'week' => 'Semana', 'sub' => 'Sub_Contratista', 'resp' => 'Responsable_AIA', 'etapa' => ['Actividad', 'Estado'],
         ]);
-        $snapshotConditions = [];
-        foreach ($snapshotWeeks as $projectId => $week) {
-            $snapshotConditions[] = '(pc.project_id = ? AND pc.Semana = ?)';
-            $params[] = $projectId;
-            $params[] = $week;
-        }
-        $where .= ' AND (' . implode(' OR ', $snapshotConditions) . ')';
+        $weeks = array_values(array_unique(array_values($snapshotWeeks)));
+        $where .= ' AND pc.Semana IN (' . $this->inClause($weeks) . ')';
+        array_push($params, ...$weeks);
 
-        return $this->queryAll(
+        $rows = $this->queryAll(
             $this->programaGeneralDirectSelect() . " WHERE {$where}
                  AND COALESCE(pc.Titulo, 0) = 0
                  AND pc.Fecha_Inicio IS NOT NULL
@@ -1206,6 +1324,12 @@ class ControlTowerService
              ORDER BY pc.project_id, pc.Consecutivo_en_Programa",
             $params,
         );
+
+        return array_values(array_filter(
+            $rows,
+            static fn(array $row): bool => isset($snapshotWeeks[(int) ($row['project_id'] ?? 0)])
+                && (string) $snapshotWeeks[(int) $row['project_id']] === (string) ($row['Semana'] ?? ''),
+        ));
     }
 
     private function programaSnapshotWeeks(array $projectIds, string $semana, array $filters): array
@@ -2401,15 +2525,15 @@ class ControlTowerService
             return $cache[$key];
         }
 
-        $stmt = $this->db->prepare(
+        $rows = $this->query(
             "SELECT COALESCE(NULLIF(cantidad_ppto, 0), NULLIF(DATEDIFF(Fecha_Fin, Fecha_Inicio), 0), 1) AS weight
              FROM programa_consolidado
              WHERE project_id = ? AND unique_id = ?
              ORDER BY Semana DESC
              LIMIT 1",
+            [$projectId, $uniqueId],
         );
-        $stmt->execute([$projectId, $uniqueId]);
-        $cache[$key] = max(1.0, $this->number($stmt->fetchColumn() ?: 1));
+        $cache[$key] = max(1.0, $this->number($rows[0]['weight'] ?? 1));
         return $cache[$key];
     }
 
@@ -2901,7 +3025,7 @@ class ControlTowerService
         ))));
         if (!$ids) return [];
 
-        $projects = $this->queryAll(
+        $projects = $this->queryIdentity(
             'SELECT ID, Proyecto_Proceso FROM general_proyectos_procesos WHERE ID IN (' . $this->inClause($ids) . ')',
             $ids,
         );
@@ -3647,14 +3771,39 @@ class ControlTowerService
 
     private function query(string $sql, array $params = []): array
     {
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
+        $stmt = $this->db->queryForProjects($this->currentQueryScope(), $sql, $params);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
     }
 
     private function queryAll(string $sql, array $params = []): array
     {
         return $this->query($sql, $params);
+    }
+
+    private function queryIdentity(string $sql, array $params = []): array
+    {
+        $stmt = $this->db->query($sql, $params);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+    }
+
+    private function currentQueryScope(): MultiProjectScope
+    {
+        return $this->queryScope
+            ?? throw new \LogicException('ControlTowerService exige un MultiProjectScope explícito.');
+    }
+
+    private function withQueryScope(MultiProjectScope $scope, callable $callback): mixed
+    {
+        if ($this->queryScope !== null) {
+            throw new \LogicException('ControlTowerService no permite scopes BI anidados.');
+        }
+
+        $this->queryScope = $scope;
+        try {
+            return $callback();
+        } finally {
+            $this->queryScope = null;
+        }
     }
 
     /**

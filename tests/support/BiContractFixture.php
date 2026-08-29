@@ -100,13 +100,14 @@ final class BiContractFixture
 
     public static function seedCausalRows(Database $db): void
     {
-        self::begin($db);
-        self::seedPadres($db);
-        // La quinta fila ('CI.CNP.STALE.A') es un compromiso ACTIVO (Activa='1') con un CNP viejo
-        // anotado: existe para que los tests puedan comprobar que el universo causal de CNP
-        // excluye filas activas sin depender de que la base compartida tenga una así.
-        $statement = $db->prepare(sprintf(
-            "INSERT INTO programacion_semanal (
+        self::runMutable($db, 'causal', static function () use ($db): void {
+            self::begin($db);
+            self::seedPadres($db);
+            // La quinta fila ('CI.CNP.STALE.A') es un compromiso ACTIVO (Activa='1') con un CNP viejo
+            // anotado: existe para que los tests puedan comprobar que el universo causal de CNP
+            // excluye filas activas sin depender de que la base compartida tenga una así.
+            $statement = $db->prepare(sprintf(
+                "INSERT INTO programacion_semanal (
                 project_id, row_id, Consecutivo, Semana, unique_id, Consecutivo_En_Programa,
                 Id, Actividad, Ubicacion, Fecha_Inicio, Fecha_Fin, Sub_Contratista,
                 Responsable_AIA, Empresa, Ejecutado, Unidad, cantidad_ppto, Compromiso,
@@ -133,10 +134,11 @@ final class BiContractFixture
                  '2026-07-06', '2026-07-12', 'Proveedor CI Construccion', 'Profesional CI Construccion',
                  'AIA', 0, 'und', 5, 5, 0, 0, 0, 0, 0, '1', 1,
                  'Programacion', 'Causa vieja anotada', NULL, NULL)",
-            self::PROYECTO_A,
-            self::PROYECTO_B,
-        ));
-        $statement->execute();
+                self::PROYECTO_A,
+                self::PROYECTO_B,
+            ));
+            $statement->execute();
+        });
     }
 
     /**
@@ -150,57 +152,60 @@ final class BiContractFixture
      */
     public static function seedCicScenario(Database $db): void
     {
-        self::begin($db);
-        self::seedPadres($db);
+        self::runMutable($db, 'cic', static function () use ($db): void {
+            self::begin($db);
+            self::seedPadres($db);
 
-        $db->prepare(sprintf(
-            "INSERT INTO general_proyectos_procesos (Id, Proyecto_Proceso, Base_de_Datos, Area, Activo, Acceso)
+            $db->prepare(sprintf(
+                "INSERT INTO general_proyectos_procesos (Id, Proyecto_Proceso, Base_de_Datos, Area, Activo, Acceso)
              VALUES
                 (%1\$d, 'CI Sandbox A', 'ciSandboxA', 'Construccion', 1, 1),
                 (%2\$d, 'CI Sandbox B', 'ciSandboxB', 'Construccion', 1, 1)",
-            self::PROYECTO_A,
-            self::PROYECTO_B,
-        ))->execute();
+                self::PROYECTO_A,
+                self::PROYECTO_B,
+            ))->execute();
 
-        $db->prepare(sprintf(
-            "INSERT INTO subcontratistas (project_id, Id, subcontratista, correo_contacto, NIT, alcance, tipo_proveedor, activo)
+            $db->prepare(sprintf(
+                "INSERT INTO subcontratistas (project_id, Id, subcontratista, correo_contacto, NIT, alcance, tipo_proveedor, activo)
              VALUES
                 (%1\$d, 9601, 'Proveedor CI Construccion', 'proveedor-a@ci.invalid', 900990200, 'Obra CI', 'Construccion', 1),
                 (%2\$d, 9601, 'Proveedor CI Construccion', 'cross-project-sentinel@ci.invalid', 999999999, 'Sentinel', 'Sentinel', 1)",
-            self::PROYECTO_A,
-            self::PROYECTO_B,
-        ))->execute();
+                self::PROYECTO_A,
+                self::PROYECTO_B,
+            ))->execute();
 
-        $db->prepare(sprintf(
-            "INSERT INTO profesionales (project_id, id, nombre, email, cargo, activo)
+            $db->prepare(sprintf(
+                "INSERT INTO profesionales (project_id, id, nombre, email, cargo, activo)
              VALUES
                 (%1\$d, 9601, 'Profesional CI Construccion', 'profesional-a@ci.invalid', 'Residente CI', 1),
                 (%2\$d, 9601, 'Profesional CI Construccion', 'cross-project-sentinel@ci.invalid', 'Sentinel', 1)",
-            self::PROYECTO_A,
-            self::PROYECTO_B,
-        ))->execute();
+                self::PROYECTO_A,
+                self::PROYECTO_B,
+            ))->execute();
+        });
     }
 
     public static function seedProgramSnapshots(Database $db): void
     {
-        self::begin($db);
-        self::seedPadres($db);
+        self::runMutable($db, 'program-snapshots', static function () use ($db): void {
+            self::begin($db);
+            self::seedPadres($db);
 
-        // La cuarta fila vive en B y comparte cohorte con las de A: es la que da contenido al
-        // escenario multi-proyecto. Antes se intentaba con un UPDATE sobre el proyecto 75, que al
-        // no existir lo dejaba en un no-op silencioso.
-        //
-        // La sexta ('Hito de un dia CI') tiene Fecha_Inicio = Fecha_Fin: existe para que la
-        // reconciliación de `duration_days = 1` en `test_bi_source_reconciliation` tenga al menos
-        // una fila propia cuando se ancla a los proyectos sacrificables.
-        //
-        // La quinta está en la semana 1 con 'Proveedor CI Construccion' y es la cohorte
-        // SOLO-HISTÓRICA: consultada en la semana 3 no aparece como actual (`Semana = 3`) pero sí
-        // en la serie histórica (`Semana <= 3`). `test_bi_programa_general_chart_values` la llama
-        // «real regression fixture» y comprueba que un match histórico no fabrique un pronóstico
-        // actual; hasta ahora ninguna fila la sembraba y la comprobación no podía cumplirse.
-        $db->prepare(sprintf(
-            "INSERT INTO programa_consolidado (
+            // La cuarta fila vive en B y comparte cohorte con las de A: es la que da contenido al
+            // escenario multi-proyecto. Antes se intentaba con un UPDATE sobre el proyecto 75, que al
+            // no existir lo dejaba en un no-op silencioso.
+            //
+            // La sexta ('Hito de un dia CI') tiene Fecha_Inicio = Fecha_Fin: existe para que la
+            // reconciliación de `duration_days = 1` en `test_bi_source_reconciliation` tenga al menos
+            // una fila propia cuando se ancla a los proyectos sacrificables.
+            //
+            // La quinta está en la semana 1 con 'Proveedor CI Construccion' y es la cohorte
+            // SOLO-HISTÓRICA: consultada en la semana 3 no aparece como actual (`Semana = 3`) pero sí
+            // en la serie histórica (`Semana <= 3`). `test_bi_programa_general_chart_values` la llama
+            // «real regression fixture» y comprueba que un match histórico no fabrique un pronóstico
+            // actual; hasta ahora ninguna fila la sembraba y la comprobación no podía cumplirse.
+            $db->prepare(sprintf(
+                "INSERT INTO programa_consolidado (
                 project_id, row_id, Consecutivo, Semana, unique_id, Consecutivo_en_Programa,
                 Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, Ejecutado,
                 Estado, Estado_Restricciones, Sub_Contratista, Responsable_AIA, Activa,
@@ -224,11 +229,20 @@ final class BiContractFixture
                 (%1\$d, 9105, 9105, 1, 103, 101, 'CI.PG.A.4', 'Hito de un dia CI', 0,
                  '2026-07-08', '2026-07-08', 0, 1.00, 'Terminado', 1.00,
                  'Proveedor CI Construccion', 'Responsable CI Compartido', 1, 1, 5, 'und')",
-            self::PROYECTO_A,
-            self::PROYECTO_B,
-        ))->execute();
+                self::PROYECTO_A,
+                self::PROYECTO_B,
+            ))->execute();
 
-        self::declararLineaBase($db);
+            self::declararLineaBase($db);
+        });
+    }
+
+    private static function runMutable(Database $db, string $case, callable $operation): void
+    {
+        (new \App\Security\DataScope\SystemScopeRunner($db->dataScope()))->run(
+            'test:bi-contract-fixture:' . $case,
+            $operation,
+        );
     }
 
     /**

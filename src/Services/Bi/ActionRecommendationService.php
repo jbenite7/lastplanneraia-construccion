@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Bi;
 
+use App\Security\DataScope\MultiProjectScope;
+
 /**
  * BI Action Recommendation Service.
  *
@@ -28,9 +30,9 @@ class ActionRecommendationService
      * @return array[] Each with: action, owner, due_date, expected_impact, evidence, action_type, status
      */
     public function recommend(
+        MultiProjectScope $scope,
         string $reportKey,
         array $data,
-        array|int $projectIds,
         string $semana,
         array $filters = [],
     ): array
@@ -46,11 +48,6 @@ class ActionRecommendationService
             'curva-s'             => $this->actionsFromCurvaS($data),
             default               => [],
         };
-
-        $scope = array_values(array_unique(array_filter(array_map(
-            'intval',
-            is_array($projectIds) ? $projectIds : [$projectIds],
-        ))));
 
         return $this->enrichActions($actions, $scope, $semana, $filters);
     }
@@ -269,9 +266,10 @@ class ActionRecommendationService
     // Action factory
     // -----------------------------------------------------------------
 
-    private function enrichActions(array $actions, array $projectIds, string $semana, array $filters): array
+    private function enrichActions(array $actions, MultiProjectScope $scope, string $semana, array $filters): array
     {
-        $cutoffs = $this->resolveCutoffs($projectIds, $semana, $filters);
+        $projectIds = $scope->projectIds();
+        $cutoffs = $this->resolveCutoffs($scope, $semana, $filters);
 
         return array_map(function (array $action) use ($projectIds, $semana, $cutoffs): array {
             $sourceProjectId = (int) ($action['project_id'] ?? 0);
@@ -307,11 +305,9 @@ class ActionRecommendationService
         return $dates;
     }
 
-    private function resolveCutoffs(array $projectIds, string $semana, array $filters): array
+    private function resolveCutoffs(MultiProjectScope $scope, string $semana, array $filters): array
     {
-        if ($projectIds === []) {
-            return [];
-        }
+        $projectIds = $scope->projectIds();
 
         $in = implode(',', array_fill(0, count($projectIds), '?'));
         $filters = $this->normalizeDateFilters($filters);
@@ -328,13 +324,14 @@ class ActionRecommendationService
             return [];
         }
 
-        $stmt = $this->db->prepare(
+        $stmt = $this->db->queryForProjects(
+            $scope,
             "SELECT project_id, MAX(COALESCE(Fecha_Fin_Sem, Fecha_Inicio_Sem)) AS cutoff
              FROM semanas_activas
              WHERE project_id IN ({$in}){$where}
              GROUP BY project_id",
+            $params,
         );
-        $stmt->execute($params);
         $cutoffs = [];
         foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
             $value = $row['cutoff'] ?? null;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Security\DataScope\MultiProjectScope;
 use App\Security\RbacCatalog;
 use App\Security\RbacService;
 use Database;
@@ -25,6 +26,11 @@ final class BiProjectScope
 
     public function resolve($requestedRaw, array $session): array
     {
+        $usuario = trim((string) ($session['usuario'] ?? ''));
+        if ($usuario === '') {
+            return [];
+        }
+
         $requested = self::normalizeProjectIds($requestedRaw);
         $allowed = $this->authorizedProjectIds($session);
 
@@ -41,11 +47,23 @@ final class BiProjectScope
             return [$sessionProjectId];
         }
 
-        if ($allowed !== []) {
-            return [$allowed[0]];
+        return [];
+    }
+
+    public function scope($requestedRaw, array $session, string $reason): MultiProjectScope
+    {
+        $ids = $this->resolve($requestedRaw, $session);
+        $usuario = trim((string) ($session['usuario'] ?? ''));
+        if ($ids === [] || $usuario === '') {
+            throw new DomainException('No tienes proyectos autorizados para Control Tower.');
         }
 
-        throw new DomainException('No tienes proyectos autorizados para Control Tower.');
+        return new MultiProjectScope(
+            $ids,
+            $usuario,
+            $this->reportRole($ids, $session),
+            $reason,
+        );
     }
 
     /**

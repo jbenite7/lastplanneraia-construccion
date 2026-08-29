@@ -58,6 +58,9 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use App\Security\DataScope\MultiProjectScope;
+use App\Security\DataScope\ProjectScope;
+use App\Security\DataScope\SystemScopeRunner;
 use App\Services\Bi\MetricDictionaryService;
 use App\Services\Bi\MetricExecutor;
 use App\Services\Bi\MetricScope;
@@ -164,7 +167,12 @@ $oldPathResolvers = [
         // `programaRadarAxis()` -- valores crudos SIN el redondeo a 1 decimal de `raw_value` ni
         // el umbral "minimo 3 muestras" que solo gobierna si se MUESTRA el dato (ver
         // known_limitations en el catalogo), no si el ratio es valido.
-        $detail = $ct->getProgramaRadarDetail([$projectId], $semana, [], 'desempeno');
+        $detail = $ct->getProgramaRadarDetail(
+            new MultiProjectScope([$projectId], 'metric.parity.fixture', 'V', 'test:test_bi_paridad_metricas:radar'),
+            $semana,
+            [],
+            'desempeno',
+        );
         $denominador = (int) ($detail['summary']['denominator'] ?? 0);
         if ($denominador === 0) {
             return null;
@@ -287,6 +295,43 @@ function paridadFail(string $message): void
     $failed++;
 }
 
+function paridadGlobalRead(\Database $db, callable $read): mixed
+{
+    $context = $db->dataScope();
+    $snapshot = $context->current();
+    if ($snapshot !== null) {
+        $context->clear();
+    }
+    try {
+        return (new SystemScopeRunner($context))->run('test:bi-paridad:discovery', $read);
+    } finally {
+        if ($context->current() !== null) {
+            $context->clear();
+        }
+        if ($snapshot !== null) {
+            $context->bind($snapshot);
+        }
+    }
+}
+
+function paridadProjectRead(\Database $db, int $projectId, callable $read): mixed
+{
+    $context = $db->dataScope();
+    $snapshot = $context->current();
+    if ($snapshot !== null) {
+        $context->clear();
+    }
+    $context->bind(new ProjectScope($projectId, 'metric.parity.fixture', 'V'));
+    try {
+        return $read();
+    } finally {
+        $context->clear();
+        if ($snapshot !== null) {
+            $context->bind($snapshot);
+        }
+    }
+}
+
 /**
  * Hasta `$limit` semanas reales (columna `Semana`) mas recientes con filas en
  * `programacion_semanal` para el proyecto dado. Descubierto en vivo contra la base de dev, nunca
@@ -383,7 +428,10 @@ $controlTower = new ControlTowerService();
 $semanasPorObra = [];
 $obrasConDatos = 0;
 foreach (OBRAS_PARIDAD as $projectId) {
-    $semanas = semanasRealesDe($db, $projectId, SEMANAS_POR_OBRA);
+    $semanas = paridadGlobalRead(
+        $db,
+        static fn(): array => semanasRealesDe($db, $projectId, SEMANAS_POR_OBRA),
+    );
     $semanasPorObra[$projectId] = $semanas;
     if ($semanas === []) {
         paridadPass("obra {$projectId}: sin semanas reales en este fixture — se omite, no se inventan datos");
@@ -437,7 +485,11 @@ foreach ($metricasParaComparar as $definition) {
     foreach (OBRAS_PARIDAD as $projectId) {
         foreach ($semanasPorObra[$projectId] as $semana) {
             try {
-                $oldValue = $resolver($projectId, $semana, $controlTower);
+                $oldValue = paridadProjectRead(
+                    $db,
+                    $projectId,
+                    static fn(): mixed => $resolver($projectId, $semana, $controlTower),
+                );
             } catch (\Throwable $e) {
                 paridadFail("{$metricKey} [obra {$projectId}, semana {$semana}]: camino viejo lanzo excepcion: {$e->getMessage()}");
                 continue;
@@ -451,8 +503,13 @@ foreach ($metricasParaComparar as $definition) {
                 // (grain project_id+Semana, cutoff_policy "semana seleccionada") siguen recibiendo
                 // `week` exactamente como antes.
                 $scope = metricScopeUsaSemana($definition)
-                    ? new MetricScope([$projectId], week: $semana)
-                    : new MetricScope([$projectId]);
+                    ? new MetricScope(
+                        new MultiProjectScope([$projectId], 'metric.parity.fixture', 'V', 'test:metric-parity:week'),
+                        week: $semana,
+                    )
+                    : new MetricScope(
+                        new MultiProjectScope([$projectId], 'metric.parity.fixture', 'V', 'test:metric-parity'),
+                    );
                 $newValue = $executor->execute($metricKey, $scope)->value();
             } catch (\Throwable $e) {
                 paridadFail("{$metricKey} [obra {$projectId}, semana {$semana}]: camino nuevo lanzo excepcion: {$e->getMessage()}");

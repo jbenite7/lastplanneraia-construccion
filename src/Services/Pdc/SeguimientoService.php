@@ -2,6 +2,8 @@
 
 namespace App\Services\Pdc;
 
+use App\Security\DataScope\MultiProjectScope;
+
 /**
  * Seguimiento al plan de compras (PDC v2 / Fase B1): cuando ocurrio de verdad cada paso de
  * contratacion, y como se lee eso contra lo que estaba programado.
@@ -489,39 +491,44 @@ class SeguimientoService
      * No selecciona proveedor a propósito (Decisión 3 del spec): ese dato no sale del módulo.
      * Para eso está la pantalla de contratación, que ya lo protege.
      *
-     * @param int[] $projectIds
+     * @param MultiProjectScope $scope alcance BI autorizado
      * @return list<array{project_id:int,paquete:string,lote:?string,paso:string,fecha_fin:?string,estado:string,diasDesfase:int,responsable:?string}>
      */
-    public function detalleDestinos(array $projectIds, ?string $hoy = null): array
+    public function detalleDestinos(MultiProjectScope $scope, ?string $hoy = null): array
     {
         $hoy ??= (new \DateTimeImmutable('today'))->format('Y-m-d');
-        $ids = array_values(array_unique(array_map('intval', $projectIds)));
-        if ($ids === []) {
-            return [];
-        }
+        $ids = $scope->projectIds();
 
         $ph = implode(',', array_fill(0, count($ids), '?'));
-        $rows = $this->db->query(
-            "SELECT ps.project_id, p.nombre AS paquete, s.nombre AS lote, ps.paso, ps.fecha_fin,
+        $rows = $this->db->queryForProjects(
+            $scope,
+            "SELECT ps.project_id, ps.paquete_id, s.nombre AS lote, ps.paso, ps.fecha_fin,
                     u.nombre AS responsable
              FROM pdc_plan_paso ps
              JOIN pdc_plan_paquete pp ON pp.project_id = ps.project_id AND pp.paquete_id = ps.paquete_id
                                      AND pp.subpaquete_id = ps.subpaquete_id
-             JOIN general_paquetes_contratacion p ON p.id = ps.paquete_id
              LEFT JOIN pdc_subpaquete s ON s.project_id = ps.project_id AND s.id = ps.subpaquete_id
              LEFT JOIN general_usuarios u ON u.id = pp.responsable_user_id
-             WHERE ps.project_id IN ({$ph}) AND ps.fecha_real IS NULL AND p.activo = 1
-             ORDER BY ps.fecha_fin IS NULL, ps.fecha_fin ASC, p.nombre ASC, ps.orden ASC",
+             WHERE ps.project_id IN ({$ph}) AND ps.fecha_real IS NULL
+             ORDER BY ps.fecha_fin IS NULL, ps.fecha_fin ASC, ps.paquete_id ASC, ps.orden ASC",
             $ids,
         )->fetchAll(\PDO::FETCH_ASSOC);
+        $packages = $this->activePackageNames(array_map(
+            static fn(array $row): int => (int) $row['paquete_id'],
+            $rows,
+        ));
 
         $out = [];
         foreach ($rows as $r) {
+            $packageId = (int) $r['paquete_id'];
+            if (!isset($packages[$packageId])) {
+                continue;
+            }
             $fechaFin = $r['fecha_fin'] === null ? null : (string) $r['fecha_fin'];
             $c = self::clasificarVencimiento($fechaFin, $hoy);
             $out[] = [
                 'project_id'  => (int) $r['project_id'],
-                'paquete'     => (string) $r['paquete'],
+                'paquete'     => $packages[$packageId],
                 'lote'        => $r['lote'] === null ? null : (string) $r['lote'],
                 'paso'        => (string) $r['paso'],
                 'fecha_fin'   => $fechaFin,
@@ -544,33 +551,34 @@ class SeguimientoService
      * consumen la pestaña del módulo y el semáforo del plan. Dos definiciones de «vencido» en la
      * misma empresa es peor que no tener ninguna.
      *
-     * @param int[] $projectIds
+     * @param MultiProjectScope $scope alcance BI autorizado
      * @return array{hoy:string,por_obra:array<int,array{project_id:int,conteos:array<string,int>,destinos:int,pasos:int}>,totales:array<string,int>,por_paso:array<string,array{pendientes:int,vencidos:int}>,por_responsable:array<int,array{nombre:string,pendientes:int,vencidos:int}>}
      */
-    public function vencimientosAgregados(array $projectIds, ?string $hoy = null): array
+    public function vencimientosAgregados(MultiProjectScope $scope, ?string $hoy = null): array
     {
         $hoy ??= (new \DateTimeImmutable('today'))->format('Y-m-d');
 
-        $ids = array_values(array_unique(array_map('intval', $projectIds)));
+        $ids = $scope->projectIds();
         $vacio = ['vencido' => 0, 'sem1' => 0, 'sem2' => 0, 'sem3' => 0, 'sem6' => 0, 'adelante' => 0, 'sin_fecha' => 0];
-        if ($ids === []) {
-            return ['hoy' => $hoy, 'por_obra' => [], 'totales' => $vacio, 'por_paso' => [], 'por_responsable' => []];
-        }
 
         $ph = implode(',', array_fill(0, count($ids), '?'));
         // La unión va por DESTINO (paquete + lote), igual que vencimientos(): unir solo por
         // paquete hace que un paso de un paquete partido en tres se cuente tres veces.
-        $rows = $this->db->query(
+        $rows = $this->db->queryForProjects(
+            $scope,
             "SELECT ps.project_id, ps.paquete_id, ps.subpaquete_id, ps.fecha_fin, ps.paso,
                     pp.responsable_user_id, u.nombre AS responsable_nombre
              FROM pdc_plan_paso ps
              JOIN pdc_plan_paquete pp ON pp.project_id = ps.project_id AND pp.paquete_id = ps.paquete_id
                                      AND pp.subpaquete_id = ps.subpaquete_id
-             JOIN general_paquetes_contratacion p ON p.id = ps.paquete_id
              LEFT JOIN general_usuarios u ON u.id = pp.responsable_user_id
-             WHERE ps.project_id IN ({$ph}) AND ps.fecha_real IS NULL AND p.activo = 1",
+             WHERE ps.project_id IN ({$ph}) AND ps.fecha_real IS NULL",
             $ids,
         )->fetchAll(\PDO::FETCH_ASSOC);
+        $packages = $this->activePackageNames(array_map(
+            static fn(array $row): int => (int) $row['paquete_id'],
+            $rows,
+        ));
 
         $porObra = [];
         $totales = $vacio;
@@ -578,6 +586,9 @@ class SeguimientoService
         $porPaso = [];
         $porResponsable = [];
         foreach ($rows as $r) {
+            if (!isset($packages[(int) $r['paquete_id']])) {
+                continue;
+            }
             $pid = (int) $r['project_id'];
             if (!isset($porObra[$pid])) {
                 $porObra[$pid] = ['project_id' => $pid, 'conteos' => $vacio, 'destinos' => 0, 'pasos' => 0];
@@ -637,6 +648,182 @@ class SeguimientoService
         ];
     }
 
+    /** @param list<int> $packageIds @return array<int, string> */
+    private function activePackageNames(array $packageIds): array
+    {
+        $packageIds = array_values(array_unique(array_filter($packageIds, static fn(int $id): bool => $id > 0)));
+        if ($packageIds === []) {
+            return [];
+        }
+
+        // Catálogo global de presentación: no contiene project_id ni concede autoridad. Las filas
+        // operativas que originan estos IDs ya quedaron acotadas por queryForProjects().
+        $ph = implode(',', array_fill(0, count($packageIds), '?'));
+        $rows = $this->db->query(
+            "SELECT id, nombre FROM general_paquetes_contratacion WHERE id IN ({$ph}) AND activo = 1",
+            $packageIds,
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $out = [];
+        foreach ($rows as $row) {
+            $out[(int) $row['id']] = (string) $row['nombre'];
+        }
+        return $out;
+    }
+
+    /**
+     * Cobertura de presupuesto por obra para la ruta BI multiproyecto.
+     *
+     * Conserva el mismo numerador y denominador de PaquetesService::resumen(), pero resuelve todas
+     * las obras autorizadas de una sola vez y mantiene la autoridad en MultiProjectScope.
+     *
+     * @return array<int, array{cobertura:float,coberturaValor:float}>
+     */
+    public function coberturaPorProyecto(MultiProjectScope $scope): array
+    {
+        $ids = $scope->projectIds();
+        $ph = implode(',', array_fill(0, count($ids), '?'));
+        $rows = $this->db->queryForProjects(
+            $scope,
+            "SELECT v.project_id,
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN a.paquete_id IS NOT NULL THEN 1 ELSE 0 END) AS asignados,
+                    SUM(CASE WHEN a.omitido = 1 THEN 1 ELSE 0 END) AS omitidos,
+                    COALESCE(SUM(v.valor_total), 0) AS valor_total,
+                    COALESCE(SUM(CASE WHEN a.paquete_id IS NOT NULL OR a.omitido = 1 THEN v.valor_total ELSE 0 END), 0) AS valor_cubierto
+             FROM pdc_insumo_vinculos v
+             JOIN pdc_presupuesto_versiones pv
+               ON pv.project_id = v.project_id AND pv.id = v.version_id AND pv.activa = 1
+             LEFT JOIN pdc_insumo_paquete a
+               ON a.project_id = v.project_id
+              AND a.descripcion_norm = v.descripcion_norm
+              AND a.unidad = v.unidad
+             WHERE v.project_id IN ({$ph})
+             GROUP BY v.project_id",
+            $ids,
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $out = [];
+        foreach ($ids as $projectId) {
+            $out[$projectId] = ['cobertura' => 0.0, 'coberturaValor' => 0.0];
+        }
+        foreach ($rows as $row) {
+            $projectId = (int) $row['project_id'];
+            $total = (int) $row['total'];
+            $valorTotal = (float) $row['valor_total'];
+            $out[$projectId] = [
+                'cobertura' => $total === 0
+                    ? 0.0
+                    : round(((int) $row['asignados'] + (int) $row['omitidos']) * 100 / $total, 1),
+                'coberturaValor' => $valorTotal <= 0
+                    ? 0.0
+                    : round((float) $row['valor_cubierto'] * 100 / $valorTotal, 1),
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Paquetes cuyo frente cambió o desapareció, agrupados por obra para la ruta BI.
+     *
+     * Reproduce PlanFechasService::frentesDisponibles()/desfases() sobre el conjunto autorizado:
+     * los encabezados sin unique_id se anclan a la hoja más temprana de su subárbol y el primer
+     * encabezado que resuelve cada unique_id gana.
+     *
+     * @return array<int, int>
+     */
+    public function paquetesDesactualizadosPorProyecto(MultiProjectScope $scope): array
+    {
+        $ids = $scope->projectIds();
+        $ph = implode(',', array_fill(0, count($ids), '?'));
+        $weeks = $this->db->queryForProjects(
+            $scope,
+            "SELECT project_id, MAX(Semana) AS Semana
+             FROM semanas_activas
+             WHERE project_id IN ({$ph})
+             GROUP BY project_id",
+            $ids,
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $weekByProject = [];
+        foreach ($weeks as $row) {
+            $weekByProject[(int) $row['project_id']] = (int) $row['Semana'];
+        }
+
+        $currentByProject = [];
+        if ($weekByProject !== []) {
+            $weekValues = array_values(array_unique(array_values($weekByProject)));
+            sort($weekValues, SORT_NUMERIC);
+            $weekPh = implode(',', array_fill(0, count($weekValues), '?'));
+            $programRows = $this->db->queryForProjects(
+                $scope,
+                "SELECT project_id, Semana, unique_id, Fecha_Inicio, Titulo, Id
+                 FROM programa_consolidado
+                 WHERE project_id IN ({$ph})
+                   AND Semana IN ({$weekPh})
+                   AND Fecha_Inicio IS NOT NULL
+                 ORDER BY project_id, Fecha_Inicio ASC, unique_id ASC",
+                array_merge($ids, $weekValues),
+            )->fetchAll(\PDO::FETCH_ASSOC);
+
+            $rowsByProject = [];
+            foreach ($programRows as $row) {
+                $projectId = (int) $row['project_id'];
+                if (!isset($weekByProject[$projectId]) || (int) $row['Semana'] !== $weekByProject[$projectId]) {
+                    continue;
+                }
+                $rowsByProject[$projectId][] = $row;
+            }
+
+            foreach ($rowsByProject as $projectId => $rows) {
+                $leaves = array_values(array_filter(
+                    $rows,
+                    static fn(array $row): bool => (int) $row['Titulo'] !== 1 && $row['unique_id'] !== null,
+                ));
+                foreach ($rows as $row) {
+                    if ((int) $row['Titulo'] !== 1) {
+                        continue;
+                    }
+                    $uniqueId = $row['unique_id'] === null ? null : (int) $row['unique_id'];
+                    $fecha = (string) $row['Fecha_Inicio'];
+                    if ($uniqueId === null) {
+                        $prefix = (string) $row['Id'] . '.';
+                        foreach ($leaves as $leaf) {
+                            if (str_starts_with((string) $leaf['Id'], $prefix)) {
+                                $uniqueId = (int) $leaf['unique_id'];
+                                $fecha = (string) $leaf['Fecha_Inicio'];
+                                break;
+                            }
+                        }
+                    }
+                    if ($uniqueId !== null && !isset($currentByProject[$projectId][$uniqueId])) {
+                        $currentByProject[$projectId][$uniqueId] = $fecha;
+                    }
+                }
+            }
+        }
+
+        $frontRows = $this->db->queryForProjects(
+            $scope,
+            "SELECT f.project_id, f.unique_id, f.fecha_ancla
+             FROM pdc_paquete_frente f
+             WHERE f.project_id IN ({$ph})",
+            $ids,
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $out = array_fill_keys($ids, 0);
+        foreach ($frontRows as $row) {
+            $projectId = (int) $row['project_id'];
+            $actual = $currentByProject[$projectId][(int) $row['unique_id']] ?? null;
+            if ($actual === null || $actual !== (string) $row['fecha_ancla']) {
+                $out[$projectId]++;
+            }
+        }
+
+        return $out;
+    }
+
     /**
      * Cuantos paquetes del proyecto NO puede ver el tablero, y por que.
      *
@@ -658,11 +845,19 @@ class SeguimientoService
         $rows = $this->db->query(
             'SELECT (f.paquete_id IS NOT NULL) AS amarrado,
                     (pp.fecha_arranque IS NOT NULL) AS con_plan
-             FROM (SELECT DISTINCT paquete_id FROM pdc_insumo_paquete
-                    WHERE project_id = ? AND paquete_id IS NOT NULL) a
+             FROM (SELECT DISTINCT api.project_id, api.paquete_id FROM pdc_insumo_paquete api
+                    WHERE api.project_id = ? AND api.paquete_id IS NOT NULL) a
              JOIN general_paquetes_contratacion p ON p.id = a.paquete_id
-             LEFT JOIN pdc_paquete_frente f ON f.project_id = ? AND f.paquete_id = p.id
-             LEFT JOIN pdc_plan_paquete pp ON pp.project_id = ? AND pp.paquete_id = p.id
+             LEFT JOIN (
+                 SELECT pf.project_id, pf.paquete_id
+                 FROM pdc_paquete_frente pf
+                 WHERE pf.project_id = ?
+             ) f ON f.project_id = a.project_id AND f.paquete_id = p.id
+             LEFT JOIN (
+                 SELECT plan.project_id, plan.paquete_id, plan.fecha_arranque
+                 FROM pdc_plan_paquete plan
+                 WHERE plan.project_id = ?
+             ) pp ON pp.project_id = a.project_id AND pp.paquete_id = p.id
              WHERE p.activo = 1
                AND p.modalidad_contratacion IN (' . PlanFechasService::modalidadesConProcesoSql() . ')',
             [$projectId, $projectId, $projectId],

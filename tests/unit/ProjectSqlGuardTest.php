@@ -12,6 +12,7 @@ use App\Security\DataScope\ProjectSqlGuard;
 use App\Security\DataScope\SystemScope;
 use App\Security\DataScope\TableScopeCatalog;
 use DomainException;
+use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -570,6 +571,173 @@ final class ProjectSqlGuardTest extends TestCase
             'SELECT * FROM programa',
             [],
             new MultiProjectScope([27, 73], 'test.A', 'A', 'test'),
+            $this->catalog,
+        );
+    }
+
+    public function testMultiProjectBoundaryInjectsAuthorizedIdsWhenProjectIdIsOmitted(): void
+    {
+        $guarded = $this->guard->guardForProjects(
+            'SELECT * FROM programa WHERE Semana = ?',
+            [8],
+            new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
+            $this->catalog,
+        );
+
+        self::assertSame(
+            'SELECT * FROM programa WHERE programa.project_id IN (?, ?) AND Semana = ?',
+            $guarded->sql,
+        );
+        self::assertSame([27, 73, 8], $guarded->params);
+    }
+
+    public function testMultiProjectBoundaryIntersectsHostileRequestedIds(): void
+    {
+        $guarded = $this->guard->guardForProjects(
+            'SELECT * FROM programa WHERE project_id IN (?, ?, ?) AND Semana = ?',
+            [27, 73, 999999, 8],
+            new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
+            $this->catalog,
+        );
+
+        self::assertSame(
+            'SELECT * FROM programa WHERE programa.project_id IN (?, ?) AND Semana = ?',
+            $guarded->sql,
+        );
+        self::assertSame([27, 73, 8], $guarded->params);
+    }
+
+    public function testMultiProjectBoundaryPreservesNamedParametersWhileIntersectingIds(): void
+    {
+        $guarded = $this->guard->guardForProjects(
+            'SELECT * FROM programa WHERE project_id IN (:requested_a, :requested_c) AND Semana = :week',
+            ['requested_a' => 73, 'requested_c' => 999999, 'week' => 8],
+            new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
+            $this->catalog,
+        );
+
+        self::assertSame(
+            'SELECT * FROM programa WHERE programa.project_id IN (:__scope_project_0) AND Semana = :week',
+            $guarded->sql,
+        );
+        self::assertSame(['__scope_project_0' => 73, 'week' => 8], $guarded->params);
+    }
+
+    public function testMultiProjectBoundaryScopesRelatedProjectJoinAndKeepsIdentityJoin(): void
+    {
+        $guarded = $this->guard->guardForProjects(
+            'SELECT a.Semana, b.detalle, pm.role FROM programa a JOIN auto_program_log b ON b.project_id = a.project_id AND b.semana = a.Semana JOIN project_members pm ON pm.project_id = a.project_id WHERE a.Semana = ?',
+            [8],
+            new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
+            $this->catalog,
+        );
+
+        self::assertStringContainsString('WHERE a.project_id IN (?, ?) AND a.Semana = ?', $guarded->sql);
+        self::assertSame([27, 73, 8], $guarded->params);
+        self::assertSame(['programa', 'auto_program_log', 'project_members'], $guarded->tables);
+    }
+
+    public function testMultiProjectBoundaryPropagatesScopeThroughCorrelatedSubquery(): void
+    {
+        $guarded = $this->guard->guardForProjects(
+            'SELECT a.Semana FROM programa a WHERE EXISTS (SELECT 1 FROM auto_program_log b WHERE b.project_id = a.project_id AND b.detalle = ?)',
+            ['pendiente'],
+            new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
+            $this->catalog,
+        );
+
+        self::assertStringContainsString('WHERE a.project_id IN (?, ?) AND EXISTS', $guarded->sql);
+        self::assertSame([27, 73, 'pendiente'], $guarded->params);
+    }
+
+    public function testMultiProjectBoundaryClassifiesPhysicalRootsInsideCtePipeline(): void
+    {
+        $sql = "WITH filtered AS (
+                    SELECT p.project_id, p.Semana
+                    FROM programa p
+                    WHERE p.project_id IN (?, ?)
+                ), points AS (
+                    SELECT project_id, MAX(Semana) AS Semana
+                    FROM filtered
+                    GROUP BY project_id
+                )
+                SELECT * FROM points";
+
+        $guarded = $this->guard->guardForProjects(
+            $sql,
+            [73, 91],
+            new MultiProjectScope([73, 91], 'test.A', 'R', 'test:cte'),
+            $this->catalog,
+        );
+
+        self::assertSame($sql, $guarded->sql);
+        self::assertSame([73, 91], $guarded->params);
+        self::assertSame(['programa'], $guarded->tables);
+    }
+
+    public function testMultiProjectBoundaryRejectsUnanchoredNestedProjectRoot(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guardForProjects(
+            'SELECT a.Semana, (SELECT MAX(b.semana) FROM auto_program_log b) AS max_semana FROM programa a',
+            [],
+            new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
+            $this->catalog,
+        );
+    }
+
+    public function testMultiProjectBoundaryRejectsIdentityOnlyQuery(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guardForProjects(
+            'SELECT * FROM project_members WHERE user_id = ?',
+            [9],
+            new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
+            $this->catalog,
+        );
+    }
+
+    public function testMultiProjectBoundaryRejectsSystemOnlyQuery(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guardForProjects(
+            'SELECT * FROM general_flags',
+            [],
+            new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
+            $this->catalog,
+        );
+    }
+
+    public function testMultiProjectBoundaryRejectsUnclassifiedQuery(): void
+    {
+        $this->expectException(DomainException::class);
+
+        $this->guard->guardForProjects(
+            'SELECT * FROM backup_fuera_de_runtime',
+            [],
+            new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
+            $this->catalog,
+        );
+    }
+
+    public function testMultiProjectScopeCannotBeConstructedEmpty(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new MultiProjectScope([], 'test.A', 'A', 'test:bi');
+    }
+
+    public function testSingleProjectBoundaryStillRejectsInPredicate(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guard(
+            'SELECT * FROM programa WHERE project_id IN (?, ?)',
+            [27, 73],
+            new ProjectScope(73, 'test.A', 'A'),
             $this->catalog,
         );
     }

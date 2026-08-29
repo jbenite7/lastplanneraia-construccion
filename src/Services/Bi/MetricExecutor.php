@@ -65,7 +65,11 @@ final class MetricExecutor
         [$whereSql, $whereParams] = $this->buildWhereClause($scope, $filters);
 
         $aggregateRow = $this->db
-            ->query("SELECT {$selectExpression} FROM {$source} WHERE {$whereSql}", $whereParams)
+            ->queryForProjects(
+                $scope->authority(),
+                "SELECT {$selectExpression} FROM {$source} WHERE {$whereSql}",
+                $whereParams,
+            )
             ->fetch();
         $aggregateRow = $aggregateRow === false ? [] : $aggregateRow;
 
@@ -73,7 +77,11 @@ final class MetricExecutor
         $numerador = $aggregateRow['numerador'] ?? null;
 
         $presentProjectRows = $this->db
-            ->query("SELECT DISTINCT project_id FROM {$source} WHERE {$whereSql}", $whereParams)
+            ->queryForProjects(
+                $scope->authority(),
+                "SELECT DISTINCT project_id FROM {$source} WHERE {$whereSql}",
+                $whereParams,
+            )
             ->fetchAll();
         $presentProjects = array_map(
             static fn (array $row): int => (int) $row['project_id'],
@@ -204,10 +212,8 @@ final class MetricExecutor
      */
     private function buildWhereClause(MetricScope $scope, array $filters): array
     {
-        $projectIds = $scope->projectIds();
-        $placeholders = implode(', ', array_fill(0, count($projectIds), '?'));
-        $conditions = ["project_id IN ({$placeholders})"];
-        $params = $projectIds;
+        $conditions = [];
+        $params = [];
 
         if ($scope->week() !== null) {
             $conditions[] = 'Semana = ?';
@@ -219,7 +225,7 @@ final class MetricExecutor
             $params[] = $value;
         }
 
-        return [implode(' AND ', $conditions), $params];
+        return [$conditions === [] ? '1 = 1' : implode(' AND ', $conditions), $params];
     }
 
     private function resolveCompleteness(int $filasUsadas, int $obrasIncluidas, int $obrasEsperadas): string

@@ -72,10 +72,11 @@ class BiViewController extends BaseController
 
         $projectIdsRaw = $_GET['project_ids'] ?? $_GET['project_id'] ?? [];
         try {
-            $projectIds = $this->projectScope->resolve($projectIdsRaw, $_SESSION);
+            $scope = $this->projectScope->scope($projectIdsRaw, $_SESSION, 'bi:view:' . $reportKey);
         } catch (DomainException $exception) {
             $this->abortUnauthorizedProjectScope($exception->getMessage());
         }
+        $projectIds = $scope->projectIds();
 
         $semana = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
         $role      = $this->projectScope->reportRole($projectIds, $_SESSION);
@@ -93,7 +94,7 @@ class BiViewController extends BaseController
 
         $filters   = $this->resolveFilters();
 
-        $brief = $this->bi->getBrief($reportKey, $projectIds, $semana, $role, $filters);
+        $brief = $this->bi->getBrief($scope, $reportKey, $semana, $role, $filters);
 
         // Inject data for JS hydration
         $initialData = json_encode($brief, JSON_UNESCAPED_UNICODE);

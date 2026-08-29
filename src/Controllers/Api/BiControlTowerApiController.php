@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
+use App\Security\DataScope\MultiProjectScope;
 use App\Services\ControlTowerService;
 use App\Support\BiProjectScope;
 use DomainException;
@@ -47,12 +48,13 @@ class BiControlTowerApiController extends BaseController
     public function controlTower(): void
     {
         $this->requireAuth();
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:overview');
+        $projectIds = $scope->projectIds();
         $semana    = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
-        $role      = $this->resolveRole();
+        $role      = $this->resolveRole($scope);
         $filters   = $this->resolveFilters();
 
-        $brief = $this->bi->getBrief('overview', $projectIds, $semana, $role, $filters);
+        $brief = $this->bi->getBrief($scope, 'overview', $semana, $role, $filters);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($brief, JSON_UNESCAPED_UNICODE);
         exit;
@@ -64,12 +66,13 @@ class BiControlTowerApiController extends BaseController
     public function programaGeneral(): void
     {
         $this->requireAuth();
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:programa-general');
+        $projectIds = $scope->projectIds();
         $semana    = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
-        $role      = $this->resolveRole();
+        $role      = $this->resolveRole($scope);
         $filters   = $this->resolveFilters();
 
-        $brief = $this->bi->getBrief('programa-general', $projectIds, $semana, $role, $filters);
+        $brief = $this->bi->getBrief($scope, 'programa-general', $semana, $role, $filters);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($brief, JSON_UNESCAPED_UNICODE);
         exit;
@@ -78,11 +81,11 @@ class BiControlTowerApiController extends BaseController
     public function programaComplianceDetail(): void
     {
         $this->requireAuth();
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:programa-compliance-detail');
         $semana = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
         $filters = $this->resolveFilters();
         $limit = max(1, min(100, (int) ($_GET['limit'] ?? 50)));
-        $detail = $this->bi->getProgramaComplianceDetail($projectIds, $semana, $filters, $limit);
+        $detail = $this->bi->getProgramaComplianceDetail($scope, $semana, $filters, $limit);
 
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($detail, JSON_UNESCAPED_UNICODE);
@@ -92,7 +95,7 @@ class BiControlTowerApiController extends BaseController
     public function programaProgressDetail(): void
     {
         $this->requireAuth();
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:programa-progress-detail');
         $semana = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
         $filters = $this->resolveFilters();
         $limit = max(1, min(100, (int) ($_GET['limit'] ?? 50)));
@@ -101,7 +104,7 @@ class BiControlTowerApiController extends BaseController
             ? (string) ($_GET['sort'] ?? 'all')
             : 'all';
         $criticalOnly = filter_var($_GET['critical_only'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        $detail = $this->bi->getProgramaProgressDetail($projectIds, $semana, $filters, $limit, $offset, $sort, $criticalOnly);
+        $detail = $this->bi->getProgramaProgressDetail($scope, $semana, $filters, $limit, $offset, $sort, $criticalOnly);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($detail, JSON_UNESCAPED_UNICODE);
         exit;
@@ -110,12 +113,12 @@ class BiControlTowerApiController extends BaseController
     public function programaDelayDetail(): void
     {
         $this->requireAuth();
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:programa-delay-detail');
         $semana = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
         $limit = max(1, min(100, (int) ($_GET['limit'] ?? 50)));
         $offset = max(0, (int) ($_GET['offset'] ?? 0));
         $detail = $this->bi->getProgramaDelayDetail(
-            $projectIds,
+            $scope,
             $semana,
             $this->resolveFilters(),
             $limit,
@@ -130,7 +133,7 @@ class BiControlTowerApiController extends BaseController
     public function programaRadarDetail(): void
     {
         $this->requireAuth();
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:programa-radar-detail');
         $semana = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
         $axis = trim((string) ($_GET['axis'] ?? 'productividad'));
         if (!in_array($axis, ['productividad', 'eficiencia', 'desempeno'], true)) {
@@ -142,7 +145,7 @@ class BiControlTowerApiController extends BaseController
         $limit = max(1, min(100, (int) ($_GET['limit'] ?? 50)));
         $offset = max(0, (int) ($_GET['offset'] ?? 0));
         $detail = $this->bi->getProgramaRadarDetail(
-            $projectIds,
+            $scope,
             $semana,
             $this->resolveFilters(),
             $axis,
@@ -171,12 +174,13 @@ class BiControlTowerApiController extends BaseController
     public function intermedia(): void
     {
         $this->requireAuth();
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:intermedia');
+        $projectIds = $scope->projectIds();
         $semana    = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
-        $role      = $this->resolveRole();
+        $role      = $this->resolveRole($scope);
         $filters   = $this->resolveFilters();
 
-        $brief = $this->bi->getBrief('intermedia', $projectIds, $semana, $role, $filters);
+        $brief = $this->bi->getBrief($scope, 'intermedia', $semana, $role, $filters);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($brief, JSON_UNESCAPED_UNICODE);
         exit;
@@ -188,12 +192,13 @@ class BiControlTowerApiController extends BaseController
     public function semanal(): void
     {
         $this->requireAuth();
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:semanal');
+        $projectIds = $scope->projectIds();
         $semana    = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
-        $role      = $this->resolveRole();
+        $role      = $this->resolveRole($scope);
         $filters   = $this->resolveFilters();
 
-        $brief = $this->bi->getBrief('semanal', $projectIds, $semana, $role, $filters);
+        $brief = $this->bi->getBrief($scope, 'semanal', $semana, $role, $filters);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($brief, JSON_UNESCAPED_UNICODE);
         exit;
@@ -205,12 +210,13 @@ class BiControlTowerApiController extends BaseController
     public function pdc(): void
     {
         $this->requireAuth();
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:pdc');
+        $projectIds = $scope->projectIds();
         $semana    = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
-        $role      = $this->resolveRole();
+        $role      = $this->resolveRole($scope);
         $filters   = $this->resolveFilters();
 
-        $brief = $this->bi->getBrief('pdc', $projectIds, $semana, $role, $filters);
+        $brief = $this->bi->getBrief($scope, 'pdc', $semana, $role, $filters);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($brief, JSON_UNESCAPED_UNICODE);
         exit;
@@ -225,7 +231,7 @@ class BiControlTowerApiController extends BaseController
     public function pdcDetail(): void
     {
         $this->requireAuth();
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:pdc-detail');
 
         $seguimiento = new \App\Services\Pdc\SeguimientoService(\Database::getInstance());
         $hoy = (new \DateTimeImmutable('today'))->format('Y-m-d');
@@ -234,7 +240,7 @@ class BiControlTowerApiController extends BaseController
         echo json_encode([
             'respuesta' => 'BIEN',
             'hoy'       => $hoy,
-            'paquetes'  => $seguimiento->detalleDestinos($projectIds, $hoy),
+            'paquetes'  => $seguimiento->detalleDestinos($scope, $hoy),
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
@@ -245,12 +251,13 @@ class BiControlTowerApiController extends BaseController
     public function cic(): void
     {
         $this->requireAuth();
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:cic');
+        $projectIds = $scope->projectIds();
         $semana    = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
-        $role      = $this->resolveRole();
+        $role      = $this->resolveRole($scope);
         $filters   = $this->resolveFilters();
 
-        $brief = $this->bi->getBrief('cic', $projectIds, $semana, $role, $filters);
+        $brief = $this->bi->getBrief($scope, 'cic', $semana, $role, $filters);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($brief, JSON_UNESCAPED_UNICODE);
         exit;
@@ -262,12 +269,13 @@ class BiControlTowerApiController extends BaseController
     public function cip(): void
     {
         $this->requireAuth();
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:cip');
+        $projectIds = $scope->projectIds();
         $semana    = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
-        $role      = $this->resolveRole();
+        $role      = $this->resolveRole($scope);
         $filters   = $this->resolveFilters();
 
-        $brief = $this->bi->getBrief('cip', $projectIds, $semana, $role, $filters);
+        $brief = $this->bi->getBrief($scope, 'cip', $semana, $role, $filters);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($brief, JSON_UNESCAPED_UNICODE);
         exit;
@@ -279,12 +287,13 @@ class BiControlTowerApiController extends BaseController
     public function curvaS(): void
     {
         $this->requireAuth();
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:curva-s');
+        $projectIds = $scope->projectIds();
         $semana    = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
-        $role      = $this->resolveRole();
+        $role      = $this->resolveRole($scope);
         $filters   = $this->resolveFilters();
 
-        $brief = $this->bi->getBrief('curva-s', $projectIds, $semana, $role, $filters);
+        $brief = $this->bi->getBrief($scope, 'curva-s', $semana, $role, $filters);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($brief, JSON_UNESCAPED_UNICODE);
         exit;
@@ -334,31 +343,22 @@ class BiControlTowerApiController extends BaseController
     {
         $this->requireAuth();
 
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:weeks');
+        $projectIds = $scope->projectIds();
 
         $db = \Database::getInstance();
 
-        if (count($projectIds) === 1) {
-            $stmt = $db->prepare(
-                "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem
-                 FROM semanas_activas
-                 WHERE project_id = ?
-                 ORDER BY Semana DESC",
-            );
-            $stmt->execute([$projectIds[0]]);
-        } else {
-            // Multi-project: show unified weeks (intersection)
-            $in = implode(',', array_fill(0, count($projectIds), '?'));
-            $stmt = $db->prepare(
-                "SELECT Semana, MIN(Fecha_Inicio_Sem) as Fecha_Inicio_Sem, MAX(Fecha_Fin_Sem) as Fecha_Fin_Sem
-                 FROM semanas_activas
-                 WHERE project_id IN ({$in})
-                 GROUP BY Semana
-                 HAVING COUNT(DISTINCT project_id) = ?
-                 ORDER BY Semana DESC",
-            );
-            $stmt->execute(array_merge($projectIds, [count($projectIds)]));
-        }
+        $in = implode(',', array_fill(0, count($projectIds), '?'));
+        $stmt = $db->queryForProjects(
+            $scope,
+            "SELECT Semana, MIN(Fecha_Inicio_Sem) as Fecha_Inicio_Sem, MAX(Fecha_Fin_Sem) as Fecha_Fin_Sem
+             FROM semanas_activas
+             WHERE project_id IN ({$in})
+             GROUP BY Semana
+             HAVING COUNT(DISTINCT project_id) = ?
+             ORDER BY Semana DESC",
+            array_merge($projectIds, [count($projectIds)]),
+        );
 
         $weeks = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
@@ -371,9 +371,9 @@ class BiControlTowerApiController extends BaseController
     {
         $this->requireAuth();
 
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:filter-options');
         $semana = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
-        $options = $this->bi->getFilterOptions($projectIds, $semana, $this->resolveFilters());
+        $options = $this->bi->getFilterOptions($scope, $semana, $this->resolveFilters());
 
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['respuesta' => 'BIEN'] + $options, JSON_UNESCAPED_UNICODE);
@@ -383,7 +383,7 @@ class BiControlTowerApiController extends BaseController
     private function programaCausalDetail(string $kind): never
     {
         $this->requireAuth();
-        $projectIds = $this->resolveProjectIds();
+        $scope = $this->resolveProjectScope('bi:control-tower:programa-' . $kind . '-detail');
         $semana = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
         $filters = $this->resolveFilters();
         $category = trim((string) ($_GET['category'] ?? ''));
@@ -391,17 +391,17 @@ class BiControlTowerApiController extends BaseController
         $offset = max(0, (int) ($_GET['offset'] ?? 0));
         $includeSummary = filter_var($_GET['include_summary'] ?? true, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true;
         $method = $kind === 'cnp' ? 'getProgramaCnpDetail' : 'getProgramaCncDetail';
-        $detail = $this->bi->{$method}($projectIds, $semana, $filters, $category, $limit, $offset, $includeSummary);
+        $detail = $this->bi->{$method}($scope, $semana, $filters, $category, $limit, $offset, $includeSummary);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($detail, JSON_UNESCAPED_UNICODE);
         exit;
     }
 
-    private function resolveProjectIds(): array
+    private function resolveProjectScope(string $reason): MultiProjectScope
     {
         $projectIdsRaw = $_GET['project_ids'] ?? $_GET['project_id'] ?? '';
         try {
-            return $this->projectScope->resolve($projectIdsRaw, $_SESSION);
+            return $this->projectScope->scope($projectIdsRaw, $_SESSION, $reason);
         } catch (DomainException $exception) {
             $this->abortUnauthorizedProjectScope($exception->getMessage());
         }
@@ -418,9 +418,9 @@ class BiControlTowerApiController extends BaseController
         ];
     }
 
-    private function resolveRole(): string
+    private function resolveRole(MultiProjectScope $scope): string
     {
-        return $this->projectScope->reportRole($this->resolveProjectIds(), $_SESSION);
+        return $this->projectScope->reportRole($scope->projectIds(), $_SESSION);
     }
 
     private function assertAnyProjectAccess(): void

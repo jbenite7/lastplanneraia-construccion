@@ -96,6 +96,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 
+use App\Security\DataScope\MultiProjectScope;
 use App\Services\Bi\MetricDictionaryService;
 use App\Services\Bi\MetricExecutor;
 use App\Services\Bi\MetricScope;
@@ -259,7 +260,12 @@ $urlExplicita = BASE . '/api/bi/control-tower/metricas/' . METRIC_KEY . '?semana
 [$code1, $body1] = getReq($urlExplicita, $jarA);
 $json1 = json_decode($body1, true);
 
-$oraculo1 = $executor->execute(METRIC_KEY, new MetricScope([PROJECT_ID], null, null, SEMANA_EXPLICITA));
+$oraculo1 = $executor->execute(METRIC_KEY, new MetricScope(
+    new MultiProjectScope([PROJECT_ID], 'test.A', 'A', 'test:bi-metric-endpoint:single'),
+    null,
+    null,
+    SEMANA_EXPLICITA,
+));
 
 $check($code1 === 200, 'caso 1: test.A con ?semana=' . SEMANA_EXPLICITA . ' -> 200', "HTTP {$code1}, body: " . substr($body1, 0, 300));
 $check(is_array($json1), 'caso 1: el cuerpo es JSON valido (no un error PHP crudo)', 'body: ' . substr($body1, 0, 300));
@@ -306,7 +312,12 @@ if (is_array($json1)) {
 // agregado sobre TODOS los proyectos de test.A es demostrablemente distinto del valor de un solo
 // proyecto (medido en dev, ver docblock) — si el endpoint devolviera el primero, este caso lo agarra.
 
-$oraculoSinAcotar = $executor->execute(METRIC_KEY, new MetricScope($proyectosTestA, null, null, SEMANA_EXPLICITA));
+$oraculoSinAcotar = $executor->execute(METRIC_KEY, new MetricScope(
+    new MultiProjectScope($proyectosTestA, 'test.A', 'A', 'test:bi-metric-endpoint:all-authorized'),
+    null,
+    null,
+    SEMANA_EXPLICITA,
+));
 
 $check(
     $oraculo1->value() !== null && $oraculoSinAcotar->value() !== null
@@ -338,7 +349,12 @@ $urlSinSemana = BASE . '/api/bi/control-tower/metricas/' . METRIC_KEY;
 [$code3, $body3] = getReq($urlSinSemana, $jarA);
 $json3 = json_decode($body3, true);
 
-$oraculo3 = $executor->execute(METRIC_KEY, new MetricScope([PROJECT_ID], null, null, $semanaSesionA));
+$oraculo3 = $executor->execute(METRIC_KEY, new MetricScope(
+    new MultiProjectScope([PROJECT_ID], 'test.A', 'A', 'test:bi-metric-endpoint:session-week'),
+    null,
+    null,
+    $semanaSesionA,
+));
 
 $check($code3 === 200, 'caso 3: test.A sin ?semana -> 200 (cae al default)', "HTTP {$code3}, body: " . substr($body3, 0, 300) . ' | semana de sesion real: ' . var_export($semanaSesionA, true));
 if (is_array($json3)) {

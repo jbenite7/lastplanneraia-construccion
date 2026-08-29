@@ -139,6 +139,40 @@ class Database
     }
 
     /**
+     * Ejecuta una lectura BI bajo una autoridad multiproyecto ya validada.
+     * Esta frontera no consulta ni modifica el DataScopeContext single-project.
+     *
+     * @param array<mixed> $params
+     */
+    public function queryForProjects(
+        \App\Security\DataScope\MultiProjectScope $scope,
+        string $sql,
+        array $params = [],
+    ): PDOStatement {
+        try {
+            $guarded = (new \App\Security\DataScope\ProjectSqlGuard($this))->guardForProjects(
+                $sql,
+                $params,
+                $scope,
+                $this->tableScopeCatalog(),
+            );
+            [$guardedSql, $guardedParams] = $this->rewriteGlobalTableQuery(
+                $guarded->sql,
+                $guarded->params,
+                null,
+                $guarded->tables,
+            );
+            $stmt = $this->pdo->prepare($guardedSql);
+            $stmt->execute($guardedParams);
+
+            return $stmt;
+        } catch (PDOException $e) {
+            error_log('Error en la consulta SQL multiproyecto: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
      * Establece el contexto de proyecto para inyección automática de project_id.
      * Pasar null para limpiar el contexto.
      */

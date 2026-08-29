@@ -81,6 +81,157 @@ final class ProjectSqlGuard
         return new ScopedQuery($sql, $params, $tables);
     }
 
+    /**
+     * Frontera de lectura BI multiproyecto. No comparte autoridad con guard():
+     * clasifica con el mismo catálogo/tokenizer, exige al menos una raíz Project
+     * y convierte el conjunto solicitado en una intersección server-side.
+     *
+     * @param array<mixed> $params
+     */
+    public function guardForProjects(
+        string $sql,
+        array $params,
+        MultiProjectScope $scope,
+        TableScopeCatalog $catalog,
+    ): ScopedQuery {
+        if (trim($sql) === '') {
+            throw new DomainException('No se puede clasificar una consulta SQL vacía.');
+        }
+
+        $analysis = $this->analyzeAndNormalize($sql, $catalog);
+        $sql = $analysis['sql'];
+        $tables = [];
+        $projectReferences = [];
+
+        foreach ($analysis['references'] as $reference) {
+            $tables[] = $reference['table'];
+            if ($reference['kind'] === TableScopeKind::Unclassified) {
+                throw new DomainException("Tabla sin clasificación de alcance: {$reference['table']}");
+            }
+            if ($reference['kind'] === TableScopeKind::System) {
+                throw new ProjectScopeViolation(
+                    "La frontera multiproyecto BI no autoriza tablas System: {$reference['table']}",
+                );
+            }
+            if ($reference['kind'] === TableScopeKind::Project) {
+                $projectReferences[] = $reference;
+            }
+        }
+        $tables = array_values(array_unique($tables));
+
+        if ($projectReferences === []) {
+            throw new ProjectScopeViolation(
+                'La frontera multiproyecto BI exige al menos una raíz Project; Identity-only no está permitida.',
+            );
+        }
+        if ($this->operation($sql) !== 'SELECT') {
+            throw new ProjectScopeViolation('La frontera multiproyecto BI solo admite SELECT.');
+        }
+
+        foreach ($projectReferences as $reference) {
+            $prefixProjectId = $reference['prefixProjectId'];
+            if ($prefixProjectId === null) {
+                continue;
+            }
+            if (!$scope->allows($prefixProjectId)) {
+                throw new ProjectScopeViolation(
+                    "El prefijo de {$reference['originalTable']} resuelve project_id {$prefixProjectId}, fuera del alcance BI.",
+                );
+            }
+            if ($scope->projectIds() !== [$prefixProjectId]) {
+                throw new ProjectScopeViolation(
+                    'Una raíz legacy-prefixed no puede representar más de un proyecto en la frontera BI.',
+                );
+            }
+        }
+
+        $tokens = $this->tokenize($sql);
+        $physicalAliases = [];
+        foreach ($projectReferences as $reference) {
+            $physicalAliases[$this->projectReferenceKey($reference)] = $reference;
+        }
+        $derivedSources = $this->derivedProjectAliasSources($tokens, $projectReferences);
+        $projectAliases = array_values(array_unique(array_merge(
+            array_keys($physicalAliases),
+            array_keys($derivedSources),
+        )));
+        $this->assertSupportedDerivedJoinTypes($tokens);
+        $comparisons = $this->projectComparisons($tokens, $projectAliases, $projectReferences, true);
+
+        $anchored = [];
+        $relations = [];
+        foreach ($comparisons as $comparison) {
+            if ($comparison['kind'] === 'list') {
+                if ($comparison['alias'] === null) {
+                    throw new ProjectScopeViolation('project_id no puede asociarse a una raíz multiproyecto única.');
+                }
+                $anchored[$comparison['alias']] = true;
+                continue;
+            }
+            if ($comparison['kind'] === 'relation') {
+                $relations[] = $comparison;
+            }
+        }
+
+        if ($anchored === []) {
+            $roots = array_values($physicalAliases);
+            usort($roots, static function (array $left, array $right): int {
+                return ($left['depth'] <=> $right['depth']) ?: ($left['start'] <=> $right['start']);
+            });
+            [$sql, $params] = $this->injectMultiProjectRoot(
+                $sql,
+                $params,
+                $scope->projectIds(),
+                $roots[0],
+                $tokens,
+            );
+
+            return $this->guardForProjects($sql, $params, $scope, $catalog);
+        }
+
+        $propagationEdges = [];
+        foreach ($relations as $relation) {
+            array_push(
+                $propagationEdges,
+                ...$this->relationPropagationEdges($relation, $tokens, $projectReferences, $derivedSources),
+            );
+        }
+        do {
+            $changed = false;
+            foreach ($derivedSources as $derivedAlias => $sourceAlias) {
+                if (isset($anchored[$sourceAlias]) && !isset($anchored[$derivedAlias])) {
+                    $anchored[$derivedAlias] = true;
+                    $changed = true;
+                }
+            }
+            foreach ($propagationEdges as [$source, $destination]) {
+                if (isset($anchored[$source]) && !isset($anchored[$destination])) {
+                    $anchored[$destination] = true;
+                    $changed = true;
+                }
+            }
+        } while ($changed);
+
+        foreach ($physicalAliases as $alias => $reference) {
+            if (!isset($anchored[$alias])) {
+                throw new ProjectScopeViolation(
+                    "La raíz multiproyecto {$reference['alias']} no tiene un project_id autorizado demostrable.",
+                );
+            }
+        }
+
+        [$sql, $params] = $this->rewriteMultiProjectPredicates(
+            $sql,
+            $params,
+            $tokens,
+            $comparisons,
+            $scope->projectIds(),
+            $physicalAliases,
+        );
+
+        return new ScopedQuery($sql, $params, $tables);
+    }
+
     public function requiresDeferredExecution(string $sql, TableScopeCatalog $catalog): bool
     {
         $analysis = $this->analyzeAndNormalize($sql, $catalog);
@@ -815,7 +966,12 @@ final class ProjectSqlGuard
      * @param list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}> $references
      * @return list<array{kind: string, alias: string|null, rightAlias?: string, placeholder?: int, predicate: string, lhsStart: int, lhsEnd: int}>
      */
-    private function projectComparisons(array $tokens, array $projectAliases, array $references = []): array
+    private function projectComparisons(
+        array $tokens,
+        array $projectAliases,
+        array $references = [],
+        bool $allowProjectLists = false,
+    ): array
     {
         $comparisons = [];
         foreach ($tokens as $index => $token) {
@@ -824,6 +980,7 @@ final class ProjectSqlGuard
             }
 
             [$alias, $lhsStart] = $this->columnQualifier($tokens, $index);
+            $qualifiedAlias = $alias;
             if ($references !== []) {
                 $alias = $this->resolveProjectComparisonAlias(
                     $tokens,
@@ -832,6 +989,11 @@ final class ProjectSqlGuard
                     $projectAliases,
                     $references,
                 );
+                if ($qualifiedAlias !== null && $alias === null) {
+                    // Una tabla Identity puede tener project_id para enlazarse con la raíz
+                    // operativa. No crea autoridad y no se analiza como raíz Project.
+                    continue;
+                }
             }
             if ($alias !== null && !in_array($alias, $projectAliases, true)) {
                 continue;
@@ -842,6 +1004,32 @@ final class ProjectSqlGuard
             }
             if ($tokens[$operator]['raw'] !== '=') {
                 $operatorWord = strtoupper($tokens[$operator]['value']);
+                if ($allowProjectLists && $operatorWord === 'IN') {
+                    $open = $this->nextSignificantIndex($tokens, $operator + 1);
+                    if ($open === null || $tokens[$open]['raw'] !== '(') {
+                        throw new ProjectScopeViolation('project_id IN exige una lista explícita de placeholders.');
+                    }
+                    $close = $this->matchingClose($tokens, $open);
+                    $placeholders = [];
+                    foreach ($this->splitListTokenRanges($tokens, $open, $close) as $range) {
+                        $placeholder = $this->singlePlaceholder($tokens, $range);
+                        $placeholders[] = $placeholder;
+                    }
+                    if ($placeholders === []) {
+                        throw new ProjectScopeViolation('project_id IN no puede estar vacío.');
+                    }
+                    $predicate = $this->assertConjunctiveProjectComparison($tokens, $lhsStart, $close);
+                    $comparisons[] = [
+                        'kind' => 'list',
+                        'alias' => $alias,
+                        'placeholders' => $placeholders,
+                        'predicate' => $predicate,
+                        'lhsStart' => $lhsStart,
+                        'lhsEnd' => $index,
+                        'rangeEnd' => $close,
+                    ];
+                    continue;
+                }
                 if (in_array($operatorWord, ['IN', 'IS', 'LIKE', 'BETWEEN'], true)
                     || in_array($tokens[$operator]['raw'], ['<=>', '<', '>', '<=', '>=', '<>'], true)) {
                     throw new ProjectScopeViolation('Solo project_id = ? o una relación entre aliases está soportado.');
@@ -855,6 +1043,18 @@ final class ProjectSqlGuard
             }
             if ($tokens[$right]['type'] === 'placeholder') {
                 $predicate = $this->assertConjunctiveProjectComparison($tokens, $lhsStart, $right);
+                if ($allowProjectLists) {
+                    $comparisons[] = [
+                        'kind' => 'list',
+                        'alias' => $alias,
+                        'placeholders' => [$right],
+                        'predicate' => $predicate,
+                        'lhsStart' => $lhsStart,
+                        'lhsEnd' => $index,
+                        'rangeEnd' => $right,
+                    ];
+                    continue;
+                }
                 $comparisons[] = [
                     'kind' => 'placeholder',
                     'alias' => $alias,
@@ -905,6 +1105,245 @@ final class ProjectSqlGuard
     }
 
     /**
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @param list<int> $placeholderIndices
+     * @param array<mixed> $params
+     * @return list<int>
+     */
+    private function multiProjectPlaceholderValues(array $tokens, array $placeholderIndices, array $params): array
+    {
+        $values = [];
+        foreach ($placeholderIndices as $placeholder) {
+            $raw = $tokens[$placeholder]['raw'];
+            if ($raw === '?') {
+                if (!$this->isSequentialArray($params)) {
+                    throw new ProjectScopeViolation('Placeholders posicionales exigen parámetros secuenciales.');
+                }
+                $index = $this->positionalPlaceholderCountBefore($tokens, $tokens[$placeholder]['start']);
+                if (!array_key_exists($index, $params)) {
+                    throw new ProjectScopeViolation('Falta un parámetro project_id posicional.');
+                }
+                $value = $params[$index];
+            } else {
+                $name = ltrim($raw, ':');
+                $exists = array_key_exists($name, $params) || array_key_exists($raw, $params);
+                if (!$exists) {
+                    throw new ProjectScopeViolation("Falta el parámetro project_id {$raw}.");
+                }
+                $value = $params[$name] ?? $params[$raw];
+            }
+            if ((!is_int($value) && !(is_string($value) && ctype_digit($value))) || (int) $value <= 0) {
+                throw new ProjectScopeViolation('Los filtros project_id solo aceptan enteros positivos.');
+            }
+            $values[(int) $value] = (int) $value;
+        }
+
+        return array_values($values);
+    }
+
+    /**
+     * @param list<int> $scopeIds
+     * @param array<string, array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}> $physicalAliases
+     * @param array<mixed> $params
+     * @param list<array<string, mixed>> $comparisons
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @return array{string, array<mixed>}
+     */
+    private function rewriteMultiProjectPredicates(
+        string $sql,
+        array $params,
+        array $tokens,
+        array $comparisons,
+        array $scopeIds,
+        array $physicalAliases,
+    ): array {
+        $lists = array_values(array_filter(
+            $comparisons,
+            static fn(array $comparison): bool => $comparison['kind'] === 'list',
+        ));
+        if ($lists === []) {
+            return [$sql, $params];
+        }
+
+        $allPlaceholders = array_values(array_filter(
+            $tokens,
+            static fn(array $token): bool => $token['type'] === 'placeholder',
+        ));
+        $hasPositional = array_filter($allPlaceholders, static fn(array $token): bool => $token['raw'] === '?') !== [];
+        $hasNamed = array_filter($allPlaceholders, static fn(array $token): bool => $token['raw'] !== '?') !== [];
+        if ($hasPositional && $hasNamed) {
+            throw new ProjectScopeViolation('No se pueden mezclar placeholders posicionales y nombrados.');
+        }
+
+        $replacements = [];
+        $positionalChanges = [];
+        $namedScopeParams = [];
+        $namedCounter = 0;
+        foreach ($lists as $comparison) {
+            $aliasKey = $comparison['alias'];
+            if (!is_string($aliasKey) || !isset($physicalAliases[$aliasKey])) {
+                throw new ProjectScopeViolation('No se pudo resolver la raíz física del filtro project_id.');
+            }
+            $requestedIds = $this->multiProjectPlaceholderValues(
+                $tokens,
+                $comparison['placeholders'],
+                $params,
+            );
+            $allowedIds = array_values(array_intersect($scopeIds, $requestedIds));
+            $sqlAlias = $physicalAliases[$aliasKey]['alias'];
+
+            if ($hasNamed) {
+                $placeholderSql = [];
+                foreach ($allowedIds as $projectId) {
+                    do {
+                        $name = '__scope_project_' . $namedCounter++;
+                    } while (array_key_exists($name, $params) || array_key_exists(':' . $name, $params));
+                    $placeholderSql[] = ':' . $name;
+                    $namedScopeParams[$name] = $projectId;
+                }
+            } else {
+                $placeholderSql = array_fill(0, count($allowedIds), '?');
+                $positions = array_map(
+                    fn(int $placeholder): int => $this->positionalPlaceholderCountBefore(
+                        $tokens,
+                        $tokens[$placeholder]['start'],
+                    ),
+                    $comparison['placeholders'],
+                );
+                $positionalChanges[] = [
+                    'position' => min($positions),
+                    'count' => count($positions),
+                    'values' => $allowedIds,
+                ];
+            }
+
+            $condition = $allowedIds === []
+                ? $sqlAlias . '.project_id IN (NULL)'
+                : $sqlAlias . '.project_id IN (' . implode(', ', $placeholderSql) . ')';
+            $replacements[] = [
+                'start' => $tokens[$comparison['lhsStart']]['start'],
+                'end' => $tokens[$comparison['rangeEnd']]['end'],
+                'text' => $condition,
+            ];
+        }
+
+        $sql = $this->replaceRanges($sql, $replacements);
+        if (!$hasNamed) {
+            usort($positionalChanges, static fn(array $left, array $right): int => $right['position'] <=> $left['position']);
+            foreach ($positionalChanges as $change) {
+                array_splice($params, $change['position'], $change['count'], $change['values']);
+            }
+            return [$sql, $params];
+        }
+
+        $originalNamedParams = [];
+        foreach ($params as $name => $value) {
+            $originalNamedParams[ltrim((string) $name, ':')] = $value;
+        }
+        $rewrittenParams = [];
+        foreach ($this->tokenize($sql) as $token) {
+            if ($token['type'] !== 'placeholder' || $token['raw'] === '?') {
+                continue;
+            }
+            $name = ltrim($token['raw'], ':');
+            if (array_key_exists($name, $rewrittenParams)) {
+                continue;
+            }
+            if (array_key_exists($name, $namedScopeParams)) {
+                $rewrittenParams[$name] = $namedScopeParams[$name];
+                continue;
+            }
+            if (!array_key_exists($name, $originalNamedParams)) {
+                throw new ProjectScopeViolation("Falta el parámetro nombrado :{$name} tras reescribir el scope.");
+            }
+            $rewrittenParams[$name] = $originalNamedParams[$name];
+        }
+
+        return [$sql, $rewrittenParams];
+    }
+
+    /**
+     * @param list<int> $projectIds
+     * @param array<mixed> $params
+     * @param array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null} $root
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @return array{string, array<mixed>}
+     */
+    private function injectMultiProjectRoot(
+        string $sql,
+        array $params,
+        array $projectIds,
+        array $root,
+        array $tokens,
+    ): array {
+        $rootToken = $this->findTokenAt($tokens, $root['start']);
+        $where = $this->findKeywordAtDepth($tokens, 'WHERE', $root['depth'], $rootToken + 1);
+        $hasNamed = array_filter(
+            $tokens,
+            static fn(array $token): bool => $token['type'] === 'placeholder' && $token['raw'] !== '?',
+        ) !== [];
+        $hasPositional = array_filter(
+            $tokens,
+            static fn(array $token): bool => $token['type'] === 'placeholder' && $token['raw'] === '?',
+        ) !== [];
+        if ($hasNamed && $hasPositional) {
+            throw new ProjectScopeViolation('No se pueden mezclar placeholders posicionales y nombrados.');
+        }
+
+        if ($hasNamed || !$this->isSequentialArray($params)) {
+            $scopeParams = [];
+            $placeholders = [];
+            $counter = 0;
+            foreach ($projectIds as $projectId) {
+                do {
+                    $name = '__scope_project_' . $counter++;
+                } while (array_key_exists($name, $params) || array_key_exists(':' . $name, $params));
+                $scopeParams[$name] = $projectId;
+                $placeholders[] = ':' . $name;
+            }
+            $condition = $root['alias'] . '.project_id IN (' . implode(', ', $placeholders) . ')';
+            $params = $scopeParams + $params;
+        } else {
+            $condition = $root['alias'] . '.project_id IN ('
+                . implode(', ', array_fill(0, count($projectIds), '?')) . ')';
+        }
+
+        if ($where !== null) {
+            $offset = $tokens[$where]['end'];
+            $paramIndex = $this->positionalPlaceholderCountBefore($tokens, $offset);
+            $boundary = $this->findStatementBoundary($tokens, $where + 1, $root['depth']);
+            if ($this->hasDisjunctionAtDepthBetween($tokens, $root['depth'], $where + 1, $boundary)) {
+                $bodyStart = $offset;
+                while ($bodyStart < strlen($sql) && ctype_space($sql[$bodyStart])) {
+                    $bodyStart++;
+                }
+                $bodyEnd = $boundary === null ? strlen($sql) : $tokens[$boundary]['start'];
+                $body = rtrim(substr($sql, $bodyStart, $bodyEnd - $bodyStart));
+                $tail = substr($sql, $bodyEnd);
+                $tailPrefix = $tail !== '' && !ctype_space($tail[0]) ? ' ' : '';
+                $sql = substr($sql, 0, $offset) . ' ' . $condition . ' AND (' . $body . ')' . $tailPrefix . $tail;
+            } else {
+                $sql = substr($sql, 0, $offset) . ' ' . $condition . ' AND' . substr($sql, $offset);
+            }
+            if (!$hasNamed && $this->isSequentialArray($params)) {
+                array_splice($params, $paramIndex, 0, $projectIds);
+            }
+            return [$sql, $params];
+        }
+
+        $boundary = $this->findStatementBoundary($tokens, $rootToken + 1, $root['depth']);
+        $offset = $boundary === null ? strlen($sql) : $tokens[$boundary]['start'];
+        $paramIndex = $this->positionalPlaceholderCountBefore($tokens, $offset);
+        $prefix = $offset > 0 && !ctype_space($sql[$offset - 1]) ? ' ' : '';
+        $suffix = $offset < strlen($sql) && !ctype_space($sql[$offset]) ? ' ' : '';
+        $sql = substr($sql, 0, $offset) . $prefix . 'WHERE ' . $condition . $suffix . substr($sql, $offset);
+        if (!$hasNamed && $this->isSequentialArray($params)) {
+            array_splice($params, $paramIndex, 0, $projectIds);
+        }
+        return [$sql, $params];
+    }
+
+    /**
      * @param array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null} $reference
      */
     private function projectReferenceKey(array $reference): string
@@ -934,6 +1373,31 @@ final class ProjectSqlGuard
         }
         if ($candidates !== []) {
             throw new ProjectScopeViolation("Alias project_id ambiguo dentro del SELECT: {$sqlAlias}");
+        }
+
+        // Una subconsulta correlacionada puede enlazar su raíz Project con una raíz visible del
+        // SELECT padre (b.project_id = a.project_id). projectReferencesInSelect() excluye al padre
+        // deliberadamente para resolver columnas no calificadas; para un alias explícito sí es
+        // seguro buscar hacia afuera y elegir el nivel envolvente más cercano.
+        $columnDepth = $tokens[$column]['depth'];
+        $columnStart = $tokens[$column]['start'];
+        $outerCandidates = array_values(array_filter(
+            $references,
+            static fn(array $reference): bool => $reference['kind'] === TableScopeKind::Project
+                && strtolower($reference['alias']) === $sqlAlias
+                && $reference['depth'] < $columnDepth
+                && $reference['start'] < $columnStart,
+        ));
+        if ($outerCandidates !== []) {
+            $nearestDepth = max(array_column($outerCandidates, 'depth'));
+            $nearest = array_values(array_filter(
+                $outerCandidates,
+                static fn(array $reference): bool => $reference['depth'] === $nearestDepth,
+            ));
+            if (count($nearest) === 1) {
+                return $this->projectReferenceKey($nearest[0]);
+            }
+            throw new ProjectScopeViolation("Alias project_id ambiguo en SELECT correlacionado: {$sqlAlias}");
         }
 
         return in_array($sqlAlias, $projectAliases, true) ? $sqlAlias : null;
@@ -1091,6 +1555,7 @@ final class ProjectSqlGuard
     {
         $references = [];
         $operation = $this->operationFromTokens($tokens);
+        $commonTableExpressions = $this->commonTableExpressions($tokens)['aliases'];
 
         foreach ($tokens as $index => $token) {
             if ($token['type'] !== 'word') {
@@ -1126,6 +1591,12 @@ final class ProjectSqlGuard
             }
             if (!$this->isIdentifier($tokens[$tableIndex])) {
                 throw new DomainException("Identificador de tabla no demostrable después de {$keyword}.");
+            }
+            $tableName = strtolower($tokens[$tableIndex]['value']);
+            foreach ($commonTableExpressions as $cte) {
+                if ($tableName === $cte['alias'] && $tokens[$tableIndex]['start'] > $cte['availableAfter']) {
+                    continue 2;
+                }
             }
             $dot = $this->nextSignificantIndex($tokens, $tableIndex + 1);
             if ($dot !== null && $tokens[$dot]['raw'] === '.') {
@@ -1346,15 +1817,69 @@ final class ProjectSqlGuard
     /** @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens */
     private function operationFromTokens(array $tokens): string
     {
-        foreach ($tokens as $token) {
-            if ($token['type'] === 'word') {
-                return strtoupper($token['value']);
-            }
-            if (!in_array($token['type'], ['space', 'comment'], true)) {
-                break;
-            }
+        $statement = $this->commonTableExpressions($tokens)['statement'];
+        if ($statement !== null && $tokens[$statement]['type'] === 'word') {
+            return strtoupper($tokens[$statement]['value']);
         }
         throw new DomainException('Operación SQL no demostrable.');
+    }
+
+    /**
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @return array{aliases: list<array{alias: string, availableAfter: int}>, statement: int|null}
+     */
+    private function commonTableExpressions(array $tokens): array
+    {
+        $first = $this->nextSignificantIndex($tokens, 0);
+        if ($first === null || $tokens[$first]['type'] !== 'word'
+            || strtoupper($tokens[$first]['value']) !== 'WITH') {
+            return ['aliases' => [], 'statement' => $first];
+        }
+
+        $cursor = $this->nextSignificantIndex($tokens, $first + 1);
+        if ($cursor !== null && $tokens[$cursor]['type'] === 'word'
+            && strtoupper($tokens[$cursor]['value']) === 'RECURSIVE') {
+            throw new DomainException('WITH RECURSIVE no está soportado por el gate de proyecto.');
+        }
+
+        $aliases = [];
+        while ($cursor !== null) {
+            if (!$this->isIdentifier($tokens[$cursor]) || $tokens[$cursor]['depth'] !== 0) {
+                throw new DomainException('Alias CTE no demostrable.');
+            }
+            $alias = strtolower($tokens[$cursor]['value']);
+            if (isset($aliases[$alias])) {
+                throw new ProjectScopeViolation("Alias CTE ambiguo: {$alias}");
+            }
+
+            $as = $this->nextSignificantIndex($tokens, $cursor + 1);
+            if ($as === null || $tokens[$as]['type'] !== 'word'
+                || strtoupper($tokens[$as]['value']) !== 'AS') {
+                throw new DomainException("El CTE {$alias} exige AS seguido de un SELECT demostrable.");
+            }
+            $open = $this->nextSignificantIndex($tokens, $as + 1);
+            if ($open === null || $tokens[$open]['raw'] !== '(') {
+                throw new DomainException("El CTE {$alias} exige una subconsulta entre paréntesis.");
+            }
+            $select = $this->nextSignificantIndex($tokens, $open + 1);
+            if ($select === null || $tokens[$select]['type'] !== 'word'
+                || strtoupper($tokens[$select]['value']) !== 'SELECT') {
+                throw new DomainException("El CTE {$alias} solo admite SELECT.");
+            }
+            $close = $this->matchingClose($tokens, $open);
+            $aliases[$alias] = [
+                'alias' => $alias,
+                'availableAfter' => $tokens[$close]['end'],
+            ];
+
+            $next = $this->nextSignificantIndex($tokens, $close + 1);
+            if ($next === null || $tokens[$next]['raw'] !== ',') {
+                return ['aliases' => array_values($aliases), 'statement' => $next];
+            }
+            $cursor = $this->nextSignificantIndex($tokens, $next + 1);
+        }
+
+        throw new DomainException('WITH sin sentencia principal demostrable.');
     }
 
     private function operation(string $sql): string

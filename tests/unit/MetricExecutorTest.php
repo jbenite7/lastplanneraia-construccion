@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
+use App\Security\DataScope\MultiProjectScope;
+use App\Security\DataScope\TableScopeCatalog;
 use App\Services\Bi\MetricDictionaryService;
 use App\Services\Bi\MetricExecutor;
 use App\Services\Bi\MetricScope;
@@ -59,32 +61,73 @@ final class MetricExecutorTest extends TestCase
     private const PROJECT_B = 990102;
 
     private Database $db;
+    private \PDO $pdo;
+    private ?TableScopeCatalog $catalogSnapshot = null;
+    private mixed $scopeSnapshot = null;
 
     protected function setUp(): void
     {
         $this->db = Database::getInstance();
-        $this->db->query('DROP TEMPORARY TABLE IF EXISTS ' . self::TABLA);
-        $this->db->query(
-            'CREATE TEMPORARY TABLE ' . self::TABLA . ' (
+        $reflection = new \ReflectionClass($this->db);
+        $pdoProperty = $reflection->getProperty('pdo');
+        $catalogProperty = $reflection->getProperty('tableScopeCatalog');
+        $this->pdo = $pdoProperty->getValue($this->db);
+        $this->catalogSnapshot = $catalogProperty->getValue($this->db);
+        $this->scopeSnapshot = $this->db->dataScope()->current();
+        $this->db->dataScope()->clear();
+
+        try {
+            $this->pdo->exec('DROP TEMPORARY TABLE IF EXISTS ' . self::TABLA);
+            $this->pdo->exec(
+                'CREATE TEMPORARY TABLE ' . self::TABLA . ' (
                 project_id INT NOT NULL,
                 cumplido TINYINT NOT NULL,
                 activo TINYINT NOT NULL DEFAULT 1,
                 Semana INT NOT NULL DEFAULT 0
             )'
-        );
+            );
+
+            // MySQL no publica las temporales en information_schema. El test completa una copia
+            // del catálogo inmutable solo para esta conexión y la restaura al terminar.
+            $catalog = $this->catalogSnapshot ?? TableScopeCatalog::fromPdo($this->pdo);
+            $rows = array_values($catalog->schemaRows());
+            $rows[] = [
+                'TABLE_NAME' => self::TABLA,
+                'has_project_id' => 1,
+                'project_id_nullable' => 0,
+                'has_leading_index' => 0,
+            ];
+            $catalogProperty->setValue($this->db, TableScopeCatalog::fromRows($rows));
+        } catch (\Throwable $exception) {
+            $this->restoreFixture($catalogProperty);
+            throw $exception;
+        }
     }
 
     protected function tearDown(): void
     {
-        $this->db->query('DROP TEMPORARY TABLE IF EXISTS ' . self::TABLA);
+        $catalogProperty = (new \ReflectionClass($this->db))->getProperty('tableScopeCatalog');
+        $this->restoreFixture($catalogProperty);
     }
 
     private function sembrar(int $projectId, int $cumplido, int $activo = 1, int $semana = 0): void
     {
-        $this->db->query(
+        $stmt = $this->pdo->prepare(
             'INSERT INTO ' . self::TABLA . ' (project_id, cumplido, activo, Semana) VALUES (?, ?, ?, ?)',
-            [$projectId, $cumplido, $activo, $semana],
         );
+        $stmt->execute([$projectId, $cumplido, $activo, $semana]);
+    }
+
+    private function restoreFixture(\ReflectionProperty $catalogProperty): void
+    {
+        if (isset($this->pdo)) {
+            $this->pdo->exec('DROP TEMPORARY TABLE IF EXISTS ' . self::TABLA);
+        }
+        $catalogProperty->setValue($this->db, $this->catalogSnapshot);
+        $this->db->dataScope()->clear();
+        if ($this->scopeSnapshot !== null) {
+            $this->db->dataScope()->bind($this->scopeSnapshot);
+        }
     }
 
     private function ejecutor(): MetricExecutor
@@ -140,7 +183,11 @@ final class MetricExecutorTest extends TestCase
         // Fila de otro proyecto que NO debe entrar al calculo (aislamiento por project_id).
         $this->sembrar(self::PROJECT_B, cumplido: 0);
 
-        $scope = new MetricScope([self::PROJECT_A], '2026-08-01', '2026-08-31');
+        $scope = new MetricScope(
+            new MultiProjectScope([self::PROJECT_A], 'metric.fixture', 'V', 'test:metric-executor'),
+            '2026-08-01',
+            '2026-08-31',
+        );
         $resultado = $this->ejecutor()->execute('test_ratio_ok', $scope);
 
         $this->assertEqualsWithDelta(
@@ -171,7 +218,11 @@ final class MetricExecutorTest extends TestCase
     {
         $this->sembrar(self::PROJECT_A, cumplido: 1);
 
-        $scope = new MetricScope([self::PROJECT_A], '2026-08-01', '2026-08-31');
+        $scope = new MetricScope(
+            new MultiProjectScope([self::PROJECT_A], 'metric.fixture', 'V', 'test:metric-executor'),
+            '2026-08-01',
+            '2026-08-31',
+        );
         $resultado = $this->ejecutor()->execute('test_ratio_sin_filas', $scope);
 
         $this->assertSame('insuficiente', $resultado->completeness());
@@ -192,7 +243,11 @@ final class MetricExecutorTest extends TestCase
         $this->sembrar(self::PROJECT_B, cumplido: 1);
         $this->sembrar(self::PROJECT_B, cumplido: 1);
 
-        $scope = new MetricScope([self::PROJECT_A], '2026-08-01', '2026-08-31');
+        $scope = new MetricScope(
+            new MultiProjectScope([self::PROJECT_A], 'metric.fixture', 'V', 'test:metric-executor'),
+            '2026-08-01',
+            '2026-08-31',
+        );
         $resultado = $this->ejecutor()->execute('test_ratio_ok', $scope);
 
         $this->assertSame('insuficiente', $resultado->completeness());
@@ -216,7 +271,10 @@ final class MetricExecutorTest extends TestCase
         $this->sembrar(self::PROJECT_A, cumplido: 0, semana: 2);
         $this->sembrar(self::PROJECT_A, cumplido: 0, semana: 2);
 
-        $scopeSemana1 = new MetricScope([self::PROJECT_A], week: '1');
+        $scopeSemana1 = new MetricScope(
+            new MultiProjectScope([self::PROJECT_A], 'metric.fixture', 'V', 'test:metric-executor:week-1'),
+            week: '1',
+        );
         $resultadoSemana1 = $this->ejecutor()->execute('test_ratio_semanal', $scopeSemana1);
 
         $this->assertSame(
@@ -231,7 +289,10 @@ final class MetricExecutorTest extends TestCase
             'la semana 1 es 100% cumplida; 0.5 significaria que se mezclo con la semana 2',
         );
 
-        $scopeSemana2 = new MetricScope([self::PROJECT_A], week: '2');
+        $scopeSemana2 = new MetricScope(
+            new MultiProjectScope([self::PROJECT_A], 'metric.fixture', 'V', 'test:metric-executor:week-2'),
+            week: '2',
+        );
         $resultadoSemana2 = $this->ejecutor()->execute('test_ratio_semanal', $scopeSemana2);
 
         $this->assertSame(

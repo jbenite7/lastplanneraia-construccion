@@ -126,13 +126,15 @@ $assert($resuelto === [$permitido], 'rol permitido: el usuario resuelve su propi
 
 // --- Sesión sin usuario -------------------------------------------------------------------------
 $scopeLimpio = new BiProjectScope($db);
-$lanzoAnonimo = false;
+$sessionAnonima = ['usuario' => ''];
+$assert($scopeLimpio->resolve([$permitido], $sessionAnonima) === [], 'sesión sin usuario: resolve conserva el adaptador vacío');
+$lanzoScopeAnonimo = false;
 try {
-    $scopeLimpio->resolve([$permitido], ['usuario' => '']);
+    $scopeLimpio->scope([$permitido], $sessionAnonima, 'test:test_pdc_v2_torre_control_rbac:anonimo');
 } catch (\DomainException) {
-    $lanzoAnonimo = true;
+    $lanzoScopeAnonimo = true;
 }
-$assert($lanzoAnonimo, 'sesión sin usuario: no resuelve ninguna obra');
+$assert($lanzoScopeAnonimo, 'sesión sin usuario: scope rechaza el conjunto vacío');
 
 // --- La caché no mezcla sesiones ---------------------------------------------------------------
 // Fue un fallo real: authorizedProjects() memoizaba en una sola $this->projects, así que una
@@ -141,13 +143,17 @@ $assert($lanzoAnonimo, 'sesión sin usuario: no resuelve ninguna obra');
 $scopeReusado = new BiProjectScope($db);
 $scopeReusado->resolve([$permitido], $session);
 
-$lanzoTrasReuso = false;
+$assert(
+    $scopeReusado->resolve([$permitido], $sessionAnonima) === [],
+    'la misma instancia, con una sesión anónima después de una válida, devuelve el adaptador vacío',
+);
+$lanzoScopeTrasReuso = false;
 try {
-    $scopeReusado->resolve([$permitido], ['usuario' => '']);
+    $scopeReusado->scope([$permitido], $sessionAnonima, 'test:test_pdc_v2_torre_control_rbac:reuso-anonimo');
 } catch (\DomainException) {
-    $lanzoTrasReuso = true;
+    $lanzoScopeTrasReuso = true;
 }
-$assert($lanzoTrasReuso, 'la misma instancia, con una sesión anónima después de una válida, no hereda permisos');
+$assert($lanzoScopeTrasReuso, 'la misma instancia no convierte una sesión anónima en autoridad');
 
 // Y el usuario legítimo sigue viendo lo suyo después de que otra sesión haya pasado por la
 // instancia: la caché por usuario tiene que aislar en los dos sentidos, no solo denegar.

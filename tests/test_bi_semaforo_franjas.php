@@ -38,6 +38,9 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use App\Security\DataScope\MultiProjectScope;
+use App\Security\DataScope\ProjectScope;
+use App\Security\DataScope\SystemScopeRunner;
 use App\Services\Bi\MetricDictionaryService;
 use App\Services\Bi\MetricExecutor;
 use App\Services\Bi\MetricResult;
@@ -84,6 +87,43 @@ function semaforoFail(string $message): void
     global $failed;
     echo "  FAIL: {$message}\n";
     $failed++;
+}
+
+function semaforoGlobalRead(\Database $db, callable $read): mixed
+{
+    $context = $db->dataScope();
+    $snapshot = $context->current();
+    if ($snapshot !== null) {
+        $context->clear();
+    }
+    try {
+        return (new SystemScopeRunner($context))->run('test:bi-semaforo:discovery', $read);
+    } finally {
+        if ($context->current() !== null) {
+            $context->clear();
+        }
+        if ($snapshot !== null) {
+            $context->bind($snapshot);
+        }
+    }
+}
+
+function semaforoProjectRead(\Database $db, int $projectId, callable $read): mixed
+{
+    $context = $db->dataScope();
+    $snapshot = $context->current();
+    if ($snapshot !== null) {
+        $context->clear();
+    }
+    $context->bind(new ProjectScope($projectId, 'metric.traffic-light.fixture', 'V'));
+    try {
+        return $read();
+    } finally {
+        $context->clear();
+        if ($snapshot !== null) {
+            $context->bind($snapshot);
+        }
+    }
 }
 
 /**
@@ -289,7 +329,10 @@ $condicionFranjaPorClave = [
 
 // El caso borde de denominador 0 (punto 5) se descubre en vivo y se agrega a $casos si no está ya
 // cubierto por los combos fijos de arriba -- así el bucle de abajo lo ejerce igual que los demás.
-$comboDenominadorCeroLive = buscarComboDenominadorCero($db, $condicionFranjaPorClave, 200);
+$comboDenominadorCeroLive = semaforoGlobalRead(
+    $db,
+    static fn(): ?array => buscarComboDenominadorCero($db, $condicionFranjaPorClave, 200),
+);
 if ($comboDenominadorCeroLive !== null) {
     [$projectIdLive, $semanaLive] = $comboDenominadorCeroLive;
     $yaCubierto = false;
@@ -310,10 +353,17 @@ $denominadorCeroVisto = false;
 foreach ($casos as [$projectId, $semana]) {
     foreach (SEMAFORO_CLAVES as $clave) {
         $condicion = $condicionFranjaPorClave[$clave];
-        $oraculo = semaforoOraculo($db, $projectId, $semana, $condicion);
+        $oraculo = semaforoProjectRead(
+            $db,
+            $projectId,
+            static fn(): array => semaforoOraculo($db, $projectId, $semana, $condicion),
+        );
 
         try {
-            $scope = new MetricScope([$projectId], week: $semana);
+            $scope = new MetricScope(
+                new MultiProjectScope([$projectId], 'metric.traffic-light.fixture', 'V', 'test:metric-semaforo'),
+                week: $semana,
+            );
             $result = $executor->execute($clave, $scope);
         } catch (\Throwable $e) {
             semaforoFail("{$clave} [obra {$projectId}, semana {$semana}]: MetricExecutor::execute() lanzó excepción: {$e->getMessage()}");

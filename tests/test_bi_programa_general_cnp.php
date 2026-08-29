@@ -15,6 +15,27 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/support/BiContractFixture.php';
 
 use App\Services\ControlTowerService;
+use App\Security\DataScope\MultiProjectScope;
+use App\Security\DataScope\ProjectScope;
+use App\Security\DataScope\SystemScopeRunner;
+
+function cnpGlobalRead(\Database $db, string $case, callable $read): mixed
+{
+    return (new SystemScopeRunner($db->dataScope()))->run(
+        'test:test_bi_programa_general_cnp:discovery:' . $case,
+        $read,
+    );
+}
+
+function cnpProjectRead(\Database $db, int $projectId, callable $read): mixed
+{
+    $db->dataScope()->bind(new ProjectScope($projectId, 'fixture-bi-cnp', 'R'));
+    try {
+        return $read();
+    } finally {
+        $db->dataScope()->clear();
+    }
+}
 
 $db = \Database::getInstance();
 BiContractFixture::seedCausalRows($db);
@@ -124,8 +145,11 @@ function cnpDirectRows(\Database $db, array $projectIds, string $semana, array $
         LEFT JOIN semanas_activas sa ON sa.project_id = ps.project_id AND sa.Semana = ps.Semana
         WHERE ' . implode(' AND ', $where) . '
         ORDER BY ps.project_id, ps.Semana, ps.Consecutivo';
-    $statement = $db->prepare($sql);
-    $statement->execute($params);
+    $statement = $db->queryForProjects(
+        new MultiProjectScope($projectIds, 'fixture-bi-cnp', 'R', 'test:test_bi_programa_general_cnp:oracle'),
+        $sql,
+        $params,
+    );
     return $statement->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -228,9 +252,10 @@ function cnpAssertScenario(
     string $semana,
     array $filters,
 ): void {
+    $scope = new MultiProjectScope($projectIds, 'fixture-bi-cnp', 'R', 'test:test_bi_programa_general_cnp:' . $label);
     $sourceRows = cnpDirectRows($db, $projectIds, $semana, $filters);
     $expected = cnpExpected($sourceRows);
-    $brief = $bi->getBrief('programa-general', $projectIds, $semana, 'R', $filters);
+    $brief = $bi->getBrief($scope, 'programa-general', $semana, 'R', $filters);
     $chart = $brief['charts']['programa-cnp'] ?? [];
     $metrics = $chart['metrics'] ?? [];
 
@@ -253,7 +278,7 @@ function cnpAssertScenario(
         }
     }
 
-    $detail = $bi->getProgramaCnpDetail($projectIds, $semana, $filters, '', 1, 0);
+    $detail = $bi->getProgramaCnpDetail($scope, $semana, $filters, '', 1, 0);
     cnpAssert($failures, ($detail['respuesta'] ?? '') === 'BIEN', "{$label}: CNP detail did not return BIEN");
     cnpAssert($failures, (int) ($detail['summary']['total'] ?? -1) === $expected['summary']['total'], "{$label}: detail summary total differs from chart/source total");
     cnpAssert($failures, (int) ($detail['pagination']['total'] ?? -1) === $expected['summary']['total'], "{$label}: detail pagination total differs from source total");
@@ -261,7 +286,7 @@ function cnpAssertScenario(
     cnpAssert($failures, (int) ($detail['pagination']['next_offset'] ?? -1) === min(1, $expected['summary']['total']), "{$label}: detail next_offset is not deterministic");
     cnpAssert($failures, ($detail['pagination']['has_more'] ?? null) === ($expected['summary']['total'] > 1), "{$label}: detail has_more does not match total and page size");
     if ($expected['summary']['total'] > 1) {
-        $nextPage = $bi->getProgramaCnpDetail($projectIds, $semana, $filters, '', 1, 1, false);
+        $nextPage = $bi->getProgramaCnpDetail($scope, $semana, $filters, '', 1, 1, false);
         cnpAssert($failures, (int) ($nextPage['pagination']['total'] ?? -1) === $expected['summary']['total'], "{$label}: SQL-paginated detail lost the total");
         cnpAssert($failures, count($nextPage['activities'] ?? []) === 1, "{$label}: SQL-paginated detail ignored limit/offset");
         $firstKey = (string) ($detail['activities'][0]['source_row_key'] ?? '');
@@ -272,13 +297,13 @@ function cnpAssertScenario(
 
     $leadingCategory = array_key_first($expected['categories']);
     if ($leadingCategory !== null) {
-        $categoryDetail = $bi->getProgramaCnpDetail($projectIds, $semana, $filters, $leadingCategory, 1, 0, true);
+        $categoryDetail = $bi->getProgramaCnpDetail($scope, $semana, $filters, $leadingCategory, 1, 0, true);
         cnpAssert($failures, (int) ($categoryDetail['pagination']['total'] ?? -1) === (int) $expected['categories'][$leadingCategory], "{$label}: category segment total does not reconcile");
         foreach ($categoryDetail['activities'] ?? [] as $activity) {
             cnpAssert($failures, ($activity['category_canonical'] ?? '') === $leadingCategory, "{$label}: category segment leaked a different CNP category");
         }
         if (($categoryDetail['pagination']['has_more'] ?? false) === true) {
-            $categoryNext = $bi->getProgramaCnpDetail($projectIds, $semana, $filters, $leadingCategory, 1, 1, false);
+            $categoryNext = $bi->getProgramaCnpDetail($scope, $semana, $filters, $leadingCategory, 1, 1, false);
             cnpAssert($failures, (int) ($categoryNext['pagination']['total'] ?? -1) === (int) $expected['categories'][$leadingCategory], "{$label}: incremental category total does not reconcile");
             cnpAssert($failures, (int) ($categoryNext['pagination']['offset'] ?? -1) === 1, "{$label}: incremental category page ignored its SQL offset");
             foreach ($categoryNext['activities'] ?? [] as $activity) {
@@ -290,7 +315,7 @@ function cnpAssertScenario(
     $allActivities = [];
     $offset = 0;
     do {
-        $page = $bi->getProgramaCnpDetail($projectIds, $semana, $filters, '', 100, $offset);
+        $page = $bi->getProgramaCnpDetail($scope, $semana, $filters, '', 100, $offset);
         $pageActivities = is_array($page['activities'] ?? null) ? $page['activities'] : [];
         array_push($allActivities, ...$pageActivities);
         $nextOffset = (int) ($page['pagination']['next_offset'] ?? $offset);
@@ -329,7 +354,7 @@ function cnpAssertScenario(
 // confiar en que el grupo más grande venga completo — el mayor hoy (proyecto 76, semana 1, 73
 // filas) no trae ninguno de los dos campos, y el test fallaba pidiendo al «fixture» algo que
 // dependía de qué proyecto tuviera más filas ese día.
-$primaryContext = $db->query(
+$primaryContext = cnpGlobalRead($db, 'primary-context', static fn() => $db->query(
     "SELECT project_id, Semana, COUNT(*) AS rows_count
      FROM programacion_semanal
      WHERE Activa = '0' AND COALESCE(TRIM(CNP), '') <> ''
@@ -338,13 +363,13 @@ $primaryContext = $db->query(
         AND SUM(COALESCE(TRIM(Sub_Contratista), '') <> '') > 0
      ORDER BY rows_count DESC, project_id, Semana
      LIMIT 1",
-)->fetch(PDO::FETCH_ASSOC) ?: [];
+)->fetch(PDO::FETCH_ASSOC)) ?: [];
 $primaryProjectId = (int) ($primaryContext['project_id'] ?? 0);
 $primaryWeek = (string) ($primaryContext['Semana'] ?? '');
 $primaryRows = cnpDirectRows($db, [$primaryProjectId], $primaryWeek);
 cnpAssert($failures, $primaryProjectId > 0 && count($primaryRows) > 1, 'canonical CI fixture must expose a paginable CNP population');
 
-$duplicateGrains = $db->query(
+$duplicateGrains = cnpGlobalRead($db, 'duplicate-grains', static fn() => $db->query(
     "SELECT COUNT(*) FROM (
         SELECT project_id, Semana, Consecutivo
         FROM programacion_semanal
@@ -352,21 +377,23 @@ $duplicateGrains = $db->query(
         GROUP BY project_id, Semana, Consecutivo
         HAVING COUNT(*) > 1
     ) AS duplicate_cnp_grains"
-)->fetchColumn();
+)->fetchColumn());
 cnpAssert($failures, (int) $duplicateGrains === 0, 'CNP source must be unique at project_id + Semana + Consecutivo');
 
-$secondProject = $db->prepare(
-    "SELECT DISTINCT project_id FROM programacion_semanal
+$secondProject = cnpGlobalRead($db, 'second-project', static function () use ($db, $primaryProjectId) {
+    $statement = $db->prepare("SELECT DISTINCT project_id FROM programacion_semanal
      WHERE Activa = '0' AND COALESCE(TRIM(CNP), '') <> '' AND project_id <> ?
-     ORDER BY project_id LIMIT 1"
-);
-$secondProject->execute([$primaryProjectId]);
-$secondProject = $secondProject->fetchColumn();
+     ORDER BY project_id LIMIT 1");
+    $statement->execute([$primaryProjectId]);
+    return $statement->fetchColumn();
+});
 cnpAssert($failures, $secondProject !== false, 'fixture requires a second project with CNP for the multi-project contract');
 
-$week = $db->prepare('SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM semanas_activas WHERE project_id = ? AND Semana = ? LIMIT 1');
-$week->execute([$primaryProjectId, $primaryWeek]);
-$weekRange = $week->fetch(PDO::FETCH_ASSOC) ?: [];
+$weekRange = cnpProjectRead($db, $primaryProjectId, static function () use ($db, $primaryProjectId, $primaryWeek): array {
+    $week = $db->prepare('SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM semanas_activas WHERE project_id = ? AND Semana = ? LIMIT 1');
+    $week->execute([$primaryProjectId, $primaryWeek]);
+    return $week->fetch(PDO::FETCH_ASSOC) ?: [];
+});
 $responsible = '';
 $subcontractor = '';
 $stage = '';
@@ -384,11 +411,13 @@ cnpAssert($failures, $stage !== '', 'fixture requires one canonical CNP row with
 
 cnpAssertScenario($failures, $bi, $db, 'canonical single project/week', [$primaryProjectId], $primaryWeek, []);
 if ($secondProject !== false) {
-    $portfolioRangeStatement = $db->prepare(
+    $portfolioIds = [$primaryProjectId, (int) $secondProject];
+    $portfolioRangeStatement = $db->queryForProjects(
+        new MultiProjectScope($portfolioIds, 'fixture-bi-cnp', 'R', 'test:test_bi_programa_general_cnp:portfolio-range'),
         "SELECT MIN(Fecha_Inicio_Sem) AS desde, MAX(Fecha_Fin_Sem) AS hasta
          FROM semanas_activas WHERE project_id IN (?, ?)",
+        $portfolioIds,
     );
-    $portfolioRangeStatement->execute([$primaryProjectId, (int) $secondProject]);
     $portfolioRange = $portfolioRangeStatement->fetch(PDO::FETCH_ASSOC) ?: [];
     cnpAssertScenario($failures, $bi, $db, 'CNP multi-project/date range', [$primaryProjectId, (int) $secondProject], '', $portfolioRange);
 }
@@ -405,17 +434,20 @@ if ($stage !== '') {
     cnpAssertScenario($failures, $bi, $db, 'canonical stage/intervention filter', [$primaryProjectId], $primaryWeek, ['etapa' => $stage]);
 }
 
-$cncContexts = $db->query(
+$cncContexts = cnpGlobalRead($db, 'cnc-contexts', static fn() => $db->query(
     "SELECT DISTINCT project_id, Semana
      FROM programacion_semanal
      WHERE Activa IN ('1', 'NA') AND COALESCE(TRIM(CNC), '') <> ''
      ORDER BY project_id, Semana
      LIMIT 20"
-)->fetchAll(PDO::FETCH_ASSOC);
+)->fetchAll(PDO::FETCH_ASSOC));
 cnpAssert($failures, $cncContexts !== [], 'fixture requires CNC rows to protect the shared causal narrative');
 $cncActivitiesChecked = 0;
 foreach ($cncContexts as $context) {
-    $cncDetail = $bi->getProgramaCncDetail([(int) $context['project_id']], (string) $context['Semana']);
+    $cncDetail = $bi->getProgramaCncDetail(
+        new MultiProjectScope([(int) $context['project_id']], 'fixture-bi-cnp', 'R', 'test:test_bi_programa_general_cnp:cnc-cross-check'),
+        (string) $context['Semana'],
+    );
     foreach ($cncDetail['activities'] ?? [] as $activity) {
         $cncActivitiesChecked++;
         $narrative = strtolower((string) ($activity['impact'] ?? '') . ' ' . (string) ($activity['recommended_action'] ?? ''));

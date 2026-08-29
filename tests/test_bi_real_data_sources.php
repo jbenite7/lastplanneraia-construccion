@@ -10,16 +10,22 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Services\ControlTowerService;
+use App\Security\DataScope\MultiProjectScope;
+use App\Security\DataScope\SystemScopeRunner;
 
 $db = \Database::getInstance();
 $bi = new ControlTowerService();
 
-$context = $db->query(
+$context = (new SystemScopeRunner($db->dataScope()))->run(
+    'test:test_bi_real_data_sources:discovery:context',
+    static fn() => $db->query(
     "SELECT project_id, Semana FROM bi_pg_semana WHERE project_id > 0 ORDER BY project_id, Semana LIMIT 1",
-)->fetch(PDO::FETCH_ASSOC) ?: ['project_id' => 73, 'Semana' => 1];
+)->fetch(PDO::FETCH_ASSOC),
+) ?: ['project_id' => 73, 'Semana' => 1];
 
 $projectId = (int) $context['project_id'];
 $semana = (string) $context['Semana'];
+$scope = new MultiProjectScope([$projectId], 'fixture-bi-sources', 'R', 'test:test_bi_real_data_sources:reports');
 
 $reports = [
     'overview',
@@ -73,7 +79,10 @@ function assertRelationExists(\Database $db, string $relation, string $label): v
     }
 
     try {
-        $db->query("SELECT 1 FROM {$relation} LIMIT 0");
+        (new SystemScopeRunner($db->dataScope()))->run(
+            'test:test_bi_real_data_sources:discovery:relation',
+            static fn() => $db->query("SELECT 1 FROM {$relation} LIMIT 0"),
+        );
         biPass("{$label}: source relation {$relation} exists");
     } catch (Throwable $e) {
         biFail("{$label}: source relation {$relation} missing ({$e->getMessage()})");
@@ -84,7 +93,7 @@ echo "=== Testing BI Real Data Sources ===\n\n";
 echo "Context: project_id={$projectId}, semana={$semana}\n\n";
 
 foreach ($reports as $report) {
-    $brief = $bi->getBrief($report, [$projectId], $semana, 'R');
+    $brief = $bi->getBrief($scope, $report, $semana, 'R');
     $sourceRelations = $brief['data_source']['source_relations'] ?? [];
 
     if (($brief['respuesta'] ?? '') === 'BIEN') {

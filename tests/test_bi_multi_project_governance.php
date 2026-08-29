@@ -8,11 +8,37 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Services\Bi\ActionRecommendationService;
 use App\Services\Bi\RiskScoringService;
+use App\Security\DataScope\MultiProjectScope;
+use App\Security\DataScope\ProjectScope;
+use App\Security\DataScope\SystemScopeRunner;
+
+function governanceScope(array $ids, string $case): MultiProjectScope
+{
+    return new MultiProjectScope($ids, 'fixture-bi-governance', 'R', 'test:test_bi_multi_project_governance:' . $case);
+}
+
+function governanceGlobalRead(\Database $db, string $case, callable $read): mixed
+{
+    return (new SystemScopeRunner($db->dataScope()))->run(
+        'test:test_bi_multi_project_governance:discovery:' . $case,
+        $read,
+    );
+}
+
+function governanceProjectRead(\Database $db, int $projectId, callable $read): mixed
+{
+    $db->dataScope()->bind(new ProjectScope($projectId, 'fixture-bi-governance', 'R'));
+    try {
+        return $read();
+    } finally {
+        $db->dataScope()->clear();
+    }
+}
 
 $failures = [];
 $db = \Database::getInstance();
 
-$pair = $db->query(
+$pair = governanceGlobalRead($db, 'pair', static fn() => $db->query(
     "SELECT a.project_id AS first_project_id, a.Semana AS first_week,
             b.project_id AS second_project_id,
             COALESCE(a.Fecha_Fin_Sem, a.Fecha_Inicio_Sem) AS first_cutoff,
@@ -42,11 +68,11 @@ $pair = $db->query(
        )
      ORDER BY a.project_id, b.project_id, a.Semana DESC, b.Semana DESC
      LIMIT 1"
-)->fetch(\PDO::FETCH_ASSOC);
+)->fetch(\PDO::FETCH_ASSOC));
 
 if ($pair === false) {
     $riskService = new RiskScoringService();
-    $context = $db->query(
+    $context = governanceGlobalRead($db, 'fallback-activity', static fn() => $db->query(
         "SELECT r.project_id, r.Semana, pc.Sub_Contratista, pc.Responsable_AIA,
                 COALESCE(NULLIF(pc.Estado, ''), pc.Actividad) AS etapa
          FROM bi_riesgos r INNER JOIN programa_consolidado pc
@@ -55,7 +81,7 @@ if ($pair === false) {
          WHERE r.risk_type = 'actividad' AND COALESCE(pc.Sub_Contratista, '') <> ''
            AND COALESCE(pc.Responsable_AIA, '') <> ''
            AND COALESCE(NULLIF(pc.Estado, ''), pc.Actividad) <> '' LIMIT 1",
-    )->fetch(\PDO::FETCH_ASSOC);
+    )->fetch(\PDO::FETCH_ASSOC));
     if ($context === false) {
         $failures[] = 'missing real activity risk context fixture';
     } else {
@@ -66,13 +92,16 @@ if ($pair === false) {
                AND LOWER(COALESCE(Responsable_AIA, '')) LIKE ?
                AND (LOWER(COALESCE(Actividad, '')) LIKE ? OR LOWER(COALESCE(Estado, '')) LIKE ?)",
         );
-        foreach ($riskService->getTopRisks('programa-general', (int) $context['project_id'], (string) $context['Semana'], 100, $filters) as $risk) {
-            $matchesActivity->execute([
-                $context['project_id'], $context['Semana'], $risk['entity_id'],
-                '%' . strtolower($filters['sub']) . '%', '%' . strtolower($filters['resp']) . '%',
-                '%' . strtolower($filters['etapa']) . '%', '%' . strtolower($filters['etapa']) . '%',
-            ]);
-            if ($matchesActivity->fetchColumn() === false) {
+        foreach ($riskService->getTopRisks(governanceScope([(int) $context['project_id']], 'fallback-activity'), 'programa-general', (string) $context['Semana'], 100, $filters) as $risk) {
+            $matches = governanceProjectRead($db, (int) $context['project_id'], static function () use ($matchesActivity, $context, $risk, $filters): mixed {
+                $matchesActivity->execute([
+                    $context['project_id'], $context['Semana'], $risk['entity_id'],
+                    '%' . strtolower($filters['sub']) . '%', '%' . strtolower($filters['resp']) . '%',
+                    '%' . strtolower($filters['etapa']) . '%', '%' . strtolower($filters['etapa']) . '%',
+                ]);
+                return $matchesActivity->fetchColumn();
+            });
+            if ($matches === false) {
                 $failures[] = 'activity risks escaped their contextual filters';
                 break;
             }
@@ -80,8 +109,8 @@ if ($pair === false) {
     }
     $unsupportedContext = ['resp' => '__risk-context-without-source__'];
     foreach (['cic' => 'contratista'] as $reportKey => $riskType) {
-        $risk = $db->query("SELECT project_id, Semana FROM bi_riesgos WHERE risk_type = '{$riskType}' LIMIT 1")->fetch(\PDO::FETCH_ASSOC);
-        if ($risk !== false && $riskService->getTopRisks($reportKey, (int) $risk['project_id'], (string) $risk['Semana'], 100, $unsupportedContext) !== []) {
+        $risk = governanceGlobalRead($db, 'fallback-' . $reportKey, static fn() => $db->query("SELECT project_id, Semana FROM bi_riesgos WHERE risk_type = '{$riskType}' LIMIT 1")->fetch(\PDO::FETCH_ASSOC));
+        if ($risk !== false && $riskService->getTopRisks(governanceScope([(int) $risk['project_id']], 'fallback-' . $reportKey), $reportKey, (string) $risk['Semana'], 100, $unsupportedContext) !== []) {
             $failures[] = "{$riskType} risks ignored an active unsupported context filter";
         }
     }
@@ -101,14 +130,15 @@ $filters = [
     'hasta' => max((string) $pair['first_cutoff'], (string) $pair['second_cutoff']),
 ];
 
-$cutoffStmt = $db->prepare(
+$cutoffStmt = $db->queryForProjects(
+    governanceScope($projectIds, 'oracle-cutoffs'),
     'SELECT project_id, MAX(COALESCE(Fecha_Fin_Sem, Fecha_Inicio_Sem)) AS cutoff
      FROM semanas_activas
      WHERE project_id IN (?, ?)
        AND COALESCE(Fecha_Fin_Sem, Fecha_Inicio_Sem) BETWEEN ? AND ?
-     GROUP BY project_id'
+     GROUP BY project_id',
+    [$projectIds[0], $projectIds[1], $filters['desde'], $filters['hasta']],
 );
-$cutoffStmt->execute([$projectIds[0], $projectIds[1], $filters['desde'], $filters['hasta']]);
 $cutoffs = [];
 foreach ($cutoffStmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
     $cutoffs[(int) $row['project_id']] = (string) $row['cutoff'];
@@ -119,25 +149,27 @@ if (count($cutoffs) !== 2) {
 }
 
 $riskService = new RiskScoringService();
-$unknownRisks = $riskService->getTopRisks('not-a-bi-report', $projectIds[0], (string) $pair['first_week']);
+$unknownRisks = $riskService->getTopRisks(governanceScope([$projectIds[0]], 'unknown'), 'not-a-bi-report', (string) $pair['first_week']);
 if ($unknownRisks !== []) {
     $failures[] = 'unknown report key returned risks instead of an empty list';
 }
 
-$overviewRisks = $riskService->getTopRisks('overview', $projectIds[0], (string) $pair['first_week'], 100);
+$overviewRisks = $riskService->getTopRisks(governanceScope([$projectIds[0]], 'overview-single'), 'overview', (string) $pair['first_week'], 100);
 $overviewTypes = array_values(array_unique(array_column($overviewRisks, 'risk_type')));
 $expectedTypesStmt = $db->prepare(
     'SELECT DISTINCT risk_type FROM bi_riesgos WHERE project_id = ? AND Semana = ?'
 );
-$expectedTypesStmt->execute([$projectIds[0], $pair['first_week']]);
-$expectedOverviewTypes = array_column($expectedTypesStmt->fetchAll(\PDO::FETCH_ASSOC), 'risk_type');
+$expectedOverviewTypes = governanceProjectRead($db, $projectIds[0], static function () use ($expectedTypesStmt, $projectIds, $pair): array {
+    $expectedTypesStmt->execute([$projectIds[0], $pair['first_week']]);
+    return array_column($expectedTypesStmt->fetchAll(\PDO::FETCH_ASSOC), 'risk_type');
+});
 sort($overviewTypes);
 sort($expectedOverviewTypes);
 if ($overviewTypes !== $expectedOverviewTypes) {
     $failures[] = 'overview did not return every risk type for its project/week';
 }
 
-$rangeRisks = $riskService->getTopRisks('overview', $projectIds, '', 100, $filters);
+$rangeRisks = $riskService->getTopRisks(governanceScope($projectIds, 'overview-range'), 'overview', '', 100, $filters);
 if ($rangeRisks === []) {
     $failures[] = 'overview date range returned no real risks';
 }
@@ -162,7 +194,7 @@ $assertRiskIds = static function (string $label, array $risks, array $expectedId
     }
 };
 
-$activityContext = $db->query(
+$activityContext = governanceGlobalRead($db, 'activity-context', static fn() => $db->query(
     "SELECT r.project_id, r.Semana, pc.Sub_Contratista, pc.Responsable_AIA,
             COALESCE(NULLIF(pc.Estado, ''), pc.Actividad) AS etapa
      FROM bi_riesgos r
@@ -175,7 +207,7 @@ $activityContext = $db->query(
        AND COALESCE(pc.Responsable_AIA, '') <> ''
        AND COALESCE(NULLIF(pc.Estado, ''), pc.Actividad) <> ''
      LIMIT 1",
-)->fetch(\PDO::FETCH_ASSOC);
+)->fetch(\PDO::FETCH_ASSOC));
 
 if ($activityContext === false) {
     $failures[] = 'missing real activity risk context fixture';
@@ -197,17 +229,24 @@ if ($activityContext === false) {
            AND (LOWER(COALESCE(pc.Actividad, '')) LIKE ? OR LOWER(COALESCE(pc.Estado, '')) LIKE ?)",
     );
     $likeFilters = array_map(static fn(string $value): string => '%' . strtolower($value) . '%', $activityFilters);
-    $expectedActivity->execute([
-        $activityContext['project_id'], $activityContext['Semana'],
-        $likeFilters['sub'], $likeFilters['resp'], $likeFilters['etapa'], $likeFilters['etapa'],
-    ]);
+    $expectedActivityIds = governanceProjectRead($db, (int) $activityContext['project_id'], static function () use ($expectedActivity, $activityContext, $likeFilters): array {
+        $expectedActivity->execute([
+            $activityContext['project_id'], $activityContext['Semana'],
+            $likeFilters['sub'], $likeFilters['resp'], $likeFilters['etapa'], $likeFilters['etapa'],
+        ]);
+        return $expectedActivity->fetchAll(\PDO::FETCH_COLUMN);
+    });
     $actualActivity = $riskService->getTopRisks(
-        'programa-general', (int) $activityContext['project_id'], (string) $activityContext['Semana'], 100, $activityFilters,
+        governanceScope([(int) $activityContext['project_id']], 'activity'),
+        'programa-general',
+        (string) $activityContext['Semana'],
+        100,
+        $activityFilters,
     );
-    $assertRiskIds('activity', $actualActivity, $expectedActivity->fetchAll(\PDO::FETCH_COLUMN));
+    $assertRiskIds('activity', $actualActivity, $expectedActivityIds);
 }
 
-$contractorContext = $db->query(
+$contractorContext = governanceGlobalRead($db, 'contractor-context', static fn() => $db->query(
     "SELECT r.project_id, r.Semana, cic.subcontratista,
             COALESCE(NULLIF(cic.alcance, ''), cic.tipo_proveedor) AS etapa
      FROM bi_riesgos r
@@ -217,7 +256,7 @@ $contractorContext = $db->query(
            = CONVERT(r.entity_id USING utf8mb4) COLLATE utf8mb4_0900_ai_ci
      WHERE r.risk_type = 'contratista' AND COALESCE(cic.subcontratista, '') <> ''
        AND COALESCE(NULLIF(cic.alcance, ''), cic.tipo_proveedor) <> '' LIMIT 1",
-)->fetch(\PDO::FETCH_ASSOC);
+)->fetch(\PDO::FETCH_ASSOC));
 
 if ($contractorContext === false) {
     $failures[] = 'missing real contractor risk context fixture';
@@ -233,20 +272,27 @@ if ($contractorContext === false) {
            AND (LOWER(COALESCE(cic.alcance, '')) LIKE ? OR LOWER(COALESCE(cic.tipo_proveedor, '')) LIKE ?)",
     );
     $contractorLike = array_map(static fn(string $value): string => '%' . strtolower($value) . '%', $contractorFilters);
-    $expectedContractor->execute([
-        $contractorContext['project_id'], $contractorContext['Semana'],
-        $contractorLike['sub'], $contractorLike['etapa'], $contractorLike['etapa'],
-    ]);
+    $expectedContractorIds = governanceProjectRead($db, (int) $contractorContext['project_id'], static function () use ($expectedContractor, $contractorContext, $contractorLike): array {
+        $expectedContractor->execute([
+            $contractorContext['project_id'], $contractorContext['Semana'],
+            $contractorLike['sub'], $contractorLike['etapa'], $contractorLike['etapa'],
+        ]);
+        return $expectedContractor->fetchAll(\PDO::FETCH_COLUMN);
+    });
     $actualContractor = $riskService->getTopRisks(
-        'cic', (int) $contractorContext['project_id'], (string) $contractorContext['Semana'], 100, $contractorFilters,
+        governanceScope([(int) $contractorContext['project_id']], 'contractor'),
+        'cic',
+        (string) $contractorContext['Semana'],
+        100,
+        $contractorFilters,
     );
-    $assertRiskIds('contractor', $actualContractor, $expectedContractor->fetchAll(\PDO::FETCH_COLUMN));
+    $assertRiskIds('contractor', $actualContractor, $expectedContractorIds);
 }
 
 // La cobertura del contexto de riesgo 'pdc' se retiró el 2026-08-04: se apoyaba en la tabla
 // `pdc` del PDC v1, eliminada, y `bi_riesgos` ya no emite filas de ese tipo.
 
-$actions = (new ActionRecommendationService())->recommend('programa-general', [
+$actions = (new ActionRecommendationService())->recommend(governanceScope($projectIds, 'actions'), 'programa-general', [
     [
         'project_id' => $projectIds[0],
         'Actividad' => 'Actividad crítica del proyecto uno',
@@ -257,7 +303,7 @@ $actions = (new ActionRecommendationService())->recommend('programa-general', [
         'Actividad' => 'Actividad crítica del proyecto dos',
         'is_critical_late' => 1,
     ],
-], $projectIds, '', $filters);
+], '', $filters);
 
 foreach ($actions as $action) {
     $projectId = (int) ($action['project_id'] ?? 0);
@@ -280,10 +326,10 @@ if (count($actions) !== 2) {
     $failures[] = 'fixture did not produce one recommended action per project';
 }
 
-$consolidatedActions = (new ActionRecommendationService())->recommend('overview', [[
+$consolidatedActions = (new ActionRecommendationService())->recommend(governanceScope($projectIds, 'consolidated-actions'), 'overview', [[
     'hard_restriction_blocked_count' => 1,
     'weekly_commitments_at_risk_count' => 0,
-]], $projectIds, '', $filters);
+]], '', $filters);
 $consolidated = $consolidatedActions[0] ?? [];
 if (($consolidated['scope'] ?? null) !== 'consolidated'
     || !array_key_exists('project_id', $consolidated)

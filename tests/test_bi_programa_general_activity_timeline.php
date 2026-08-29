@@ -8,6 +8,27 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/support/BiContractFixture.php';
 
 use App\Services\ControlTowerService;
+use App\Security\DataScope\MultiProjectScope;
+use App\Security\DataScope\ProjectScope;
+use App\Security\DataScope\SystemScopeRunner;
+
+function timelineGlobalRead(Database $db, string $case, callable $read): mixed
+{
+    return (new SystemScopeRunner($db->dataScope()))->run(
+        'test:test_bi_programa_general_activity_timeline:discovery:' . $case,
+        $read,
+    );
+}
+
+function timelineProjectRead(Database $db, int $projectId, callable $read): mixed
+{
+    $db->dataScope()->bind(new ProjectScope($projectId, 'fixture-bi-timeline', 'R'));
+    try {
+        return $read();
+    } finally {
+        $db->dataScope()->clear();
+    }
+}
 
 /**
  * Regression contract for the Programa General activity timeline.
@@ -118,7 +139,8 @@ function timelineOracle(Database $db, array $projectIds, string $semana, array $
         }
     }
 
-    $statement = $db->prepare(
+    $statement = $db->queryForProjects(
+        new MultiProjectScope($projectIds, 'fixture-bi-timeline', 'R', 'test:test_bi_programa_general_activity_timeline:oracle'),
         'SELECT pc.project_id, pc.Semana, pc.Consecutivo_en_Programa AS unique_id, pc.Actividad, pc.Fecha_Inicio, pc.Fecha_Fin,
                 pc.Ruta_Critica, pc.Ejecutado, pc.Estado, pc.Sub_Contratista, pc.Responsable_AIA,
                 COALESCE(sa.Fecha_Fin_Sem, sa.Fecha_Inicio_Sem) AS cutoff
@@ -126,8 +148,8 @@ function timelineOracle(Database $db, array $projectIds, string $semana, array $
          LEFT JOIN semanas_activas sa ON sa.project_id = pc.project_id AND sa.Semana = pc.Semana
          WHERE ' . implode(' AND ', $where) . '
          ORDER BY pc.project_id, pc.Semana, pc.unique_id',
+        $params,
     );
-    $statement->execute($params);
     $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
 
     $snapshots = [];
@@ -245,8 +267,14 @@ function timelineAssertDetail(array &$failures, array $detail, array $oracle, st
 $db = Database::getInstance();
 BiContractFixture::seedProgramSnapshots($db);
 $bi = new ControlTowerService();
+$scope = static fn(array $ids, string $case): MultiProjectScope => new MultiProjectScope(
+    $ids,
+    'fixture-bi-timeline',
+    'R',
+    'test:test_bi_programa_general_activity_timeline:' . $case,
+);
 $failures = [];
-$jmcProjectId = 73;
+$jmcProjectId = BiContractFixture::PROYECTO_A;
 $jmcWeek = '3';
 $jmcOracle = timelineOracle($db, [$jmcProjectId], $jmcWeek);
 
@@ -266,7 +294,7 @@ $seen = [];
 $allActivities = [];
 $firstDetail = null;
 do {
-    $page = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, [], $limit, $offset);
+    $page = $bi->getProgramaProgressDetail($scope([$jmcProjectId], 'pagination'), $jmcWeek, [], $limit, $offset);
     timelineAssertDetail($failures, $page, $jmcOracle, "canonical snapshot offset {$offset}");
     if ($firstDetail === null) {
         $firstDetail = $page;
@@ -297,9 +325,9 @@ timelineAssert(
     $asymmetricOracle['summary']['total'] > $jmcOracle['summary']['total'],
     'canonical multi-project report must include the latest eligible snapshot from both projects',
 );
-$asymmetricBrief = $bi->getBrief('programa-general', $asymmetricProjects, $jmcWeek);
+$asymmetricBrief = $bi->getBrief($scope($asymmetricProjects, 'asymmetric-brief'), 'programa-general', $jmcWeek);
 $asymmetricSnapshot = is_array($asymmetricBrief['activity_snapshot'] ?? null) ? $asymmetricBrief['activity_snapshot'] : [];
-$asymmetricDetail = $bi->getProgramaProgressDetail($asymmetricProjects, $jmcWeek, [], 25, 0);
+$asymmetricDetail = $bi->getProgramaProgressDetail($scope($asymmetricProjects, 'asymmetric-detail'), $jmcWeek, [], 25, 0);
 timelineAssertDetail($failures, $asymmetricSnapshot, $asymmetricOracle, 'asymmetric multi-project initial snapshot');
 timelineAssertDetail($failures, $asymmetricDetail, $asymmetricOracle, 'asymmetric multi-project first detail page');
 timelineAssert(
@@ -313,27 +341,29 @@ timelineAssert(
     'initial snapshot and detail endpoint must use the same multiproject denominator',
 );
 
-$filterContextStatement = $db->prepare(
+$filterContext = timelineProjectRead($db, $jmcProjectId, static function () use ($db, $jmcProjectId, $jmcWeek): array|false {
+    $statement = $db->prepare(
     "SELECT Sub_Contratista AS sub, Responsable_AIA AS resp
      FROM programa_consolidado
      WHERE project_id = ? AND Semana = ? AND COALESCE(Titulo, 0) = 0
        AND TRIM(COALESCE(Sub_Contratista, '')) <> '' AND TRIM(COALESCE(Responsable_AIA, '')) <> ''
      GROUP BY Sub_Contratista, Responsable_AIA
      ORDER BY COUNT(*) DESC, Sub_Contratista, Responsable_AIA LIMIT 1",
-);
-$filterContextStatement->execute([$jmcProjectId, $jmcWeek]);
-$filterContext = $filterContextStatement->fetch(PDO::FETCH_ASSOC);
+    );
+    $statement->execute([$jmcProjectId, $jmcWeek]);
+    return $statement->fetch(PDO::FETCH_ASSOC);
+});
 timelineAssert($failures, is_array($filterContext), 'canonical CI snapshot needs a subcontractor/responsible filter context');
 if (is_array($filterContext)) {
     $filters = ['sub' => (string) $filterContext['sub'], 'resp' => (string) $filterContext['resp']];
     $filteredOracle = timelineOracle($db, [$jmcProjectId], $jmcWeek, $filters);
     timelineAssert($failures, $filteredOracle['summary']['total'] > 0, 'canonical sub/responsible oracle must not be empty');
-    $filteredDetail = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, $filters, 100, 0);
+    $filteredDetail = $bi->getProgramaProgressDetail($scope([$jmcProjectId], 'filtered'), $jmcWeek, $filters, 100, 0);
     timelineAssertDetail($failures, $filteredDetail, $filteredOracle, 'canonical sub/responsible filters');
 }
 
 $emptyDetail = $bi->getProgramaProgressDetail(
-    [$jmcProjectId],
+    $scope([$jmcProjectId], 'empty'),
     '',
     ['desde' => '1900-01-01', 'hasta' => '1900-01-07'],
     100,
@@ -345,7 +375,7 @@ timelineAssert($failures, (float) ($emptyDetail['summary']['real_pct'] ?? -1) ==
 timelineAssert($failures, (float) ($emptyDetail['summary']['theoretical_pct'] ?? -1) === 0.0, 'a valid empty timeline must publish zero theoretical progress');
 timelineAssert($failures, ($emptyDetail['activities'] ?? null) === [], 'a valid empty timeline must publish an empty activity list');
 
-$earnedDetail = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, [], 50, 0, 'earned');
+$earnedDetail = $bi->getProgramaProgressDetail($scope([$jmcProjectId], 'earned'), $jmcWeek, [], 50, 0, 'earned');
 $earnedActivities = $earnedDetail['activities'] ?? [];
 $earnedContributions = array_column($allActivities, 'real_contribution_pp');
 $expectedTopEarned = $earnedContributions === [] ? 0.0 : max($earnedContributions);
@@ -357,36 +387,40 @@ timelineAssert($failures, array_reduce(
     true,
 ), 'earned mode must paginate only real contributors');
 
-$criticalMissing = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, [], 50, 0, 'missing', true);
+$criticalMissing = $bi->getProgramaProgressDetail($scope([$jmcProjectId], 'critical-missing'), $jmcWeek, [], 50, 0, 'missing', true);
 timelineAssert($failures, array_reduce(
     $criticalMissing['activities'] ?? [],
     static fn(bool $valid, array $activity): bool => $valid && !empty($activity['critical']) && (float) ($activity['recoverable_pp'] ?? 0) > 0,
     true,
 ), 'critical-only missing mode must filter the complete universe before pagination');
 
-$secondProjectStatement = $db->prepare(
+$secondProjectId = (int) timelineGlobalRead($db, 'second-project', static function () use ($db, $jmcProjectId, $jmcWeek): mixed {
+    $statement = $db->prepare(
     "SELECT project_id FROM programa_consolidado
      WHERE project_id <> ? AND Semana = ? AND COALESCE(Titulo, 0) = 0
        AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL AND Fecha_Fin >= Fecha_Inicio
      GROUP BY project_id ORDER BY project_id LIMIT 1",
-);
-$secondProjectStatement->execute([$jmcProjectId, $jmcWeek]);
-$secondProjectId = (int) $secondProjectStatement->fetchColumn();
+    );
+    $statement->execute([$jmcProjectId, $jmcWeek]);
+    return $statement->fetchColumn();
+});
 if ($secondProjectId > 0) {
     $multiOracle = timelineOracle($db, [$jmcProjectId, $secondProjectId], $jmcWeek);
-    $multiDetail = $bi->getProgramaProgressDetail([$jmcProjectId, $secondProjectId], $jmcWeek, [], 100, 0);
+    $multiDetail = $bi->getProgramaProgressDetail($scope([$jmcProjectId, $secondProjectId], 'second-project'), $jmcWeek, [], 100, 0);
     timelineAssertDetail($failures, $multiDetail, $multiOracle, 'canonical plus second project');
     timelineAssert($failures, $multiOracle['summary']['total'] > $jmcOracle['summary']['total'], 'multi-project SQL universe must include the second project');
 }
 
-$rangeContext = $db->prepare('SELECT Fecha_Inicio_Sem AS desde, Fecha_Fin_Sem AS hasta FROM semanas_activas WHERE project_id = ? AND Semana = ?');
-$rangeContext->execute([$jmcProjectId, $jmcWeek]);
-$range = $rangeContext->fetch(PDO::FETCH_ASSOC) ?: [];
+$range = timelineProjectRead($db, $jmcProjectId, static function () use ($db, $jmcProjectId, $jmcWeek): array {
+    $statement = $db->prepare('SELECT Fecha_Inicio_Sem AS desde, Fecha_Fin_Sem AS hasta FROM semanas_activas WHERE project_id = ? AND Semana = ?');
+    $statement->execute([$jmcProjectId, $jmcWeek]);
+    return $statement->fetch(PDO::FETCH_ASSOC) ?: [];
+});
 timelineAssert($failures, !empty($range['desde']) && !empty($range['hasta']), 'canonical CI snapshot needs explicit weekly cutoff dates');
 if (!empty($range['desde']) && !empty($range['hasta'])) {
     $rangeFilters = ['desde' => (string) $range['desde'], 'hasta' => (string) $range['hasta']];
     $rangeOracle = timelineOracle($db, [$jmcProjectId], $jmcWeek, $rangeFilters);
-    $rangeDetail = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, $rangeFilters, 100, 0);
+    $rangeDetail = $bi->getProgramaProgressDetail($scope([$jmcProjectId], 'date-range'), $jmcWeek, $rangeFilters, 100, 0);
     timelineAssertDetail($failures, $rangeDetail, $rangeOracle, 'canonical date range');
     timelineAssert($failures, ($rangeDetail['filters']['semana'] ?? null) === '', 'date range must override the week filter in the published detail');
 }

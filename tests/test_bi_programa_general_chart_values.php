@@ -8,6 +8,22 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/support/BiContractFixture.php';
 
 use App\Services\ControlTowerService;
+use App\Security\DataScope\MultiProjectScope;
+use App\Security\DataScope\ProjectScope;
+use App\Security\DataScope\SystemScopeRunner;
+
+function biChartScope(array $ids, string $case): MultiProjectScope
+{
+    return new MultiProjectScope($ids, 'fixture-bi-chart-values', 'R', 'test:test_bi_programa_general_chart_values:' . $case);
+}
+
+function biChartGlobalRead(\Database $db, string $case, callable $read): mixed
+{
+    return (new SystemScopeRunner($db->dataScope()))->run(
+        'test:test_bi_programa_general_chart_values:discovery:' . $case,
+        $read,
+    );
+}
 
 $db = \Database::getInstance();
 BiContractFixture::seedCausalRows($db);
@@ -220,8 +236,7 @@ function biFetchPg(\Database $db, array $projectIds, string $semana, array $filt
           AND COALESCE(pc.Titulo, 0) = 0
           {$dateClause}
         ORDER BY pc.Semana, pc.Consecutivo_en_Programa";
-    $stmt = $db->prepare($sql);
-    $stmt->execute($params);
+    $stmt = $db->queryForProjects(biChartScope($projectIds, 'oracle:programa'), $sql, $params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -232,8 +247,11 @@ function biFetchPs(\Database $db, array $projectIds, string $semana, array $filt
         'sub' => 'subcontractor',
         'resp' => 'responsible',
     ]);
-    $stmt = $db->prepare("SELECT * FROM bi_ps_compromisos ps WHERE {$where} AND ps.Activa IN ('1', 'NA')");
-    $stmt->execute($params);
+    $stmt = $db->queryForProjects(
+        biChartScope($projectIds, 'oracle:compromisos'),
+        "SELECT * FROM bi_ps_compromisos ps WHERE {$where} AND ps.Activa IN ('1', 'NA')",
+        $params,
+    );
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -250,8 +268,11 @@ function biFetchRadar(\Database $db, array $projectIds, string $semana, array $f
         $params[] = '%' . strtolower($stage) . '%';
         $params[] = '%' . strtolower($stage) . '%';
     }
-    $stmt = $db->prepare("SELECT ps.* FROM programacion_semanal ps WHERE {$where} AND ps.Activa IN ('1', 'NA') ORDER BY ps.project_id, ps.Semana, ps.Consecutivo, ps.row_id");
-    $stmt->execute($params);
+    $stmt = $db->queryForProjects(
+        biChartScope($projectIds, 'oracle:radar'),
+        "SELECT ps.* FROM programacion_semanal ps WHERE {$where} AND ps.Activa IN ('1', 'NA') ORDER BY ps.project_id, ps.Semana, ps.Consecutivo, ps.row_id",
+        $params,
+    );
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -262,8 +283,11 @@ function biFetchPsUniverse(\Database $db, array $projectIds, string $semana, arr
         'sub' => 'subcontractor',
         'resp' => 'responsible',
     ]);
-    $stmt = $db->prepare("SELECT * FROM bi_ps_compromisos ps WHERE {$where}");
-    $stmt->execute($params);
+    $stmt = $db->queryForProjects(
+        biChartScope($projectIds, 'oracle:compromisos-universe'),
+        "SELECT * FROM bi_ps_compromisos ps WHERE {$where}",
+        $params,
+    );
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -1181,11 +1205,16 @@ function biDeclaredBaselineFinish(int $projectId): ?string
     if (array_key_exists($projectId, $cache)) {
         return $cache[$projectId];
     }
-    $stmt = \Database::getInstance()->prepare(
-        'SELECT fechaFinLineaBase FROM general_proyectos_procesos WHERE Id = ?'
-    );
-    $stmt->execute([$projectId]);
-    $valor = $stmt->fetchColumn();
+    $db = \Database::getInstance();
+    $db->dataScope()->bind(new ProjectScope($projectId, 'fixture-bi-chart-values', 'R'));
+    try {
+        $valor = $db->query(
+            'SELECT fechaFinLineaBase FROM general_proyectos_procesos WHERE Id = ?',
+            [$projectId],
+        )->fetchColumn();
+    } finally {
+        $db->dataScope()->clear();
+    }
     $cache[$projectId] = ($valor === false || $valor === null || $valor === '')
         ? null
         : substr((string) $valor, 0, 10);
@@ -1362,10 +1391,11 @@ function biAssertCausalDrilldownContract(
     string $kind,
     string $label
 ): void {
+    $scope = biChartScope($projectIds, 'causal-' . $label . '-' . $kind);
     $method = 'getPrograma' . strtoupper($kind) . 'Detail';
     $chartKey = 'programa-' . $kind;
     $endpoint = '/api/bi/report/programa-general/' . $kind . '-detail';
-    $brief = $bi->getBrief('programa-general', $projectIds, $semana, 'R', $filters);
+    $brief = $bi->getBrief($scope, 'programa-general', $semana, 'R', $filters);
     $interaction = $brief['charts'][$chartKey]['interaction'] ?? [];
     if (($interaction['detail_endpoint'] ?? '') !== $endpoint
         || ($interaction['desktop_action'] ?? '') !== 'dblclick'
@@ -1377,7 +1407,7 @@ function biAssertCausalDrilldownContract(
         return;
     }
 
-    $detail = $bi->{$method}($projectIds, $semana, $filters);
+    $detail = $bi->{$method}($scope, $semana, $filters);
     if (($detail['respuesta'] ?? '') !== 'BIEN' || ($detail['empty'] ?? null) !== (($detail['summary']['total'] ?? -1) === 0)) {
         biFail($failures, "{$label}: {$kind} detail must report an explicit empty state");
     }
@@ -1390,7 +1420,7 @@ function biAssertCausalDrilldownContract(
     }
     $firstCategory = array_key_first($detail['summary']['categories'] ?? []);
     if ($firstCategory !== null) {
-        $categoryDetail = $bi->{$method}($projectIds, $semana, $filters, $firstCategory);
+        $categoryDetail = $bi->{$method}($scope, $semana, $filters, $firstCategory);
         if ((int) ($categoryDetail['summary']['total'] ?? -1) !== (int) ($detail['summary']['categories'][$firstCategory] ?? -1)) {
             biFail($failures, "{$label}: {$kind} optional category filter must match its summary bucket");
         }
@@ -1522,7 +1552,9 @@ function biAssertMomentumProjection(array &$failures, array $chart, string $labe
 
 function biValidateProgramaGeneral(\Database $db, ControlTowerService $bi, array &$failures, array $projectIds, string $semana, array $filters, string $label): void
 {
-    $brief = $bi->getBrief('programa-general', $projectIds, $semana, 'R', $filters);
+    $scope = biChartScope($projectIds, 'validate-' . $label);
+    $projectIds = $scope->projectIds();
+    $brief = $bi->getBrief($scope, 'programa-general', $semana, 'R', $filters);
     $currentPg = biFetchPg($db, $projectIds, $semana, $filters, false);
     $trendPg = biFetchPg($db, $projectIds, $semana, $filters, true);
     $forecastTrendPg = biForecastTrendExpected($db, $projectIds, $semana, $filters);
@@ -1630,7 +1662,7 @@ function biValidateProgramaGeneral(\Database $db, ControlTowerService $bi, array
     if (!method_exists($bi, 'getProgramaComplianceDetail')) {
         biFail($failures, "{$label}: compliance drill-down service is missing");
     } else {
-        $detail = $bi->getProgramaComplianceDetail($projectIds, $semana, $filters, 100);
+        $detail = $bi->getProgramaComplianceDetail($scope, $semana, $filters, 100);
         biAssertSeries($failures, "{$label}: compliance detail summary", [
             $detail['summary']['real_pct'] ?? null,
             $detail['summary']['theoretical_pct'] ?? null,
@@ -1656,7 +1688,7 @@ function biValidateProgramaGeneral(\Database $db, ControlTowerService $bi, array
     if (!method_exists($bi, 'getProgramaDelayDetail')) {
         biFail($failures, "{$label}: delay detail service is missing");
     } else {
-        $delayDetail = $bi->getProgramaDelayDetail($projectIds, $semana, $filters, 100, 0);
+        $delayDetail = $bi->getProgramaDelayDetail($scope, $semana, $filters, 100, 0);
         if (($delayDetail['forecast']['metric_key'] ?? '') !== 'pg_finish_variance_days_p50') {
             biFail($failures, "{$label}: delay detail forecast contract mismatch");
         }
@@ -1688,8 +1720,8 @@ function biValidateProgramaGeneral(\Database $db, ControlTowerService $bi, array
             biFail($failures, "{$label}: observed delay returned count mismatch");
         }
         if ((int) ($delayDetail['pagination']['total'] ?? 0) > 1) {
-            $firstPage = $bi->getProgramaDelayDetail($projectIds, $semana, $filters, 1, 0);
-            $secondPage = $bi->getProgramaDelayDetail($projectIds, $semana, $filters, 1, 1);
+            $firstPage = $bi->getProgramaDelayDetail($scope, $semana, $filters, 1, 0);
+            $secondPage = $bi->getProgramaDelayDetail($scope, $semana, $filters, 1, 1);
             $firstActivity = $firstPage['activities'][0] ?? [];
             $secondActivity = $secondPage['activities'][0] ?? [];
             if (($firstPage['pagination']['has_more'] ?? false) !== true
@@ -1710,7 +1742,7 @@ function biValidateProgramaGeneral(\Database $db, ControlTowerService $bi, array
     if (!method_exists($bi, 'getProgramaProgressDetail')) {
         biFail($failures, "{$label}: progress drill-down service is missing");
     } else {
-        $progressDetail = $bi->getProgramaProgressDetail($projectIds, $semana, $filters, 100);
+        $progressDetail = $bi->getProgramaProgressDetail($scope, $semana, $filters, 100);
         biAssertSeries($failures, "{$label}: progress detail summary", [
             $progressDetail['summary']['real_pct'] ?? null,
             $progressDetail['summary']['theoretical_pct'] ?? null,
@@ -1761,7 +1793,7 @@ function biValidateProgramaGeneral(\Database $db, ControlTowerService $bi, array
     if (!method_exists($bi, 'getProgramaRadarDetail')) {
         biFail($failures, "{$label}: radar drill-down service is missing");
     } else {
-        $radarDetail = $bi->getProgramaRadarDetail($projectIds, $semana, $filters, 'productividad', 100, 0);
+        $radarDetail = $bi->getProgramaRadarDetail($scope, $semana, $filters, 'productividad', 100, 0);
         if ((int) ($radarDetail['summary']['total_population'] ?? -1) !== count($radarRows)
             || count($radarDetail['records'] ?? []) !== min(100, count($radarRows))) {
             biFail($failures, "{$label}: radar detail rows do not match filtered operational source");
@@ -1795,7 +1827,9 @@ function biValidateProgramaGeneralDistinctCutoffsSameWeek(
     string $semana,
     string $label
 ): void {
-    $brief = $bi->getBrief('programa-general', $projectIds, $semana, 'R', []);
+    $scope = biChartScope($projectIds, 'distinct-cutoffs-' . $label);
+    $projectIds = $scope->projectIds();
+    $brief = $bi->getBrief($scope, 'programa-general', $semana, 'R', []);
     $currentPg = biFetchPg($db, $projectIds, $semana, [], false);
     if (!$currentPg) {
         biFail($failures, "{$label}: missing current PG rows");
@@ -1841,7 +1875,7 @@ function biValidateProgramaGeneralDistinctCutoffsSameWeek(
         $projectIds,
     );
 
-    $detail = $bi->getProgramaComplianceDetail($projectIds, $semana, [], 100);
+    $detail = $bi->getProgramaComplianceDetail($scope, $semana, [], 100);
     biAssertSeries($failures, "{$label}: mixed-cutoff detail summary", [
         $detail['summary']['real_pct'] ?? null,
         $detail['summary']['theoretical_pct'] ?? null,
@@ -1896,7 +1930,7 @@ function biCurvaSDirectExpected(array $rows): array
 // La mecánica de descubrimiento se conserva — solo el universo es determinista.
 $fixtureProjectsSql = BiContractFixture::PROYECTO_A . ', ' . BiContractFixture::PROYECTO_B;
 
-$context = $db->query(
+$context = biChartGlobalRead($db, 'context', static fn() => $db->query(
     "SELECT project_id, Semana, sub_contratista, responsable_aia, COUNT(*) AS rows_count
      FROM bi_pg_semana
      WHERE project_id IN ({$fixtureProjectsSql})
@@ -1905,7 +1939,7 @@ $context = $db->query(
      GROUP BY project_id, Semana, sub_contratista, responsable_aia
      ORDER BY rows_count DESC
      LIMIT 1",
-)->fetch(PDO::FETCH_ASSOC);
+)->fetch(PDO::FETCH_ASSOC));
 
 if (!$context) {
     echo "FAIL: no BI context with subcontractor and responsible data\n";
@@ -1927,28 +1961,44 @@ biValidateProgramaGeneral($db, $bi, $failures, [BiContractFixture::PROYECTO_A, B
     'hasta' => '2026-07-27',
 ], 'multi-project-date-range');
 
-$baselineDrift = $db->query(
-    "WITH weekly_finish AS (
-        SELECT project_id, Semana, MAX(Fecha_Fin) AS finish
-        FROM programa_consolidado
-        WHERE COALESCE(Titulo, 0) = 0
-          AND project_id IN ({$fixtureProjectsSql})
-        GROUP BY project_id, Semana
-    ), bounds AS (
-        SELECT project_id, MIN(Semana) AS first_week, MAX(Semana) AS last_week
-        FROM weekly_finish GROUP BY project_id
-    )
-    SELECT b.project_id, b.last_week, first.finish AS first_finish, latest.finish AS latest_finish
-    FROM bounds b
-    JOIN weekly_finish first ON first.project_id = b.project_id AND first.Semana = b.first_week
-    JOIN weekly_finish latest ON latest.project_id = b.project_id AND latest.Semana = b.last_week
-    WHERE first.finish <> latest.finish
-    ORDER BY b.project_id LIMIT 1"
-)->fetch(PDO::FETCH_ASSOC);
+$baselineRows = $db->queryForProjects(
+    biChartScope([BiContractFixture::PROYECTO_A, BiContractFixture::PROYECTO_B], 'oracle:baseline-drift'),
+    "SELECT project_id, Semana, MAX(Fecha_Fin) AS finish
+     FROM programa_consolidado
+     WHERE COALESCE(Titulo, 0) = 0
+       AND project_id IN (?, ?)
+     GROUP BY project_id, Semana
+     ORDER BY project_id, Semana",
+    [BiContractFixture::PROYECTO_A, BiContractFixture::PROYECTO_B],
+)->fetchAll(PDO::FETCH_ASSOC);
+$baselineByProject = [];
+foreach ($baselineRows as $baselineRow) {
+    $baselineByProject[(int) $baselineRow['project_id']][] = $baselineRow;
+}
+$baselineDrift = null;
+foreach ($baselineByProject as $projectId => $projectRows) {
+    $first = $projectRows[0] ?? null;
+    $latest = $projectRows[count($projectRows) - 1] ?? null;
+    if ($first && $latest && (string) $first['finish'] !== (string) $latest['finish']) {
+        $baselineDrift = [
+            'project_id' => $projectId,
+            'last_week' => $latest['Semana'],
+            'first_finish' => $first['finish'],
+            'latest_finish' => $latest['finish'],
+        ];
+        break;
+    }
+}
 if (!$baselineDrift) {
     biFail($failures, 'baseline-drift: no reprogrammed project scenario found');
 } else {
-    $driftBrief = $bi->getBrief('programa-general', [(int) $baselineDrift['project_id']], (string) $baselineDrift['last_week'], 'R', []);
+    $driftBrief = $bi->getBrief(
+        biChartScope([(int) $baselineDrift['project_id']], 'baseline-drift'),
+        'programa-general',
+        (string) $baselineDrift['last_week'],
+        'R',
+        [],
+    );
     $driftMetrics = $driftBrief['charts']['programa-dias-retraso']['metrics'] ?? [];
     // 2026-08-24: antes se comparaba contra `first_finish`, el fin del PRIMER corte. Con el
     // contrato de `linea-base-contractual` la fecha sale de la linea base DECLARADA del proyecto,
@@ -1966,7 +2016,7 @@ if (!$baselineDrift) {
     }
 }
 
-$multiFiltered = $db->query(
+$multiFiltered = biChartGlobalRead($db, 'multi-filtered', static fn() => $db->query(
     "SELECT sub_contratista, responsable_aia, MIN(Fecha_Fin_Sem) AS desde, MAX(Fecha_Fin_Sem) AS hasta
      FROM bi_pg_semana
      WHERE project_id IN ({$fixtureProjectsSql})
@@ -1976,9 +2026,9 @@ $multiFiltered = $db->query(
      HAVING COUNT(DISTINCT project_id) >= 2
      ORDER BY COUNT(*) DESC
      LIMIT 1",
-)->fetch(PDO::FETCH_ASSOC);
+)->fetch(PDO::FETCH_ASSOC));
 if ($multiFiltered) {
-    $multiFilteredProjectIds = $db->query(
+    $multiFilteredProjectIds = biChartGlobalRead($db, 'multi-filtered-projects', static fn() => $db->query(
         "SELECT DISTINCT project_id
          FROM bi_pg_semana
          WHERE project_id IN ({$fixtureProjectsSql})
@@ -1986,7 +2036,7 @@ if ($multiFiltered) {
            AND responsable_aia = ?
          ORDER BY project_id",
         [(string) $multiFiltered['sub_contratista'], (string) $multiFiltered['responsable_aia']],
-    )->fetchAll(PDO::FETCH_COLUMN);
+    )->fetchAll(PDO::FETCH_COLUMN));
     biValidateProgramaGeneral($db, $bi, $failures, array_map('intval', $multiFilteredProjectIds), '', [
         'desde' => (string) $multiFiltered['desde'],
         'hasta' => (string) $multiFiltered['hasta'],
@@ -2007,7 +2057,13 @@ $staleHistoricalRows = biFetchPg($db, $staleFilterProjectIds, $staleFilterWeek, 
 if ($staleCurrentRows !== [] || $staleHistoricalRows === []) {
     biFail($failures, 'stale-filtered-cohort: real regression fixture no longer isolates historical-only matches');
 } else {
-    $staleBrief = $bi->getBrief('programa-general', $staleFilterProjectIds, $staleFilterWeek, 'R', $staleFilterFilters);
+    $staleBrief = $bi->getBrief(
+        biChartScope($staleFilterProjectIds, 'stale-filtered'),
+        'programa-general',
+        $staleFilterWeek,
+        'R',
+        $staleFilterFilters,
+    );
     $staleChart = $staleBrief['charts']['programa-dias-retraso'] ?? [];
     $staleProject = $staleChart['metrics']['project_breakdown'][0] ?? [];
     if (($staleChart['availability'] ?? true) !== false
@@ -2036,8 +2092,8 @@ if (count($presentFilteredProjectIds) >= count($missingFilteredProjectIds)) {
     biFail($failures, 'missing-filtered-project: real regression fixture no longer excludes a selected project');
 } else {
     $missingFilteredBrief = $bi->getBrief(
+        biChartScope($missingFilteredProjectIds, 'missing-filtered'),
         'programa-general',
-        $missingFilteredProjectIds,
         $missingFilteredWeek,
         'R',
         $missingFilteredFilters,
@@ -2065,7 +2121,7 @@ if (count($presentFilteredProjectIds) >= count($missingFilteredProjectIds)) {
     }
 }
 
-$distinctCutoffWeeks = $db->query(
+$distinctCutoffWeeks = biChartGlobalRead($db, 'distinct-cutoffs', static fn() => $db->query(
     "SELECT Semana,
             MIN(Fecha_Fin_Sem) AS min_cutoff,
             MAX(Fecha_Fin_Sem) AS max_cutoff,
@@ -2080,10 +2136,10 @@ $distinctCutoffWeeks = $db->query(
               rows_count DESC,
               Semana DESC
      LIMIT 20",
-)->fetchAll(PDO::FETCH_ASSOC);
+)->fetchAll(PDO::FETCH_ASSOC));
 $distinctCutoffScenario = null;
 foreach ($distinctCutoffWeeks as $candidateWeek) {
-    $projectsForWeek = $db->query(
+    $projectsForWeek = biChartGlobalRead($db, 'projects-for-week', static fn() => $db->query(
         "SELECT project_id, MIN(Fecha_Fin_Sem) AS cutoff, COUNT(*) AS rows_count
          FROM bi_pg_semana
          WHERE project_id IN ({$fixtureProjectsSql})
@@ -2093,7 +2149,7 @@ foreach ($distinctCutoffWeeks as $candidateWeek) {
          HAVING COUNT(*) > 0
          ORDER BY cutoff ASC, rows_count DESC, project_id ASC",
         [(string) $candidateWeek['Semana']],
-    )->fetchAll(PDO::FETCH_ASSOC);
+    )->fetchAll(PDO::FETCH_ASSOC));
     if (count($projectsForWeek) < 2) {
         continue;
     }
@@ -2145,8 +2201,8 @@ if ($distinctCutoffScenario === null) {
     );
     $directExpected = biCurvaSDirectExpected($directRows);
     $directBrief = $bi->getBrief(
+        biChartScope($distinctCutoffScenario['project_ids'], 'direct-curva-s'),
         'curva-s',
-        $distinctCutoffScenario['project_ids'],
         $distinctCutoffScenario['semana'],
         'R',
         []
@@ -2159,7 +2215,7 @@ if ($distinctCutoffScenario === null) {
     biAssertSeries($failures, 'multi-project-same-week-distinct-cutoffs: Curva S direct planned', $directChart['datasets'][0]['data'] ?? [], $directExpected['planned']);
 }
 
-$noProductionFiltered = $db->query(
+$noProductionFiltered = biChartGlobalRead($db, 'no-production', static fn() => $db->query(
     "SELECT sub_contratista, responsable_aia, MIN(Fecha_Fin_Sem) AS desde, MAX(Fecha_Fin_Sem) AS hasta
      FROM bi_pg_semana
      WHERE project_id IN ({$fixtureProjectsSql})
@@ -2170,9 +2226,9 @@ $noProductionFiltered = $db->query(
         AND MAX(COALESCE(Ejecutado, 0)) <= 0
      ORDER BY COUNT(*) DESC
      LIMIT 1",
-)->fetch(PDO::FETCH_ASSOC);
+)->fetch(PDO::FETCH_ASSOC));
 if ($noProductionFiltered) {
-    $noProductionProjectIds = $db->query(
+    $noProductionProjectIds = biChartGlobalRead($db, 'no-production-projects', static fn() => $db->query(
         "SELECT DISTINCT project_id
          FROM bi_pg_semana
          WHERE project_id IN ({$fixtureProjectsSql})
@@ -2180,7 +2236,7 @@ if ($noProductionFiltered) {
            AND responsable_aia = ?
          ORDER BY project_id",
         [(string) $noProductionFiltered['sub_contratista'], (string) $noProductionFiltered['responsable_aia']],
-    )->fetchAll(PDO::FETCH_COLUMN);
+    )->fetchAll(PDO::FETCH_COLUMN));
     $noProductionFilters = [
         'desde' => (string) $noProductionFiltered['desde'],
         'hasta' => (string) $noProductionFiltered['hasta'],
@@ -2196,7 +2252,13 @@ if ($noProductionFiltered) {
         $noProductionFilters,
         'multi-project-date-range-sub-resp-no-production'
     );
-    $noProductionBrief = $bi->getBrief('programa-general', array_map('intval', $noProductionProjectIds), '', 'R', $noProductionFilters);
+    $noProductionBrief = $bi->getBrief(
+        biChartScope(array_map('intval', $noProductionProjectIds), 'no-production'),
+        'programa-general',
+        '',
+        'R',
+        $noProductionFilters,
+    );
     $noProductionChart = $noProductionBrief['charts']['programa-curva-ejecucion'] ?? [];
     $noProductionMeta = $noProductionChart['projection_meta'] ?? [];
     if (($noProductionMeta['projection_available'] ?? true) !== false) {

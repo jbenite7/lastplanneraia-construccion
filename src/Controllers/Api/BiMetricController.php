@@ -6,6 +6,8 @@ namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
 use App\Security\BiPreviewAccessPolicy;
+use App\Security\DataScope\ProjectScope;
+use App\Security\DataScope\ProjectScopeViolation;
 use App\Security\RbacCatalog;
 use App\Security\RbacManager;
 use App\Security\RbacService;
@@ -13,6 +15,7 @@ use App\Services\Bi\MetricDictionaryService;
 use App\Services\Bi\MetricExecutor;
 use App\Services\Bi\MetricResult;
 use App\Services\Bi\MetricScope;
+use App\Support\BiProjectScope;
 use RuntimeException;
 
 /**
@@ -34,10 +37,9 @@ use RuntimeException;
  * PERM_INTERNAL_BI_PREVIEW)` (A/D/R en el proyecto de sesión). Denegado -> 404, no 403: lectura
  * sin acción explícita del usuario, mismo criterio que el listado.
  *
- * Aislamiento: el `MetricScope` se construye con `[(int) $_SESSION['project_id']]` — UN solo
- * proyecto, NUNCA `BiProjectScope::resolve()`/`resolveProjectIds()` (multi-proyecto, pensado para
- * los reportes de portafolio existentes). Mismo tipo de bug que ya se corrigió dos veces en esta
- * etapa (Task 5 Critical 1, Task 7 paso 3a Important 1).
+ * Aislamiento: el `MetricScope` recibe autoridad desde un `MultiProjectScope` revalidado por
+ * `BiProjectScope`. La obra solicitada nace del `ProjectScope` canónico ya enlazado a la petición;
+ * nunca se toma un entero de sesión/request como autoridad de base de datos.
  *
  * `metricKey` inexistente en el catálogo: se valida con `getDefinition() === []` ANTES de llamar
  * a `execute()` -> 404 NOT_FOUND con mensaje legible, nunca se deja escapar la `RuntimeException`
@@ -91,11 +93,19 @@ class BiMetricController extends BaseController
             );
         }
 
-        $projectId = (int) ($_SESSION['project_id'] ?? 0);
+        $projectScope = $this->db->dataScope()->current();
+        if (!$projectScope instanceof ProjectScope) {
+            throw new ProjectScopeViolation('La métrica BI exige un ProjectScope activo.');
+        }
         $semanaRaw = $_GET['semana'] ?? $_SESSION['semana'] ?? null;
         $semana = $semanaRaw !== null ? (string) $semanaRaw : null;
 
-        $scope = new MetricScope([$projectId], null, null, $semana);
+        $authority = (new BiProjectScope($this->db))->scope(
+            [$projectScope->projectId()],
+            $_SESSION,
+            'bi:metric:' . $metricKey,
+        );
+        $scope = new MetricScope($authority, null, null, $semana);
         $executor = new MetricExecutor($this->db, $dictionary);
 
         try {
