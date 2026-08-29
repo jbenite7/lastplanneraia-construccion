@@ -6,6 +6,7 @@ namespace App\Controllers\Api;
 
 use App\Core\SessionMiddleware;
 use App\Security\CsrfTokenManager;
+use App\Security\DataScope\ProjectScope;
 use App\Security\RbacManager;
 use App\Security\RbacService;
 use App\View\Components\BiAccessComponent;
@@ -26,14 +27,18 @@ class SessionApiController
         header('Content-Type: application/json; charset=utf-8');
         header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
-        if (SessionMiddleware::validationFailureReason() !== null) {
-            $this->respondAnonymous();
+        $reason = SessionMiddleware::requestFailureReason();
+        if ($reason !== null) {
+            $this->respondAnonymous($reason);
 
             return;
         }
 
         $usuario = $_SESSION['usuario'];
-        $rol = (new RbacService())->normalizeRole((string) ($_SESSION['permiso'] ?? ''));
+        $scope = \Database::getInstance()->dataScope()->current();
+        $rol = $scope instanceof ProjectScope
+            ? $scope->role()
+            : (new RbacService())->normalizeRole((string) ($_SESSION['permiso'] ?? ''));
 
         echo json_encode([
             'authenticated' => true,
@@ -51,10 +56,11 @@ class SessionApiController
         ]);
     }
 
-    private function respondAnonymous(): void
+    private function respondAnonymous(string $reason): void
     {
         echo json_encode([
             'authenticated' => false,
+            'reason' => $reason,
             'user' => null,
             'project' => null,
             'capabilities' => new \stdClass(),
@@ -83,13 +89,13 @@ class SessionApiController
     /** @return array{id:int,name:string}|null */
     private function activeProject(): ?array
     {
-        $projectId = (int) ($_SESSION['project_id'] ?? 0);
-        if ($projectId <= 0 || !isset($_SESSION['proyecto'])) {
+        $scope = \Database::getInstance()->dataScope()->current();
+        if (!$scope instanceof ProjectScope || !isset($_SESSION['proyecto'])) {
             return null;
         }
 
         return [
-            'id' => $projectId,
+            'id' => $scope->projectId(),
             'name' => (string) $_SESSION['proyecto'],
         ];
     }

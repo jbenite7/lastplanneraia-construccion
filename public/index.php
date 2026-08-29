@@ -52,15 +52,12 @@ if ($devDoorIsOpen) {
     $publicRoutes[] = '/dev/entrar';
 }
 
-// El shell React necesita poder arrancar sin sesión. Si llega una cookie, se
-// valida con las mismas reglas de las rutas privadas para no conservar como
-// confiable una sesión inactiva, vencida o huérfana; a diferencia de check(),
-// esta vía no redirige y deja que React muestre su estado anónimo.
-if (\App\Core\SpaRouter::sirveLaSpa($requestUri)) {
-    \App\Core\SessionMiddleware::validationFailureReason();
-} elseif (!in_array($requestUri, $publicRoutes, true)) {
-    \App\Core\SessionMiddleware::check();
-}
+$routeRequiresAuthentication = !\App\Core\SpaRouter::sirveLaSpa($requestUri)
+    && !in_array($requestUri, $publicRoutes, true);
+$reason = \App\Core\SessionMiddleware::beginRequest($routeRequiresAuthentication);
+register_shutdown_function(static function (): void {
+    \Database::getInstance()->dataScope()->clear();
+});
 
 // 4. Instanciar Conexión a Base de Datos (Singleton)
 use App\Core\Router;

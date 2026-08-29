@@ -2,9 +2,12 @@
 
 namespace App\Core;
 
+use App\Security\DataScope\ProjectScopeResolver;
+
 class SessionMiddleware
 {
     private const IDLE_TIMEOUT_SECONDS = 3600;
+    private static ?string $requestFailureReason = null;
 
     public static function idleTimeoutSeconds(): int
     {
@@ -22,25 +25,42 @@ class SessionMiddleware
      */
     public static function check()
     {
+        $reason = self::requestFailureReason();
+        if ($reason !== null) {
+            self::finishUnauthorized(self::redirectFor($reason), $reason);
+        }
+    }
+
+    public static function beginRequest(bool $requireAuthentication): ?string
+    {
+        $db = \Database::getInstance();
+        $db->dataScope()->clear();
+        self::$requestFailureReason = null;
+
         $reason = self::validationFailureReason();
         if ($reason !== null) {
-            self::finishUnauthorized(
-                $reason === 'inactive' ? '/login?inactive=1' : ($reason === 'timeout' ? '/login?timeout=1' : '/login'),
-                $reason,
-            );
+            self::$requestFailureReason = $reason;
+            if ($requireAuthentication) {
+                self::finishUnauthorized(self::redirectFor($reason), $reason);
+            }
+
+            return $reason;
         }
 
-        // Auto-establecer contexto de proyecto para tablas globales (USE_GLOBAL_TABLES=true)
-        if (isset($_SESSION['db']) && $_SESSION['db'] !== '') {
-            try {
-                $projectId = \TableResolver::getProjectIdByPrefix($_SESSION['db']);
-                if ($projectId) {
-                    \Database::getInstance()->setProjectContext($projectId);
-                }
-            } catch (\Throwable $e) {
-                error_log('SessionMiddleware: No se pudo establecer contexto de proyecto: ' . $e->getMessage());
-            }
+        $projectWasDeclared = array_key_exists('project_id', $_SESSION);
+        $scope = (new ProjectScopeResolver($db))->resolve($_SESSION);
+        if ($scope !== null) {
+            $db->dataScope()->bind($scope);
+        } elseif ($projectWasDeclared) {
+            self::clearProjectSession();
         }
+
+        return null;
+    }
+
+    public static function requestFailureReason(): ?string
+    {
+        return self::$requestFailureReason;
     }
 
     /**
@@ -113,6 +133,22 @@ class SessionMiddleware
         $header = strtolower((string) ($_SERVER['HTTP_X_AIA_IDLE_REFRESH'] ?? ''));
 
         return !in_array($header, ['0', 'false', 'skip'], true);
+    }
+
+    private static function clearProjectSession(): void
+    {
+        foreach (['project_id', 'proyecto', 'db', 'semana', 'permiso', 'permiso_canonico'] as $key) {
+            unset($_SESSION[$key]);
+        }
+    }
+
+    private static function redirectFor(string $reason): string
+    {
+        return match ($reason) {
+            'inactive' => '/login?inactive=1',
+            'timeout' => '/login?timeout=1',
+            default => '/login',
+        };
     }
 
     private static function expectsJsonResponse(): bool

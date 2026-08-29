@@ -74,6 +74,7 @@ PHP;
 $sinSesion = pedirJson("{$base}/api/session");
 comprobar($sinSesion['codigo'] === 200, "sin sesión esperaba 200, llegó {$sinSesion['codigo']}");
 comprobar(($sinSesion['json']['authenticated'] ?? null) === false, 'sin sesión esperaba authenticated=false');
+comprobar(($sinSesion['json']['reason'] ?? null) === 'missing_session', 'sin sesión debe explicar missing_session');
 comprobar(array_key_exists('user', $sinSesion['json'] ?? []) && $sinSesion['json']['user'] === null, 'sin sesión user debe ser null');
 comprobar(array_key_exists('project', $sinSesion['json'] ?? []) && $sinSesion['json']['project'] === null, 'sin sesión project debe ser null');
 comprobar(($sinSesion['json']['capabilities'] ?? null) === [], 'sin sesión capabilities debe ser un objeto vacío');
@@ -93,8 +94,11 @@ $cookieValida = sesionArtificial([
     'usuario' => 'test.A',
     'nombreUsuario' => 'Test A',
     'permiso' => 'A',
-    'project_id' => 42,
-    'proyecto' => 'Proyecto contractual',
+    'project_id' => 73,
+    'proyecto' => 'Da Porto',
+    'db' => 'da_porto',
+    'semana' => 1,
+    'permiso_canonico' => 'A',
     'timeout' => time(),
 ]);
 $conSesion = pedirJson("{$base}/api/session", ['cookie' => $cookieValida]);
@@ -104,8 +108,9 @@ comprobar(($conSesion['json']['authenticated'] ?? null) === true, 'con sesión e
 comprobar(($conSesion['json']['user']['username'] ?? null) === 'test.A', 'test.A debe conservar su username');
 comprobar(($conSesion['json']['user']['displayName'] ?? null) === 'Test A', 'displayName debe conservar el nombre visible de la sesión');
 comprobar(($conSesion['json']['user']['role'] ?? null) === 'A', 'test.A debe tener rol canónico A');
-comprobar(($conSesion['json']['project']['id'] ?? null) === 42, 'project.id debe ser entero y conservar el proyecto activo');
-comprobar(($conSesion['json']['project']['name'] ?? null) === 'Proyecto contractual', 'project.name debe conservar el nombre del proyecto activo');
+comprobar(($conSesion['json']['project']['id'] ?? null) === 73, 'project.id debe provenir de una membresía activa');
+comprobar(($conSesion['json']['project']['name'] ?? null) === 'Da Porto', 'project.name debe conservar el proyecto cuyo scope quedó enlazado');
+comprobar(!array_key_exists('reason', $conSesion['json'] ?? []), 'una sesión autenticada no debe incluir reason');
 comprobar(array_key_exists('canManageWeeks', $conSesion['json']['capabilities'] ?? []), 'capabilities debe traer canManageWeeks');
 comprobar(($conSesion['json']['capabilities']['canManageWeeks'] ?? null) === true, 'el rol A debe poder administrar semanas');
 comprobar(is_bool($conSesion['json']['navigation']['bi']['visible'] ?? null), 'navigation.bi.visible debe ser booleano');
@@ -137,6 +142,7 @@ $cookieVencida = sesionArtificial([
 ]);
 $sesionVencida = pedirJson("{$base}/api/session", ['cookie' => $cookieVencida]);
 comprobar(($sesionVencida['json']['authenticated'] ?? null) === false, 'una sesión vencida debe responder authenticated=false');
+comprobar(($sesionVencida['json']['reason'] ?? null) === 'timeout', 'una sesión vencida debe explicar timeout');
 
 $cookieHuerfana = sesionArtificial([
     'usuario' => '__usuario_inexistente_contrato__',
@@ -144,6 +150,26 @@ $cookieHuerfana = sesionArtificial([
 ]);
 $sesionHuerfana = pedirJson("{$base}/api/session", ['cookie' => $cookieHuerfana]);
 comprobar(($sesionHuerfana['json']['authenticated'] ?? null) === false, 'una sesión de usuario inexistente debe responder authenticated=false');
+comprobar(($sesionHuerfana['json']['reason'] ?? null) === 'stale_session', 'una sesión huérfana debe explicar stale_session');
+
+// Una identidad válida con un proyecto sin membresía sigue autenticada, pero el
+// contexto derivado del proyecto se descarta para volver al selector.
+$cookieProyectoAjeno = sesionArtificial([
+    'usuario' => 'test.A',
+    'nombreUsuario' => 'Test A',
+    'permiso' => 'A',
+    'permiso_canonico' => 'A',
+    'project_id' => 42,
+    'proyecto' => 'Proyecto sin membresía',
+    'db' => 'proyecto_ajeno',
+    'semana' => 9,
+    'timeout' => time(),
+]);
+$proyectoAjeno = pedirJson("{$base}/api/session", ['cookie' => $cookieProyectoAjeno]);
+comprobar(($proyectoAjeno['json']['authenticated'] ?? null) === true, 'proyecto ajeno no debe borrar la autenticación válida');
+comprobar(($proyectoAjeno['json']['user']['username'] ?? null) === 'test.A', 'proyecto ajeno debe conservar la identidad');
+comprobar(array_key_exists('project', $proyectoAjeno['json'] ?? []) && $proyectoAjeno['json']['project'] === null, 'proyecto ajeno debe reportar project=null');
+comprobar(!array_key_exists('reason', $proyectoAjeno['json'] ?? []), 'proyecto ajeno autenticado no debe incluir reason');
 
 echo $fallos === 0 ? "OK: contrato de /api/session\n" : "{$fallos} fallo(s)\n";
 exit($fallos === 0 ? 0 : 1);

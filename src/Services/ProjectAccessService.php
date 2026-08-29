@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Services;
 
 use Admin\Core\RoleManager;
+use App\Security\DataScope\ProjectScopeResolver;
 use App\Security\RbacCatalog;
 use App\Security\RbacService;
 use Database;
-use TableResolver;
 
 /**
  * Único camino para listar y seleccionar un proyecto en el shell.
@@ -121,12 +121,19 @@ class ProjectAccessService
         $_SESSION['db'] = $dbName;
         $_SESSION['permiso'] = $permiso;
 
-        $projectId = TableResolver::getProjectIdByPrefix($dbName);
-        if ($projectId) {
-            $this->db->setProjectContext($projectId);
-        }
         $_SESSION['permiso_canonico'] = $permiso;
         $_SESSION['pdcActivo'] = $accessData['pdcActivo'] ?? 0;
+
+        $scope = (new ProjectScopeResolver($this->db, $this->rbac))->resolve($_SESSION);
+        $this->db->dataScope()->clear();
+        if ($scope === null) {
+            foreach (['project_id', 'proyecto', 'db', 'semana', 'permiso', 'permiso_canonico'] as $key) {
+                unset($_SESSION[$key]);
+            }
+
+            return $this->failure('No tienes permiso para acceder a este proyecto.');
+        }
+        $this->db->dataScope()->bind($scope);
 
         $landing = $this->projectLandingService->resolve($dbName, $permiso, $_SESSION['area']);
         $_SESSION['semana'] = (int) ($landing['week'] ?? 0);
