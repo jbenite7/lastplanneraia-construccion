@@ -2,6 +2,9 @@
 declare(strict_types=1);
 // @requiere: http
 
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../src/Core/Database.php';
+
 /**
  * Contrato HTTP de bootstrap del shell React.
  *
@@ -170,6 +173,50 @@ comprobar(($proyectoAjeno['json']['authenticated'] ?? null) === true, 'proyecto 
 comprobar(($proyectoAjeno['json']['user']['username'] ?? null) === 'test.A', 'proyecto ajeno debe conservar la identidad');
 comprobar(array_key_exists('project', $proyectoAjeno['json'] ?? []) && $proyectoAjeno['json']['project'] === null, 'proyecto ajeno debe reportar project=null');
 comprobar(!array_key_exists('reason', $proyectoAjeno['json'] ?? []), 'proyecto ajeno autenticado no debe incluir reason');
+
+// Mutación cubierta: SessionApiController vuelve a validar la sesión o limpia el
+// DataScopeContext después de que beginRequest() capturó la decisión del request.
+if (session_status() === PHP_SESSION_NONE) {
+    session_id(bin2hex(random_bytes(16)));
+    session_start();
+}
+$_SERVER['HTTP_X_AIA_IDLE_REFRESH'] = 'skip';
+$_SESSION = [
+    'usuario' => 'test.A',
+    'nombreUsuario' => 'Test A',
+    'permiso' => 'A',
+    'permiso_canonico' => 'A',
+    'project_id' => 73,
+    'proyecto' => 'Da Porto',
+    'db' => 'da_porto',
+    'semana' => 1,
+    'timeout' => time(),
+];
+
+$razonCapturada = \App\Core\SessionMiddleware::beginRequest(false);
+$scopeCapturado = \Database::getInstance()->dataScope()->current();
+comprobar($razonCapturada === null, 'beginRequest debe capturar una sesión válida para el contrato en proceso');
+comprobar($scopeCapturado instanceof \App\Security\DataScope\ProjectScope, 'beginRequest debe enlazar el scope antes del controlador');
+
+// Desde este punto, una segunda validación sería timeout. El controlador debe usar
+// la razón ya capturada y serializar sin tocar el scope enlazado.
+$_SESSION['timeout'] = time() - \App\Core\SessionMiddleware::idleTimeoutSeconds() - 1;
+ob_start();
+(new \App\Controllers\Api\SessionApiController())->show();
+$respuestaEnProceso = json_decode((string) ob_get_clean(), true);
+
+comprobar(($respuestaEnProceso['authenticated'] ?? null) === true, 'el controlador no debe revalidar después de beginRequest');
+comprobar(($respuestaEnProceso['user']['username'] ?? null) === 'test.A', 'el controlador no debe invalidar la identidad ya aceptada');
+comprobar(($respuestaEnProceso['project']['id'] ?? null) === 73, 'el controlador debe serializar el proyecto del scope capturado');
+comprobar(\App\Core\SessionMiddleware::requestFailureReason() === null, 'la razón request-scoped debe seguir siendo la capturada');
+comprobar(\Database::getInstance()->dataScope()->current() === $scopeCapturado, 'el controlador debe conservar exactamente el mismo scope enlazado');
+
+\Database::getInstance()->dataScope()->clear();
+unset($_SERVER['HTTP_X_AIA_IDLE_REFRESH']);
+if (session_status() === PHP_SESSION_ACTIVE) {
+    $_SESSION = [];
+    session_destroy();
+}
 
 echo $fallos === 0 ? "OK: contrato de /api/session\n" : "{$fallos} fallo(s)\n";
 exit($fallos === 0 ? 0 : 1);
