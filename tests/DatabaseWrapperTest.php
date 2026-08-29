@@ -243,12 +243,31 @@ echo "\nTest 19: Sin project_id → warning + ejecuta\n";
     assert_true($result['cnt'] > 0, 'Sin project_id ejecuta con warning');
 }
 
-// Test 20: setProjectContext establece el contexto
-echo "\nTest 20: setProjectContext establece contexto\n";
+// Test 20: setProjectContext adapta identidad de sesión al alcance compartido
+echo "\nTest 20: setProjectContext adapta sesión al alcance compartido\n";
 {
+    $sessionBeforeScopeTest = $_SESSION ?? [];
+    $_SESSION['usuario'] = 'test.A';
+    $_SESSION['permiso'] = 'A';
+
     $db->setProjectContext(75);
-    $prop->setValue($db, 75);  // Verify via reflection
-    assert_eq($prop->getValue($db), 75, 'setProjectContext(75) establece contexto');
+    $scope = $db->dataScope()->current();
+    assert_true($scope instanceof \App\Security\DataScope\ProjectScope, 'setProjectContext enlaza ProjectScope');
+    assert_eq($scope?->projectId(), 75, 'ProjectScope conserva project_id');
+    assert_eq($scope?->user(), 'test.A', 'ProjectScope conserva usuario de sesión');
+    assert_eq($scope?->role(), 'A', 'ProjectScope conserva rol de sesión');
+    assert_true($db->dataScope() === $db->dataScope(), 'Database reutiliza un solo DataScopeContext');
+}
+
+// Test 20b: sin identidad completa, el adaptador no enlaza autoridad nueva
+echo "\nTest 20b: setProjectContext sin identidad no enlaza alcance\n";
+{
+    unset($_SESSION['usuario'], $_SESSION['permiso']);
+    $db->setProjectContext(75);
+    assert_null($db->dataScope()->current(), 'Sin usuario o rol no crea ProjectScope');
+
+    $_SESSION['usuario'] = 'test.A';
+    $_SESSION['permiso'] = 'A';
 }
 
 // Test 21: getCurrentProjectId() devuelve el contexto activo
@@ -333,6 +352,8 @@ echo "\nTest 26: INSERT … SELECT → sin cambios (SELECT maneja project_id)\n"
 
 // Cleanup
 $prop->setValue($db, null);
+$db->dataScope()->clear();
+$_SESSION = $sessionBeforeScopeTest;
 
 echo "\n=== Results: {$passed} passed, {$failed} failed ===\n";
 

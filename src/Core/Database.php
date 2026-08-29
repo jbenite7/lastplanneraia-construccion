@@ -7,6 +7,7 @@ class Database
     private static $instance = null;
     private $pdo;
     private ?\App\Security\DataScope\TableScopeCatalog $tableScopeCatalog = null;
+    private \App\Security\DataScope\DataScopeContext $dataScopeContext;
     private array $projectIdByPrefix = [];
     private array $tableExistsCache = [];
 
@@ -75,6 +76,7 @@ class Database
             $this->pdo = new PDO($dsn, $user, $pass, $options);
             // Configurar la zona horaria de la sesión de base de datos a Bogotá (UTC-5)
             $this->pdo->exec("SET time_zone = '-05:00'");
+            $this->dataScopeContext = new \App\Security\DataScope\DataScopeContext();
         } catch (PDOException $e) {
             error_log('Error de conexión a la base de datos: ' . $e->getMessage());
             die('Error: No se pudo conectar a la base de datos. Por favor, intente más tarde.');
@@ -93,6 +95,11 @@ class Database
     public function tableScopeCatalog(): \App\Security\DataScope\TableScopeCatalog
     {
         return $this->tableScopeCatalog ??= \App\Security\DataScope\TableScopeCatalog::fromPdo($this->pdo);
+    }
+
+    public function dataScope(): \App\Security\DataScope\DataScopeContext
+    {
+        return $this->dataScopeContext;
     }
 
     /**
@@ -134,6 +141,17 @@ class Database
     public function setProjectContext(?int $projectId): void
     {
         $this->currentProjectId = $projectId;
+        $this->dataScopeContext->clear();
+
+        $user = trim((string) ($_SESSION['usuario'] ?? ''));
+        $role = trim((string) ($_SESSION['permiso_canonico'] ?? $_SESSION['permiso'] ?? ''));
+        if ($projectId === null || $projectId <= 0 || $user === '' || $role === '') {
+            return;
+        }
+
+        $this->dataScopeContext->bind(
+            new \App\Security\DataScope\ProjectScope($projectId, $user, $role),
+        );
     }
 
     /**
