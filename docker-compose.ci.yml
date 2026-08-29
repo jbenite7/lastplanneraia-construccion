@@ -47,6 +47,7 @@ services:
       MYSQL_USER: ${CI_DB_RUNTIME_USER:-lps_runtime_ci}
       MYSQL_PASSWORD: ${CI_DB_RUNTIME_PASS:-ci-runtime-only-password}
       MYSQL_ROOT_PASSWORD: ${CI_DB_ADMIN_PASS:-ci-admin-only-password}
+      MYSQL_ROOT_HOST: "%"
     volumes: !override
       - db_data:/var/lib/mysql
     restart: "no"

@@ -5,6 +5,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
+require_once __DIR__ . '/../scripts/lib/php-test-ddl-inventory.php';
 
 use App\Security\DataScope\TableScopeKind;
 
@@ -188,22 +189,45 @@ if (!is_file($grantAudit)) {
     );
 }
 
-$runtimeTestFiles = [
-    __DIR__ . '/unit/MetricExecutorTest.php',
-    __DIR__ . '/unit/PgAvanceEdicionManualTest.php',
-    __DIR__ . '/unit/PgAvanceEdicionManualFailureTest.php',
-];
-foreach ($runtimeTestFiles as $runtimeTestFile) {
-    $source = @file_get_contents($runtimeTestFile);
-    schemaContractTrue($source !== false, basename($runtimeTestFile) . ' no se pudo auditar.');
-    if ($source !== false) {
-        schemaContractSame(
-            0,
-            preg_match('/\b(?:CREATE|DROP|ALTER|TRUNCATE)\s+(?:TEMPORARY\s+)?TABLE\b/i', $source),
-            basename($runtimeTestFile) . ' contiene DDL bajo el canal de tests de app runtime.',
-        );
+$scannerFixture = <<<'PHP'
+<?php
+$expected = 'ALTER TABLE expected_only ADD COLUMN x INT';
+$pdo->exec('CREATE TABLE fixture_omitida (id INT)');
+PHP;
+schemaContractSame(
+    [['call' => 'exec', 'line' => 3]],
+    phpTestExecutableDdlCalls($scannerFixture),
+    'El inventario no detectó DDL ejecutable o confundió SQL esperado con ejecución.',
+);
+schemaContractSame(
+    [],
+    phpTestExecutableDdlCalls("<?php \$expected = 'ALTER TABLE only_expected ADD x INT';"),
+    'El inventario marcó como ejecutable un SQL esperado que nunca se invoca.',
+);
+
+$testInventory = array_merge(
+    glob(__DIR__ . '/test_*.php') ?: [],
+    glob(__DIR__ . '/unit/*Test.php') ?: [],
+);
+sort($testInventory);
+$testLevels = [];
+foreach ($testInventory as $testPath) {
+    $source = @file_get_contents($testPath);
+    schemaContractTrue($source !== false, basename($testPath) . ' no se pudo inventariar.');
+    if ($source === false) {
+        continue;
+    }
+    $declaredLevel = phpTestDeclaredLevel($source);
+    if ($declaredLevel !== null) {
+        $testLevels[$testPath] = $declaredLevel;
     }
 }
+$ddlViolations = phpTestDdlLevelViolations($testLevels);
+schemaContractSame(
+    [],
+    $ddlViolations,
+    'El inventario encontró DDL ejecutable fuera de admin-db: ' . json_encode($ddlViolations),
+);
 
 $migration = __DIR__ . '/../database/migrations/20260828_project_scope_contract.php';
 if (!is_file($migration)) {

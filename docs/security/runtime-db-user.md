@@ -130,11 +130,18 @@ La app de CI conecta como runtime y el contenedor `db` conserva la contraseña a
 para inicialización y tareas de infraestructura explícitas. El mismo config final reduce el `ALL`
 que crea la imagen oficial antes de que la base efímera quede saludable.
 
-Los tests PHP que se ejecutan dentro de `app` no usan DDL: `MetricExecutorTest` dobla la frontera
-Database/PDO en memoria y el fallo de inserción de `PgAvanceEdicionManualService` se prueba con un
-double inyectado. La preparación estructural de la base desechable sigue exclusivamente en los SQL
-de `/docker-entrypoint-initdb.d`, ejecutados durante la inicialización administrativa de `db`; la
-suite runtime solo necesita DML.
+La lane normal `--nivel=http` que se ejecuta dentro de `app` no usa DDL: `MetricExecutorTest` dobla
+la frontera Database/PDO en memoria y el fallo de inserción de `PgAvanceEdicionManualService` se
+prueba con un double inyectado. El runner inventaría todos los tests y rechaza cualquier llamada
+ejecutable a `CREATE/DROP/ALTER/TRUNCATE TABLE` que no declare `admin-db`.
+
+`admin-db` es una lane no acumulativa reservada a pruebas genuinas de migración que crean/eliminan
+fixtures, actualmente `test_migrate_legacy_to_global.php`. CI la ejecuta solo contra su base
+efímera: `MYSQL_ROOT_HOST=%` existe únicamente en `docker-compose.ci.yml`, y el step inyecta
+`DB_USER`, `DB_PASS` y `LPS_ADMIN_DB_LANE=1` únicamente al proceso `docker compose exec`. El
+servicio `app`, la web y el runner `http` conservan las credenciales runtime DML-only. La
+preparación estructural inicial sigue en `/docker-entrypoint-initdb.d` bajo el canal admin de `db`.
+No se ejecuta `admin-db` contra la base local compartida ni contra SiteGround.
 
 El gate CI del usuario runtime debe obtener `SHOW GRANTS FOR CURRENT_USER` desde esa cuenta y pasar
 la salida por `audit-runtime-db-grants.php`, con `DB_NAME=lastplanneraia_ci`.

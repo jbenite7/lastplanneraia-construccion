@@ -268,6 +268,17 @@ jobs:
         id: php-suite
         continue-on-error: true
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php scripts/run-php-tests.php --nivel=http
+      # Lane no acumulativa para el único contrato que crea/elimina tablas legacy. La app y la
+      # suite normal conservan DB_USER/DB_PASS runtime DML-only; estas variables existen solo en
+      # este step y docker compose las inyecta únicamente en el proceso exec, no en el servicio.
+      - name: Correr fixtures de migración con admin efímero
+        id: php-admin-db
+        continue-on-error: true
+        env:
+          DB_USER: root
+          DB_PASS: ci-admin-only-password
+          LPS_ADMIN_DB_LANE: "1"
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T -e DB_USER -e DB_PASS -e LPS_ADMIN_DB_LANE app php scripts/run-php-tests.php --nivel=admin-db
       # F-AB (2026-08-12): los dos gates que constaban `blocked` se enchufan AQUI,
       # antes de «Run laboratory gates», y no despues. Motivo medido: ese paso
       # falla hoy por goldens de una sola plataforma (D-GAC-4, abierta), y cuando
@@ -465,6 +476,7 @@ jobs:
           G_PHPSTAN_BASELINE: ${{ steps.phpstan-baseline.outcome }}
           G_PHPSTAN_PDC: ${{ steps.phpstan-pdc.outcome }}
           G_PHP_SUITE: ${{ steps.php-suite.outcome }}
+          G_PHP_ADMIN_DB: ${{ steps.php-admin-db.outcome }}
           G_FULL_APP_FLOW: ${{ steps.full-app-flow.outcome }}
           G_SEMANAL_ROLES_PHASES: ${{ steps.semanal-roles-phases.outcome }}
           G_RUNTIME_BUDGET_MEASURE: ${{ steps.runtime-budget-measure.outcome }}
@@ -485,6 +497,7 @@ jobs:
             echo "| Enforce PHPStan baseline | ${G_PHPSTAN_BASELINE} |"
             echo "| Enforce PHPStan level 6 on the PDC module | ${G_PHPSTAN_PDC} |"
             echo "| Correr la suite PHP completa que el CI puede honrar | ${G_PHP_SUITE} |"
+            echo "| Correr fixtures de migración con admin efímero | ${G_PHP_ADMIN_DB} |"
             echo "| Enforce full-app-flow gate | ${G_FULL_APP_FLOW} |"
             echo "| Enforce semanal roles and phases gate | ${G_SEMANAL_ROLES_PHASES} |"
             echo "| Measure runtime budgets | ${G_RUNTIME_BUDGET_MEASURE} |"
@@ -526,7 +539,7 @@ jobs:
             echo "_Sin \`test-output/design-system-runtime-budget.json\`: \`Measure runtime budgets\` no llegó a escribirlo._" >> "$GITHUB_STEP_SUMMARY"
           fi
           failed=0
-          for outcome in "$G_PHPSTAN_BASELINE" "$G_PHPSTAN_PDC" "$G_PHP_SUITE" "$G_FULL_APP_FLOW" \
+          for outcome in "$G_PHPSTAN_BASELINE" "$G_PHPSTAN_PDC" "$G_PHP_SUITE" "$G_PHP_ADMIN_DB" "$G_FULL_APP_FLOW" \
             "$G_SEMANAL_ROLES_PHASES" "$G_RUNTIME_BUDGET_MEASURE" "$G_RUNTIME_BUDGET_CHECK" \
             "$G_LABORATORY_GATES" "$G_PILOT_LAB_GATES" "$G_PG_PERSISTENCE_RBAC"; do
             if [ "$outcome" = "failure" ]; then

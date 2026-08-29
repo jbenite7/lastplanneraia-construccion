@@ -237,6 +237,29 @@ test('CI image includes analysis tools without changing the production default',
   assert.match(compose, /COMPOSER_INSTALL_FLAGS:\s*""/);
 });
 
+test('CI separates the cumulative runtime lane from the non-cumulative admin DB lane', async () => {
+  const [workflow, compose] = await Promise.all([
+    read('.github/workflows/ci.yml'),
+    read('docker-compose.ci.yml'),
+  ]);
+  const steps = parseJobSteps(workflow, 'design-system-runtime');
+  const runtime = steps.find(({ id }) => id === 'php-suite');
+  const admin = steps.find(({ id }) => id === 'php-admin-db');
+
+  assert.equal(
+    runtime?.run,
+    'docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php scripts/run-php-tests.php --nivel=http',
+  );
+  assert.doesNotMatch(runtime?.run ?? '', /-e\s+DB_(?:USER|PASS)|admin-db/);
+  assert.ok(admin, 'the admin-db lane must be an explicit CI step');
+  assert.equal(admin?.env?.DB_USER, 'root');
+  assert.equal(admin?.env?.DB_PASS, 'ci-admin-only-password');
+  assert.equal(admin?.env?.LPS_ADMIN_DB_LANE, '1');
+  assert.match(admin?.run ?? '', /exec -T -e DB_USER -e DB_PASS -e LPS_ADMIN_DB_LANE app php scripts\/run-php-tests\.php --nivel=admin-db/);
+  assert.doesNotMatch(admin?.run ?? '', /ci-admin-only-password/);
+  assert.match(compose, /MYSQL_ROOT_HOST:\s*["']%["']/);
+});
+
 test('runtime CI continuously enforces the Programa General persistence boundary', async () => {
   const workflow = await read('.github/workflows/ci.yml');
 

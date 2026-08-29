@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/lib/php-test-ddl-inventory.php';
+
 /**
  * Runner de las pruebas PHP. Puerta única de las dos suites que conviven:
  *
@@ -13,8 +15,10 @@ declare(strict_types=1);
  * dos comandos, cada job del CI tendría que acordarse de invocar los dos, que es el defecto que
  * este runner vino a cerrar.
  *
- * Los cuatro niveles, de menos a más exigente: puro < db < http < datos-proyecto. `--nivel=X`
- * ejecuta lo de nivel X y lo de los niveles por debajo, en ambas suites.
+ * Los cuatro niveles runtime, de menos a más exigente, son:
+ * puro < db < http < datos-proyecto. `--nivel=X` ejecuta X y los niveles runtime inferiores.
+ * `admin-db` es una lane separada y NO acumulativa: selecciona únicamente tests que crean o
+ * eliminan fixtures de schema y nunca entra en db/http/datos-proyecto.
  *
  * Uso:
  *   php scripts/run-php-tests.php --nivel=http
@@ -33,7 +37,17 @@ const NIVELES = [
     'db' => 1,
     'http' => 2,
     'datos-proyecto' => 3,
+    'admin-db' => 4,
 ];
+
+function nivelSeleccionado(string $pedido, string $declarado): bool
+{
+    if ($pedido === 'admin-db' || $declarado === 'admin-db') {
+        return $pedido === $declarado;
+    }
+
+    return NIVELES[$declarado] <= NIVELES[$pedido];
+}
 
 /**
  * Señales de que un test comprobó algo de verdad. Un test que sale 0 sin
@@ -60,7 +74,16 @@ const SALIDA_NO_OPERABLE = 2;
  * Lee las opciones de línea de comandos.
  *
  * @param list<string> $argv
- * @return array{dir: string, nivel: string, timeout: int, soloListar: bool, dbHost: ?string}
+ * @return array{
+ *   dir: string,
+ *   dirUnit: string,
+ *   dirUnitPorDefecto: bool,
+ *   phpunit: string,
+ *   nivel: string,
+ *   timeout: int,
+ *   soloListar: bool,
+ *   dbHost: ?string
+ * }
  */
 function leerOpciones(array $argv): array
 {
@@ -256,6 +279,9 @@ function entornoDisponible(string $nivel, ?string $anfitrionDeBase): ?string
     if ($nivel === 'puro') {
         return null;
     }
+    if ($nivel === 'admin-db' && getenv('LPS_ADMIN_DB_LANE') !== '1') {
+        return "falta LPS_ADMIN_DB_LANE=1 para habilitar la lane administrativa explícita";
+    }
 
     $anfitrion = $anfitrionDeBase ?? (getenv('DB_HOST') ?: 'db');
     $puerto = getenv('DB_PORT') ?: '3306';
@@ -272,7 +298,7 @@ function entornoDisponible(string $nivel, ?string $anfitrionDeBase): ?string
         return 'no hay base de datos alcanzable: ' . $error->getMessage();
     }
 
-    if ($nivel === 'db') {
+    if ($nivel === 'db' || $nivel === 'admin-db') {
         return null;
     }
 
@@ -336,7 +362,7 @@ function ejecutarProceso(array $argumentos, int $segundosDeEspera): array
 
     $salida = '';
     $limite = microtime(true) + $segundosDeEspera;
-    $codigo = null;
+    $codigo = SALIDA_FALLO;
 
     while (true) {
         $salida .= (string) stream_get_contents($tuberias[1]);
@@ -363,7 +389,7 @@ function ejecutarProceso(array $argumentos, int $segundosDeEspera): array
     fclose($tuberias[2]);
     proc_close($proceso);
 
-    return ['codigo' => $codigo ?? SALIDA_FALLO, 'salida' => $salida];
+    return ['codigo' => $codigo, 'salida' => $salida];
 }
 
 /**
@@ -415,13 +441,31 @@ if (!isset(NIVELES[$opciones['nivel']])) {
     );
 }
 
-$pesoPedido = NIVELES[$opciones['nivel']];
 $tests = descubrirTests($opciones['dir']);
+$unitarios = descubrirTestsUnitarios($opciones['dirUnit']);
+$ddlViolations = phpTestDdlLevelViolations($tests + $unitarios);
+if ($ddlViolations !== []) {
+    $details = array_map(
+        static function (array $violation): string {
+            $locations = implode(', ', array_map(
+                static fn(array $call): string => $call['call'] . ':' . $call['line'],
+                $violation['calls'],
+            ));
+
+            return basename($violation['file']) . " ({$violation['level']}; {$locations})";
+        },
+        $ddlViolations,
+    );
+    abortar(
+        "DDL ejecutable fuera de la lane admin-db:\n  - " . implode("\n  - ", $details)
+        . "\n  No se ejecutó ningún test."
+    );
+}
 
 $seleccionados = [];
 $omitidos = [];
 foreach ($tests as $ruta => $nivel) {
-    if (NIVELES[$nivel] <= $pesoPedido) {
+    if (nivelSeleccionado($opciones['nivel'], $nivel)) {
         $seleccionados[$ruta] = $nivel;
         continue;
     }
@@ -451,9 +495,8 @@ if ($opciones['soloListar']) {
         }
     }
 
-    $unitariosListados = descubrirTestsUnitarios($opciones['dirUnit']);
-    foreach ($unitariosListados as $ruta => $nivel) {
-        $marca = NIVELES[$nivel] <= $pesoPedido ? '[ejecuta]' : '[omite]  ';
+    foreach ($unitarios as $ruta => $nivel) {
+        $marca = nivelSeleccionado($opciones['nivel'], $nivel) ? '[ejecuta]' : '[omite]  ';
         echo '    ' . $marca . ' ' . basename($ruta) . " (PHPUnit, {$nivel})\n";
     }
 
@@ -511,10 +554,9 @@ foreach ($seleccionados as $ruta => $nivel) {
 // Los tests nuevos se escriben con PHPUnit y viven en tests/unit/. El runner sigue siendo la puerta
 // única: si fueran dos comandos, cada job del CI tendría que acordarse de invocar los dos, que es
 // exactamente el defecto que este runner vino a cerrar.
-$unitarios = descubrirTestsUnitarios($opciones['dirUnit']);
 $unitariosSeleccionados = [];
 foreach ($unitarios as $ruta => $nivel) {
-    if (NIVELES[$nivel] <= $pesoPedido) {
+    if (nivelSeleccionado($opciones['nivel'], $nivel)) {
         $unitariosSeleccionados[$ruta] = $nivel;
     }
 }

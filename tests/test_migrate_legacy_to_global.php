@@ -1,8 +1,13 @@
 <?php
-// @requiere: db
+// @requiere: admin-db
 
 
 require_once __DIR__ . '/../vendor/autoload.php';
+
+if (getenv('LPS_ADMIN_DB_LANE') !== '1') {
+    fwrite(STDERR, "ERROR: este fixture DDL solo corre por la lane explícita admin-db.\n");
+    exit(2);
+}
 
 $root = dirname(__DIR__);
 $script = $root . '/database/migrations/20260701_migrate_legacy_to_global.php';
