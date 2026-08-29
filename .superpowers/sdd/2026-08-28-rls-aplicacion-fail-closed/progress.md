@@ -478,6 +478,18 @@ Started: 2026-08-29, worktree `shell-minimo-react`.
   runtime/admin. Task 7 queda `CODE_BLOCKED`; no hay ronda 6, no se avanza al data gate y no se
   ejecutan apply/enforce/admin-db/grants/DDL/DML. Reabrir requiere cambiar la arquitectura del
   control, no otra ampliación incremental del emulador PHP/SQL.
+- Task 6 de la replanificación RLS Runtime Boundary (2026-08-29): matriz focal read-only sobre
+  `6ed9246c` con mount del worktree comprobado antes de cada PHP. Manifest `7`, runner `39`,
+  scanner advisory `58`, schema `--audit` `250`, contrato Node `14/0` y `git diff --check` dieron
+  RC 0. La atestación live local de grants con `DB_USER` devolvió RC 1
+  (`invalid-line`, 2 líneas; sin grants impresos) y PHPStan focal devolvió RC 1 por
+  `SeguimientoService.php:672` (`missingType.iterableValue`). Estado exacto:
+  `CODE_BLOCKED`. El dry-run no se ejecutó: una cuenta runtime DML-only efectiva no quedó
+  atestada, por lo que no se usó root/admin ni `DB_MIGRATION_ADMIN_*` y no se inventaron cifras.
+  Los tres ALTER, backup/restauración, reconciliación no vacía y autorización explícita de datos
+  siguen pendientes; no hubo `--apply`, `--enforce`, admin-db, DDL/DML, grants/users/credenciales,
+  compose up/recreate, deploy, merge ni publish. Evidencia:
+  `.omo/evidence/rls-runtime-boundary-task6/task-6-matrix.md`.
 - Task 5 de la [replanificación RLS Runtime Boundary](../../../docs/superpowers/plans/2026-08-29-rls-runtime-boundary.md):
   se conserva literalmente el estado histórico `CODE_BLOCKED` del Task 7 y se documenta la frontera
   runtime DML-only con `admin-db` aislada. El scanner permanece advisory e incompleto para callables

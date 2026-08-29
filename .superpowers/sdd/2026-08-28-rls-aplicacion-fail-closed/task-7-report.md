@@ -1,5 +1,58 @@
 # Task 7 — Fix round 5: frontera conservadora final del inventario DDL
 
+## Cierre de código — Task 6 de RLS Runtime Boundary (2026-08-29 17:26 America/Bogota)
+
+### Estado
+
+`CODE_BLOCKED`
+
+La revalidación read-only no habilita el data gate. La cuenta efectiva de runtime no quedó
+atestada como DML-only: el auditor read-only, ejecutado con `DB_USER` dentro de `app`, devolvió
+`runtime_db_grants=fail reason=invalid-line grants_checked=2` (RC 1) sin imprimir grants. Además,
+PHPStan focal devolvió RC 1 por `missingType.iterableValue` en
+`Services/Pdc/SeguimientoService.php:672`. No se atribuye ese error a una línea base distinta ni
+se modifica producción en este cierre.
+
+El dry-run de migración queda **NO DISPONIBLE / no ejecutado**. La migración usa `DB_USER` cuando
+no recibe `--apply`, pero antes de invocarla se exige una atestación efectiva DML-only; ésta falló
+con la razón anterior. No se intentó ninguna cuenta root, admin ni
+`DB_MIGRATION_ADMIN_*`; esas dos variables estaban ausentes en el contenedor. Por tanto no hay
+una cifra nueva que sustituya el snapshot histórico de 56 tablas, 0 NULL, 2 columnas, 1 índice y
+tres `ALTER` propuestos. Los tres `ALTER` siguen sin aplicar.
+
+### Matriz focal y evidencia
+
+Cada invocación PHP comprobó inmediatamente antes el mount exacto:
+
+```text
+/Users/felipebenitez/Developer/lps-aia/.claude/worktrees/shell-minimo-react -> /var/www/html
+```
+
+| Escenario | Invocación | RC / tiempo | Observable binario |
+| --- | --- | --- | --- |
+| Manifest de lanes | `docker compose exec -T app php tests/test_php_test_lane_manifest.php` | `0` / `0.11 s` | `Lane manifest: 7 checks` |
+| Contrato runner | `docker compose exec -T app php tests/test_php_test_runner.php` | `0` / `0.69 s` | `OK: 39 comprobaciones pasaron`; `admin-db` no acumula runtime |
+| Scanner advisory | `docker compose exec -T app php tests/test_php_test_ddl_inventory.php` | `0` / `0.10 s` | `OK: 58 comprobaciones pasaron` |
+| Schema/catalog/grants contractual | `docker compose exec -T app php tests/test_project_scope_schema_contract.php --audit` | `0` / `0.26 s` | `Pure contracts: 250 checks. Sin hallazgos.` |
+| Auditor live read-only local, no CI | `docker compose exec -T app php scripts/security/audit-runtime-db-grants.php --live` | `1` / `0.10 s` | `runtime_db_grants=fail reason=invalid-line grants_checked=2`; no grants impresos |
+| PHPStan focal | `docker compose exec -T app vendor/bin/phpstan analyse -c phpstan-pdc.neon --memory-limit=1G --no-progress` | `1` / `5.49 s` | 1 error: `SeguimientoService.php:672`, `missingType.iterableValue` |
+| Contrato Node CI | `node tests/design-system/visual-ci-contract.test.mjs` | `0` / `0.06 s` | `pass 14`, `fail 0` |
+| Whitespace | `git diff --check` | `0` / `1.09 s` | sin salida |
+
+Artefacto de esta ejecución: `.omo/evidence/rls-runtime-boundary-task6/task-6-matrix.md`.
+
+### Límites y operaciones no realizadas
+
+- No se ejecutó `database/migrations/20260828_project_scope_contract.php`: falta una cuenta
+  runtime DML-only alcanzable y atestada, por lo que no se fabrican cifras de dry-run.
+- No se aplicaron los tres `ALTER`; siguen pendientes backup clasificable/restaurable,
+  reconciliación no vacía y autorización explícita de cambio de datos.
+- No se ejecutaron `--apply`, `--enforce`, la lane `admin-db`, DDL/DML, grants/revokes,
+  usuarios/credenciales, `compose up`/recreate, deploy, merge ni publish.
+- El contrato de scanner sigue siendo advisory; los contratos de manifest/runner y el aislamiento
+  no acumulativo de `admin-db` sí quedaron demostrados, pero no sustituyen la atestación de grants
+  efectiva fallida.
+
 ## STATUS round 5
 
 `CODE_BLOCKED`
