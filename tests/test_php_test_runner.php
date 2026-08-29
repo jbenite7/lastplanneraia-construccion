@@ -81,6 +81,26 @@ $r = correrRunner($runner, [
 verificar('DDL ejecutable fuera de admin-db aborta el inventario con 2', $r['codigo'] === 2);
 verificar('el inventario DDL nombra el fixture mal etiquetado', str_contains($r['salida'], 'test_ddl_db.php'));
 
+// Un wrapper local anidado no debe ocultar el DDL al inventario. El runtime falla antes de listar;
+// el mismo flujo declarado admin-db sí puede inventariarse, pero nunca se ejecuta en este test.
+$r = correrRunner($runner, [
+    $sinUnitarios,
+    '--dir=' . $fixtures . '/ddl-wrappers-runtime',
+    '--nivel=db',
+    '--solo-listar',
+]);
+verificar('un wrapper DDL anidado bajo runtime aborta con 2', $r['codigo'] === 2);
+verificar('el bloqueo nombra el fixture wrapper runtime', str_contains($r['salida'], 'test_ddl_db.php'));
+
+$r = correrRunner($runner, [
+    $sinUnitarios,
+    '--dir=' . $fixtures . '/ddl-wrappers-admin',
+    '--nivel=admin-db',
+    '--solo-listar',
+]);
+verificar('el mismo DDL declarado admin-db permite solo-listar', $r['codigo'] === 0);
+verificar('admin-db lista el fixture wrapper sin ejecutarlo', str_contains($r['salida'], '[ejecuta] test_ddl_admin_db.php'));
+
 // Pedir un nivel db sin base de datos alcanzable aborta con 2, no da verde.
 // Es el guardarrail que nace de lo medido el 2026-08-10: 26 tests de la suite
 // salen 0 cuando no hay base de datos, porque capturan el fallo de conexion.

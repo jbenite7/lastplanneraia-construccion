@@ -133,7 +133,12 @@ que crea la imagen oficial antes de que la base efímera quede saludable.
 La lane normal `--nivel=http` que se ejecuta dentro de `app` no usa DDL: `MetricExecutorTest` dobla
 la frontera Database/PDO en memoria y el fallo de inserción de `PgAvanceEdicionManualService` se
 prueba con un double inyectado. El runner inventaría todos los tests y rechaza cualquier llamada
-ejecutable a `CREATE/DROP/ALTER/TRUNCATE TABLE` que no declare `admin-db`.
+ejecutable privilegiada que no declare `admin-db`. El inventario parsea PHP: resuelve strings,
+heredoc/nowdoc, aliases, arrays y wrappers locales anidados hasta punto fijo; cubre
+`CREATE/DROP/ALTER/TRUNCATE/RENAME`, `GRANT`, `REVOKE` y `CREATE USER` sobre cualquier objeto. Un
+valor que llega a un sink SQL sin poder clasificarse falla cerrado. Los SQL esperados que nunca
+llegan a un sink no cuentan. La única lectura cross-file permitida al análisis es una ruta literal
+`.sql` dentro del repositorio; no lee configuración, `.env` ni credenciales.
 
 `admin-db` es una lane no acumulativa reservada a pruebas genuinas de migración que crean/eliminan
 fixtures, actualmente `test_migrate_legacy_to_global.php`. CI la ejecuta solo contra su base
