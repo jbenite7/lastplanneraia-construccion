@@ -41,12 +41,19 @@ if ($contextSnapshot !== null) {
 }
 $runner = new SystemScopeRunner($context);
 
-$limpiar = static function () use ($runner, $db, $A, $B): void {
-    $runner->run('test:pdc-torre:cleanup', static function () use ($db, $A, $B): void {
-        foreach ([$A, $B] as $p) {
+$limpiar = static function () use ($runner, $db, $A, $B, $C): void {
+    $runner->run('test:pdc-torre:cleanup', static function () use ($db, $A, $B, $C): void {
+        foreach ([$A, $B, $C] as $p) {
             $db->query('DELETE FROM pdc_plan_paso WHERE project_id = ?', [$p]);
             $db->query('DELETE FROM pdc_plan_paquete WHERE project_id = ?', [$p]);
             $db->query('DELETE FROM pdc_subpaquete WHERE project_id = ?', [$p]);
+            $db->query('DELETE FROM pdc_paquete_frente WHERE project_id = ?', [$p]);
+            $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id = ?', [$p]);
+            $db->query('DELETE FROM pdc_insumo_vinculos WHERE project_id = ?', [$p]);
+            $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$p]);
+            $db->query('DELETE FROM programa_consolidado WHERE project_id = ?', [$p]);
+            $db->query('DELETE FROM semanas_activas WHERE project_id = ?', [$p]);
+            $db->query('DELETE FROM programa WHERE project_id = ?', [$p]);
         }
         $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'test-b3'");
     });
@@ -87,11 +94,16 @@ $planPaso = static function (int $p, int $paq, int $sub, int $orden, string $pas
     );
 };
 
-[$paqA, $paqB] = $runner->run(
+[$paqA, $paqB, $paqBExtra, $paqCZeta, $paqCAlfa] = $runner->run(
     'test:pdc-torre:seed',
-    static function () use ($nuevoPaquete, $planPaquete, $planPaso, $db, $A, $B): array {
-        $paqA = $nuevoPaquete('TEST B3 A');
-        $paqB = $nuevoPaquete('TEST B3 B');
+    static function () use ($nuevoPaquete, $planPaquete, $planPaso, $db, $A, $B, $C): array {
+        $paqA = $nuevoPaquete('TEST B3 999950 A');
+        $paqB = $nuevoPaquete('TEST B3 999951 B');
+        $paqBExtra = $nuevoPaquete('TEST B3 999951 EXTRA');
+        // ZETA se inserta primero para que su id sea menor: el contrato observable exige ordenar
+        // por nombre, no por el id interno del paquete.
+        $paqCZeta = $nuevoPaquete('TEST B3 999952 ZETA');
+        $paqCAlfa = $nuevoPaquete('TEST B3 999952 ALFA');
 
         $planPaquete($A, $paqA, 0);
         $planPaso($A, $paqA, 0, 1, 'Pliegos', '2026-07-29');
@@ -109,7 +121,113 @@ $planPaso = static function (int $p, int $paq, int $sub, int $orden, string $pas
             $planPaso($B, $paqB, $sub, 1, 'Pliegos', '2026-07-28');
         }
 
-        return [$paqA, $paqB];
+        foreach ([$paqCZeta, $paqCAlfa] as $paqueteC) {
+            $planPaquete($C, $paqueteC, 0);
+            $planPaso($C, $paqueteC, 0, 1, 'Pliegos', '2026-07-29');
+        }
+
+        $versiones = [];
+        foreach ([$A, $B, $C] as $projectId) {
+            $db->query(
+                "INSERT INTO pdc_presupuesto_versiones
+                    (project_id, version_label, version_numero, archivo_nombre, archivo_hash,
+                     total_actividades, total_insumos, costo_total, activa, importado_por, created_at)
+                 VALUES (?, ?, 1, ?, ?, 1, 4, 100, 1, 'test-b3', NOW())",
+                [
+                    $projectId,
+                    "TEST B3 {$projectId}",
+                    "test-b3-{$projectId}.xlsx",
+                    hash('sha256', "test-b3-{$projectId}"),
+                ],
+            );
+            $versiones[$projectId] = (int) $db->lastInsertId();
+        }
+
+        $insumos = [
+            $A => [
+                ['uno', 25.0, $paqA, false],
+                ['dos', 75.0, null, false],
+            ],
+            $B => [
+                ['uno', 10.0, $paqB, false],
+                ['dos', 20.0, $paqB, false],
+                ['tres', 30.0, null, true],
+                ['cuatro', 40.0, null, false],
+            ],
+            $C => [
+                ['uno', 40.0, $paqCZeta, false],
+                ['dos', 60.0, $paqCAlfa, false],
+            ],
+        ];
+        foreach ($insumos as $projectId => $rows) {
+            foreach ($rows as [$suffix, $value, $packageId, $omitted]) {
+                $normalized = "test b3 {$projectId} insumo {$suffix}";
+                $db->query(
+                    "INSERT INTO pdc_insumo_vinculos
+                        (project_id, version_id, descripcion_norm, unidad, descripcion_original,
+                         tipo_insumo, cantidad_total, valor_total, apariciones, estado)
+                     VALUES (?, ?, ?, 'und', ?, 'MATERIAL', 1, ?, 1, 'confirmado')",
+                    [$projectId, $versiones[$projectId], $normalized, strtoupper($normalized), $value],
+                );
+                if ($packageId === null && !$omitted) {
+                    continue;
+                }
+                $db->query(
+                    "INSERT INTO pdc_insumo_paquete
+                        (project_id, descripcion_norm, unidad, paquete_id, omitido, asignado_por, updated_at)
+                     VALUES (?, ?, 'und', ?, ?, 'test-b3', NOW())",
+                    [$projectId, $normalized, $packageId, $omitted ? 1 : 0],
+                );
+            }
+        }
+
+        $schedule = [
+            [$A, 51, 995001, $paqA, '2026-07-01', '2026-07-02'],
+            [$B, 52, 995101, $paqB, '2026-07-03', '2026-07-04'],
+            [$C, 53, 995201, $paqCZeta, '2026-07-06', '2026-07-07'],
+        ];
+        foreach ($schedule as [$projectId, $week, $uniqueId, $packageId, $savedDate, $currentDate]) {
+            $db->query(
+                'INSERT INTO semanas_activas
+                    (project_id, Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem)
+                 VALUES (?, ?, ?, ?, ?)',
+                [$projectId, $projectId, $week, $currentDate, $currentDate],
+            );
+            $db->query(
+                'INSERT INTO programa
+                    (project_id, Consecutivo, unique_id, Id, Actividad, Titulo, Fecha_Inicio)
+                 VALUES (?, ?, ?, ?, ?, 1, ?)',
+                [$projectId, $projectId, $uniqueId, "{$projectId}.1", "TEST B3 {$projectId} FRENTE", $currentDate],
+            );
+            $db->query(
+                'INSERT INTO programa_consolidado
+                    (project_id, Consecutivo, Semana, unique_id, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)',
+                [$projectId, $projectId, $week, $uniqueId, $projectId, "{$projectId}.1", "TEST B3 {$projectId} FRENTE", $currentDate],
+            );
+            $db->query(
+                "INSERT INTO pdc_paquete_frente
+                    (project_id, paquete_id, unique_id, frente_nombre, fecha_ancla, semana_origen,
+                     origen, evidencia, confirmado_humano, asignado_por, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, 'humano', 'test-b3', 1, 'test-b3', NOW())",
+                [$projectId, $packageId, $uniqueId, "TEST B3 {$projectId} FRENTE", $savedDate, $week],
+            );
+        }
+
+        foreach ([
+            [$B, $paqBExtra, 995102, 52, '2026-07-05'],
+            [$C, $paqCAlfa, 995202, 53, '2026-07-08'],
+        ] as [$projectId, $packageId, $uniqueId, $week, $savedDate]) {
+            $db->query(
+                "INSERT INTO pdc_paquete_frente
+                    (project_id, paquete_id, unique_id, frente_nombre, fecha_ancla, semana_origen,
+                     origen, evidencia, confirmado_humano, asignado_por, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, 'humano', 'test-b3', 1, 'test-b3', NOW())",
+                [$projectId, $packageId, $uniqueId, "TEST B3 {$projectId} AUSENTE", $savedDate, $week],
+            );
+        }
+
+        return [$paqA, $paqB, $paqBExtra, $paqCZeta, $paqCAlfa];
     },
 );
 
@@ -118,6 +236,35 @@ $svc = new SeguimientoService($db);
 $scopeAB = new MultiProjectScope([$A, $B], 'fixture-pdc-torre', 'R', 'test:test_pdc_v2_torre_control:agregado');
 $scopeA = new MultiProjectScope([$A], 'fixture-pdc-torre', 'R', 'test:test_pdc_v2_torre_control:detalle-a');
 $scopeB = new MultiProjectScope([$B], 'fixture-pdc-torre', 'R', 'test:test_pdc_v2_torre_control:detalle-b');
+$scopeC = new MultiProjectScope([$C], 'fixture-pdc-torre', 'R', 'test:test_pdc_v2_torre_control:detalle-c');
+$fixtureC = $runner->run('test:pdc-torre:oracle-c', static function () use ($db, $C): array {
+    $counts = [];
+    foreach ([
+        'pdc_presupuesto_versiones',
+        'pdc_insumo_vinculos',
+        'pdc_insumo_paquete',
+        'semanas_activas',
+        'programa_consolidado',
+        'pdc_paquete_frente',
+    ] as $table) {
+        $counts[$table] = (int) $db->query(
+            "SELECT COUNT(*) FROM {$table} WHERE project_id = ?",
+            [$C],
+        )->fetchColumn();
+    }
+    return $counts;
+});
+$assert(
+    $fixtureC === [
+        'pdc_presupuesto_versiones' => 1,
+        'pdc_insumo_vinculos'       => 2,
+        'pdc_insumo_paquete'        => 2,
+        'semanas_activas'           => 1,
+        'programa_consolidado'      => 1,
+        'pdc_paquete_frente'        => 2,
+    ],
+    'la obra C tiene fixture positivo demostrable en las seis entradas reales',
+);
 $agg = $svc->vencimientosAgregados($scopeAB, $HOY);
 
 $assert($agg['hoy'] === $HOY, 'el agregado devuelve la fecha de corte que se le pasó');
@@ -160,10 +307,26 @@ $assert(!array_key_exists('proveedor', $detalle[0]), 'el detalle NO trae proveed
 $detalleB = $svc->detalleDestinos($scopeB, $HOY);
 $assert(($detalleB[0]['lote'] ?? null) !== null, 'el detalle de un paquete partido nombra su lote');
 
+$detalleC = $svc->detalleDestinos($scopeC, $HOY);
+$assert(
+    array_column($detalleC, 'paquete') === ['TEST B3 999952 ALFA', 'TEST B3 999952 ZETA'],
+    'el detalle desempata por nombre de paquete y no por id interno',
+);
+
 // Los agregados BI conservan los oráculos legacy single-project, pero nunca crean autoridad desde
 // esos enteros. C queda expresamente fuera del scope y no puede aparecer en ningún mapa.
 $cobertura = $svc->coberturaPorProyecto($scopeAB);
 $desactualizados = $svc->paquetesDesactualizadosPorProyecto($scopeAB);
+$assert(
+    ($cobertura[$A] ?? null) === ['cobertura' => 50.0, 'coberturaValor' => 25.0],
+    'obra A: cobertura positiva de 50.0% y 25.0% por valor',
+);
+$assert(
+    ($cobertura[$B] ?? null) === ['cobertura' => 75.0, 'coberturaValor' => 60.0],
+    'obra B: cobertura distinguible de 75.0% y 60.0% por valor',
+);
+$assert(($desactualizados[$A] ?? null) === 1, 'obra A: un paquete desactualizado real');
+$assert(($desactualizados[$B] ?? null) === 2, 'obra B: dos paquetes desactualizados distinguibles');
 $paquetesLegacy = new \App\Services\Pdc\PaquetesService($db);
 foreach ([$A, $B] as $projectId) {
     $context->bind(new ProjectScope($projectId, 'fixture-pdc-torre', 'R'));

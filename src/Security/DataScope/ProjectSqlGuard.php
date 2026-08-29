@@ -191,6 +191,9 @@ final class ProjectSqlGuard
 
         $propagationEdges = [];
         foreach ($relations as $relation) {
+            if (!$this->relationStaysWithinQueryBlock($relation, $tokens, $projectReferences)) {
+                continue;
+            }
             array_push(
                 $propagationEdges,
                 ...$this->relationPropagationEdges($relation, $tokens, $projectReferences, $derivedSources),
@@ -230,6 +233,38 @@ final class ProjectSqlGuard
         );
 
         return new ScopedQuery($sql, $params, $tables);
+    }
+
+    /**
+     * La correlación permite referenciar un alias del SELECT padre, pero no convertir su
+     * project_id en autoridad para el bloque hijo (ni al revés). Solo las relaciones entre raíces
+     * físicas del mismo SELECT pueden propagar el anclaje multiproyecto.
+     *
+     * @param array{kind: string, alias: string|null, rightAlias?: string, predicate: string, lhsStart: int, lhsEnd: int} $comparison
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @param list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}> $references
+     */
+    private function relationStaysWithinQueryBlock(array $comparison, array $tokens, array $references): bool
+    {
+        $physicalNodes = [];
+        foreach ($references as $reference) {
+            if ($reference['kind'] === TableScopeKind::Project) {
+                $physicalNodes[$this->projectReferenceKey($reference)] = true;
+            }
+        }
+
+        $localNodes = [];
+        foreach ($this->projectReferencesInSelect($tokens, $comparison['lhsStart'], $references) as $reference) {
+            $localNodes[$this->projectReferenceKey($reference)] = true;
+        }
+
+        foreach ([$comparison['alias'], $comparison['rightAlias'] ?? null] as $node) {
+            if (is_string($node) && isset($physicalNodes[$node]) && !isset($localNodes[$node])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function requiresDeferredExecution(string $sql, TableScopeCatalog $catalog): bool

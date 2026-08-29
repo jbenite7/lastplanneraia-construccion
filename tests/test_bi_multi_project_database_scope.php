@@ -80,6 +80,17 @@ try {
     try {
         $db->queryForProjects(
             $multiProjectScope,
+            'SELECT a.detalle FROM auto_program_log a WHERE NOT EXISTS (SELECT 1 FROM auto_program_log b WHERE b.project_id = a.project_id AND b.project_id IN (?, ?)) AND a.detalle LIKE ? ORDER BY a.detalle',
+            [$projectA, $projectB, $marker . '%'],
+        );
+        $failures[] = 'queryForProjects propagated inner authority to an unanchored outer query block';
+    } catch (ProjectScopeViolation) {
+        // Expected: every physical Project root in every SELECT must carry independent authority.
+    }
+
+    try {
+        $db->queryForProjects(
+            $multiProjectScope,
             'SELECT Proyecto_Proceso FROM general_proyectos_procesos WHERE ID IN (?, ?)',
             [$projectA, $projectB],
         );

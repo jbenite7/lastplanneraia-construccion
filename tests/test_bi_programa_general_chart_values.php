@@ -143,11 +143,13 @@ function biWhere(array $projectIds, string $semana, array $filters, string $alia
     if (($filters['desde'] ?? '') !== '' || ($filters['hasta'] ?? '') !== '') {
         $where[] = "EXISTS (
             SELECT 1 FROM semanas_activas sa
-            WHERE sa.project_id = {$alias}.project_id
+            WHERE sa.project_id IN (" . implode(',', array_fill(0, count($projectIds), '?')) . ")
+              AND sa.project_id = {$alias}.project_id
               AND sa.Semana = {$alias}.{$weekColumn}
               AND sa.Fecha_Inicio_Sem <= ?
               AND sa.Fecha_Fin_Sem >= ?
         )";
+        array_push($params, ...$projectIds);
         $params[] = $filters['hasta'] ?: '9999-12-31';
         $params[] = $filters['desde'] ?: '1000-01-01';
     } elseif ($semana !== '') {

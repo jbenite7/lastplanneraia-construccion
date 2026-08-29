@@ -261,12 +261,20 @@ $rangeRadarExpectedStatement = $db->queryForProjects(
        AND ps.Activa IN ('1', 'NA')
        AND EXISTS (
            SELECT 1 FROM semanas_activas sa
-           WHERE sa.project_id = ps.project_id
+           WHERE sa.project_id IN (?, ?)
+             AND sa.project_id = ps.project_id
              AND sa.Semana = ps.Semana
              AND sa.Fecha_Inicio_Sem <= ?
              AND sa.Fecha_Fin_Sem >= ?
        )",
-    [$rangeProjects[0], $rangeProjects[1], $rangeFilters['hasta'], $rangeFilters['desde']],
+    [
+        $rangeProjects[0],
+        $rangeProjects[1],
+        $rangeProjects[0],
+        $rangeProjects[1],
+        $rangeFilters['hasta'],
+        $rangeFilters['desde'],
+    ],
 );
 $rangeRadarExpected = $rangeRadarExpectedStatement->fetchColumn();
 $rangeRadar = $bi->getProgramaRadarDetail($scope($rangeProjects, 'range-radar'), '', $rangeFilters, 'productividad', 100, 0);

@@ -637,17 +637,54 @@ final class ProjectSqlGuardTest extends TestCase
         self::assertSame(['programa', 'auto_program_log', 'project_members'], $guarded->tables);
     }
 
-    public function testMultiProjectBoundaryPropagatesScopeThroughCorrelatedSubquery(): void
+    public function testMultiProjectBoundaryRejectsNotExistsWhenOnlyInnerRootIsAnchored(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guardForProjects(
+            'SELECT a.detalle FROM auto_program_log a WHERE NOT EXISTS (SELECT 1 FROM auto_program_log b WHERE b.project_id = a.project_id AND b.project_id IN (?, ?))',
+            [27, 73],
+            new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
+            $this->catalog,
+        );
+    }
+
+    public function testMultiProjectBoundaryRejectsNegatedExistsWhenOnlyInnerRootIsAnchored(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guardForProjects(
+            'SELECT a.detalle FROM auto_program_log a WHERE NOT (EXISTS (SELECT 1 FROM auto_program_log b WHERE b.project_id = a.project_id AND b.project_id IN (?, ?)))',
+            [27, 73],
+            new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
+            $this->catalog,
+        );
+    }
+
+    public function testMultiProjectBoundaryRejectsPositiveExistsWhenOnlyInnerRootIsAnchored(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guardForProjects(
+            'SELECT a.detalle FROM auto_program_log a WHERE EXISTS (SELECT 1 FROM auto_program_log b WHERE b.project_id = a.project_id AND b.project_id IN (?, ?))',
+            [27, 73],
+            new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
+            $this->catalog,
+        );
+    }
+
+    public function testMultiProjectBoundaryIntersectsOuterAndInnerAnchorsIndependently(): void
     {
         $guarded = $this->guard->guardForProjects(
-            'SELECT a.Semana FROM programa a WHERE EXISTS (SELECT 1 FROM auto_program_log b WHERE b.project_id = a.project_id AND b.detalle = ?)',
-            ['pendiente'],
+            'SELECT a.detalle FROM auto_program_log a WHERE a.project_id IN (?, ?, ?) AND NOT EXISTS (SELECT 1 FROM auto_program_log b WHERE b.project_id = a.project_id AND b.project_id IN (?, ?, ?))',
+            [27, 73, 91, 27, 73, 91],
             new MultiProjectScope([73, 27], 'test.A', 'A', 'test:bi'),
             $this->catalog,
         );
 
-        self::assertStringContainsString('WHERE a.project_id IN (?, ?) AND EXISTS', $guarded->sql);
-        self::assertSame([27, 73, 'pendiente'], $guarded->params);
+        self::assertStringContainsString('WHERE a.project_id IN (?, ?) AND NOT EXISTS', $guarded->sql);
+        self::assertStringContainsString('b.project_id = a.project_id AND b.project_id IN (?, ?)', $guarded->sql);
+        self::assertSame([27, 73, 27, 73], $guarded->params);
     }
 
     public function testMultiProjectBoundaryClassifiesPhysicalRootsInsideCtePipeline(): void

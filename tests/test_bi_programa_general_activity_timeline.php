@@ -120,11 +120,13 @@ function timelineOracle(Database $db, array $projectIds, string $semana, array $
     if ($desde !== '' || $hasta !== '') {
         $where[] = "EXISTS (
             SELECT 1 FROM semanas_activas sa_filter
-            WHERE sa_filter.project_id = pc.project_id
+            WHERE sa_filter.project_id IN ({$placeholders})
+              AND sa_filter.project_id = pc.project_id
               AND sa_filter.Semana = pc.Semana
               AND sa_filter.Fecha_Inicio_Sem <= ?
               AND sa_filter.Fecha_Fin_Sem >= ?
         )";
+        array_push($params, ...$projectIds);
         $params[] = $hasta !== '' ? $hasta : '9999-12-31';
         $params[] = $desde !== '' ? $desde : '1000-01-01';
     } elseif ($semana !== '') {

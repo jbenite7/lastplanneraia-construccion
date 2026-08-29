@@ -1205,11 +1205,13 @@ class ControlTowerService
         if ($this->hasDateRange($filters)) {
             $where[] = "EXISTS (
                 SELECT 1 FROM semanas_activas sa_filter
-                WHERE sa_filter.project_id = {$alias}.project_id
+                WHERE sa_filter.project_id IN ({$in})
+                  AND sa_filter.project_id = {$alias}.project_id
                   AND sa_filter.Semana = {$alias}.{$weekColumn}
                   AND sa_filter.Fecha_Inicio_Sem <= ?
                   AND sa_filter.Fecha_Fin_Sem >= ?
             )";
+            array_push($params, ...($projectIds ?: [0]));
             $params[] = $filters['hasta'] ?: '9999-12-31';
             $params[] = $filters['desde'] ?: '1000-01-01';
         } elseif ($semana !== '') {
@@ -1340,13 +1342,16 @@ class ControlTowerService
         $where = ['pc.project_id IN (' . $this->inClause($projectIds) . ')'];
         $params = $projectIds;
         if ($this->hasDateRange($filters)) {
+            $projectIn = $this->inClause($projectIds);
             $where[] = "EXISTS (
                 SELECT 1 FROM semanas_activas sa_snapshot
-                WHERE sa_snapshot.project_id = pc.project_id
+                WHERE sa_snapshot.project_id IN ({$projectIn})
+                  AND sa_snapshot.project_id = pc.project_id
                   AND sa_snapshot.Semana = pc.Semana
                   AND sa_snapshot.Fecha_Inicio_Sem <= ?
                   AND sa_snapshot.Fecha_Fin_Sem >= ?
             )";
+            array_push($params, ...$projectIds);
             $params[] = $filters['hasta'] ?: '9999-12-31';
             $params[] = $filters['desde'] ?: '1000-01-01';
         } elseif ($semana !== '') {

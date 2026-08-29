@@ -502,21 +502,41 @@ class SeguimientoService
         $ph = implode(',', array_fill(0, count($ids), '?'));
         $rows = $this->db->queryForProjects(
             $scope,
-            "SELECT ps.project_id, ps.paquete_id, s.nombre AS lote, ps.paso, ps.fecha_fin,
+            "SELECT ps.project_id, ps.paquete_id, s.nombre AS lote, ps.orden, ps.paso, ps.fecha_fin,
                     u.nombre AS responsable
              FROM pdc_plan_paso ps
              JOIN pdc_plan_paquete pp ON pp.project_id = ps.project_id AND pp.paquete_id = ps.paquete_id
                                      AND pp.subpaquete_id = ps.subpaquete_id
              LEFT JOIN pdc_subpaquete s ON s.project_id = ps.project_id AND s.id = ps.subpaquete_id
              LEFT JOIN general_usuarios u ON u.id = pp.responsable_user_id
-             WHERE ps.project_id IN ({$ph}) AND ps.fecha_real IS NULL
-             ORDER BY ps.fecha_fin IS NULL, ps.fecha_fin ASC, ps.paquete_id ASC, ps.orden ASC",
+             WHERE ps.project_id IN ({$ph}) AND ps.fecha_real IS NULL",
             $ids,
         )->fetchAll(\PDO::FETCH_ASSOC);
         $packages = $this->activePackageNames(array_map(
             static fn(array $row): int => (int) $row['paquete_id'],
             $rows,
         ));
+        usort($rows, static function (array $left, array $right) use ($packages): int {
+            $nullOrder = ($left['fecha_fin'] === null) <=> ($right['fecha_fin'] === null);
+            if ($nullOrder !== 0) {
+                return $nullOrder;
+            }
+
+            $dateOrder = strcmp((string) ($left['fecha_fin'] ?? ''), (string) ($right['fecha_fin'] ?? ''));
+            if ($dateOrder !== 0) {
+                return $dateOrder;
+            }
+
+            $packageOrder = strnatcasecmp(
+                $packages[(int) $left['paquete_id']] ?? '',
+                $packages[(int) $right['paquete_id']] ?? '',
+            );
+            if ($packageOrder !== 0) {
+                return $packageOrder;
+            }
+
+            return (int) $left['orden'] <=> (int) $right['orden'];
+        });
 
         $out = [];
         foreach ($rows as $r) {

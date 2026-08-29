@@ -51,10 +51,12 @@ class RiskScoringService
         if ($this->hasDateRange($filters)) {
             $rangeWhere = " AND EXISTS (
                 SELECT 1 FROM semanas_activas sa_filter
-                WHERE sa_filter.project_id = bi_riesgos.project_id
+                WHERE sa_filter.project_id IN ({$placeholders})
+                  AND sa_filter.project_id = bi_riesgos.project_id
                   AND sa_filter.Semana = bi_riesgos.Semana
                   AND COALESCE(sa_filter.Fecha_Fin_Sem, sa_filter.Fecha_Inicio_Sem) BETWEEN ? AND ?
             )";
+            array_push($params, ...$projectIds);
             $params[] = $filters['desde'] ?: '1000-01-01';
             $params[] = $filters['hasta'] ?: '9999-12-31';
         } elseif ($semana !== '') {
@@ -65,7 +67,7 @@ class RiskScoringService
         if ($riskType !== null) {
             $params[] = $riskType;
         }
-        $contextWhere = $this->contextualRiskWhere($filters, $params);
+        $contextWhere = $this->contextualRiskWhere($filters, $params, $projectIds);
         $rows = $this->db->queryForProjects(
             $scope,
             "SELECT * FROM bi_riesgos WHERE project_id IN ({$placeholders}){$rangeWhere}{$riskWhere}{$contextWhere} ORDER BY risk_score_100 DESC LIMIT {$sqlLimit}",
@@ -159,21 +161,23 @@ class RiskScoringService
         return $filters['desde'] !== '' || $filters['hasta'] !== '';
     }
 
-    private function contextualRiskWhere(array $filters, array &$params): string
+    private function contextualRiskWhere(array $filters, array &$params, array $projectIds): string
     {
         if ($filters['sub'] === '' && $filters['resp'] === '' && $filters['etapa'] === '') {
             return '';
         }
 
         $branches = [];
-        $activity = ['pc_filter.project_id = bi_riesgos.project_id', 'pc_filter.Semana = bi_riesgos.Semana', 'pc_filter.Consecutivo_en_Programa = bi_riesgos.entity_id'];
+        $placeholders = implode(',', array_fill(0, count($projectIds), '?'));
+        $activity = ["pc_filter.project_id IN ({$placeholders})", 'pc_filter.project_id = bi_riesgos.project_id', 'pc_filter.Semana = bi_riesgos.Semana', 'pc_filter.Consecutivo_en_Programa = bi_riesgos.entity_id'];
+        array_push($params, ...$projectIds);
         $this->appendContextLike($activity, $params, 'pc_filter.Sub_Contratista', $filters['sub']);
         $this->appendContextLike($activity, $params, 'pc_filter.Responsable_AIA', $filters['resp']);
         $this->appendAnyContextLike($activity, $params, ['pc_filter.Actividad', 'pc_filter.Estado'], $filters['etapa']);
         $branches[] = "(bi_riesgos.risk_type = 'actividad' AND EXISTS (SELECT 1 FROM programa_consolidado pc_filter WHERE " . implode(' AND ', $activity) . '))';
 
         if ($filters['resp'] === '') {
-            $this->appendContractorBranch($branches, $params, $filters);
+            $this->appendContractorBranch($branches, $params, $filters, $projectIds);
             // La rama de riesgos 'pdc' se retiró el 2026-08-04: filtraba contra la tabla `pdc` del
             // PDC v1, eliminada con el módulo, y `bi_riesgos` ya no emite filas de ese tipo.
         }
@@ -181,13 +185,16 @@ class RiskScoringService
         return $branches === [] ? ' AND 1 = 0' : ' AND (' . implode(' OR ', $branches) . ')';
     }
 
-    private function appendContractorBranch(array &$branches, array &$params, array $filters): void
+    private function appendContractorBranch(array &$branches, array &$params, array $filters, array $projectIds): void
     {
+        $placeholders = implode(',', array_fill(0, count($projectIds), '?'));
         $conditions = [
+            "cic_filter.project_id IN ({$placeholders})",
             'cic_filter.project_id = bi_riesgos.project_id',
             'cic_filter.Semana = bi_riesgos.Semana',
             "CONVERT(cic_filter.subcontratista USING utf8mb4) COLLATE utf8mb4_unicode_ci = CONVERT(bi_riesgos.entity_id USING utf8mb4) COLLATE utf8mb4_unicode_ci",
         ];
+        array_push($params, ...$projectIds);
         $this->appendContextLike($conditions, $params, 'cic_filter.subcontratista', $filters['sub']);
         $this->appendAnyContextLike($conditions, $params, ['cic_filter.alcance', 'cic_filter.tipo_proveedor'], $filters['etapa']);
         $branches[] = "(bi_riesgos.risk_type = 'contratista' AND EXISTS (SELECT 1 FROM bi_cic_contratistas cic_filter WHERE " . implode(' AND ', $conditions) . '))';
