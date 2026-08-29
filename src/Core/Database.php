@@ -231,22 +231,18 @@ class Database
     }
 
     /**
-     * Ejecuta una consulta con inyección automática de project_id.
-     *
-     * - Si la query toca una tabla global y no tiene project_id en WHERE → inyecta AND project_id = ?
-     * - Si la query YA tiene project_id en WHERE → NO duplica
-     * - Si no hay project_id disponible → ejecuta sin modificar (con warning)
-     *
-     * @param string     $sql       La consulta SQL con placeholders.
-     * @param array      $params    Parámetros preparados.
-     * @param int|null   $projectId Override del contexto de proyecto (null = usar currentProjectId).
-     * @return PDOStatement
+     * Adaptador legado que delega al único preflight. Sin ProjectScope solo
+     * permite SQL compuesto exclusivamente por tablas Identity y sin override.
      */
     public function queryWithProject(string $sql, array $params = [], ?int $projectId = null): PDOStatement
     {
         $scope = $this->dataScope()->current();
         if (!$scope instanceof \App\Security\DataScope\ProjectScope) {
             if ($scope === null) {
+                $guard = new \App\Security\DataScope\ProjectSqlGuard($this);
+                if ($projectId === null && $guard->isIdentityOnly($sql, $this->tableScopeCatalog())) {
+                    return $this->query($sql, $params);
+                }
                 throw new \App\Security\DataScope\MissingProjectScope(
                     'queryWithProject exige un ProjectScope activo.',
                 );

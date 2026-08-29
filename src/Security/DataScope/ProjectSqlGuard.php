@@ -96,6 +96,22 @@ final class ProjectSqlGuard
         return false;
     }
 
+    public function isIdentityOnly(string $sql, TableScopeCatalog $catalog): bool
+    {
+        $references = $this->analyzeAndNormalize($sql, $catalog)['references'];
+        if ($references === []) {
+            return false;
+        }
+
+        foreach ($references as $reference) {
+            if ($reference['kind'] !== TableScopeKind::Identity) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /**
      * @return array{sql: string, references: list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}>}
      */
@@ -238,6 +254,7 @@ final class ProjectSqlGuard
                 $closeColumns,
                 $sourceKeyword,
                 $projectColumn,
+                array_slice($analysis['references'], 1),
             );
             $reanalyzed = $this->analyzeAndNormalize($sql, $catalog);
             $sources = array_values(array_filter(
@@ -298,6 +315,7 @@ final class ProjectSqlGuard
     /**
      * @param array<mixed> $params
      * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @param list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}> $sourceReferences
      * @return array{string, array<mixed>}
      */
     private function guardInsertSelectTarget(
@@ -309,6 +327,7 @@ final class ProjectSqlGuard
         int $closeColumns,
         int $selectKeyword,
         int|false $projectColumn,
+        array $sourceReferences,
     ): array {
         $fromKeyword = $this->findKeywordAtDepth($tokens, 'FROM', $tokens[$selectKeyword]['depth'], $selectKeyword + 1);
         if ($fromKeyword === null) {
@@ -332,7 +351,7 @@ final class ProjectSqlGuard
             $this->assertScopePlaceholder($expression[0], $tokens, $params, $scope->projectId());
             return [$sql, $params];
         }
-        if ($this->isProjectIdColumnExpression($tokens, $expression)) {
+        if ($this->isProjectScopedSourceColumnExpression($tokens, $expression, $sourceReferences)) {
             return [$sql, $params];
         }
 
@@ -372,7 +391,8 @@ final class ProjectSqlGuard
             $matching = array_values(array_filter(
                 $comparisons,
                 static fn(array $comparison): bool => $comparison['kind'] === 'placeholder'
-                    && ($comparison['alias'] === null || $comparison['alias'] === $rootAlias),
+                    && ($comparison['alias'] === null || $comparison['alias'] === $rootAlias)
+                    && $comparison['predicate'] === 'WHERE',
             ));
             if ($matching === []) {
                 return $this->injectRootScope($sql, $params, $scope->projectId(), $root, $tokens);
@@ -392,7 +412,8 @@ final class ProjectSqlGuard
 
         $rootScoped = false;
         foreach ($comparisons as $comparison) {
-            if ($comparison['kind'] !== 'placeholder' || $comparison['alias'] !== $rootAlias) {
+            if ($comparison['kind'] !== 'placeholder' || $comparison['alias'] !== $rootAlias
+                || $comparison['predicate'] !== 'WHERE') {
                 continue;
             }
             $this->assertScopePlaceholder($comparison['placeholder'], $tokens, $params, $scope->projectId());
@@ -428,7 +449,7 @@ final class ProjectSqlGuard
     /**
      * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
      * @param list<string> $projectAliases
-     * @return list<array{kind: string, alias: string|null, rightAlias?: string, placeholder?: int, lhsStart: int, lhsEnd: int}>
+     * @return list<array{kind: string, alias: string|null, rightAlias?: string, placeholder?: int, predicate: string, lhsStart: int, lhsEnd: int}>
      */
     private function projectComparisons(array $tokens, array $projectAliases): array
     {
@@ -460,11 +481,12 @@ final class ProjectSqlGuard
                 throw new ProjectScopeViolation('Comparación project_id incompleta.');
             }
             if ($tokens[$right]['type'] === 'placeholder') {
-                $this->assertConjunctiveProjectComparison($tokens, $lhsStart, $right);
+                $predicate = $this->assertConjunctiveProjectComparison($tokens, $lhsStart, $right);
                 $comparisons[] = [
                     'kind' => 'placeholder',
                     'alias' => $alias,
                     'placeholder' => $right,
+                    'predicate' => $predicate,
                     'lhsStart' => $lhsStart,
                     'lhsEnd' => $index,
                 ];
@@ -481,11 +503,12 @@ final class ProjectSqlGuard
                     if ($alias === null || !in_array($rightAlias, $projectAliases, true)) {
                         throw new ProjectScopeViolation('Relación project_id ambigua o fuera de las tablas de proyecto.');
                     }
-                    $this->assertConjunctiveProjectComparison($tokens, $lhsStart, $rightColumn);
+                    $predicate = $this->assertConjunctiveProjectComparison($tokens, $lhsStart, $rightColumn);
                     $comparisons[] = [
                         'kind' => 'relation',
                         'alias' => $alias,
                         'rightAlias' => $rightAlias,
+                        'predicate' => $predicate,
                         'lhsStart' => $lhsStart,
                         'lhsEnd' => $index,
                     ];
@@ -515,7 +538,7 @@ final class ProjectSqlGuard
             $offset = $tokens[$where]['end'];
             $paramIndex = $this->positionalPlaceholderCountBefore($tokens, $offset);
             $boundary = $this->findStatementBoundary($tokens, $where + 1, $root['depth']);
-            if ($this->hasKeywordAtDepthBetween($tokens, 'OR', $root['depth'], $where + 1, $boundary)) {
+            if ($this->hasDisjunctionAtDepthBetween($tokens, $root['depth'], $where + 1, $boundary)) {
                 $bodyStart = $offset;
                 while ($bodyStart < strlen($sql) && ctype_space($sql[$bodyStart])) {
                     $bodyStart++;
@@ -604,7 +627,7 @@ final class ProjectSqlGuard
             if (!in_array($keyword, ['FROM', 'JOIN', 'UPDATE', 'INTO'], true)) {
                 continue;
             }
-            if ($keyword === 'INTO' && $operation !== 'INSERT') {
+            if ($keyword === 'INTO' && !in_array($operation, ['INSERT', 'REPLACE'], true)) {
                 continue;
             }
 
@@ -957,18 +980,33 @@ final class ProjectSqlGuard
         return $significant[0];
     }
 
-    /** @param list<int> $indices */
-    private function isProjectIdColumnExpression(array $tokens, array $indices): bool
+    /**
+     * @param list<int> $indices
+     * @param list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}> $sourceReferences
+     */
+    private function isProjectScopedSourceColumnExpression(array $tokens, array $indices, array $sourceReferences): bool
     {
         if (count($indices) === 1) {
-            return $this->isIdentifier($tokens[$indices[0]])
+            return count($sourceReferences) === 1
+                && $sourceReferences[0]['kind'] === TableScopeKind::Project
+                && $this->isIdentifier($tokens[$indices[0]])
                 && strtolower($tokens[$indices[0]]['value']) === 'project_id';
         }
-        return count($indices) === 3
-            && $this->isIdentifier($tokens[$indices[0]])
-            && $tokens[$indices[1]]['raw'] === '.'
-            && $this->isIdentifier($tokens[$indices[2]])
-            && strtolower($tokens[$indices[2]]['value']) === 'project_id';
+        if (count($indices) !== 3
+            || !$this->isIdentifier($tokens[$indices[0]])
+            || $tokens[$indices[1]]['raw'] !== '.'
+            || !$this->isIdentifier($tokens[$indices[2]])
+            || strtolower($tokens[$indices[2]]['value']) !== 'project_id') {
+            return false;
+        }
+
+        $qualifier = strtolower($tokens[$indices[0]]['value']);
+        foreach ($sourceReferences as $reference) {
+            if ($reference['kind'] === TableScopeKind::Project && strtolower($reference['alias']) === $qualifier) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** @return array{0: string|null, 1: int} */
@@ -1003,7 +1041,7 @@ final class ProjectSqlGuard
         return false;
     }
 
-    private function assertConjunctiveProjectComparison(array $tokens, int $start, int $end): void
+    private function assertConjunctiveProjectComparison(array $tokens, int $start, int $end): string
     {
         $comparisonDepth = $tokens[$start]['depth'];
         $predicateStart = null;
@@ -1029,17 +1067,25 @@ final class ProjectSqlGuard
 
         $boundary = $this->findPredicateBoundary($tokens, $end + 1, $predicateDepth);
         for ($index = $predicateStart + 1; $index < ($boundary ?? count($tokens)); $index++) {
-            if ($tokens[$index]['type'] !== 'word' || $tokens[$index]['depth'] > $comparisonDepth) {
+            if ($tokens[$index]['depth'] > $comparisonDepth) {
+                continue;
+            }
+            if ($tokens[$index]['raw'] === '||') {
+                throw new ProjectScopeViolation('project_id bajo OR no demuestra un alcance conjuntivo.');
+            }
+            if ($tokens[$index]['type'] !== 'word') {
                 continue;
             }
             $keyword = strtoupper($tokens[$index]['value']);
-            if ($keyword === 'OR') {
-                throw new ProjectScopeViolation('project_id bajo OR no demuestra un alcance conjuntivo.');
+            if (in_array($keyword, ['OR', 'XOR'], true)) {
+                throw new ProjectScopeViolation('project_id bajo OR/XOR no demuestra un alcance conjuntivo.');
             }
             if ($keyword === 'NOT' && $index < $start) {
                 throw new ProjectScopeViolation('project_id negado no demuestra el alcance activo.');
             }
         }
+
+        return strtoupper($tokens[$predicateStart]['value']);
     }
 
     private function findPredicateBoundary(array $tokens, int $start, int $depth): ?int
@@ -1058,17 +1104,20 @@ final class ProjectSqlGuard
         return null;
     }
 
-    private function hasKeywordAtDepthBetween(
+    private function hasDisjunctionAtDepthBetween(
         array $tokens,
-        string $keyword,
         int $depth,
         int $start,
         ?int $end,
     ): bool {
         $end ??= count($tokens);
         for ($index = $start; $index < $end; $index++) {
-            if ($tokens[$index]['type'] === 'word' && $tokens[$index]['depth'] === $depth
-                && strtoupper($tokens[$index]['value']) === $keyword) {
+            if ($tokens[$index]['depth'] !== $depth) {
+                continue;
+            }
+            if ($tokens[$index]['raw'] === '||'
+                || ($tokens[$index]['type'] === 'word'
+                    && in_array(strtoupper($tokens[$index]['value']), ['OR', 'XOR'], true))) {
                 return true;
             }
         }

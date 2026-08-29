@@ -204,6 +204,71 @@ final class ProjectSqlGuardTest extends TestCase
         self::assertSame([73, 8, 9], $guarded->params);
     }
 
+    public function testGroupsExistingXorWhenInjectingScope(): void
+    {
+        $guarded = $this->guard->guard(
+            'SELECT * FROM programa WHERE Semana = ? XOR TRUE',
+            [8],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+
+        self::assertSame(
+            'SELECT * FROM programa WHERE programa.project_id = ? AND (Semana = ? XOR TRUE)',
+            $guarded->sql,
+        );
+        self::assertSame([73, 8], $guarded->params);
+    }
+
+    public function testDoesNotTreatRootScopeInsideLeftJoinOnAsRowFilter(): void
+    {
+        $guarded = $this->guard->guard(
+            'SELECT a.Semana FROM programa a LEFT JOIN project_members pm ON a.project_id = ? AND pm.project_id = a.project_id',
+            [73],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+
+        self::assertStringContainsString('WHERE a.project_id = ?', $guarded->sql);
+        self::assertSame([73, 73], $guarded->params);
+    }
+
+    public function testRejectsScopePredicateUnderXor(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guard(
+            'SELECT * FROM programa WHERE project_id = ? XOR TRUE',
+            [73],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
+    public function testRejectsInsertSelectProjectIdTakenOnlyFromIdentitySource(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guard(
+            'INSERT INTO auto_program_log (project_id, semana, consecutivo, accion, detalle) SELECT pm.project_id, ?, ?, ?, ? FROM project_members pm WHERE pm.user_id = ?',
+            [8, 10, 'comprometer', 'detalle', 9],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
+    public function testRejectsUnsupportedReplaceIntoProjectTable(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guard(
+            'REPLACE INTO auto_program_log (project_id, semana, consecutivo, accion, detalle) VALUES (?, ?, ?, ?, ?)',
+            [27, 8, 10, 'comprometer', 'detalle'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
     public function testAcceptsRelatedJoinWithCanonicalRootScope(): void
     {
         $sql = 'SELECT a.Semana FROM programa a JOIN auto_program_log b ON b.project_id = a.project_id AND b.semana = a.Semana WHERE a.project_id = ?';
