@@ -52,7 +52,7 @@ try {
         ];
 
         foreach ($tablas as $tabla => $columna) {
-            $dbInstance->queryWithProject("DELETE FROM $tabla WHERE project_id = ? AND $columna >= ?", [$projectId, $semana], $projectId);
+            $dbInstance->query("DELETE FROM $tabla WHERE project_id = ? AND $columna >= ?", [$projectId, $semana]);
         }
 
         $dbInstance->logActivity('Sistema', 'ELIMINAR_SEMANA', "Eliminación de semana $semana y superiores en proyecto $dbName");

@@ -414,7 +414,7 @@ private function autoprogramar(string $dbPrefix, int $semana): void
               )
               $whereExistentes";
 
-            $stmtNuevas = $this->db->queryWithProject($sqlSelectNuevas, $paramsInsert, $projectId);
+            $stmtNuevas = $this->db->query($sqlSelectNuevas, $paramsInsert);
             $nuevasFilas = $stmtNuevas->fetchAll(PDO::FETCH_NUM);
 
             if (!empty($nuevasFilas)) {
@@ -483,13 +483,13 @@ private function autoprogramar(string $dbPrefix, int $semana): void
                   AND (COALESCE(Ejecutado, 0) > 0.001 OR {$restrictionEligibilitySql})
                   AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
                     OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')";
-            $this->db->queryWithProject("
+            $this->db->query("
                 DELETE FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . "
                 WHERE project_id = ? AND Semana = ? AND Activa = '1'
                   AND (Ejecutado_Real IS NULL OR Ejecutado_Real <= 0)
                   AND (Compromiso IS NULL OR Compromiso <= 0)
                   AND unique_id NOT IN ({$eligibleSubSql})
-            ", [$projectId, $semana, $projectId, $semana], $projectId);
+            ", [$projectId, $semana, $projectId, $semana]);
 
             $this->syncRestrictionFlags($dbPrefix, $semana, $area);
 
@@ -511,7 +511,7 @@ private function autoprogramar(string $dbPrefix, int $semana): void
               )
               $whereExistentes";
 
-            $stmtRest = $this->db->queryWithProject($sqlRestricciones, $paramsInsert, $projectId);
+            $stmtRest = $this->db->query($sqlRestricciones, $paramsInsert);
             $fallidas = $stmtRest->fetchAll(PDO::FETCH_ASSOC);
 
             $alertasRestricciones = [];
@@ -570,13 +570,13 @@ private function autoprogramar(string $dbPrefix, int $semana): void
         $alias = $area === 'Pre-Construccion' ? '' : 'pc';
         $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql($alias, $area);
 
-        $this->db->queryWithProject("UPDATE " . $this->tbl($dbPrefix, 'programacion_semanal') . " ps
+        $this->db->query("UPDATE " . $this->tbl($dbPrefix, 'programacion_semanal') . " ps
             JOIN " . $this->tbl($dbPrefix, 'programa_consolidado') . " pc
               ON pc.project_id = ps.project_id
              AND ps.unique_id = pc.unique_id
              AND ps.Semana = pc.Semana
             SET ps.Prog_Sin_Restricciones_100 = (CASE WHEN {$restrictionEligibilitySql} THEN 0 ELSE 1 END)
-            WHERE ps.project_id = ? AND ps.Semana = ? AND ps.Activa != 'NA'", [$projectId, $semana], $projectId);
+            WHERE ps.project_id = ? AND ps.Semana = ? AND ps.Activa != 'NA'", [$projectId, $semana]);
 
         $this->db->queryWithProject("UPDATE " . $this->tbl($dbPrefix, 'programacion_semanal') . " SET Prog_Sin_Restricciones_100 = 0 WHERE project_id = ? AND Semana = ? AND Activa = 'NA'", [$projectId, $semana], $projectId);
     }
@@ -780,12 +780,11 @@ private function autoprogramar(string $dbPrefix, int $semana): void
 
         $placeholders = implode(',', array_fill(0, count($programIds), '?'));
         $params = array_merge([$projectId, $semana], $programIds);
-        $rows = $this->db->queryWithProject(
+        $rows = $this->db->query(
             "SELECT unique_id AS Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin
              FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . "
              WHERE project_id = ? AND Semana = ? AND unique_id IN ({$placeholders})",
             $params,
-            $projectId,
         )->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($rows as $row) {
@@ -1115,7 +1114,7 @@ private function autoprogramar(string $dbPrefix, int $semana): void
               AND COALESCE(Ejecutado, 0) <= 0.001
             ORDER BY Semanas_Inicio ASC, Fecha_Inicio ASC, Id ASC";
 
-        $data = $this->db->queryWithProject($query, [$projectId, $semana], $projectId)->fetchAll(PDO::FETCH_ASSOC);
+        $data = $this->db->query($query, [$projectId, $semana])->fetchAll(PDO::FETCH_ASSOC);
 
         // Etiquetas de restricciones duras (mismas que usa autoprogramar() para alertasRestricciones)
         if ($area === 'Pre-Construccion') {
@@ -1200,13 +1199,13 @@ private function autoprogramar(string $dbPrefix, int $semana): void
                   AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
                     OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')";
 
-            $this->db->queryWithProject("
+            $this->db->query("
                 DELETE FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . "
                 WHERE project_id = ? AND Semana = ? AND Activa = '1'
                   AND (Ejecutado_Real IS NULL OR Ejecutado_Real <= 0)
                   AND (Compromiso IS NULL OR Compromiso <= 0)
                   AND unique_id NOT IN ({$eligibleSubSql})
-            ", [$projectId, $semana, $projectId, $semana], $projectId);
+            ", [$projectId, $semana, $projectId, $semana]);
 
             $stmtExistentes = $this->db->queryWithProject(
                 "SELECT DISTINCT(unique_id) FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ?",
@@ -1236,7 +1235,7 @@ private function autoprogramar(string $dbPrefix, int $semana): void
                 OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')
               {$whereExistentes}";
 
-            $stmtNuevas = $this->db->queryWithProject($sqlSelectNuevas, $paramsInsert, $projectId);
+            $stmtNuevas = $this->db->query($sqlSelectNuevas, $paramsInsert);
             $nuevasFilas = $stmtNuevas->fetchAll(PDO::FETCH_NUM);
 
             if (!empty($nuevasFilas)) {

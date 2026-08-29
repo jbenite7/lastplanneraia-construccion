@@ -732,7 +732,7 @@ class ProgramChangeDetector
         $tProgSemanal = TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal');
         $tProgCons = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
         $sql = $this->buildEligibilitySql('pc');
-        $this->db->queryWithProject("UPDATE {$tProgSemanal} ps
+        $this->db->query("UPDATE {$tProgSemanal} ps
             JOIN {$tProgCons} pc
               ON ps.project_id = pc.project_id
              AND ps.unique_id = pc.unique_id
@@ -741,7 +741,7 @@ class ProgramChangeDetector
             WHERE ps.project_id = ?
               AND pc.project_id = ?
               AND ps.Semana = ?
-              AND ps.Activa != 'NA'", [$this->currentProjectId, $this->currentProjectId, $semana], $this->currentProjectId);
+              AND ps.Activa != 'NA'", [$this->currentProjectId, $this->currentProjectId, $semana]);
 
         $this->db->queryWithProject("UPDATE {$tProgSemanal} SET Prog_Sin_Restricciones_100 = 0 WHERE Semana = ? AND Activa = 'NA'", [$semana], $this->currentProjectId);
     }

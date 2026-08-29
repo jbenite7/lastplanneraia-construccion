@@ -1022,7 +1022,7 @@ class ProgramacionIntermediaController extends BaseController
                   AND unique_id IN ({$placeholders})";
 
         $params = array_merge([$semana], $activityIds);
-        $stmt = $this->db->queryWithProject($sql, $params);
+        $stmt = $this->db->query($sql, $params);
 
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }

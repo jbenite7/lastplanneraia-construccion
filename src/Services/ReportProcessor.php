@@ -780,7 +780,7 @@ class ReportProcessor
             }
             $this->reportSubprocess($warningLabel, $proyecto, 'Verificando tabla', 'ok', 'Tabla existe');
 
-            $stmtConteo = $this->db->queryWithProject("SELECT COUNT(*) as conteo FROM {$tableName} WHERE Semana = ?", [$semanaProyecto], $projectId);
+            $stmtConteo = $this->db->query("SELECT COUNT(*) as conteo FROM {$tableName} WHERE Semana = ?", [$semanaProyecto]);
             $conteo = (int) ($stmtConteo->fetchColumn() ?: 0);
             if ($conteo > 0) {
                 $this->reportSubprocess($warningLabel, $proyecto, 'Actualizando PAC existentes', 'running');
@@ -789,7 +789,7 @@ class ReportProcessor
             }
 
             $this->reportSubprocess($warningLabel, $proyecto, 'Generando registros faltantes', 'running');
-            $stmtExisting = $this->db->queryWithProject("SELECT {$entityColumn} FROM {$tableName} WHERE Semana = ?", [$semanaProyecto], $projectId);
+            $stmtExisting = $this->db->query("SELECT {$entityColumn} FROM {$tableName} WHERE Semana = ?", [$semanaProyecto]);
             $excludeEntities = $stmtExisting->fetchAll(\PDO::FETCH_COLUMN);
             call_user_func($generateCallback, $semanaProyecto, $dbName, $excludeEntities);
             $this->reportSubprocess($warningLabel, $proyecto, 'Generando registros faltantes', 'ok');
@@ -868,7 +868,7 @@ class ReportProcessor
             $sqlDelete .= " AND {$entityColumn} NOT IN (" . implode(',', $placeholders) . ")";
         }
 
-        $this->db->queryWithProject($sqlDelete, $deleteParams, $projectId);
+        $this->db->query($sqlDelete, $deleteParams);
     }
 
     private function generateSubcontratistas($semana, $dbName, $excludeSubcontratistas)

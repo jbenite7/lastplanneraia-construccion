@@ -39,10 +39,9 @@ echo json_encode($faltaCalificar);
 
 function listar($db, $semana, $dbInstance, $tCic, $projectId)
 {
-    $stmt = $dbInstance->queryWithProject(
+    $stmt = $dbInstance->query(
         "SELECT COUNT(*) AS conteo FROM {$tCic} WHERE project_id = ? AND (Semana <= ?) AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'",
         [$projectId, $semana],
-        $projectId,
     );
     $data = $stmt->fetch();
     $conteo = $data["conteo"] ?? 0;
@@ -72,7 +71,7 @@ function listar($db, $semana, $dbInstance, $tCic, $projectId)
               AND (tabla.Calidad = 'NR' OR tabla.GSA = 'NR' OR tabla.SST = 'NR' OR tabla.ADM = 'NR')";
 
         try {
-            $stmt2 = $dbInstance->queryWithProject($query2, [$projectId, $semana, $projectId], $projectId);
+            $stmt2 = $dbInstance->query($query2, [$projectId, $semana, $projectId]);
             $dataFaltaCalificar = $stmt2->fetch();
             $conteoFaltaCalificar = $dataFaltaCalificar["conteo"] ?? 0;
 

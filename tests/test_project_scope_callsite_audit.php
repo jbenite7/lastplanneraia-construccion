@@ -7,7 +7,7 @@ use App\Security\DataScope\ProjectSqlGuard;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$root = realpath((string) (getenv('LPS_CODE_ROOT') ?: dirname(__DIR__)));
+$root = realpath((string) (getenv('LPS_AUDIT_ROOT') ?: getenv('LPS_CODE_ROOT') ?: dirname(__DIR__)));
 if ($root === false) {
     fwrite(STDERR, "No se pudo resolver LPS_CODE_ROOT.\n");
     exit(1);
@@ -22,7 +22,7 @@ $findings = [];
 function auditPhpFiles(string $root): array
 {
     $files = [];
-    foreach (['src', 'admin/src'] as $directory) {
+    foreach (['src', 'admin/src', 'admin/async', 'scripts', 'database/migrations'] as $directory) {
         $path = $root . '/' . $directory;
         if (!is_dir($path)) {
             continue;
@@ -121,38 +121,197 @@ function auditUnquote(array $tokens): ?string
 /**
  * @param list<PhpToken> $tokens
  * @param array<string, string> $knownStrings
+ * @param array<string, string> $knownConstants
+ * @param array<string, true> $trustedTableHelpers
  */
-function auditResolveString(array $tokens, array $knownStrings): ?string
+function auditResolveString(
+    array $tokens,
+    array $knownStrings,
+    array $knownConstants = [],
+    array $trustedTableHelpers = [],
+): ?string
 {
     $meaningful = array_values(array_filter(
         $tokens,
         static fn(PhpToken $token): bool => !in_array($token->id, [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true),
     ));
+    while (count($meaningful) >= 2 && $meaningful[0]->text === '(' && $meaningful[array_key_last($meaningful)]->text === ')') {
+        array_shift($meaningful);
+        array_pop($meaningful);
+    }
     if (count($meaningful) === 1 && $meaningful[0]->id === T_VARIABLE) {
         return $knownStrings[$meaningful[0]->text] ?? null;
     }
+    if (count($meaningful) === 1 && $meaningful[0]->id === T_STRING) {
+        return $knownConstants[$meaningful[0]->text] ?? null;
+    }
+    if (count($meaningful) === 3
+        && in_array($meaningful[0]->text, ['self', 'static'], true)
+        && $meaningful[1]->id === T_DOUBLE_COLON
+        && $meaningful[2]->id === T_STRING) {
+        return $knownConstants[$meaningful[2]->text] ?? null;
+    }
 
-    $parts = [];
-    $current = [];
+    $depth = 0;
+    $parts = [[]];
     foreach ($meaningful as $token) {
-        if ($token->text === '.') {
-            $value = auditUnquote($current);
+        if (in_array($token->text, ['(', '[', '{'], true)) {
+            $depth++;
+        } elseif (in_array($token->text, [')', ']', '}'], true)) {
+            $depth--;
+        }
+        if ($token->text === '.' && $depth === 0) {
+            $parts[] = [];
+            continue;
+        }
+        $parts[array_key_last($parts)][] = $token;
+    }
+    if (count($parts) > 1) {
+        $resolved = '';
+        foreach ($parts as $part) {
+            $value = auditResolveString($part, $knownStrings, $knownConstants, $trustedTableHelpers);
             if ($value === null) {
                 return null;
             }
-            $parts[] = $value;
-            $current = [];
+            $resolved .= $value;
+        }
+
+        return $resolved;
+    }
+
+    $literal = auditUnquote($meaningful);
+    if ($literal !== null) {
+        return $literal;
+    }
+
+    $callName = null;
+    $open = null;
+    foreach ($meaningful as $index => $token) {
+        if ($token->text === '(') {
+            $nameIndex = auditPreviousMeaningful($meaningful, $index - 1);
+            if ($nameIndex !== null && $meaningful[$nameIndex]->id === T_STRING) {
+                $callName = $meaningful[$nameIndex]->text;
+                $open = $index;
+            }
+            break;
+        }
+    }
+    $callNameIndex = $open === null ? null : auditPreviousMeaningful($meaningful, $open - 1);
+    $operatorIndex = $callNameIndex === null ? null : auditPreviousMeaningful($meaningful, $callNameIndex - 1);
+    $receiverIndex = $operatorIndex === null ? null : auditPreviousMeaningful($meaningful, $operatorIndex - 1);
+    $isTableResolver = $callName === 'resolveByPrefix'
+        && $operatorIndex !== null
+        && $receiverIndex !== null
+        && $meaningful[$operatorIndex]->id === T_DOUBLE_COLON
+        && ltrim($meaningful[$receiverIndex]->text, '\\') === 'TableResolver';
+    $isTrustedHelper = $callName !== null
+        && isset($trustedTableHelpers[$callName])
+        && $operatorIndex !== null
+        && $receiverIndex !== null
+        && $meaningful[$operatorIndex]->id === T_OBJECT_OPERATOR
+        && $meaningful[$receiverIndex]->id === T_VARIABLE
+        && $meaningful[$receiverIndex]->text === '$this';
+    if ($open !== null && ($isTableResolver || $isTrustedHelper)) {
+        $arguments = auditCallArguments($meaningful, $open);
+        if (isset($arguments[1])) {
+            return auditResolveString($arguments[1], $knownStrings, $knownConstants, $trustedTableHelpers);
+        }
+    }
+
+    $isEncapsed = false;
+    $resolved = '';
+    foreach ($meaningful as $token) {
+        if (in_array($token->id, [T_START_HEREDOC, T_END_HEREDOC], true) || $token->text === '"') {
+            $isEncapsed = true;
             continue;
         }
-        $current[] = $token;
+        if ($token->id === T_ENCAPSED_AND_WHITESPACE) {
+            $isEncapsed = true;
+            $resolved .= $token->text;
+            continue;
+        }
+        if ($token->id === T_VARIABLE) {
+            $isEncapsed = true;
+            $value = $knownStrings[$token->text] ?? null;
+            if ($value === null) {
+                return null;
+            }
+            $resolved .= $value;
+            continue;
+        }
+        if (in_array($token->id, [T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES], true)
+            || in_array($token->text, ['{', '}'], true)) {
+            continue;
+        }
+        if ($isEncapsed) {
+            return null;
+        }
     }
-    $value = auditUnquote($current);
-    if ($value === null) {
-        return null;
+    if ($isEncapsed) {
+        return $resolved;
     }
-    $parts[] = $value;
 
-    return implode('', $parts);
+    return null;
+}
+
+/**
+ * Solo confía en helpers locales cuya implementación tokenizada es el adaptador
+ * exacto de TableResolver; un helper con el mismo nombre no obtiene confianza.
+ *
+ * @param list<PhpToken> $tokens
+ * @return array<string, true>
+ */
+function auditTrustedTableHelpers(array $tokens): array
+{
+    $implementations = [];
+    foreach ($tokens as $index => $token) {
+        if ($token->id !== T_FUNCTION) {
+            continue;
+        }
+        $name = auditNextMeaningful($tokens, $index + 1);
+        if ($name === null || $tokens[$name]->id !== T_STRING || !in_array($tokens[$name]->text, ['t', 'tbl'], true)) {
+            continue;
+        }
+        $openBody = null;
+        for ($cursor = $name + 1, $count = count($tokens); $cursor < $count; $cursor++) {
+            if ($tokens[$cursor]->text === '{') {
+                $openBody = $cursor;
+                break;
+            }
+            if ($tokens[$cursor]->text === ';') {
+                break;
+            }
+        }
+        if ($openBody === null) {
+            continue;
+        }
+
+        $depth = 0;
+        $body = '';
+        for ($cursor = $openBody + 1, $count = count($tokens); $cursor < $count; $cursor++) {
+            if ($tokens[$cursor]->text === '{') {
+                $depth++;
+            } elseif ($tokens[$cursor]->text === '}') {
+                if ($depth === 0) {
+                    break;
+                }
+                $depth--;
+            }
+            if (!in_array($tokens[$cursor]->id, [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)) {
+                $body .= $tokens[$cursor]->text;
+            }
+        }
+        $implementations[$tokens[$name]->text][] = $body;
+    }
+
+    $trusted = [];
+    foreach ($implementations as $name => $bodies) {
+        if (count($bodies) === 1 && $bodies[0] === 'returnTableResolver::resolveByPrefix($dbPrefix,$tableType);') {
+            $trusted[$name] = true;
+        }
+    }
+
+    return $trusted;
 }
 
 /** @param list<PhpToken> $tokens */
@@ -179,17 +338,109 @@ function auditContainsDirectProjectRequest(array $tokens): bool
     return false;
 }
 
-function auditMaintenanceCallerAllowed(string $relative): bool
+function auditSystemScopeCallerAllowed(string $relative): bool
+{
+    return $relative === 'src/Security/DataScope/SystemScopeRunner.php';
+}
+
+function auditSystemRunnerCallerAllowed(string $relative): bool
 {
     return in_array($relative, [
         'src/Controllers/Gestion/ReportController.php',
-        'src/Security/DataScope/SystemScopeRunner.php',
         'admin/src/Controllers/DashboardController.php',
         'admin/async/consolidate.php',
-    ], true)
-        || str_starts_with($relative, 'scripts/')
-        || str_starts_with($relative, 'database/migrations/')
-        || str_starts_with($relative, 'tests/');
+        'scripts/higiene/reparar-mojibake-causas.php',
+    ], true);
+}
+
+function auditTokenNamesClass(PhpToken $token, string $class): bool
+{
+    return in_array($token->id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)
+        && str_ends_with(ltrim($token->text, '\\'), $class);
+}
+
+/** @param list<PhpToken> $tokens */
+function auditContainsRunnerConstruction(array $tokens): bool
+{
+    foreach ($tokens as $index => $token) {
+        if (!auditTokenNamesClass($token, 'SystemScopeRunner')) {
+            continue;
+        }
+        $previous = auditPreviousMeaningful($tokens, $index - 1);
+        if ($previous !== null && $tokens[$previous]->id === T_NEW) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * @param list<PhpToken> $tokens
+ * @param array<string, true> $runnerVariables
+ */
+function auditIsSystemRunnerInvocation(array $tokens, int $runIndex, array $runnerVariables): bool
+{
+    $operator = auditPreviousMeaningful($tokens, $runIndex - 1);
+    if ($operator === null || !in_array($tokens[$operator]->id, [T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_DOUBLE_COLON], true)) {
+        return false;
+    }
+    $receiver = auditPreviousMeaningful($tokens, $operator - 1);
+    if ($receiver === null) {
+        return false;
+    }
+    if ($tokens[$operator]->id === T_DOUBLE_COLON) {
+        return str_ends_with(ltrim($tokens[$receiver]->text, '\\'), 'SystemScopeRunner');
+    }
+    if ($tokens[$receiver]->id === T_VARIABLE) {
+        return isset($runnerVariables[$tokens[$receiver]->text]);
+    }
+    if ($tokens[$receiver]->text !== ')') {
+        return false;
+    }
+
+    $depth = 0;
+    for ($index = $receiver; $index >= 0; $index--) {
+        if ($tokens[$index]->text === ')') {
+            $depth++;
+            continue;
+        }
+        if ($tokens[$index]->text === '(') {
+            $depth--;
+            $class = auditPreviousMeaningful($tokens, $index - 1);
+            if ($class !== null && auditTokenNamesClass($tokens[$class], 'SystemScopeRunner')) {
+                $new = auditPreviousMeaningful($tokens, $class - 1);
+                if ($new !== null && $tokens[$new]->id === T_NEW) {
+                    return true;
+                }
+            }
+            if ($depth === 0) {
+                return false;
+            }
+        }
+    }
+
+    return false;
+}
+
+/** @param list<PhpToken> $tokens */
+function auditIsSystemScopeFactoryInvocation(array $tokens, int $methodIndex): bool
+{
+    $operator = auditPreviousMeaningful($tokens, $methodIndex - 1);
+    $receiver = $operator === null ? null : auditPreviousMeaningful($tokens, $operator - 1);
+
+    return $operator !== null
+        && $receiver !== null
+        && $tokens[$operator]->id === T_DOUBLE_COLON
+        && str_ends_with(ltrim($tokens[$receiver]->text, '\\'), 'SystemScope');
+}
+
+function auditSetProjectContextCallerAllowed(string $relative): bool
+{
+    return in_array($relative, [
+        'src/Core/SessionMiddleware.php',
+        'src/Services/ProjectAccessService.php',
+    ], true);
 }
 
 foreach (auditPhpFiles($root) as $path) {
@@ -202,14 +453,38 @@ foreach (auditPhpFiles($root) as $path) {
 
     $tokens = PhpToken::tokenize($source);
     $knownStrings = [];
+    $knownConstants = [];
+    $runnerVariables = [];
+    $trustedTableHelpers = auditTrustedTableHelpers($tokens);
 
     foreach ($tokens as $index => $token) {
+        if (in_array($token->id, [T_CLASS, T_INTERFACE, T_TRAIT, T_ENUM], true)) {
+            $previous = auditPreviousMeaningful($tokens, $index - 1);
+            if ($previous === null || $tokens[$previous]->id !== T_DOUBLE_COLON) {
+                $knownConstants = [];
+            }
+        }
         if ($token->id === T_FUNCTION) {
             $knownStrings = [];
+            $runnerVariables = [];
+        }
+        if ($token->id === T_CONST) {
+            $name = auditNextMeaningful($tokens, $index + 1);
+            $equals = $name === null ? null : auditNextMeaningful($tokens, $name + 1);
+            if ($name !== null && $equals !== null && $tokens[$name]->id === T_STRING && $tokens[$equals]->text === '=') {
+                $expression = [];
+                for ($cursor = $equals + 1, $count = count($tokens); $cursor < $count && $tokens[$cursor]->text !== ';'; $cursor++) {
+                    $expression[] = $tokens[$cursor];
+                }
+                $value = auditResolveString($expression, $knownStrings, $knownConstants, $trustedTableHelpers);
+                if ($value !== null) {
+                    $knownConstants[$tokens[$name]->text] = $value;
+                }
+            }
         }
         if ($token->id === T_VARIABLE) {
             $equals = auditNextMeaningful($tokens, $index + 1);
-            if ($equals !== null && $tokens[$equals]->text === '=') {
+            if ($equals !== null && in_array($tokens[$equals]->text, ['=', '.='], true)) {
                 $expression = [];
                 $depth = 0;
                 for ($cursor = $equals + 1, $count = count($tokens); $cursor < $count; $cursor++) {
@@ -224,11 +499,19 @@ foreach (auditPhpFiles($root) as $path) {
                     }
                     $expression[] = $tokens[$cursor];
                 }
-                $value = auditResolveString($expression, $knownStrings);
+                $value = auditResolveString($expression, $knownStrings, $knownConstants, $trustedTableHelpers);
+                if ($tokens[$equals]->text === '.=' && isset($knownStrings[$token->text]) && $value !== null) {
+                    $value = $knownStrings[$token->text] . $value;
+                }
                 if ($value === null) {
                     unset($knownStrings[$token->text]);
                 } else {
                     $knownStrings[$token->text] = $value;
+                }
+                if (auditContainsRunnerConstruction($expression)) {
+                    $runnerVariables[$token->text] = true;
+                } else {
+                    unset($runnerVariables[$token->text]);
                 }
             }
         }
@@ -246,15 +529,19 @@ foreach (auditPhpFiles($root) as $path) {
 
         if ($token->text === 'queryWithProject' && $isMethodCall) {
             $arguments = auditCallArguments($tokens, $next);
-            $sql = isset($arguments[0]) ? auditResolveString($arguments[0], $knownStrings) : null;
-            if ($sql !== null) {
+            $sql = isset($arguments[0])
+                ? auditResolveString($arguments[0], $knownStrings, $knownConstants, $trustedTableHelpers)
+                : null;
+            if ($sql === null) {
+                $findings[] = "{$relative}:{$token->line}:queryWithProject-sql-no-resuelto";
+            } else {
                 try {
                     if ($guard->isIdentityOnly($sql, $catalog)) {
                         $findings[] = "{$relative}:{$token->line}:identity-usa-queryWithProject";
                     }
                 } catch (Throwable) {
-                    // SQL dinámico o fuera del catálogo: este gate solo decide cuando el tokenizer
-                    // autoritativo puede demostrar que todas las tablas son Identity.
+                    // Una forma SQL resuelta que el catálogo no reconoce no puede
+                    // demostrarse Identity. El preflight autoritativo la rechazará.
                 }
             }
             if (isset($arguments[2]) && auditContainsDirectProjectRequest($arguments[2])) {
@@ -264,24 +551,23 @@ foreach (auditPhpFiles($root) as $path) {
         }
 
         if ($token->text === 'setProjectContext' && $isMethodCall) {
-            if (!in_array($relative, [
-                'src/Core/SessionMiddleware.php',
-                'src/Services/ProjectAccessService.php',
-            ], true)) {
+            if (!auditSetProjectContextCallerAllowed($relative)) {
                 $findings[] = "{$relative}:{$token->line}:setProjectContext-no-autorizado";
             }
             continue;
         }
 
-        if ($token->text === 'forMaintenance' && $isMethodCall) {
-            if (!auditMaintenanceCallerAllowed($relative)) {
+        if ($token->text === 'forMaintenance' && $isMethodCall && auditIsSystemScopeFactoryInvocation($tokens, $index)) {
+            if (!auditSystemScopeCallerAllowed($relative)) {
                 $findings[] = "{$relative}:{$token->line}:system-scope-no-autorizado";
             }
             continue;
         }
 
-        if ($token->text === 'SystemScopeRunner' && !auditMaintenanceCallerAllowed($relative)) {
-            $findings[] = "{$relative}:{$token->line}:system-runner-no-autorizado";
+        if ($token->text === 'run' && $isMethodCall && auditIsSystemRunnerInvocation($tokens, $index, $runnerVariables)) {
+            if (!auditSystemRunnerCallerAllowed($relative)) {
+                $findings[] = "{$relative}:{$token->line}:system-runner-no-autorizado";
+            }
         }
     }
 
@@ -294,6 +580,25 @@ foreach (auditPhpFiles($root) as $path) {
 }
 
 sort($findings);
+$expectedRaw = getenv('LPS_AUDIT_EXPECT');
+if ($expectedRaw !== false) {
+    $expected = $expectedRaw === '' ? [] : explode(',', $expectedRaw);
+    sort($expected);
+    if ($findings !== $expected) {
+        echo "=== Project Scope Callsite Audit Fixtures: FAIL ===\n";
+        foreach (array_diff($expected, $findings) as $missing) {
+            echo "MISSING: {$missing}\n";
+        }
+        foreach (array_diff($findings, $expected) as $unexpected) {
+            echo "UNEXPECTED: {$unexpected}\n";
+        }
+        exit(1);
+    }
+
+    echo "=== Project Scope Callsite Audit Fixtures: OK (" . count($findings) . " hallazgos esperados) ===\n";
+    exit(0);
+}
+
 if ($findings !== []) {
     echo "=== Project Scope Callsite Audit: FAIL ===\n";
     foreach ($findings as $finding) {

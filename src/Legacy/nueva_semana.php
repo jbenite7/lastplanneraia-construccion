@@ -139,7 +139,7 @@ try {
                                  AND REPLACE(REPLACE(dest.programaAnteriorAsociar, '<b>', ''), '</b>', '') = REPLACE(REPLACE(src.Actividad, '<b>', ''), '</b>', '')
                                  SET $setClause
                                  WHERE dest.project_id = ? AND dest.Semana = ?";
-                $dbInstance->queryWithProject($sqlBigUpdate, [$projectId, $conteo, $projectId, $semana_crear], $projectId);
+                $dbInstance->query($sqlBigUpdate, [$projectId, $conteo, $projectId, $semana_crear]);
 
                 $sqlReprog = "UPDATE {$tSemanasActivas} SET reprogramacion=1, diferenciaEstructuraCron=(SELECT COUNT(*) FROM {$tProgConsolidado} WHERE project_id = ? AND Semana=? AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL AND Titulo != 1 AND (Ejecutado IS NULL OR Estado_Restricciones IS NULL OR programaAnteriorAsociar IS NOT NULL)) WHERE project_id = ? AND Semana=?";
                 $dbInstance->queryWithProject($sqlReprog, [$projectId, $semana_crear, $projectId, $semana_crear], $projectId);

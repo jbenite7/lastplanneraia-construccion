@@ -133,10 +133,9 @@ class ProjectProfessionalsSyncService
                         if (!empty($blockedFields)) {
                             $blockedParams[] = $projectId;
                             $blockedParams[] = $existingByEmail[$email]['id'];
-                            $this->db->queryWithProject(
+                            $this->db->query(
                                 "UPDATE {$tProf} SET " . implode(', ', $blockedFields) . ' WHERE project_id = ? AND id = ?',
                                 $blockedParams,
-                                $projectId,
                             );
                         }
                     }
@@ -189,10 +188,9 @@ class ProjectProfessionalsSyncService
                 if (!empty($fields)) {
                     $params[] = $projectId;
                     $params[] = $existing['id'];
-                    $this->db->queryWithProject(
+                    $this->db->query(
                         "UPDATE {$tProf} SET " . implode(', ', $fields) . ' WHERE project_id = ? AND id = ?',
                         $params,
-                        $projectId,
                     );
                     if ($nameChanged) {
                         $this->replaceProfessionalDependencies($dbPrefix, $existingName, $existing['nombre']);
@@ -227,10 +225,9 @@ class ProjectProfessionalsSyncService
                     if (!empty($duplicateFields)) {
                         $duplicateParams[] = $projectId;
                         $duplicateParams[] = $existing['id'];
-                        $this->db->queryWithProject(
+                        $this->db->query(
                             "UPDATE {$tProf} SET " . implode(', ', $duplicateFields) . ' WHERE project_id = ? AND id = ?',
                             $duplicateParams,
-                            $projectId,
                         );
                     }
                     continue;
@@ -260,10 +257,9 @@ class ProjectProfessionalsSyncService
                 if (!empty($fields)) {
                     $params[] = $projectId;
                     $params[] = $existing['id'];
-                    $this->db->queryWithProject(
+                    $this->db->query(
                         "UPDATE {$tProf} SET " . implode(', ', $fields) . ' WHERE project_id = ? AND id = ?',
                         $params,
-                        $projectId,
                     );
 
                     if ($nameChanged) {
@@ -585,10 +581,9 @@ class ProjectProfessionalsSyncService
         $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
         $total = 0;
         foreach ($this->getProfessionalDependencyTables($dbPrefix) as $table => $column) {
-            $total += (int) $this->db->queryWithProject(
+            $total += (int) $this->db->query(
                 "SELECT COUNT(*) FROM {$table} WHERE project_id = ? AND {$column} = ?",
                 [$projectId, $nombre],
-                $projectId,
             )->fetchColumn();
         }
 
@@ -606,10 +601,9 @@ class ProjectProfessionalsSyncService
 
         $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
         foreach ($this->getProfessionalDependencyTables($dbPrefix) as $table => $column) {
-            $this->db->queryWithProject(
+            $this->db->query(
                 "UPDATE {$table} SET {$column} = ? WHERE project_id = ? AND {$column} = ?",
                 [$newName, $projectId, $oldName],
-                $projectId,
             );
         }
     }

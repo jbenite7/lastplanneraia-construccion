@@ -273,7 +273,7 @@ class PgBreadcrumbController
 
     private function resolveMaxSemana(string $tabla): int
     {
-        $stmt = $this->db->queryWithProject("SELECT MAX(Semana) as max_sem FROM `{$tabla}`");
+        $stmt = $this->db->query("SELECT MAX(Semana) as max_sem FROM `{$tabla}`");
         $row = $stmt->fetch();
         return (int) ($row['max_sem'] ?? 0);
     }

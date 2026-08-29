@@ -253,7 +253,7 @@ class ProfesionalesApiController
 
         foreach ($tablesToUpdate as $tbl => $col) {
             if ($this->tableHasColumn($tbl, $col)) {
-                $this->db->queryWithProject("UPDATE $tbl SET $col = ? WHERE project_id = ? AND $col = ?", [$newName, $projectId, $oldName], $projectId);
+                $this->db->query("UPDATE $tbl SET $col = ? WHERE project_id = ? AND $col = ?", [$newName, $projectId, $oldName]);
             }
         }
     }
@@ -323,7 +323,7 @@ class ProfesionalesApiController
 
         foreach ($tables as $tbl => $col) {
             if ($this->tableHasColumn($tbl, $col)) {
-                if ($this->db->queryWithProject("SELECT COUNT(*) FROM $tbl WHERE project_id = ? AND $col = ?", [$projectId, $nombre], $projectId)->fetchColumn() > 0) {
+                if ($this->db->query("SELECT COUNT(*) FROM $tbl WHERE project_id = ? AND $col = ?", [$projectId, $nombre])->fetchColumn() > 0) {
                     $this->json(["status" => "error", "message" => "No se puede eliminar: Tiene registros asociados."]);
                     return;
                 }

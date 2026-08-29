@@ -34,10 +34,9 @@ final class LpsWeekEditPolicy
         $role = (new RbacService($this->db))->resolveCurrentRole();
 
         return self::decide($role, $week, $maxWeek, $qualification, function () use ($weeksTable, $projectId, $week): bool {
-            $confirmed = $this->db->queryWithProject(
+            $confirmed = $this->db->query(
                 "SELECT Semanal_Confirmada FROM {$weeksTable} WHERE project_id = ? AND Semana = ?",
                 [$projectId, $week],
-                $projectId,
             )->fetchColumn();
 
             return (int) $confirmed === 1;
