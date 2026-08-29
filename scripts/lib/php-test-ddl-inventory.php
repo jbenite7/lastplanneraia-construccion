@@ -29,6 +29,7 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\NodeFinder;
@@ -43,6 +44,7 @@ use PhpParser\ParserFactory;
  *
  * @phpstan-type SqlValue array{
  *   template: string,
+ *   alternatives: non-empty-list<string>,
  *   complete: bool,
  *   deps: list<int>,
  *   external: bool
@@ -51,6 +53,8 @@ use PhpParser\ParserFactory;
  */
 final class PhpTestDdlInventoryAnalyzer
 {
+    private const MAX_SQL_ALTERNATIVES = 4096;
+
     public function __construct(private readonly ?string $sourcePath = null)
     {
     }
@@ -67,6 +71,12 @@ final class PhpTestDdlInventoryAnalyzer
     /** @var array<string, string> normalized class name => class key */
     private array $classNameKeys = [];
 
+    /** @var array<string, string> class key => parent class key/name */
+    private array $classParents = [];
+
+    /** @var array<string, true> callable keys referenced by PHPUnit DataProvider attributes */
+    private array $phpUnitProviderKeys = [];
+
     /** @var array<string, SqlValue> normalized class::constant => literal value */
     private array $classConstants = [];
 
@@ -81,6 +91,9 @@ final class PhpTestDdlInventoryAnalyzer
 
     /** @var array<string, array<string, list<string>>> scope key => variable => closure keys */
     private array $closureBindings = [];
+
+    /** @var array<string, array<string, true>> scope key => variable => unresolved callable */
+    private array $unresolvedCallableBindings = [];
 
     /** @var list<Node\Stmt> */
     private array $topLevelStatements = [];
@@ -119,7 +132,8 @@ final class PhpTestDdlInventoryAnalyzer
 
         $this->inspectRootScope($statements, [], 'top');
         foreach ($this->callables as $key => $callable) {
-            if (!$callable instanceof ClassMethod || !$this->isPhpUnitEntrypoint($callable)) {
+            if (!$callable instanceof ClassMethod
+                || (!$this->isPhpUnitEntrypoint($callable) && !isset($this->phpUnitProviderKeys[$key]))) {
                 continue;
             }
             $this->inspectRootScope(
@@ -150,11 +164,14 @@ final class PhpTestDdlInventoryAnalyzer
             $this->functionKeys[$name] = $key;
         }
 
+        /** @var array<string, ClassLike> $classes */
+        $classes = [];
         foreach ($finder->findInstanceOf($statements, ClassLike::class) as $class) {
             $declaredName = $class->name?->toString();
             $classKey = $declaredName === null
                 ? 'anonymous@' . max(0, $class->getStartFilePos())
                 : strtolower($declaredName);
+            $classes[$classKey] = $class;
             if ($declaredName !== null) {
                 $this->classNameKeys[strtolower($declaredName)] = $classKey;
             }
@@ -165,6 +182,15 @@ final class PhpTestDdlInventoryAnalyzer
                 $this->methodKeys[$classKey][$methodName] = $key;
             }
         }
+        foreach ($classes as $classKey => $class) {
+            if (!$class instanceof Class_ || $class->extends === null) {
+                continue;
+            }
+            $parts = $class->extends->getParts();
+            $parentName = strtolower((string) end($parts));
+            $this->classParents[$classKey] = $this->classNameKeys[$parentName] ?? $parentName;
+        }
+        $this->registerPhpUnitProviders();
 
         $this->registerClosuresInScope($statements, 'top');
         $processed = [];
@@ -181,7 +207,11 @@ final class PhpTestDdlInventoryAnalyzer
         while ($changed && $iterations <= count($this->callables) + 1) {
             $changed = false;
             $iterations++;
-            foreach (array_keys($this->closureBindings) as $scopeKey) {
+            $bindingScopes = array_values(array_unique(array_merge(
+                array_keys($this->closureBindings),
+                array_keys($this->unresolvedCallableBindings),
+            )));
+            foreach ($bindingScopes as $scopeKey) {
                 [$aliases] = $this->scopeNodes($this->scopeStatements($scopeKey, $statements));
                 foreach ($aliases as $alias) {
                     if (!$alias->var instanceof Variable || !is_string($alias->var->name)
@@ -199,9 +229,71 @@ final class PhpTestDdlInventoryAnalyzer
                         $this->closureBindings[$scopeKey][$alias->var->name] = $merged;
                         $changed = true;
                     }
+                    if (($this->unresolvedCallableBindings[$scopeKey][$alias->expr->name] ?? false)
+                        && !isset($this->unresolvedCallableBindings[$scopeKey][$alias->var->name])) {
+                        $this->unresolvedCallableBindings[$scopeKey][$alias->var->name] = true;
+                        $changed = true;
+                    }
                 }
             }
         }
+    }
+
+    private function registerPhpUnitProviders(): void
+    {
+        foreach ($this->callables as $key => $callable) {
+            if (!$callable instanceof ClassMethod) {
+                continue;
+            }
+            $classKey = $this->callableClasses[$key] ?? null;
+            if ($classKey === null) {
+                continue;
+            }
+            foreach ($callable->getAttrGroups() as $group) {
+                foreach ($group->attrs as $attribute) {
+                    $parts = $attribute->name->getParts();
+                    $attributeName = strtolower((string) end($parts));
+                    if (!in_array($attributeName, ['dataprovider', 'dataproviderexternal'], true)) {
+                        continue;
+                    }
+                    if ($attributeName === 'dataproviderexternal') {
+                        $providerKey = $this->externalProviderKey($attribute, $classKey);
+                    } else {
+                        $provider = $attribute->args[0]->value ?? null;
+                        $providerKey = $provider instanceof String_
+                            ? $this->methodKeyForClass($classKey, strtolower($provider->value))
+                            : null;
+                    }
+                    if ($providerKey === null) {
+                        $this->addFinding('unresolved-data-provider', $attribute->getStartLine());
+                        continue;
+                    }
+                    $this->phpUnitProviderKeys[$providerKey] = true;
+                }
+            }
+        }
+    }
+
+    private function externalProviderKey(Node\Attribute $attribute, string $scopeClassKey): ?string
+    {
+        $class = $attribute->args[0]->value ?? null;
+        $method = $attribute->args[1]->value ?? null;
+        if (!$class instanceof Expr\ClassConstFetch || !$class->class instanceof Name
+            || !$class->name instanceof Identifier || strtolower($class->name->toString()) !== 'class'
+            || !$method instanceof String_) {
+            return null;
+        }
+        $parts = $class->class->getParts();
+        $className = strtolower((string) end($parts));
+        $classKey = match ($className) {
+            'self', 'static' => $scopeClassKey,
+            'parent' => $this->classParents[$scopeClassKey] ?? null,
+            default => $this->classNameKeys[$className] ?? null,
+        };
+
+        return $classKey === null
+            ? null
+            : $this->methodKeyForClass($classKey, strtolower($method->value));
     }
 
     /** @param list<Node\Stmt> $statements */
@@ -240,10 +332,11 @@ final class PhpTestDdlInventoryAnalyzer
         $finder = new NodeFinder();
         foreach ($finder->findInstanceOf($statements, Expr\Include_::class) as $include) {
             $path = $this->expressionValue($include->expr, []);
-            if (!$path['complete']) {
+            $pathText = $this->singleCompleteText($path);
+            if ($pathText === null) {
                 continue;
             }
-            $resolved = realpath($path['template']);
+            $resolved = realpath($pathText);
             if ($resolved === false || !str_starts_with($resolved, $repositoryRoot . DIRECTORY_SEPARATOR)
                 || strtolower(pathinfo($resolved, PATHINFO_EXTENSION)) !== 'php') {
                 continue;
@@ -305,6 +398,10 @@ final class PhpTestDdlInventoryAnalyzer
                 return;
             }
             if ($value instanceof Assign && $value->var instanceof Variable
+                && is_string($value->var->name) && $this->isUnresolvedCallableFactory($value->expr)) {
+                $this->unresolvedCallableBindings[$scopeKey][$value->var->name] = true;
+            }
+            if ($value instanceof Assign && $value->var instanceof Variable
                 && is_string($value->var->name)
                 && ($value->expr instanceof Closure || $value->expr instanceof ArrowFunction)) {
                 $closure = $value->expr;
@@ -330,6 +427,21 @@ final class PhpTestDdlInventoryAnalyzer
             }
         };
         $walk($nodes);
+    }
+
+    private function isUnresolvedCallableFactory(Expr $expression): bool
+    {
+        if (($expression instanceof FuncCall || $expression instanceof MethodCall || $expression instanceof StaticCall)
+            && $expression->isFirstClassCallable()) {
+            return true;
+        }
+        if (!$expression instanceof StaticCall || $this->callName($expression) !== 'fromcallable'
+            || !$expression->class instanceof Name) {
+            return false;
+        }
+        $parts = $expression->class->getParts();
+
+        return strtolower((string) end($parts)) === 'closure';
     }
 
     /** @param list<Node\Stmt> $topLevel @return list<Node\Stmt> */
@@ -430,25 +542,6 @@ final class PhpTestDdlInventoryAnalyzer
         return false;
     }
 
-    /** @return FunctionSummary|null */
-    private function localCallableSummary(Expr $call, string $scopeKey): ?array
-    {
-        $keys = $this->localCallableKeys($call, $scopeKey);
-        if ($keys === []) {
-            return null;
-        }
-        $summary = ['params' => [], 'always' => false];
-        foreach ($keys as $key) {
-            $callee = $this->summaries[$key] ?? ['params' => [], 'always' => false];
-            $summary['params'] = array_merge($summary['params'], $callee['params']);
-            $summary['always'] = $summary['always'] || $callee['always'];
-        }
-        sort($summary['params']);
-        $summary['params'] = array_values(array_unique($summary['params']));
-
-        return $summary;
-    }
-
     /** @return list<string> */
     private function localCallableKeys(Expr $call, string $scopeKey): array
     {
@@ -456,6 +549,12 @@ final class PhpTestDdlInventoryAnalyzer
             if ($call->name instanceof Name) {
                 $parts = $call->name->getParts();
                 $name = strtolower((string) end($parts));
+                if ($name === 'call_user_func') {
+                    $callback = $call->args[0]->value ?? null;
+                    return $callback instanceof Expr
+                        ? $this->callableExpressionKeys($callback, $scopeKey)
+                        : [];
+                }
                 return isset($this->functionKeys[$name]) ? [$this->functionKeys[$name]] : [];
             }
             if ($call->name instanceof Variable && is_string($call->name->name)) {
@@ -465,7 +564,7 @@ final class PhpTestDdlInventoryAnalyzer
                 $key = $this->callableNodeKeys[spl_object_id($call->name)] ?? null;
                 return $key === null ? [] : [$key];
             }
-            return [];
+            return $this->callableExpressionKeys($call->name, $scopeKey);
         }
 
         $name = $this->callName($call);
@@ -475,7 +574,7 @@ final class PhpTestDdlInventoryAnalyzer
         $classKey = $this->callableClasses[$scopeKey] ?? null;
         if ($call instanceof MethodCall && $call->var instanceof Variable
             && $call->var->name === 'this' && $classKey !== null) {
-            $key = $this->methodKeys[$classKey][$name] ?? null;
+            $key = $this->methodKeyForClass($classKey, $name);
             return $key === null ? [] : [$key];
         }
         if ($call instanceof StaticCall && $call->class instanceof Name) {
@@ -483,16 +582,131 @@ final class PhpTestDdlInventoryAnalyzer
             $calledClass = strtolower((string) end($parts));
             if (in_array($calledClass, ['self', 'static'], true)) {
                 $calledClass = $classKey;
+            } elseif ($calledClass === 'parent') {
+                $calledClass = $classKey === null ? null : ($this->classParents[$classKey] ?? null);
             } else {
                 $calledClass = $this->classNameKeys[$calledClass] ?? null;
             }
             if ($calledClass !== null) {
-                $key = $this->methodKeys[$calledClass][$name] ?? null;
+                $key = $this->methodKeyForClass($calledClass, $name);
                 return $key === null ? [] : [$key];
             }
         }
 
         return [];
+    }
+
+    private function methodKeyForClass(string $classKey, string $methodName): ?string
+    {
+        $visited = [];
+        while (!isset($visited[$classKey])) {
+            $visited[$classKey] = true;
+            $key = $this->methodKeys[$classKey][$methodName] ?? null;
+            if ($key !== null) {
+                return $key;
+            }
+            $parent = $this->classParents[$classKey] ?? null;
+            if ($parent === null) {
+                return null;
+            }
+            $classKey = $this->classNameKeys[$parent] ?? $parent;
+        }
+
+        return null;
+    }
+
+    /** @return list<string> */
+    private function callableExpressionKeys(Expr $callback, string $scopeKey): array
+    {
+        if ($callback instanceof String_) {
+            $key = $this->functionKeys[strtolower($callback->value)] ?? null;
+            return $key === null ? [] : [$key];
+        }
+        if ($callback instanceof Variable && is_string($callback->name)) {
+            return $this->closureBindings[$scopeKey][$callback->name] ?? [];
+        }
+        if ($callback instanceof Closure || $callback instanceof ArrowFunction) {
+            $key = $this->callableNodeKeys[spl_object_id($callback)] ?? null;
+            return $key === null ? [] : [$key];
+        }
+        if (!$callback instanceof ArrayExpr || count($callback->items) !== 2) {
+            return [];
+        }
+        $target = $callback->items[0]->value;
+        $method = $callback->items[1]->value;
+        if (!$method instanceof String_) {
+            return [];
+        }
+        $classKey = null;
+        if ($target instanceof Variable && $target->name === 'this') {
+            $classKey = $this->callableClasses[$scopeKey] ?? null;
+        } elseif ($target instanceof Expr\ClassConstFetch && $target->class instanceof Name
+            && $target->name instanceof Identifier && strtolower($target->name->toString()) === 'class') {
+            $parts = $target->class->getParts();
+            $className = strtolower((string) end($parts));
+            $currentClass = $this->callableClasses[$scopeKey] ?? null;
+            if (in_array($className, ['self', 'static'], true)) {
+                $classKey = $currentClass;
+            } elseif ($className === 'parent') {
+                $classKey = $currentClass === null ? null : ($this->classParents[$currentClass] ?? null);
+            } else {
+                $classKey = $this->classNameKeys[$className] ?? null;
+            }
+        } elseif ($target instanceof String_) {
+            $classKey = $this->classNameKeys[strtolower($target->value)] ?? null;
+        }
+        if ($classKey === null) {
+            return [];
+        }
+        $key = $this->methodKeyForClass($classKey, strtolower($method->value));
+
+        return $key === null ? [] : [$key];
+    }
+
+    private function unresolvedIndirectCallIsUnsafe(Expr $call, string $scopeKey): bool
+    {
+        if (!$call instanceof FuncCall) {
+            return false;
+        }
+        if ($call->name instanceof Name) {
+            return in_array($this->callName($call), ['call_user_func', 'call_user_func_array'], true);
+        }
+        if ($call->name instanceof Variable && is_string($call->name->name)) {
+            return $this->unresolvedCallableBindings[$scopeKey][$call->name->name] ?? false;
+        }
+
+        return true;
+    }
+
+    /** @param array<string, SqlValue> $environment */
+    private function unresolvedScopedCallIsUnsafe(
+        Expr $call,
+        array $environment,
+        string $scopeKey,
+    ): bool {
+        if (!$call instanceof MethodCall && !$call instanceof StaticCall) {
+            return false;
+        }
+        $name = $this->callName($call);
+        if ($name === null || preg_match('/^(?:assert|expect|createMock|createStub)/i', $name) === 1) {
+            return false;
+        }
+        $isScoped = $call instanceof MethodCall
+            && $call->var instanceof Variable && $call->var->name === 'this';
+        if ($call instanceof StaticCall && $call->class instanceof Name) {
+            $parts = $call->class->getParts();
+            $isScoped = in_array(strtolower((string) end($parts)), ['self', 'static', 'parent'], true);
+        }
+        if (!$isScoped || ($this->callableClasses[$scopeKey] ?? null) === null) {
+            return false;
+        }
+        foreach ($call->args as $argument) {
+            if ($this->sqlKind($this->expressionValue($argument->value, $environment)) !== 'safe') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function buildFunctionSummaries(): void
@@ -547,17 +761,30 @@ final class PhpTestDdlInventoryAnalyzer
                 $initialEnvironment,
                 $call->getStartFilePos(),
             );
-            $callee = $this->localCallableSummary($call, $scopeKey);
-            if ($callee !== null) {
-                if ($callee['always']) {
-                    $summary['always'] = true;
+            $calleeKeys = $this->localCallableKeys($call, $scopeKey);
+            if ($calleeKeys !== []) {
+                foreach ($calleeKeys as $calleeKey) {
+                    $callee = $this->summaries[$calleeKey] ?? ['params' => [], 'always' => false];
+                    if ($callee['always']) {
+                        $summary['always'] = true;
+                    }
+                    foreach ($callee['params'] as $parameterIndex) {
+                        $this->absorbSummaryValue(
+                            $summary,
+                            $this->argumentValueForCallable(
+                                $call,
+                                $parameterIndex,
+                                $environment,
+                                $calleeKey,
+                            ),
+                        );
+                    }
                 }
-                foreach ($callee['params'] as $parameterIndex) {
-                    $this->absorbSummaryValue(
-                        $summary,
-                        $this->argumentValue($call, $parameterIndex, $environment),
-                    );
-                }
+                continue;
+            }
+            if ($this->unresolvedIndirectCallIsUnsafe($call, $scopeKey)
+                || $this->unresolvedScopedCallIsUnsafe($call, $environment, $scopeKey)) {
+                $summary['always'] = true;
                 continue;
             }
 
@@ -650,7 +877,7 @@ final class PhpTestDdlInventoryAnalyzer
         $components = [];
         foreach ($keys as $key) {
             foreach ($this->returnSummaries[$key] ?? [] as $index => $value) {
-                $instantiated = $this->instantiateReturnValue($value, $call, $environment);
+                $instantiated = $this->instantiateReturnValue($value, $call, $environment, $key);
                 $components[$index] = isset($components[$index])
                     ? $this->alternativeValues($components[$index], $instantiated)
                     : $instantiated;
@@ -666,7 +893,12 @@ final class PhpTestDdlInventoryAnalyzer
      * @param array<string, SqlValue> $environment
      * @return SqlValue
      */
-    private function instantiateReturnValue(array $value, Expr $call, array $environment): array
+    private function instantiateReturnValue(
+        array $value,
+        Expr $call,
+        array $environment,
+        string $calleeKey,
+    ): array
     {
         if ($this->sqlKind($value) === 'ddl') {
             return $this->knownValue('CREATE');
@@ -677,12 +909,19 @@ final class PhpTestDdlInventoryAnalyzer
 
         $dependencies = [];
         $external = $value['external'];
+        $resolvedArguments = [];
         $allResolved = !$external && $value['deps'] !== [];
         foreach ($value['deps'] as $parameterIndex) {
-            $argument = $this->argumentValue($call, $parameterIndex, $environment);
+            $argument = $this->argumentValueForCallable(
+                $call,
+                $parameterIndex,
+                $environment,
+                $calleeKey,
+            );
             if ($this->sqlKind($argument) === 'ddl') {
                 return $this->knownValue('CREATE');
             }
+            $resolvedArguments[$parameterIndex] = $argument;
             if (!$argument['complete']) {
                 $allResolved = false;
                 $dependencies = array_merge($dependencies, $argument['deps']);
@@ -690,11 +929,40 @@ final class PhpTestDdlInventoryAnalyzer
             }
         }
 
-        if ($allResolved) {
-            return $this->knownValue($value['template']);
+        if (!$external && count($value['deps']) === 1 && $value['alternatives'] === ['?']) {
+            $parameterIndex = $value['deps'][0];
+            return $resolvedArguments[$parameterIndex] ?? $this->unknownValue([], true);
+        }
+        if ($allResolved && $value['alternatives'] === ['?']
+            && $this->identifierArgumentsAreSafe($resolvedArguments)) {
+            return $this->knownValue('safe_fragment');
         }
 
         return $this->unknownValue($dependencies, $external);
+    }
+
+    /** @param array<int, SqlValue> $arguments */
+    private function identifierArgumentsAreSafe(array $arguments): bool
+    {
+        $ddlVerbs = ['create', 'drop', 'alter', 'truncate', 'rename', 'grant', 'revoke'];
+        foreach ($arguments as $argument) {
+            if (!$argument['complete']) {
+                return false;
+            }
+            foreach ($argument['alternatives'] as $alternative) {
+                if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $alternative) !== 1) {
+                    return false;
+                }
+                $normalized = strtolower($alternative);
+                foreach ($ddlVerbs as $verb) {
+                    if (str_starts_with($verb, $normalized) || str_starts_with($normalized, $verb)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return $arguments !== [];
     }
 
     /**
@@ -718,18 +986,32 @@ final class PhpTestDdlInventoryAnalyzer
     private function inspectTopLevelCall(Expr $call, array $environment, string $scopeKey): void
     {
         $callName = $this->callName($call);
-        $summary = $this->localCallableSummary($call, $scopeKey);
-        if ($summary !== null) {
-            if ($summary['always']) {
-                $this->addFinding($callName ?? 'local-callable', $call->getStartLine());
-                return;
-            }
-            foreach ($summary['params'] as $parameterIndex) {
-                if ($this->sqlKind($this->argumentValue($call, $parameterIndex, $environment)) !== 'safe') {
+        $calleeKeys = $this->localCallableKeys($call, $scopeKey);
+        if ($calleeKeys !== []) {
+            foreach ($calleeKeys as $calleeKey) {
+                $summary = $this->summaries[$calleeKey] ?? ['params' => [], 'always' => false];
+                if ($summary['always']) {
                     $this->addFinding($callName ?? 'local-callable', $call->getStartLine());
                     return;
                 }
+                foreach ($summary['params'] as $parameterIndex) {
+                    $argument = $this->argumentValueForCallable(
+                        $call,
+                        $parameterIndex,
+                        $environment,
+                        $calleeKey,
+                    );
+                    if ($this->sqlKind($argument) !== 'safe') {
+                        $this->addFinding($callName ?? 'local-callable', $call->getStartLine());
+                        return;
+                    }
+                }
             }
+            return;
+        }
+        if ($this->unresolvedIndirectCallIsUnsafe($call, $scopeKey)
+            || $this->unresolvedScopedCallIsUnsafe($call, $environment, $scopeKey)) {
+            $this->addFinding($callName ?? 'indirect-callable', $call->getStartLine());
             return;
         }
 
@@ -963,8 +1245,8 @@ final class PhpTestDdlInventoryAnalyzer
         array $environment,
         int $beforePosition,
     ): array {
-        $found = [];
-        $walk = function (mixed $value, bool $root = false) use (&$walk, &$found): void {
+        $effects = [];
+        $walk = function (mixed $value, bool $root = false) use (&$walk, &$effects): void {
             if (is_array($value)) {
                 foreach ($value as $item) {
                     $walk($item);
@@ -979,7 +1261,10 @@ final class PhpTestDdlInventoryAnalyzer
                 return;
             }
             if ($value instanceof Assign) {
-                $found[] = $value;
+                $effects[] = $value;
+            }
+            if ($value instanceof FuncCall || $value instanceof MethodCall || $value instanceof StaticCall) {
+                $effects[] = $value;
             }
             foreach ($value->getSubNodeNames() as $subNodeName) {
                 $walk($value->{$subNodeName});
@@ -987,14 +1272,19 @@ final class PhpTestDdlInventoryAnalyzer
         };
         $walk($node, true);
         usort(
-            $found,
-            static fn(Assign $left, Assign $right): int => $left->getEndFilePos() <=> $right->getEndFilePos(),
+            $effects,
+            static fn(Expr $left, Expr $right): int => $left->getEndFilePos() <=> $right->getEndFilePos(),
         );
-        foreach ($found as $assignment) {
-            $end = $assignment->getEndFilePos();
+        foreach ($effects as $effect) {
+            $end = $effect->getEndFilePos();
             if ($beforePosition >= 0 && $end >= $beforePosition) {
                 continue;
             }
+            if (!$effect instanceof Assign) {
+                $this->applyByReferenceCallEffects($effect, $environment);
+                continue;
+            }
+            $assignment = $effect;
             if ($assignment->var instanceof ArrayExpr || $assignment->var instanceof ListExpr) {
                 $components = $this->destructuredExpressionValues($assignment->expr, $environment);
                 foreach ($assignment->var->items as $index => $item) {
@@ -1022,9 +1312,51 @@ final class PhpTestDdlInventoryAnalyzer
                 continue;
             }
             $environment[$assignment->var->name] = $this->expressionValue($assignment->expr, $environment);
+            if ($assignment->expr instanceof Closure) {
+                foreach ($assignment->expr->uses as $use) {
+                    if ($use->byRef && is_string($use->var->name)) {
+                        $environment[$use->var->name] = $this->unknownValue([], true);
+                    }
+                }
+            }
         }
 
         return $environment;
+    }
+
+    /** @param array<string, SqlValue> $environment */
+    private function applyByReferenceCallEffects(Expr $call, array &$environment): void
+    {
+        foreach ($this->localCallableKeys($call, $this->evaluationScopeKey) as $calleeKey) {
+            $callable = $this->callables[$calleeKey] ?? null;
+            if ($callable === null) {
+                continue;
+            }
+            foreach ($callable->getParams() as $formalIndex => $parameter) {
+                if (!$parameter->byRef) {
+                    continue;
+                }
+                $argument = $this->argumentNodeForCallable($call, $formalIndex, $calleeKey);
+                if ($argument?->value instanceof Variable && is_string($argument->value->name)) {
+                    $environment[$argument->value->name] = $this->unknownValue([], true);
+                }
+            }
+            $finder = new NodeFinder();
+            $globalNames = [];
+            foreach ($finder->findInstanceOf($callable->getStmts() ?? [], Node\Stmt\Global_::class) as $global) {
+                foreach ($global->vars as $variable) {
+                    if ($variable instanceof Variable && is_string($variable->name)) {
+                        $globalNames[$variable->name] = true;
+                    }
+                }
+            }
+            foreach ($finder->findInstanceOf($callable->getStmts() ?? [], Assign::class) as $assignment) {
+                if ($assignment->var instanceof Variable && is_string($assignment->var->name)
+                    && isset($globalNames[$assignment->var->name])) {
+                    $environment[$assignment->var->name] = $this->unknownValue([], true);
+                }
+            }
+        }
     }
 
     /**
@@ -1212,10 +1544,12 @@ final class PhpTestDdlInventoryAnalyzer
             && isset($expression->args[0], $expression->args[1])) {
             $pattern = $this->expressionValue($expression->args[0]->value, $environment);
             $subject = $this->expressionValue($expression->args[1]->value, $environment);
-            if (!$pattern['complete'] || !$subject['complete']) {
+            $patternText = $this->singleCompleteText($pattern);
+            $subjectText = $this->singleCompleteText($subject);
+            if ($patternText === null || $subjectText === null) {
                 return null;
             }
-            $parts = @preg_split($pattern['template'], $subject['template']);
+            $parts = @preg_split($patternText, $subjectText);
             if ($parts === false) {
                 return null;
             }
@@ -1330,6 +1664,60 @@ final class PhpTestDdlInventoryAnalyzer
     }
 
     /**
+     * Enlaza un argumento a la posición formal del callable, respetando nombres declarados.
+     * Un unpack o un nombre que no pueda probarse se mantiene UNKNOWN.
+     *
+     * @param array<string, SqlValue> $environment
+     * @return SqlValue
+     */
+    private function argumentValueForCallable(
+        Expr $call,
+        int $formalIndex,
+        array $environment,
+        string $calleeKey,
+    ): array {
+        $argument = $this->argumentNodeForCallable($call, $formalIndex, $calleeKey);
+        return $argument === null
+            ? $this->unknownValue([], true)
+            : $this->expressionValue($argument->value, $environment);
+    }
+
+    private function argumentNodeForCallable(
+        Expr $call,
+        int $formalIndex,
+        string $calleeKey,
+    ): ?Node\Arg {
+        $callable = $this->callables[$calleeKey] ?? null;
+        $parameter = $callable?->getParams()[$formalIndex] ?? null;
+        if ($parameter === null || !$parameter->var instanceof Variable
+            || !is_string($parameter->var->name) || !property_exists($call, 'args')) {
+            return null;
+        }
+
+        /** @var list<Node\Arg> $arguments */
+        $arguments = $call->args;
+        if ($this->callName($call) === 'call_user_func') {
+            $arguments = array_slice($arguments, 1);
+        }
+
+        $positional = [];
+        foreach ($arguments as $argument) {
+            if ($argument->unpack) {
+                return null;
+            }
+            if ($argument->name !== null) {
+                if (strtolower($argument->name->toString()) === strtolower($parameter->var->name)) {
+                    return $argument;
+                }
+                continue;
+            }
+            $positional[] = $argument;
+        }
+
+        return $positional[$formalIndex] ?? null;
+    }
+
+    /**
      * @param array<string, SqlValue> $environment
      * @return SqlValue
      */
@@ -1432,7 +1820,8 @@ final class PhpTestDdlInventoryAnalyzer
                 $logicalArgument = $expression->args[count($expression->args) - 1]->value ?? null;
                 if ($logicalArgument instanceof Expr) {
                     $logical = $this->expressionValue($logicalArgument, $environment);
-                    if ($logical['complete'] && preg_match('/^[A-Za-z0-9_]+$/', $logical['template']) === 1) {
+                    $logicalText = $this->singleCompleteText($logical);
+                    if ($logicalText !== null && preg_match('/^[A-Za-z0-9_]+$/', $logicalText) === 1) {
                         return $this->knownValue('fixture_table');
                     }
                 }
@@ -1485,8 +1874,9 @@ final class PhpTestDdlInventoryAnalyzer
         }
         if ($name === 'dirname' && isset($call->args[0])) {
             $path = $this->expressionValue($call->args[0]->value, $environment);
-            return $path['complete']
-                ? $this->knownValue(dirname($path['template']))
+            $pathText = $this->singleCompleteText($path);
+            return $pathText !== null
+                ? $this->knownValue(dirname($pathText))
                 : $this->unknownValue($path['deps'], $path['external']);
         }
         if ($name === 'sprintf' && isset($call->args[0])) {
@@ -1494,14 +1884,16 @@ final class PhpTestDdlInventoryAnalyzer
                 fn(Node\Arg $argument): array => $this->expressionValue($argument->value, $environment),
                 $call->args,
             );
-            if (array_filter($values, static fn(array $value): bool => !$value['complete']) !== []) {
+            $texts = array_map(fn(array $value): ?string => $this->singleCompleteText($value), $values);
+            if (in_array(null, $texts, true)) {
                 return $this->unknownValue(
                     array_merge(...array_map(static fn(array $value): array => $value['deps'], $values)),
                     true,
                 );
             }
-            $format = array_shift($values);
-            $rendered = @sprintf($format['template'], ...array_column($values, 'template'));
+            /** @var string $format */
+            $format = array_shift($texts);
+            $rendered = @sprintf($format, ...$texts);
             return $this->knownValue($rendered);
         }
         if (in_array($name, ['implode', 'join'], true)) {
@@ -1514,19 +1906,21 @@ final class PhpTestDdlInventoryAnalyzer
             } else {
                 return $this->unknownValue([], true);
             }
-            if (!$delimiter['complete']) {
+            $delimiterText = $this->singleCompleteText($delimiter);
+            if ($delimiterText === null) {
                 return $this->unknownValue($delimiter['deps'], $delimiter['external']);
             }
             if ($collectionExpression instanceof ArrayExpr) {
                 $parts = [];
                 foreach ($collectionExpression->items as $item) {
                     $part = $this->expressionValue($item->value, $environment);
-                    if (!$part['complete']) {
+                    $partText = $this->singleCompleteText($part);
+                    if ($partText === null) {
                         return $this->unknownValue($part['deps'], $part['external']);
                     }
-                    $parts[] = $part['template'];
+                    $parts[] = $partText;
                 }
-                return $this->knownValue(implode($delimiter['template'], $parts));
+                return $this->knownValue(implode($delimiterText, $parts));
             }
             $collection = $this->expressionValue($collectionExpression, $environment);
             if (!$collection['complete']) {
@@ -1595,7 +1989,10 @@ final class PhpTestDdlInventoryAnalyzer
                 'strtolower' => strtolower(...),
                 'strtoupper' => strtoupper(...),
             };
-            return $this->knownValue($transform($value['template']));
+            return $this->aggregateValues(array_map(
+                fn(string $alternative): array => $this->knownValue($transform($alternative)),
+                $value['alternatives'],
+            ));
         }
         if (in_array($name, ['intval', 'floatval', 'count', 'sizeof', 'round', 'floor', 'ceil', 'min', 'max'], true)) {
             return $this->knownValue('1');
@@ -1607,11 +2004,12 @@ final class PhpTestDdlInventoryAnalyzer
     /** @param SqlValue $path @return SqlValue */
     private function sourceControlledSqlFileValue(array $path): array
     {
-        if (!$path['complete']) {
+        $pathText = $this->singleCompleteText($path);
+        if ($pathText === null) {
             return $this->unknownValue($path['deps'], true);
         }
         $repositoryRoot = realpath(dirname(__DIR__, 2));
-        $resolvedPath = realpath($path['template']);
+        $resolvedPath = realpath($pathText);
         if ($repositoryRoot === false || $resolvedPath === false
             || !str_starts_with($resolvedPath, $repositoryRoot . DIRECTORY_SEPARATOR)
             || strtolower(pathinfo($resolvedPath, PATHINFO_EXTENSION)) !== 'sql') {
@@ -1628,7 +2026,13 @@ final class PhpTestDdlInventoryAnalyzer
     /** @return SqlValue */
     private function knownValue(string $text): array
     {
-        return ['template' => $text, 'complete' => true, 'deps' => [], 'external' => false];
+        return [
+            'template' => $text,
+            'alternatives' => [$text],
+            'complete' => true,
+            'deps' => [],
+            'external' => false,
+        ];
     }
 
     /**
@@ -1640,6 +2044,7 @@ final class PhpTestDdlInventoryAnalyzer
         sort($dependencies);
         return [
             'template' => '?',
+            'alternatives' => ['?'],
             'complete' => false,
             'deps' => array_values(array_unique($dependencies)),
             'external' => $external,
@@ -1655,8 +2060,19 @@ final class PhpTestDdlInventoryAnalyzer
     {
         $dependencies = array_values(array_unique(array_merge($left['deps'], $right['deps'])));
         sort($dependencies);
+        $alternatives = [];
+        foreach ($left['alternatives'] as $leftAlternative) {
+            foreach ($right['alternatives'] as $rightAlternative) {
+                $alternatives[] = $leftAlternative . $rightAlternative;
+                if (count($alternatives) > self::MAX_SQL_ALTERNATIVES) {
+                    return $this->unknownValue($dependencies, true);
+                }
+            }
+        }
+        $alternatives = array_values(array_unique($alternatives));
         return [
-            'template' => $left['template'] . $right['template'],
+            'template' => $alternatives[0],
+            'alternatives' => $alternatives,
             'complete' => $left['complete'] && $right['complete'],
             'deps' => $dependencies,
             'external' => $left['external'] || $right['external'],
@@ -1670,42 +2086,157 @@ final class PhpTestDdlInventoryAnalyzer
      */
     private function alternativeValues(array $left, array $right): array
     {
-        $leftKind = $this->sqlKind($left);
-        $rightKind = $this->sqlKind($right);
-        if ($leftKind === $rightKind && $leftKind === 'safe') {
-            return $this->knownValue('SELECT');
-        }
-        if ($leftKind === 'ddl' || $rightKind === 'ddl') {
-            return $this->knownValue('CREATE');
-        }
         $dependencies = array_values(array_unique(array_merge($left['deps'], $right['deps'])));
-        return $this->unknownValue($dependencies, $left['external'] || $right['external']);
+        sort($dependencies);
+        $alternatives = array_values(array_unique(array_merge(
+            $left['alternatives'],
+            $right['alternatives'],
+        )));
+        if (count($alternatives) > self::MAX_SQL_ALTERNATIVES) {
+            return $this->unknownValue($dependencies, true);
+        }
+
+        return [
+            'template' => $alternatives[0],
+            'alternatives' => $alternatives,
+            'complete' => $left['complete'] && $right['complete'],
+            'deps' => $dependencies,
+            'external' => $left['external'] || $right['external'],
+        ];
     }
 
     /** @param SqlValue $value @return 'ddl'|'safe'|'unknown' */
     private function sqlKind(array $value): string
     {
-        $statements = $this->splitSqlStatements($value['template']);
-        foreach ($statements as $statement) {
-            if (preg_match(
-                '/\/\*!\d*\s*(?:CREATE|DROP|ALTER|TRUNCATE|RENAME|GRANT|REVOKE)\b/i',
-                $statement,
-            ) === 1) {
+        foreach ($value['alternatives'] as $alternative) {
+            $versionedBodies = $this->versionedCommentBodies($alternative);
+            if ($versionedBodies === null) {
                 return 'ddl';
             }
-            $sql = $this->stripLeadingSqlComments($statement);
-            if ($sql === '') {
-                continue;
+            foreach ($versionedBodies as $body) {
+                $body = (string) preg_replace('/\A\s*\d{5,6}\s*/', '', $body, 1);
+                foreach ($this->splitSqlStatements($body) as $payloadStatement) {
+                    $payloadSql = $this->stripLeadingSqlComments($payloadStatement);
+                    if ($payloadSql === '') {
+                        continue;
+                    }
+                    if (preg_match('/^(?:CREATE|DROP|ALTER|TRUNCATE|RENAME|GRANT|REVOKE)\b/i', $payloadSql) === 1) {
+                        return 'ddl';
+                    }
+                    if (preg_match(
+                        '/^(?:SELECT|INSERT|UPDATE|DELETE|REPLACE|WITH|SET|SHOW|DESCRIBE|DESC|EXPLAIN|CALL|DO|USE|START|COMMIT|ROLLBACK|SAVEPOINT|RELEASE)\b/i',
+                        $payloadSql,
+                    ) !== 1) {
+                        return 'ddl';
+                    }
+                }
             }
-            if (preg_match('/^DELIMITER(?:\s|\z)/i', $sql) === 1) {
-                return 'ddl';
-            }
-            if (preg_match('/^(?:CREATE|DROP|ALTER|TRUNCATE|RENAME|GRANT|REVOKE)\b/i', $sql) === 1) {
-                return 'ddl';
+            $statements = $this->splitSqlStatements($alternative);
+            foreach ($statements as $statement) {
+                if (preg_match(
+                    '/\/\*!\d*\s*(?:CREATE|DROP|ALTER|TRUNCATE|RENAME|GRANT|REVOKE)\b/i',
+                    $statement,
+                ) === 1) {
+                    return 'ddl';
+                }
+                $sql = $this->stripLeadingSqlComments($statement);
+                if ($sql === '') {
+                    continue;
+                }
+                if (preg_match('/^DELIMITER(?:\s|\z)/i', $sql) === 1) {
+                    return 'ddl';
+                }
+                if (preg_match('/^(?:CREATE|DROP|ALTER|TRUNCATE|RENAME|GRANT|REVOKE)\b/i', $sql) === 1) {
+                    return 'ddl';
+                }
             }
         }
 
         return $value['complete'] ? 'safe' : 'unknown';
+    }
+
+    /**
+     * Extrae comentarios ejecutables MySQL fuera de literales y comentarios ordinarios.
+     * Un marcador sin cierre es inválido y se rechaza fail-closed.
+     *
+     * @return list<string>|null
+     */
+    private function versionedCommentBodies(string $sql): ?array
+    {
+        $bodies = [];
+        $quote = null;
+        $lineComment = false;
+        $blockComment = false;
+        $length = strlen($sql);
+        for ($index = 0; $index < $length; $index++) {
+            $character = $sql[$index];
+            $next = $index + 1 < $length ? $sql[$index + 1] : '';
+            $afterNext = $index + 2 < $length ? $sql[$index + 2] : '';
+            if ($lineComment) {
+                if ($character === "\n") {
+                    $lineComment = false;
+                }
+                continue;
+            }
+            if ($blockComment) {
+                if ($character === '*' && $next === '/') {
+                    $index++;
+                    $blockComment = false;
+                }
+                continue;
+            }
+            if ($quote !== null) {
+                if ($character === '\\' && $next !== '') {
+                    $index++;
+                    continue;
+                }
+                if ($character === $quote) {
+                    if ($next === $quote) {
+                        $index++;
+                    } else {
+                        $quote = null;
+                    }
+                }
+                continue;
+            }
+            if ($character === "'" || $character === '"' || $character === '`') {
+                $quote = $character;
+                continue;
+            }
+            $startsDashComment = $character === '-' && $next === '-'
+                && $afterNext !== '' && ord($afterNext) <= 32;
+            if ($startsDashComment || $character === '#') {
+                $lineComment = true;
+                if ($startsDashComment) {
+                    $index++;
+                }
+                continue;
+            }
+            if ($character !== '/' || $next !== '*') {
+                continue;
+            }
+            if ($afterNext !== '!') {
+                $blockComment = true;
+                $index++;
+                continue;
+            }
+            $end = strpos($sql, '*/', $index + 3);
+            if ($end === false) {
+                return null;
+            }
+            $bodies[] = substr($sql, $index + 3, $end - ($index + 3));
+            $index = $end + 1;
+        }
+
+        return $bodies;
+    }
+
+    /** @param SqlValue $value */
+    private function singleCompleteText(array $value): ?string
+    {
+        return $value['complete'] && count($value['alternatives']) === 1
+            ? $value['alternatives'][0]
+            : null;
     }
 
     /** @return list<string> */
@@ -1817,7 +2348,7 @@ final class PhpTestDdlInventoryAnalyzer
             return match ($name) {
                 'exec', 'query', 'prepare', 'querywithproject' => 0,
                 'queryforprojects' => 1,
-                default => preg_match('/^(?:exec|execute|run|query|prepare).*sql$/', $name) === 1
+                default => $this->looksLikeSqlHelperName($name)
                     ? max(0, count($call->args) - 1)
                     : null,
             };
@@ -1829,10 +2360,15 @@ final class PhpTestDdlInventoryAnalyzer
         return match ($name) {
             'mysqli_query' => 1,
             'mysql_query' => 0,
-            default => preg_match('/^(?:exec|execute|run|query|prepare).*sql$/', $name) === 1
+            default => $this->looksLikeSqlHelperName($name)
                 ? max(0, count($call->args) - 1)
                 : null,
         };
+    }
+
+    private function looksLikeSqlHelperName(string $name): bool
+    {
+        return preg_match('/^(?:exec|execute|run|query|prepare).*sql$/', $name) === 1;
     }
 
     private function callName(Expr $call): ?string

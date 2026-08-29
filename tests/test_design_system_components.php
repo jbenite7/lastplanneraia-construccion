@@ -308,7 +308,15 @@ foreach ([
 }
 foreach (['icon', 'search', 'pagination', 'progress', 'liveRegion', 'menu', 'popover'] as $primitive) {
     try {
-        call_user_func([DesignSystemComponent::class, $primitive], []);
+        match ($primitive) {
+            'icon' => DesignSystemComponent::icon([]),
+            'search' => DesignSystemComponent::search([]),
+            'pagination' => DesignSystemComponent::pagination([]),
+            'progress' => DesignSystemComponent::progress([]),
+            'liveRegion' => DesignSystemComponent::liveRegion([]),
+            'menu' => DesignSystemComponent::menu([]),
+            'popover' => DesignSystemComponent::popover([]),
+        };
         throw new RuntimeException("invalid {$primitive} accepted");
     } catch (InvalidArgumentException) {}
 }

@@ -113,6 +113,135 @@ final class NestedFixtureTest {
     }
 }
 PHP, 1],
+    'wrapper heredado por clase PHPUnit' => [<<<'PHP'
+<?php
+abstract class BaseFixtureTest {
+    protected function runSql($pdo, string $sql): void {
+        $pdo->exec($sql);
+    }
+}
+
+final class ChildFixtureTest extends BaseFixtureTest {
+    public function testSchemaFixture(): void {
+        $this->runSql($this->pdo, 'DROP TABLE fixture_inherited');
+    }
+}
+PHP, 1],
+    'wrapper heredado sin nombre de sink' => [<<<'PHP'
+<?php
+abstract class BaseNeutralFixtureTest {
+    protected function applyFixture($pdo, string $sql): void {
+        $pdo->exec($sql);
+    }
+}
+
+final class ChildNeutralFixtureTest extends BaseNeutralFixtureTest {
+    public function testSchemaFixture(): void {
+        $this->applyFixture($this->pdo, 'DROP TABLE fixture_inherited_neutral');
+    }
+}
+PHP, 1],
+    'wrapper heredado desde padre externo falla cerrado' => [<<<'PHP'
+<?php
+final class ImportedChildFixtureTest extends ImportedFixtureBase {
+    public function testSchemaFixture(): void {
+        $this->applyFixture('DROP TABLE fixture_inherited_external');
+    }
+}
+PHP, 1],
+    'call_user_func hacia wrapper local' => [<<<'PHP'
+<?php
+final class IndirectFixtureTest {
+    public function testSchemaFixture(): void {
+        call_user_func([$this, 'applyFixture'], 'DROP TABLE fixture_indirect');
+    }
+
+    private function applyFixture(string $sql): void {
+        $this->pdo->exec($sql);
+    }
+}
+PHP, 1],
+    'call_user_func externo no demostrable falla cerrado' => [<<<'PHP'
+<?php
+call_user_func([ExternalWorker::class, 'transform'], 'SELECT 1');
+PHP, 1],
+    'first-class callable externo no demostrable falla cerrado' => [<<<'PHP'
+<?php
+$callable = ExternalWorker::transform(...);
+$callable('SELECT 1');
+PHP, 1],
+    'Closure::fromCallable externo no demostrable falla cerrado' => [<<<'PHP'
+<?php
+$callable = Closure::fromCallable([ExternalWorker::class, 'transform']);
+$callable('SELECT 1');
+PHP, 1],
+    'DataProvider con DDL ejecutable' => [<<<'PHP'
+<?php
+use PHPUnit\Framework\Attributes\DataProvider;
+
+final class ProviderFixtureTest {
+    #[DataProvider('rows')]
+    public function testRow(int $id): void {}
+
+    public static function rows(): array {
+        global $pdo;
+        $pdo->exec('DROP TABLE fixture_provider');
+        return [[1]];
+    }
+}
+PHP, 1],
+    'DataProviderExternal con DDL ejecutable' => [<<<'PHP'
+<?php
+use PHPUnit\Framework\Attributes\DataProviderExternal;
+
+final class ExternalRows {
+    public static function rows(): array {
+        global $pdo;
+        $pdo->exec('DROP TABLE fixture_external_provider');
+        return [[1]];
+    }
+}
+
+final class ExternalProviderFixtureTest {
+    #[DataProviderExternal(ExternalRows::class, 'rows')]
+    public function testRow(int $id): void {}
+}
+PHP, 1],
+    'argumentos nombrados enlazan por nombre declarado' => [<<<'PHP'
+<?php
+function runNamedSql(string $sql, string $tag, $pdo): void {
+    $pdo->exec($sql);
+}
+runNamedSql(tag: 'SELECT 1', pdo: $pdo, sql: 'DROP TABLE fixture_named');
+PHP, 1],
+    'closure por referencia puede reemplazar SQL seguro' => [<<<'PHP'
+<?php
+$sql = 'SELECT 1';
+$mutate = function () use (&$sql): void {
+    $sql = 'DROP TABLE fixture_by_reference';
+};
+$mutate();
+$pdo->exec($sql);
+PHP, 1],
+    'parámetro por referencia deja el valor posterior desconocido' => [<<<'PHP'
+<?php
+function replaceFixtureSql(string &$sql): void {
+    $sql = 'DROP TABLE fixture_parameter_reference';
+}
+$sql = 'SELECT 1';
+replaceFixtureSql($sql);
+$pdo->exec($sql);
+PHP, 1],
+    'global modificado por callable deja el valor posterior desconocido' => [<<<'PHP'
+<?php
+function replaceGlobalFixtureSql(): void {
+    global $sql;
+    $sql = 'DROP TABLE fixture_global_reference';
+}
+$sql = 'SELECT 1';
+replaceGlobalFixtureSql();
+$pdo->exec($sql);
+PHP, 1],
     'closure DDL invocada' => [<<<'PHP'
 <?php
 $runSql = static function ($pdo, string $sql): void {
@@ -195,10 +324,30 @@ $sql = getenv('USE_DDL')
     : 'SELECT id FROM fixture_a';
 $pdo->exec($sql);
 PHP, 1],
+    'fragmentos alternativos por rama pueden formar DDL' => [<<<'PHP'
+<?php
+$prefix = getenv('USE_DDL') ? 'DR' : 'SELECT ';
+$pdo->exec($prefix . 'OP TABLE fixture_branch_fragments');
+PHP, 1],
+    'fragmentos alternativos por foreach pueden formar DDL' => [<<<'PHP'
+<?php
+$prefixes = ['DR', 'SELECT '];
+foreach ($prefixes as $prefix) {
+    $pdo->exec($prefix . 'OP TABLE fixture_foreach_fragments');
+}
+PHP, 1],
     'doble guion sin whitespace no oculta segundo statement DDL' => [<<<'PHP'
 <?php
 $pdo->exec('SELECT 1--2; DROP TABLE fixture_split');
 PHP, 1],
+    'comentario versionado inspecciona statements posteriores' => [<<<'PHP'
+<?php
+$pdo->exec('/*!50003 SET @x = 1; DROP TABLE fixture_versioned_comment */');
+PHP, 1],
+    'comentario versionado con SET solamente permanece seguro' => [<<<'PHP'
+<?php
+$pdo->exec('/*!50003 SET @x = 1 */');
+PHP, 0],
     'trigger envuelto en directivas DELIMITER falla cerrado' => [<<<'PHP'
 <?php
 $pdo->exec(<<<'SQL'

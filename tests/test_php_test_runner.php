@@ -102,6 +102,15 @@ verificar('un wrapper DDL en método PHPUnit bajo runtime aborta con 2', $r['cod
 verificar('el bloqueo nombra el fixture PHPUnit con wrapper', str_contains($r['salida'], 'DdlWrapperRuntimeTest.php'));
 
 $r = correrRunner($runner, [
+    '--dir=' . $fixtures . '/con-etiqueta',
+    '--dir-unit=' . $fixtures . '/unit-ddl-r5-runtime',
+    '--nivel=db',
+    '--solo-listar',
+]);
+verificar('los bypasses R5 bajo runtime abortan con 2', $r['codigo'] === 2);
+verificar('el bloqueo nombra el fixture PHPUnit R5', str_contains($r['salida'], 'DdlR5RuntimeTest.php'));
+
+$r = correrRunner($runner, [
     $sinUnitarios,
     '--dir=' . $fixtures . '/ddl-wrappers-admin',
     '--nivel=admin-db',
