@@ -93,6 +93,15 @@ verificar('un wrapper DDL anidado bajo runtime aborta con 2', $r['codigo'] === 2
 verificar('el bloqueo nombra el fixture wrapper runtime', str_contains($r['salida'], 'test_ddl_db.php'));
 
 $r = correrRunner($runner, [
+    '--dir=' . $fixtures . '/con-etiqueta',
+    '--dir-unit=' . $fixtures . '/unit-ddl-wrapper-runtime',
+    '--nivel=db',
+    '--solo-listar',
+]);
+verificar('un wrapper DDL en método PHPUnit bajo runtime aborta con 2', $r['codigo'] === 2);
+verificar('el bloqueo nombra el fixture PHPUnit con wrapper', str_contains($r['salida'], 'DdlWrapperRuntimeTest.php'));
+
+$r = correrRunner($runner, [
     $sinUnitarios,
     '--dir=' . $fixtures . '/ddl-wrappers-admin',
     '--nivel=admin-db',

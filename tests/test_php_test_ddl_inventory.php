@@ -85,6 +85,48 @@ PHP, 0],
 function runSafeSql($pdo, string $sql): void { $pdo->exec($sql); }
 runSafeSql($pdo, 'SELECT id FROM fixture');
 PHP, 0],
+    'wrapper de método PHPUnit' => [<<<'PHP'
+<?php
+final class FixtureTest {
+    public function testSchemaFixture(): void {
+        $this->runSql('CREATE TABLE fixture_method (id INT)');
+    }
+
+    private function runSql(string $sql): void {
+        $this->pdo->exec($sql);
+    }
+}
+PHP, 1],
+    'wrappers de método PHPUnit anidados' => [<<<'PHP'
+<?php
+final class NestedFixtureTest {
+    public function testSchemaFixture(): void {
+        $this->dispatch('DROP TABLE fixture_nested_method');
+    }
+
+    private function dispatch(string $sql): void {
+        $this->runSql($sql);
+    }
+
+    private function runSql(string $statement): void {
+        $this->pdo->exec($statement);
+    }
+}
+PHP, 1],
+    'closure DDL invocada' => [<<<'PHP'
+<?php
+$runSql = static function ($pdo, string $sql): void {
+    $pdo->exec($sql);
+};
+$runSql($pdo, 'DROP TABLE fixture_closure');
+PHP, 1],
+    'closure DML invocada' => [<<<'PHP'
+<?php
+$runSql = static function ($pdo, string $sql): void {
+    $pdo->exec($sql);
+};
+$runSql($pdo, 'SELECT id FROM fixture_closure');
+PHP, 0],
     'valor dinámico no resuelto en sink' => [<<<'PHP'
 <?php
 $sql = getenv('FIXTURE_SQL');
@@ -95,6 +137,94 @@ PHP, 1],
 function runDynamicSql($pdo, string $sql): void { $pdo->exec($sql); }
 $runtimeSql = getenv('FIXTURE_SQL');
 runDynamicSql($pdo, $runtimeSql);
+PHP, 1],
+    'interpolación dinámica con prefijo SELECT' => [<<<'PHP'
+<?php
+$suffix = getenv('FIXTURE_SQL_SUFFIX');
+$pdo->exec("SELECT id FROM fixture {$suffix}");
+PHP, 1],
+    'cadena de aliases dinámica con prefijo SELECT' => [<<<'PHP'
+<?php
+$runtime = getenv('FIXTURE_SQL_SUFFIX');
+$alias = $runtime;
+$suffix = $alias;
+$pdo->query('SELECT id FROM fixture ' . $suffix);
+PHP, 1],
+    'coalesce dinámico no se reduce a escalar seguro' => [<<<'PHP'
+<?php
+$sql = getenv('FIXTURE_SQL') ?? 'SELECT id FROM fixture';
+$pdo->query($sql);
+PHP, 1],
+    'concatenación totalmente constante DML' => [<<<'PHP'
+<?php
+$sql = 'SELECT id ' . 'FROM fixture';
+$pdo->query($sql);
+PHP, 0],
+    'if else conserva ruta DDL aunque SELECT sea lexicalmente último' => [<<<'PHP'
+<?php
+if (getenv('USE_DDL')) {
+    $sql = 'DROP TABLE fixture_branch';
+} else {
+    $sql = 'SELECT id FROM fixture_branch';
+}
+$pdo->exec($sql);
+PHP, 1],
+    'switch conserva ruta DDL aunque SELECT sea lexicalmente último' => [<<<'PHP'
+<?php
+switch (getenv('FIXTURE_MODE')) {
+    case 'ddl':
+        $sql = 'ALTER TABLE fixture_switch ADD COLUMN x INT';
+        break;
+    default:
+        $sql = 'SELECT id FROM fixture_switch';
+}
+$pdo->exec($sql);
+PHP, 1],
+    'loop conserva ruta DDL previa aunque el body asigne SELECT' => [<<<'PHP'
+<?php
+$sql = 'TRUNCATE TABLE fixture_loop';
+foreach (getenv('ROWS') ?: [] as $row) {
+    $sql = 'SELECT id FROM fixture_loop';
+}
+$pdo->exec($sql);
+PHP, 1],
+    'ternario conserva alternativa DDL' => [<<<'PHP'
+<?php
+$sql = getenv('USE_DDL')
+    ? 'RENAME TABLE fixture_a TO fixture_b'
+    : 'SELECT id FROM fixture_a';
+$pdo->exec($sql);
+PHP, 1],
+    'doble guion sin whitespace no oculta segundo statement DDL' => [<<<'PHP'
+<?php
+$pdo->exec('SELECT 1--2; DROP TABLE fixture_split');
+PHP, 1],
+    'trigger envuelto en directivas DELIMITER falla cerrado' => [<<<'PHP'
+<?php
+$pdo->exec(<<<'SQL'
+DELIMITER $$
+CREATE TRIGGER fixture_trigger BEFORE INSERT ON fixture
+FOR EACH ROW
+BEGIN
+    SET @x = 1;
+END$$
+DELIMITER ;
+SQL
+);
+PHP, 1],
+    'transformador insertProjectId conserva DML constante' => [<<<'PHP'
+<?php
+$sql = 'INSERT INTO fixture (id) VALUES (?)';
+$params = [1];
+[$sql, $params] = $db->insertProjectId($sql, 7, $params);
+$db->query($sql, $params);
+PHP, 0],
+    'transformador insertProjectId no sanea SQL dinámico' => [<<<'PHP'
+<?php
+$sql = getenv('FIXTURE_SQL');
+$params = [];
+[$sql, $params] = $db->insertProjectId($sql, 7, $params);
+$db->query($sql, $params);
 PHP, 1],
     'foreach asociativo de SQL DML literal' => [<<<'PHP'
 <?php

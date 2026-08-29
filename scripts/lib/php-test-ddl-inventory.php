@@ -10,9 +10,11 @@ if (!class_exists(PhpParser\ParserFactory::class) && is_file($phpParserAutoload)
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_ as ArrayExpr;
+use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\BinaryOp\Coalesce;
 use PhpParser\Node\Expr\BinaryOp\Concat;
+use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\List_ as ListExpr;
 use PhpParser\Node\Expr\MethodCall;
@@ -24,6 +26,8 @@ use PhpParser\Node\InterpolatedStringPart;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\InterpolatedString;
 use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\FunctionLike;
+use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Foreach_;
@@ -51,11 +55,43 @@ final class PhpTestDdlInventoryAnalyzer
     {
     }
 
-    /** @var array<string, Function_> */
-    private array $functions = [];
+    /** @var array<string, FunctionLike> */
+    private array $callables = [];
+
+    /** @var array<string, string> normalized function name => callable key */
+    private array $functionKeys = [];
+
+    /** @var array<string, array<string, string>> class key => method name => callable key */
+    private array $methodKeys = [];
+
+    /** @var array<string, string> normalized class name => class key */
+    private array $classNameKeys = [];
+
+    /** @var array<string, SqlValue> normalized class::constant => literal value */
+    private array $classConstants = [];
+
+    /** @var array<string, string|null> callable key => owning class key */
+    private array $callableClasses = [];
+
+    /** @var array<string, string> callable key => lexical parent scope key */
+    private array $callableParents = [];
+
+    /** @var array<int, string> callable node object id => callable key */
+    private array $callableNodeKeys = [];
+
+    /** @var array<string, array<string, list<string>>> scope key => variable => closure keys */
+    private array $closureBindings = [];
+
+    /** @var list<Node\Stmt> */
+    private array $topLevelStatements = [];
 
     /** @var array<string, FunctionSummary> */
     private array $summaries = [];
+
+    /** @var array<string, list<SqlValue>> callable key => abstract return components */
+    private array $returnSummaries = [];
+
+    private string $evaluationScopeKey = 'top';
 
     /** @var list<array{call: string, line: int}> */
     private array $findings = [];
@@ -77,21 +113,20 @@ final class PhpTestDdlInventoryAnalyzer
             return [];
         }
 
-        $finder = new NodeFinder();
-        foreach ($finder->findInstanceOf($statements, Function_::class) as $function) {
-            $this->functions[strtolower($function->name->toString())] = $function;
-        }
+        $this->topLevelStatements = $statements;
+        $this->registerCallables($statements);
         $this->buildFunctionSummaries();
 
-        [$assignments, $calls, $foreaches] = $this->scopeNodes($statements);
-        foreach ($calls as $call) {
-            $environment = $this->environmentBefore(
-                $assignments,
-                [],
-                $call->getStartFilePos(),
-                $foreaches,
+        $this->inspectRootScope($statements, [], 'top');
+        foreach ($this->callables as $key => $callable) {
+            if (!$callable instanceof ClassMethod || !$this->isPhpUnitEntrypoint($callable)) {
+                continue;
+            }
+            $this->inspectRootScope(
+                $callable->getStmts() ?? [],
+                $this->parameterEnvironment($callable, $key),
+                $key,
             );
-            $this->inspectTopLevelCall($call, $environment);
         }
 
         usort(
@@ -102,30 +137,394 @@ final class PhpTestDdlInventoryAnalyzer
         return $this->findings;
     }
 
+    /** @param list<Node\Stmt> $statements */
+    private function registerCallables(array $statements): void
+    {
+        $finder = new NodeFinder();
+        $this->registerClassConstants($statements);
+        $this->registerIncludedClassConstants($statements);
+        foreach ($finder->findInstanceOf($statements, Function_::class) as $function) {
+            $name = strtolower($function->name->toString());
+            $key = 'function:' . $name;
+            $this->registerCallable($key, $function, null, 'top');
+            $this->functionKeys[$name] = $key;
+        }
+
+        foreach ($finder->findInstanceOf($statements, ClassLike::class) as $class) {
+            $declaredName = $class->name?->toString();
+            $classKey = $declaredName === null
+                ? 'anonymous@' . max(0, $class->getStartFilePos())
+                : strtolower($declaredName);
+            if ($declaredName !== null) {
+                $this->classNameKeys[strtolower($declaredName)] = $classKey;
+            }
+            foreach ($class->getMethods() as $method) {
+                $methodName = strtolower($method->name->toString());
+                $key = 'method:' . $classKey . ':' . $methodName;
+                $this->registerCallable($key, $method, $classKey, 'top');
+                $this->methodKeys[$classKey][$methodName] = $key;
+            }
+        }
+
+        $this->registerClosuresInScope($statements, 'top');
+        $processed = [];
+        do {
+            $pending = array_diff(array_keys($this->callables), $processed);
+            foreach ($pending as $key) {
+                $processed[] = $key;
+                $this->registerClosuresInScope($this->callables[$key]->getStmts() ?? [], $key);
+            }
+        } while ($pending !== []);
+
+        $changed = true;
+        $iterations = 0;
+        while ($changed && $iterations <= count($this->callables) + 1) {
+            $changed = false;
+            $iterations++;
+            foreach (array_keys($this->closureBindings) as $scopeKey) {
+                [$aliases] = $this->scopeNodes($this->scopeStatements($scopeKey, $statements));
+                foreach ($aliases as $alias) {
+                    if (!$alias->var instanceof Variable || !is_string($alias->var->name)
+                        || !$alias->expr instanceof Variable || !is_string($alias->expr->name)) {
+                        continue;
+                    }
+                    $targets = $this->closureBindings[$scopeKey][$alias->expr->name] ?? [];
+                    if ($targets === []) {
+                        continue;
+                    }
+                    $current = $this->closureBindings[$scopeKey][$alias->var->name] ?? [];
+                    $merged = array_values(array_unique(array_merge($current, $targets)));
+                    sort($merged);
+                    if ($merged !== $current) {
+                        $this->closureBindings[$scopeKey][$alias->var->name] = $merged;
+                        $changed = true;
+                    }
+                }
+            }
+        }
+    }
+
+    /** @param list<Node\Stmt> $statements */
+    private function registerClassConstants(array $statements): void
+    {
+        $finder = new NodeFinder();
+        foreach ($finder->findInstanceOf($statements, ClassLike::class) as $class) {
+            if ($class->name === null) {
+                continue;
+            }
+            $className = strtolower($class->name->toString());
+            foreach ($class->stmts as $statement) {
+                if (!$statement instanceof Node\Stmt\ClassConst) {
+                    continue;
+                }
+                foreach ($statement->consts as $constant) {
+                    $value = $this->expressionValue($constant->value, []);
+                    if ($value['complete']) {
+                        $this->classConstants[$className . '::' . strtolower($constant->name->toString())] = $value;
+                    }
+                }
+            }
+        }
+    }
+
+    /** @param list<Node\Stmt> $statements */
+    private function registerIncludedClassConstants(array $statements): void
+    {
+        if ($this->sourcePath === null) {
+            return;
+        }
+        $repositoryRoot = realpath(dirname(__DIR__, 2));
+        if ($repositoryRoot === false) {
+            return;
+        }
+        $finder = new NodeFinder();
+        foreach ($finder->findInstanceOf($statements, Expr\Include_::class) as $include) {
+            $path = $this->expressionValue($include->expr, []);
+            if (!$path['complete']) {
+                continue;
+            }
+            $resolved = realpath($path['template']);
+            if ($resolved === false || !str_starts_with($resolved, $repositoryRoot . DIRECTORY_SEPARATOR)
+                || strtolower(pathinfo($resolved, PATHINFO_EXTENSION)) !== 'php') {
+                continue;
+            }
+            $source = @file_get_contents($resolved);
+            if ($source === false) {
+                continue;
+            }
+            try {
+                $includedStatements = (new ParserFactory())->createForHostVersion()->parse($source);
+            } catch (Throwable) {
+                continue;
+            }
+            if ($includedStatements !== null) {
+                $this->registerClassConstants($includedStatements);
+            }
+        }
+    }
+
+    private function registerCallable(
+        string $key,
+        FunctionLike $callable,
+        ?string $classKey,
+        string $parentScope,
+    ): void
+    {
+        $this->callables[$key] = $callable;
+        $this->callableClasses[$key] = $classKey;
+        $this->callableParents[$key] = $parentScope;
+        $this->callableNodeKeys[spl_object_id($callable)] = $key;
+    }
+
+    /** @param array<Node>|Node $nodes */
+    private function registerClosuresInScope(array|Node $nodes, string $scopeKey): void
+    {
+        $walk = function (mixed $value) use (&$walk, $scopeKey): void {
+            if (is_array($value)) {
+                foreach ($value as $item) {
+                    $walk($item);
+                }
+                return;
+            }
+            if (!$value instanceof Node) {
+                return;
+            }
+            if ($value instanceof Closure || $value instanceof ArrowFunction) {
+                if (!isset($this->callableNodeKeys[spl_object_id($value)])) {
+                    $key = 'closure@' . max(0, $value->getStartFilePos()) . ':' . spl_object_id($value);
+                    $this->registerCallable(
+                        $key,
+                        $value,
+                        $this->callableClasses[$scopeKey] ?? null,
+                        $scopeKey,
+                    );
+                }
+                return;
+            }
+            if ($value instanceof FunctionLike) {
+                return;
+            }
+            if ($value instanceof Assign && $value->var instanceof Variable
+                && is_string($value->var->name)
+                && ($value->expr instanceof Closure || $value->expr instanceof ArrowFunction)) {
+                $closure = $value->expr;
+                $key = $this->callableNodeKeys[spl_object_id($closure)] ?? null;
+                if ($key === null) {
+                    $key = 'closure@' . max(0, $closure->getStartFilePos()) . ':' . spl_object_id($closure);
+                    $this->registerCallable(
+                        $key,
+                        $closure,
+                        $this->callableClasses[$scopeKey] ?? null,
+                        $scopeKey,
+                    );
+                }
+                $bindings = $this->closureBindings[$scopeKey][$value->var->name] ?? [];
+                $bindings[] = $key;
+                $bindings = array_values(array_unique($bindings));
+                sort($bindings);
+                $this->closureBindings[$scopeKey][$value->var->name] = $bindings;
+                return;
+            }
+            foreach ($value->getSubNodeNames() as $subNodeName) {
+                $walk($value->{$subNodeName});
+            }
+        };
+        $walk($nodes);
+    }
+
+    /** @param list<Node\Stmt> $topLevel @return list<Node\Stmt> */
+    private function scopeStatements(string $scopeKey, array $topLevel): array
+    {
+        if ($scopeKey === 'top') {
+            return $topLevel;
+        }
+
+        return $this->callables[$scopeKey]->getStmts() ?? [];
+    }
+
+    /**
+     * @param array<Node>|Node $nodes
+     * @param array<string, SqlValue> $initialEnvironment
+     */
+    private function inspectRootScope(array|Node $nodes, array $initialEnvironment, string $scopeKey): void
+    {
+        $previousScope = $this->evaluationScopeKey;
+        $this->evaluationScopeKey = $scopeKey;
+        [, $calls] = $this->scopeNodes($nodes);
+        foreach ($calls as $call) {
+            $environment = $this->environmentBefore(
+                $nodes,
+                $initialEnvironment,
+                $call->getStartFilePos(),
+            );
+            $this->inspectTopLevelCall($call, $environment, $scopeKey);
+        }
+        $this->evaluationScopeKey = $previousScope;
+    }
+
+    /** @return array<string, SqlValue> */
+    private function parameterEnvironment(FunctionLike $function, string $scopeKey): array
+    {
+        $environment = [];
+        foreach ($function->getParams() as $index => $parameter) {
+            if ($parameter->var instanceof Variable && is_string($parameter->var->name)) {
+                $environment[$parameter->var->name] = $this->unknownValue([$index], false);
+            }
+        }
+
+        if ($function instanceof Closure) {
+            $parentScope = $this->callableParents[$scopeKey] ?? 'top';
+            $parentStatements = $this->scopeStatements($parentScope, $this->topLevelStatements);
+            $outerEnvironment = $this->environmentBefore(
+                $parentStatements,
+                [],
+                $function->getStartFilePos(),
+            );
+            foreach ($function->uses as $use) {
+                if (is_string($use->var->name)) {
+                    $environment[$use->var->name] = $outerEnvironment[$use->var->name]
+                        ?? $this->unknownValue([], true);
+                }
+            }
+        }
+        if ($function instanceof Function_) {
+            $topLevelEnvironment = $this->environmentBefore(
+                $this->topLevelStatements,
+                [],
+                PHP_INT_MAX,
+            );
+            $finder = new NodeFinder();
+            foreach ($finder->findInstanceOf($function->getStmts(), Node\Stmt\Global_::class) as $global) {
+                foreach ($global->vars as $variable) {
+                    if ($variable instanceof Variable && is_string($variable->name)) {
+                        $environment[$variable->name] = $topLevelEnvironment[$variable->name]
+                            ?? $this->unknownValue([], true);
+                    }
+                }
+            }
+        }
+
+        return $environment;
+    }
+
+    private function isPhpUnitEntrypoint(ClassMethod $method): bool
+    {
+        $name = strtolower($method->name->toString());
+        if (str_starts_with($name, 'test') || in_array(
+            $name,
+            ['setup', 'teardown', 'setupbeforeclass', 'teardownafterclass'],
+            true,
+        )) {
+            return true;
+        }
+        foreach ($method->getAttrGroups() as $group) {
+            foreach ($group->attrs as $attribute) {
+                $parts = $attribute->name->getParts();
+                $attributeName = strtolower((string) end($parts));
+                if (in_array($attributeName, ['test', 'before', 'after', 'beforeclass', 'afterclass'], true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /** @return FunctionSummary|null */
+    private function localCallableSummary(Expr $call, string $scopeKey): ?array
+    {
+        $keys = $this->localCallableKeys($call, $scopeKey);
+        if ($keys === []) {
+            return null;
+        }
+        $summary = ['params' => [], 'always' => false];
+        foreach ($keys as $key) {
+            $callee = $this->summaries[$key] ?? ['params' => [], 'always' => false];
+            $summary['params'] = array_merge($summary['params'], $callee['params']);
+            $summary['always'] = $summary['always'] || $callee['always'];
+        }
+        sort($summary['params']);
+        $summary['params'] = array_values(array_unique($summary['params']));
+
+        return $summary;
+    }
+
+    /** @return list<string> */
+    private function localCallableKeys(Expr $call, string $scopeKey): array
+    {
+        if ($call instanceof FuncCall) {
+            if ($call->name instanceof Name) {
+                $parts = $call->name->getParts();
+                $name = strtolower((string) end($parts));
+                return isset($this->functionKeys[$name]) ? [$this->functionKeys[$name]] : [];
+            }
+            if ($call->name instanceof Variable && is_string($call->name->name)) {
+                return $this->closureBindings[$scopeKey][$call->name->name] ?? [];
+            }
+            if ($call->name instanceof Closure || $call->name instanceof ArrowFunction) {
+                $key = $this->callableNodeKeys[spl_object_id($call->name)] ?? null;
+                return $key === null ? [] : [$key];
+            }
+            return [];
+        }
+
+        $name = $this->callName($call);
+        if ($name === null) {
+            return [];
+        }
+        $classKey = $this->callableClasses[$scopeKey] ?? null;
+        if ($call instanceof MethodCall && $call->var instanceof Variable
+            && $call->var->name === 'this' && $classKey !== null) {
+            $key = $this->methodKeys[$classKey][$name] ?? null;
+            return $key === null ? [] : [$key];
+        }
+        if ($call instanceof StaticCall && $call->class instanceof Name) {
+            $parts = $call->class->getParts();
+            $calledClass = strtolower((string) end($parts));
+            if (in_array($calledClass, ['self', 'static'], true)) {
+                $calledClass = $classKey;
+            } else {
+                $calledClass = $this->classNameKeys[$calledClass] ?? null;
+            }
+            if ($calledClass !== null) {
+                $key = $this->methodKeys[$calledClass][$name] ?? null;
+                return $key === null ? [] : [$key];
+            }
+        }
+
+        return [];
+    }
+
     private function buildFunctionSummaries(): void
     {
-        foreach ($this->functions as $name => $_function) {
-            $this->summaries[$name] = ['params' => [], 'always' => false];
+        foreach ($this->callables as $key => $_callable) {
+            $this->summaries[$key] = ['params' => [], 'always' => false];
+            $this->returnSummaries[$key] = [];
         }
 
         $changed = true;
         $iterations = 0;
-        while ($changed && $iterations <= count($this->functions) + 1) {
+        while ($changed && $iterations <= count($this->callables) + 1) {
             $changed = false;
             $iterations++;
-            foreach ($this->functions as $name => $function) {
-                $calculated = $this->summarizeFunction($function);
+            foreach ($this->callables as $key => $callable) {
+                $calculated = $this->summarizeFunction($callable, $key);
+                $calculatedReturns = $this->summarizeReturnValues($callable, $key);
                 $mergedParams = array_values(array_unique(array_merge(
-                    $this->summaries[$name]['params'],
+                    $this->summaries[$key]['params'],
                     $calculated['params'],
                 )));
                 sort($mergedParams);
                 $merged = [
                     'params' => $mergedParams,
-                    'always' => $this->summaries[$name]['always'] || $calculated['always'],
+                    'always' => $this->summaries[$key]['always'] || $calculated['always'],
                 ];
-                if ($merged !== $this->summaries[$name]) {
-                    $this->summaries[$name] = $merged;
+                if ($merged !== $this->summaries[$key]) {
+                    $this->summaries[$key] = $merged;
+                    $changed = true;
+                }
+                if ($calculatedReturns !== $this->returnSummaries[$key]) {
+                    $this->returnSummaries[$key] = $calculatedReturns;
                     $changed = true;
                 }
             }
@@ -133,27 +532,23 @@ final class PhpTestDdlInventoryAnalyzer
     }
 
     /** @return FunctionSummary */
-    private function summarizeFunction(Function_ $function): array
+    private function summarizeFunction(FunctionLike $function, string $scopeKey): array
     {
-        $initialEnvironment = [];
-        foreach ($function->params as $index => $parameter) {
-            if ($parameter->var instanceof Variable && is_string($parameter->var->name)) {
-                $initialEnvironment[$parameter->var->name] = $this->unknownValue([$index], false);
-            }
-        }
+        $previousScope = $this->evaluationScopeKey;
+        $this->evaluationScopeKey = $scopeKey;
+        $initialEnvironment = $this->parameterEnvironment($function, $scopeKey);
+        $statements = $function->getStmts() ?? [];
 
-        [$assignments, $calls, $foreaches] = $this->scopeNodes($function->stmts);
+        [, $calls] = $this->scopeNodes($statements);
         $summary = ['params' => [], 'always' => false];
         foreach ($calls as $call) {
             $environment = $this->environmentBefore(
-                $assignments,
+                $statements,
                 $initialEnvironment,
                 $call->getStartFilePos(),
-                $foreaches,
             );
-            $localName = $call instanceof FuncCall ? $this->callName($call) : null;
-            if ($localName !== null && isset($this->functions[$localName])) {
-                $callee = $this->summaries[$localName];
+            $callee = $this->localCallableSummary($call, $scopeKey);
+            if ($callee !== null) {
                 if ($callee['always']) {
                     $summary['always'] = true;
                 }
@@ -177,8 +572,129 @@ final class PhpTestDdlInventoryAnalyzer
 
         sort($summary['params']);
         $summary['params'] = array_values(array_unique($summary['params']));
+        $this->evaluationScopeKey = $previousScope;
 
         return $summary;
+    }
+
+    /** @return list<SqlValue> */
+    private function summarizeReturnValues(FunctionLike $function, string $scopeKey): array
+    {
+        $previousScope = $this->evaluationScopeKey;
+        $this->evaluationScopeKey = $scopeKey;
+        $statements = $function->getStmts() ?? [];
+        $initialEnvironment = $this->parameterEnvironment($function, $scopeKey);
+        $returns = [];
+        $walk = function (mixed $value, bool $root = false) use (&$walk, &$returns): void {
+            if (is_array($value)) {
+                foreach ($value as $item) {
+                    $walk($item);
+                }
+                return;
+            }
+            if (!$value instanceof Node || (!$root && $value instanceof FunctionLike)) {
+                return;
+            }
+            if ($value instanceof Node\Stmt\Return_) {
+                $returns[] = $value;
+                return;
+            }
+            foreach ($value->getSubNodeNames() as $subNodeName) {
+                $walk($value->{$subNodeName});
+            }
+        };
+        $walk($statements, true);
+
+        $summary = [];
+        foreach ($returns as $return) {
+            $environment = $this->environmentBefore(
+                $statements,
+                $initialEnvironment,
+                $return->getStartFilePos(),
+            );
+            $components = [];
+            if ($return->expr instanceof ArrayExpr) {
+                foreach ($return->expr->items as $item) {
+                    $components[] = $this->expressionValue($item->value, $environment);
+                }
+            } elseif ($return->expr instanceof Expr) {
+                $components[] = $this->expressionValue($return->expr, $environment);
+            } else {
+                $components[] = $this->knownValue('');
+            }
+            foreach ($components as $index => $component) {
+                $summary[$index] = isset($summary[$index])
+                    ? $this->alternativeValues($summary[$index], $component)
+                    : $component;
+            }
+        }
+        ksort($summary);
+        $this->evaluationScopeKey = $previousScope;
+
+        return array_values($summary);
+    }
+
+    /**
+     * Instancia el resumen abstracto de retorno de un callable local con los argumentos del callsite.
+     *
+     * @param array<string, SqlValue> $environment
+     * @return list<SqlValue>|null
+     */
+    private function localCallableReturnValues(Expr $call, array $environment): ?array
+    {
+        $keys = $this->localCallableKeys($call, $this->evaluationScopeKey);
+        if ($keys === []) {
+            return null;
+        }
+
+        $components = [];
+        foreach ($keys as $key) {
+            foreach ($this->returnSummaries[$key] ?? [] as $index => $value) {
+                $instantiated = $this->instantiateReturnValue($value, $call, $environment);
+                $components[$index] = isset($components[$index])
+                    ? $this->alternativeValues($components[$index], $instantiated)
+                    : $instantiated;
+            }
+        }
+        ksort($components);
+
+        return array_values($components);
+    }
+
+    /**
+     * @param SqlValue $value
+     * @param array<string, SqlValue> $environment
+     * @return SqlValue
+     */
+    private function instantiateReturnValue(array $value, Expr $call, array $environment): array
+    {
+        if ($this->sqlKind($value) === 'ddl') {
+            return $this->knownValue('CREATE');
+        }
+        if ($value['complete']) {
+            return $value;
+        }
+
+        $dependencies = [];
+        $external = $value['external'];
+        $allResolved = !$external && $value['deps'] !== [];
+        foreach ($value['deps'] as $parameterIndex) {
+            $argument = $this->argumentValue($call, $parameterIndex, $environment);
+            if ($this->sqlKind($argument) === 'ddl') {
+                return $this->knownValue('CREATE');
+            }
+            if (!$argument['complete']) {
+                $allResolved = false;
+                $dependencies = array_merge($dependencies, $argument['deps']);
+                $external = $external || $argument['external'];
+            }
+        }
+
+        if ($allResolved) {
+            return $this->knownValue($value['template']);
+        }
+
+        return $this->unknownValue($dependencies, $external);
     }
 
     /**
@@ -199,19 +715,18 @@ final class PhpTestDdlInventoryAnalyzer
     }
 
     /** @param array<string, SqlValue> $environment */
-    private function inspectTopLevelCall(Expr $call, array $environment): void
+    private function inspectTopLevelCall(Expr $call, array $environment, string $scopeKey): void
     {
         $callName = $this->callName($call);
-        $localName = $call instanceof FuncCall ? $callName : null;
-        if ($localName !== null && isset($this->functions[$localName])) {
-            $summary = $this->summaries[$localName];
+        $summary = $this->localCallableSummary($call, $scopeKey);
+        if ($summary !== null) {
             if ($summary['always']) {
-                $this->addFinding($callName, $call->getStartLine());
+                $this->addFinding($callName ?? 'local-callable', $call->getStartLine());
                 return;
             }
             foreach ($summary['params'] as $parameterIndex) {
                 if ($this->sqlKind($this->argumentValue($call, $parameterIndex, $environment)) !== 'safe') {
-                    $this->addFinding($callName, $call->getStartLine());
+                    $this->addFinding($callName ?? 'local-callable', $call->getStartLine());
                     return;
                 }
             }
@@ -238,26 +753,269 @@ final class PhpTestDdlInventoryAnalyzer
     }
 
     /**
-     * @param list<Assign> $assignments
+     * Reconstruye el entorno posible en el punto de la llamada. Las ramas se unen por may-analysis:
+     * una alternativa DDL o desconocida nunca queda ocultada por la última asignación textual.
+     *
+     * @param array<Node>|Node $nodes
      * @param array<string, SqlValue> $initial
-     * @param list<Foreach_> $foreaches
      * @return array<string, SqlValue>
      */
-    private function environmentBefore(
-        array $assignments,
-        array $initial,
-        int $beforePosition,
-        array $foreaches = [],
-    ): array
+    private function environmentBefore(array|Node $nodes, array $initial, int $beforePosition): array
     {
-        $environment = $initial;
+        $statements = is_array($nodes) ? $nodes : [$nodes];
+        [$assignments] = $this->scopeNodes($nodes);
+
+        return $this->flowNodesBefore($statements, $initial, $beforePosition, $assignments);
+    }
+
+    /**
+     * @param array<Node> $nodes
+     * @param array<string, SqlValue> $environment
+     * @param list<Assign> $assignments
+     * @return array<string, SqlValue>
+     */
+    private function flowNodesBefore(
+        array $nodes,
+        array $environment,
+        int $beforePosition,
+        array $assignments,
+    ): array {
+        foreach ($nodes as $node) {
+            $start = $node->getStartFilePos();
+            $end = $node->getEndFilePos();
+            if ($beforePosition >= 0 && $start >= 0 && $start >= $beforePosition) {
+                break;
+            }
+            if ($beforePosition >= 0 && $start >= 0 && $end >= $beforePosition) {
+                return $this->flowInsideNode($node, $environment, $beforePosition, $assignments);
+            }
+            $environment = $this->applyFlowNode($node, $environment, $assignments);
+        }
+
+        return $environment;
+    }
+
+    /**
+     * @param array<string, SqlValue> $environment
+     * @param list<Assign> $assignments
+     * @return array<string, SqlValue>
+     */
+    private function flowInsideNode(
+        Node $node,
+        array $environment,
+        int $beforePosition,
+        array $assignments,
+    ): array {
+        if ($node instanceof Node\Stmt\If_) {
+            foreach ($node->elseifs as $elseif) {
+                if ($this->containsPosition($elseif, $beforePosition)) {
+                    return $this->flowNodesBefore($elseif->stmts, $environment, $beforePosition, $assignments);
+                }
+            }
+            if ($node->else !== null && $this->containsPosition($node->else, $beforePosition)) {
+                return $this->flowNodesBefore($node->else->stmts, $environment, $beforePosition, $assignments);
+            }
+            foreach ($node->stmts as $statement) {
+                if ($this->containsPosition($statement, $beforePosition)) {
+                    return $this->flowNodesBefore($node->stmts, $environment, $beforePosition, $assignments);
+                }
+            }
+
+            return $environment;
+        }
+        if ($node instanceof Node\Stmt\Switch_) {
+            $entryAlternatives = [$environment];
+            $fallthrough = $environment;
+            foreach ($node->cases as $case) {
+                if ($this->containsPosition($case, $beforePosition)) {
+                    return $this->flowNodesBefore(
+                        $case->stmts,
+                        $this->joinEnvironments($entryAlternatives),
+                        $beforePosition,
+                        $assignments,
+                    );
+                }
+                $fallthrough = $this->applyFlowNodes($case->stmts, $fallthrough, $assignments);
+                $entryAlternatives[] = $fallthrough;
+            }
+
+            return $environment;
+        }
+        if ($this->isLoop($node)) {
+            $head = $this->loopHeadEnvironment($node, $environment, $assignments);
+            $bodyEnvironment = $this->bindLoopValues($node, $head, $assignments);
+            /** @var list<Node\Stmt> $body */
+            $body = $node->stmts;
+            foreach ($body as $statement) {
+                if ($this->containsPosition($statement, $beforePosition)) {
+                    return $this->flowNodesBefore($body, $bodyEnvironment, $beforePosition, $assignments);
+                }
+            }
+
+            return $head;
+        }
+        if ($node instanceof Node\Stmt\TryCatch) {
+            foreach ($node->stmts as $statement) {
+                if ($this->containsPosition($statement, $beforePosition)) {
+                    return $this->flowNodesBefore($node->stmts, $environment, $beforePosition, $assignments);
+                }
+            }
+            $tryEnvironment = $this->applyFlowNodes($node->stmts, $environment, $assignments);
+            foreach ($node->catches as $catch) {
+                if ($this->containsPosition($catch, $beforePosition)) {
+                    return $this->flowNodesBefore(
+                        $catch->stmts,
+                        $this->joinEnvironments([$environment, $tryEnvironment]),
+                        $beforePosition,
+                        $assignments,
+                    );
+                }
+            }
+            if ($node->finally !== null && $this->containsPosition($node->finally, $beforePosition)) {
+                $alternatives = [$tryEnvironment];
+                foreach ($node->catches as $catch) {
+                    $alternatives[] = $this->applyFlowNodes($catch->stmts, $environment, $assignments);
+                }
+                return $this->flowNodesBefore(
+                    $node->finally->stmts,
+                    $this->joinEnvironments($alternatives),
+                    $beforePosition,
+                    $assignments,
+                );
+            }
+
+            return $environment;
+        }
+
+        return $this->applyStraightLineAssignments($node, $environment, $beforePosition);
+    }
+
+    /**
+     * @param array<string, SqlValue> $environment
+     * @param list<Assign> $assignments
+     * @return array<string, SqlValue>
+     */
+    private function applyFlowNode(Node $node, array $environment, array $assignments): array
+    {
+        if ($node instanceof Node\Stmt\If_) {
+            $alternatives = [$this->applyFlowNodes($node->stmts, $environment, $assignments)];
+            foreach ($node->elseifs as $elseif) {
+                $alternatives[] = $this->applyFlowNodes($elseif->stmts, $environment, $assignments);
+            }
+            $alternatives[] = $node->else === null
+                ? $environment
+                : $this->applyFlowNodes($node->else->stmts, $environment, $assignments);
+            return $this->joinEnvironments($alternatives);
+        }
+        if ($node instanceof Node\Stmt\Switch_) {
+            $alternatives = [];
+            $fallthrough = $environment;
+            $hasDefault = false;
+            foreach ($node->cases as $case) {
+                $hasDefault = $hasDefault || $case->cond === null;
+                $alternatives[] = $this->applyFlowNodes($case->stmts, $environment, $assignments);
+                $fallthrough = $this->applyFlowNodes($case->stmts, $fallthrough, $assignments);
+                $alternatives[] = $fallthrough;
+            }
+            if (!$hasDefault) {
+                $alternatives[] = $environment;
+            }
+            return $this->joinEnvironments($alternatives === [] ? [$environment] : $alternatives);
+        }
+        if ($this->isLoop($node)) {
+            return $this->loopHeadEnvironment($node, $environment, $assignments);
+        }
+        if ($node instanceof Node\Stmt\TryCatch) {
+            $alternatives = [$this->applyFlowNodes($node->stmts, $environment, $assignments)];
+            foreach ($node->catches as $catch) {
+                $alternatives[] = $this->applyFlowNodes($catch->stmts, $environment, $assignments);
+            }
+            $joined = $this->joinEnvironments($alternatives);
+            return $node->finally === null
+                ? $joined
+                : $this->applyFlowNodes($node->finally->stmts, $joined, $assignments);
+        }
+
+        return $this->applyStraightLineAssignments($node, $environment, PHP_INT_MAX);
+    }
+
+    /**
+     * @param array<Node> $nodes
+     * @param array<string, SqlValue> $environment
+     * @param list<Assign> $assignments
+     * @return array<string, SqlValue>
+     */
+    private function applyFlowNodes(array $nodes, array $environment, array $assignments): array
+    {
+        foreach ($nodes as $node) {
+            $environment = $this->applyFlowNode($node, $environment, $assignments);
+        }
+
+        return $environment;
+    }
+
+    /**
+     * @param array<string, SqlValue> $environment
+     * @return array<string, SqlValue>
+     */
+    private function applyStraightLineAssignments(
+        Node $node,
+        array $environment,
+        int $beforePosition,
+    ): array {
+        $found = [];
+        $walk = function (mixed $value, bool $root = false) use (&$walk, &$found): void {
+            if (is_array($value)) {
+                foreach ($value as $item) {
+                    $walk($item);
+                }
+                return;
+            }
+            if (!$value instanceof Node || $value instanceof FunctionLike) {
+                return;
+            }
+            if (!$root && ($value instanceof Node\Stmt\If_ || $value instanceof Node\Stmt\Switch_
+                || $this->isLoop($value) || $value instanceof Node\Stmt\TryCatch)) {
+                return;
+            }
+            if ($value instanceof Assign) {
+                $found[] = $value;
+            }
+            foreach ($value->getSubNodeNames() as $subNodeName) {
+                $walk($value->{$subNodeName});
+            }
+        };
+        $walk($node, true);
         usort(
-            $assignments,
-            static fn(Assign $left, Assign $right): int => $left->getStartFilePos() <=> $right->getStartFilePos(),
+            $found,
+            static fn(Assign $left, Assign $right): int => $left->getEndFilePos() <=> $right->getEndFilePos(),
         );
-        foreach ($assignments as $assignment) {
-            $position = $assignment->getStartFilePos();
-            if ($beforePosition >= 0 && $position >= $beforePosition) {
+        foreach ($found as $assignment) {
+            $end = $assignment->getEndFilePos();
+            if ($beforePosition >= 0 && $end >= $beforePosition) {
+                continue;
+            }
+            if ($assignment->var instanceof ArrayExpr || $assignment->var instanceof ListExpr) {
+                $components = $this->destructuredExpressionValues($assignment->expr, $environment);
+                foreach ($assignment->var->items as $index => $item) {
+                    if ($item === null || !$item->value instanceof Variable
+                        || !is_string($item->value->name)) {
+                        continue;
+                    }
+                    $environment[$item->value->name] = $components[$index]
+                        ?? $this->unknownValue([], true);
+                }
+                continue;
+            }
+            if ($assignment->var instanceof Expr\ArrayDimFetch
+                && $assignment->var->var instanceof Variable
+                && is_string($assignment->var->var->name)) {
+                $name = $assignment->var->var->name;
+                $current = $environment[$name] ?? $this->knownValue('');
+                $environment[$name] = $this->alternativeValues(
+                    $current,
+                    $this->expressionValue($assignment->expr, $environment),
+                );
                 continue;
             }
             if (!$assignment->var instanceof Variable || !is_string($assignment->var->name)) {
@@ -266,28 +1024,156 @@ final class PhpTestDdlInventoryAnalyzer
             $environment[$assignment->var->name] = $this->expressionValue($assignment->expr, $environment);
         }
 
-        foreach ($foreaches as $foreach) {
-            if ($beforePosition < $foreach->getStartFilePos() || $beforePosition > $foreach->getEndFilePos()) {
-                continue;
+        return $environment;
+    }
+
+    /**
+     * @param array<string, SqlValue> $environment
+     * @return list<SqlValue>
+     */
+    private function destructuredExpressionValues(Expr $expression, array $environment): array
+    {
+        $localReturns = $this->localCallableReturnValues($expression, $environment);
+        if ($localReturns !== null) {
+            return $localReturns;
+        }
+        // Database::insertProjectId conserva el SQL recibido y devuelve [SQL, params].
+        // Propagar el primer argumento mantiene DML constante como seguro sin sanear un valor dinámico.
+        if (($expression instanceof MethodCall || $expression instanceof StaticCall)
+            && $this->callName($expression) === 'insertprojectid') {
+            return [
+                $this->argumentValue($expression, 0, $environment),
+                isset($expression->args[2])
+                    ? $this->expressionValue($expression->args[2]->value, $environment)
+                    : $this->knownValue(''),
+            ];
+        }
+        if (!$expression instanceof ArrayExpr) {
+            return [];
+        }
+
+        $values = [];
+        foreach ($expression->items as $item) {
+            $values[] = $this->expressionValue($item->value, $environment);
+        }
+
+        return $values;
+    }
+
+    private function containsPosition(Node $node, int $position): bool
+    {
+        return $position >= 0 && $node->getStartFilePos() <= $position
+            && $node->getEndFilePos() >= $position;
+    }
+
+    /**
+     * @phpstan-assert-if-true Foreach_|Node\Stmt\For_|Node\Stmt\While_|Node\Stmt\Do_ $node
+     */
+    private function isLoop(Node $node): bool
+    {
+        return $node instanceof Foreach_ || $node instanceof Node\Stmt\For_
+            || $node instanceof Node\Stmt\While_ || $node instanceof Node\Stmt\Do_;
+    }
+
+    /**
+     * @param array<string, SqlValue> $environment
+     * @param list<Assign> $assignments
+     * @return array<string, SqlValue>
+     */
+    private function loopHeadEnvironment(
+        Foreach_|Node\Stmt\For_|Node\Stmt\While_|Node\Stmt\Do_ $loop,
+        array $environment,
+        array $assignments,
+    ): array
+    {
+        $base = $environment;
+        if ($loop instanceof Node\Stmt\For_) {
+            foreach ($loop->init as $initialization) {
+                $base = $this->applyStraightLineAssignments($initialization, $base, PHP_INT_MAX);
             }
-            $iterable = $this->resolveArrayExpression(
-                $foreach->expr,
-                $assignments,
-                $foreach->getStartFilePos(),
-            );
-            if ($iterable === null) {
-                if ($foreach->valueVar instanceof Variable && is_string($foreach->valueVar->name)) {
-                    $values = $this->resolveIterableSqlValues($foreach->expr, $environment);
-                    if ($values !== null) {
-                        $environment[$foreach->valueVar->name] = $this->aggregateValues($values);
-                    }
+        }
+        $head = $base;
+        $limit = min(64, max(2, count($assignments) + 2));
+        for ($iteration = 0; $iteration < $limit; $iteration++) {
+            $bodyEnvironment = $this->bindLoopValues($loop, $head, $assignments);
+            /** @var list<Node\Stmt> $body */
+            $body = $loop->stmts;
+            $afterBody = $this->applyFlowNodes($body, $bodyEnvironment, $assignments);
+            if ($loop instanceof Node\Stmt\For_) {
+                foreach ($loop->loop as $update) {
+                    $afterBody = $this->applyStraightLineAssignments($update, $afterBody, PHP_INT_MAX);
                 }
-                continue;
             }
-            $this->bindForeachValues($environment, $foreach->valueVar, $iterable);
+            $next = $this->joinEnvironments([$base, $afterBody]);
+            if ($next === $head) {
+                break;
+            }
+            $head = $next;
+        }
+
+        return $head;
+    }
+
+    /**
+     * @param array<string, SqlValue> $environment
+     * @param list<Assign> $assignments
+     * @return array<string, SqlValue>
+     */
+    private function bindLoopValues(
+        Foreach_|Node\Stmt\For_|Node\Stmt\While_|Node\Stmt\Do_ $loop,
+        array $environment,
+        array $assignments,
+    ): array
+    {
+        if (!$loop instanceof Foreach_) {
+            return $environment;
+        }
+        $iterable = $this->resolveArrayExpression($loop->expr, $assignments, $loop->getStartFilePos());
+        if ($iterable !== null) {
+            $this->bindForeachValues($environment, $loop->valueVar, $iterable);
+            if ($loop->keyVar !== null) {
+                $this->bindForeachKeys($environment, $loop->keyVar, $iterable);
+            }
+            return $environment;
+        }
+        $values = $this->resolveIterableSqlValues($loop->expr, $environment);
+        if ($loop->valueVar instanceof Variable && is_string($loop->valueVar->name)) {
+            $environment[$loop->valueVar->name] = $values === null
+                ? $this->unknownValue([], true)
+                : $this->aggregateValues($values);
+        } elseif ($loop->valueVar instanceof ArrayExpr || $loop->valueVar instanceof ListExpr) {
+            foreach ($loop->valueVar->items as $item) {
+                if ($item !== null && $item->value instanceof Variable && is_string($item->value->name)) {
+                    $environment[$item->value->name] = $this->unknownValue([], true);
+                }
+            }
         }
 
         return $environment;
+    }
+
+    /**
+     * @param list<array<string, SqlValue>> $environments
+     * @return array<string, SqlValue>
+     */
+    private function joinEnvironments(array $environments): array
+    {
+        $names = [];
+        foreach ($environments as $environment) {
+            $names = array_merge($names, array_keys($environment));
+        }
+        $names = array_values(array_unique($names));
+        sort($names);
+        $joined = [];
+        foreach ($names as $name) {
+            $values = [];
+            foreach ($environments as $environment) {
+                $values[] = $environment[$name] ?? $this->unknownValue([], true);
+            }
+            $joined[$name] = $this->aggregateValues($values);
+        }
+
+        return $joined;
     }
 
     /** @param list<Assign> $assignments */
@@ -322,21 +1208,29 @@ final class PhpTestDdlInventoryAnalyzer
      */
     private function resolveIterableSqlValues(Expr $expression, array $environment): ?array
     {
-        if (!$expression instanceof FuncCall || $this->callName($expression) !== 'preg_split'
-            || !isset($expression->args[0], $expression->args[1])) {
-            return null;
-        }
-        $pattern = $this->expressionValue($expression->args[0]->value, $environment);
-        $subject = $this->expressionValue($expression->args[1]->value, $environment);
-        if (!$pattern['complete'] || !$subject['complete']) {
-            return null;
-        }
-        $parts = @preg_split($pattern['template'], $subject['template']);
-        if ($parts === false) {
-            return null;
+        if ($expression instanceof FuncCall && $this->callName($expression) === 'preg_split'
+            && isset($expression->args[0], $expression->args[1])) {
+            $pattern = $this->expressionValue($expression->args[0]->value, $environment);
+            $subject = $this->expressionValue($expression->args[1]->value, $environment);
+            if (!$pattern['complete'] || !$subject['complete']) {
+                return null;
+            }
+            $parts = @preg_split($pattern['template'], $subject['template']);
+            if ($parts === false) {
+                return null;
+            }
+
+            return array_map(fn(string $part): array => $this->knownValue($part), $parts);
         }
 
-        return array_map(fn(string $part): array => $this->knownValue($part), $parts);
+        if ($expression instanceof FuncCall && $this->callName($expression) === 'array_chunk'
+            && isset($expression->args[0])) {
+            $value = $this->expressionValue($expression->args[0]->value, $environment);
+            return $value['complete'] ? [$value] : null;
+        }
+
+        $value = $this->expressionValue($expression, $environment);
+        return $value['complete'] ? [$value] : null;
     }
 
     /**
@@ -373,6 +1267,23 @@ final class PhpTestDdlInventoryAnalyzer
             }
             $environment[$targetItem->value->name] = $this->aggregateExpressions($expressions, $environment);
         }
+    }
+
+    /** @param array<string, SqlValue> $environment */
+    private function bindForeachKeys(array &$environment, Expr $target, ArrayExpr $iterable): void
+    {
+        if (!$target instanceof Variable || !is_string($target->name)) {
+            return;
+        }
+        $keys = [];
+        foreach ($iterable->items as $index => $item) {
+            if ($item->key instanceof Expr) {
+                $keys[] = $item->key;
+            } else {
+                $keys[] = new Node\Scalar\Int_($index);
+            }
+        }
+        $environment[$target->name] = $this->aggregateExpressions($keys, $environment);
     }
 
     /**
@@ -427,6 +1338,26 @@ final class PhpTestDdlInventoryAnalyzer
         if ($expression instanceof String_) {
             return $this->knownValue($expression->value);
         }
+        if ($expression instanceof Node\Scalar\Int_ || $expression instanceof Node\Scalar\Float_) {
+            return $this->knownValue((string) $expression->value);
+        }
+        if ($expression instanceof Expr\ConstFetch) {
+            return $this->knownValue(strtolower($expression->name->toString()));
+        }
+        if ($expression instanceof Expr\ClassConstFetch && $expression->class instanceof Name
+            && $expression->name instanceof Identifier) {
+            $classParts = $expression->class->getParts();
+            $className = strtolower((string) end($classParts));
+            $key = $className . '::' . strtolower($expression->name->toString());
+            return $this->classConstants[$key] ?? $this->unknownValue([], true);
+        }
+        if ($expression instanceof ArrayExpr) {
+            $values = [];
+            foreach ($expression->items as $item) {
+                $values[] = $this->expressionValue($item->value, $environment);
+            }
+            return $values === [] ? $this->knownValue('') : $this->aggregateValues($values);
+        }
         if ($expression instanceof InterpolatedString) {
             $value = $this->knownValue('');
             foreach ($expression->parts as $part) {
@@ -440,6 +1371,10 @@ final class PhpTestDdlInventoryAnalyzer
         if ($expression instanceof Variable && is_string($expression->name)) {
             return $environment[$expression->name] ?? $this->unknownValue([], true);
         }
+        if ($expression instanceof Expr\ArrayDimFetch && $expression->var instanceof Variable
+            && is_string($expression->var->name)) {
+            return $environment[$expression->var->name] ?? $this->unknownValue([], true);
+        }
         if ($expression instanceof Concat) {
             return $this->concatValues(
                 $this->expressionValue($expression->left, $environment),
@@ -448,6 +1383,10 @@ final class PhpTestDdlInventoryAnalyzer
         }
         if ($expression instanceof Expr\Cast\String_) {
             return $this->expressionValue($expression->expr, $environment);
+        }
+        if ($expression instanceof Expr\Cast\Int_ || $expression instanceof Expr\Cast\Double
+            || $expression instanceof Expr\Cast\Bool_) {
+            return $this->knownValue('0');
         }
         if ($expression instanceof Node\Scalar\MagicConst\Dir) {
             return $this->sourcePath === null
@@ -458,6 +1397,9 @@ final class PhpTestDdlInventoryAnalyzer
             return $this->expressionValue($expression->expr, $environment);
         }
         if ($expression instanceof Ternary) {
+            if ($this->isExistenceGuardedIdentifierChoice($expression)) {
+                return $this->knownValue('fixture_table');
+            }
             $whenTrue = $expression->if === null
                 ? $this->expressionValue($expression->cond, $environment)
                 : $this->expressionValue($expression->if, $environment);
@@ -472,28 +1414,194 @@ final class PhpTestDdlInventoryAnalyzer
                 $this->expressionValue($expression->right, $environment),
             );
         }
-        if ($expression instanceof FuncCall && $this->callName($expression) === 'sprintf' && isset($expression->args[0])) {
-            $format = $this->expressionValue($expression->args[0]->value, $environment);
-            $format['complete'] = false;
-            $format['external'] = true;
-            return $format;
+        if ($expression instanceof Expr\BinaryOp) {
+            return $this->knownValue('0');
         }
-        if ($expression instanceof FuncCall && $this->callName($expression) === 'dirname'
-            && isset($expression->args[0])) {
-            $path = $this->expressionValue($expression->args[0]->value, $environment);
-            if ($path['complete']) {
-                return $this->knownValue(dirname($path['template']));
+        if ($expression instanceof FuncCall || $expression instanceof MethodCall
+            || $expression instanceof StaticCall) {
+            $localReturns = $this->localCallableReturnValues($expression, $environment);
+            if ($localReturns !== null) {
+                return $localReturns[0] ?? $this->unknownValue([], true);
             }
-            return $this->unknownValue($path['deps'], $path['external']);
         }
-        if ($expression instanceof FuncCall && $this->callName($expression) === 'file_get_contents'
-            && isset($expression->args[0])) {
-            return $this->sourceControlledSqlFileValue(
-                $this->expressionValue($expression->args[0]->value, $environment),
-            );
+        if ($expression instanceof StaticCall && $expression->class instanceof Name) {
+            $classParts = $expression->class->getParts();
+            $className = strtolower((string) end($classParts));
+            $methodName = $this->callName($expression);
+            if ($className === 'tableresolver' && in_array($methodName, ['resolve', 'resolvebyprefix'], true)) {
+                $logicalArgument = $expression->args[count($expression->args) - 1]->value ?? null;
+                if ($logicalArgument instanceof Expr) {
+                    $logical = $this->expressionValue($logicalArgument, $environment);
+                    if ($logical['complete'] && preg_match('/^[A-Za-z0-9_]+$/', $logical['template']) === 1) {
+                        return $this->knownValue('fixture_table');
+                    }
+                }
+            }
+        }
+        if ($expression instanceof FuncCall) {
+            $functionValue = $this->functionExpressionValue($expression, $environment);
+            if ($functionValue !== null) {
+                return $functionValue;
+            }
         }
 
         return $this->unknownValue([], true);
+    }
+
+    private function isExistenceGuardedIdentifierChoice(Ternary $ternary): bool
+    {
+        if (!$ternary->cond instanceof FuncCall || $this->callName($ternary->cond) !== 'tableexists'
+            || !isset($ternary->cond->args[1])) {
+            return false;
+        }
+        $candidate = $ternary->cond->args[1]->value;
+        $whenTrue = $ternary->if ?? $ternary->cond;
+        if (!$candidate instanceof Variable || !$whenTrue instanceof Variable
+            || $candidate->name !== $whenTrue->name) {
+            return false;
+        }
+        if ($ternary->else instanceof Ternary) {
+            return $this->isExistenceGuardedIdentifierChoice($ternary->else);
+        }
+
+        return $ternary->else instanceof Expr\ConstFetch
+            && strtolower($ternary->else->name->toString()) === 'null';
+    }
+
+    /**
+     * @param array<string, SqlValue> $environment
+     * @return SqlValue|null
+     */
+    private function functionExpressionValue(FuncCall $call, array $environment): ?array
+    {
+        $name = $this->callName($call);
+        if ($name === null) {
+            return null;
+        }
+        if ($name === 'file_get_contents' && isset($call->args[0])) {
+            return $this->sourceControlledSqlFileValue(
+                $this->expressionValue($call->args[0]->value, $environment),
+            );
+        }
+        if ($name === 'dirname' && isset($call->args[0])) {
+            $path = $this->expressionValue($call->args[0]->value, $environment);
+            return $path['complete']
+                ? $this->knownValue(dirname($path['template']))
+                : $this->unknownValue($path['deps'], $path['external']);
+        }
+        if ($name === 'sprintf' && isset($call->args[0])) {
+            $values = array_map(
+                fn(Node\Arg $argument): array => $this->expressionValue($argument->value, $environment),
+                $call->args,
+            );
+            if (array_filter($values, static fn(array $value): bool => !$value['complete']) !== []) {
+                return $this->unknownValue(
+                    array_merge(...array_map(static fn(array $value): array => $value['deps'], $values)),
+                    true,
+                );
+            }
+            $format = array_shift($values);
+            $rendered = @sprintf($format['template'], ...array_column($values, 'template'));
+            return $this->knownValue($rendered);
+        }
+        if (in_array($name, ['implode', 'join'], true)) {
+            if (count($call->args) === 1) {
+                $delimiter = $this->knownValue('');
+                $collectionExpression = $call->args[0]->value;
+            } elseif (isset($call->args[0], $call->args[1])) {
+                $delimiter = $this->expressionValue($call->args[0]->value, $environment);
+                $collectionExpression = $call->args[1]->value;
+            } else {
+                return $this->unknownValue([], true);
+            }
+            if (!$delimiter['complete']) {
+                return $this->unknownValue($delimiter['deps'], $delimiter['external']);
+            }
+            if ($collectionExpression instanceof ArrayExpr) {
+                $parts = [];
+                foreach ($collectionExpression->items as $item) {
+                    $part = $this->expressionValue($item->value, $environment);
+                    if (!$part['complete']) {
+                        return $this->unknownValue($part['deps'], $part['external']);
+                    }
+                    $parts[] = $part['template'];
+                }
+                return $this->knownValue(implode($delimiter['template'], $parts));
+            }
+            $collection = $this->expressionValue($collectionExpression, $environment);
+            if (!$collection['complete']) {
+                return $this->unknownValue($collection['deps'], $collection['external']);
+            }
+            return $this->sqlKind($collection) === 'ddl'
+                ? $this->knownValue('CREATE')
+                : $this->knownValue('safe_fragment');
+        }
+        if ($name === 'array_fill' && isset($call->args[2])) {
+            return $this->expressionValue($call->args[2]->value, $environment);
+        }
+        if ($name === 'array_map' && isset($call->args[0], $call->args[1])) {
+            $callback = $call->args[0]->value;
+            $source = $this->expressionValue($call->args[1]->value, $environment);
+            if ($callback instanceof String_) {
+                $callbackName = strtolower($callback->value);
+                if (in_array($callbackName, ['intval', 'floatval'], true)) {
+                    return $this->knownValue('1');
+                }
+                if (in_array($callbackName, ['trim', 'ltrim', 'rtrim', 'strtolower', 'strtoupper', 'strval'], true)) {
+                    return $source;
+                }
+            }
+            if (($callback instanceof Closure || $callback instanceof ArrowFunction) && $source['complete']) {
+                $callbackEnvironment = [];
+                foreach ($callback->getParams() as $index => $parameter) {
+                    if ($parameter->var instanceof Variable && is_string($parameter->var->name)) {
+                        $callbackEnvironment[$parameter->var->name] = $index === 0
+                            ? $source
+                            : $this->unknownValue([], true);
+                    }
+                }
+                $returns = [];
+                foreach ($callback->getStmts() as $statement) {
+                    if ($statement instanceof Node\Stmt\Return_ && $statement->expr instanceof Expr) {
+                        $returns[] = $this->expressionValue($statement->expr, $callbackEnvironment);
+                    }
+                }
+                if ($returns !== []) {
+                    return $this->aggregateValues($returns);
+                }
+            }
+            return $this->unknownValue([], true);
+        }
+        if (in_array($name, ['array_filter', 'array_values', 'array_unique', 'array_chunk'], true)
+            && isset($call->args[0])) {
+            return $this->expressionValue($call->args[0]->value, $environment);
+        }
+        if (in_array($name, ['explode', 'preg_split'], true)) {
+            $subjectIndex = $name === 'explode' ? 1 : 1;
+            return isset($call->args[$subjectIndex])
+                ? $this->expressionValue($call->args[$subjectIndex]->value, $environment)
+                : $this->unknownValue([], true);
+        }
+        if (in_array($name, ['trim', 'ltrim', 'rtrim', 'strtolower', 'strtoupper'], true)
+            && isset($call->args[0])) {
+            $value = $this->expressionValue($call->args[0]->value, $environment);
+            if (!$value['complete']) {
+                return $value;
+            }
+            $transform = match ($name) {
+                'trim' => trim(...),
+                'ltrim' => ltrim(...),
+                'rtrim' => rtrim(...),
+                'strtolower' => strtolower(...),
+                'strtoupper' => strtoupper(...),
+            };
+            return $this->knownValue($transform($value['template']));
+        }
+        if (in_array($name, ['intval', 'floatval', 'count', 'sizeof', 'round', 'floor', 'ceil', 'min', 'max'], true)) {
+            return $this->knownValue('1');
+        }
+
+        return null;
     }
 
     /** @param SqlValue $path @return SqlValue */
@@ -578,7 +1686,6 @@ final class PhpTestDdlInventoryAnalyzer
     private function sqlKind(array $value): string
     {
         $statements = $this->splitSqlStatements($value['template']);
-        $allRecognizedSafe = true;
         foreach ($statements as $statement) {
             if (preg_match(
                 '/\/\*!\d*\s*(?:CREATE|DROP|ALTER|TRUNCATE|RENAME|GRANT|REVOKE)\b/i',
@@ -590,24 +1697,15 @@ final class PhpTestDdlInventoryAnalyzer
             if ($sql === '') {
                 continue;
             }
+            if (preg_match('/^DELIMITER(?:\s|\z)/i', $sql) === 1) {
+                return 'ddl';
+            }
             if (preg_match('/^(?:CREATE|DROP|ALTER|TRUNCATE|RENAME|GRANT|REVOKE)\b/i', $sql) === 1) {
                 return 'ddl';
             }
-            if (preg_match(
-                '/^(?:SELECT|INSERT|UPDATE|DELETE|REPLACE|WITH|SET|SHOW|DESCRIBE|DESC|EXPLAIN|CALL|DO|USE|START|COMMIT|ROLLBACK|SAVEPOINT|RELEASE)\b/i',
-                $sql,
-            ) !== 1) {
-                $allRecognizedSafe = false;
-            }
-        }
-        if ($value['complete']) {
-            return 'safe';
-        }
-        if ($allRecognizedSafe && $statements !== []) {
-            return 'safe';
         }
 
-        return 'unknown';
+        return $value['complete'] ? 'safe' : 'unknown';
     }
 
     /** @return list<string> */
@@ -622,6 +1720,7 @@ final class PhpTestDdlInventoryAnalyzer
         for ($index = 0; $index < $length; $index++) {
             $character = $sql[$index];
             $next = $index + 1 < $length ? $sql[$index + 1] : '';
+            $afterNext = $index + 2 < $length ? $sql[$index + 2] : '';
             if ($lineComment) {
                 $buffer .= $character;
                 if ($character === "\n") {
@@ -655,9 +1754,11 @@ final class PhpTestDdlInventoryAnalyzer
                 }
                 continue;
             }
-            if (($character === '-' && $next === '-') || $character === '#') {
+            $startsDashComment = $character === '-' && $next === '-'
+                && $afterNext !== '' && ord($afterNext) <= 32;
+            if ($startsDashComment || $character === '#') {
                 $buffer .= $character;
-                if ($character === '-' && $next === '-') {
+                if ($startsDashComment) {
                     $buffer .= $next;
                     $index++;
                 }
@@ -695,7 +1796,7 @@ final class PhpTestDdlInventoryAnalyzer
         while ($previous !== $sql) {
             $previous = $sql;
             $sql = (string) preg_replace(
-                '/\A\s*(?:\/\*.*?\*\/\s*|--[^\r\n]*(?:\r?\n|\z)\s*|#[^\r\n]*(?:\r?\n|\z)\s*)/s',
+                '/\A\s*(?:\/\*.*?\*\/\s*|--(?=[\x00-\x20])[^\r\n]*(?:\r?\n|\z)\s*|#[^\r\n]*(?:\r?\n|\z)\s*)/s',
                 '',
                 $sql,
                 1,
@@ -749,48 +1850,43 @@ final class PhpTestDdlInventoryAnalyzer
 
     /**
      * @param array<Node>|Node $nodes
-     * @return array{0: list<Assign>, 1: list<Expr>, 2: list<Foreach_>}
+     * @return array{0: list<Assign>, 1: list<Expr>}
      */
     private function scopeNodes(array|Node $nodes): array
     {
         $assignments = [];
         $calls = [];
-        $foreaches = [];
-        $this->walkScope($nodes, $assignments, $calls, $foreaches);
-        return [$assignments, $calls, $foreaches];
+        $this->walkScope($nodes, $assignments, $calls);
+        return [$assignments, $calls];
     }
 
     /**
      * @param array<Node>|Node|scalar|null $value
      * @param list<Assign> $assignments
      * @param list<Expr> $calls
-     * @param list<Foreach_> $foreaches
      */
-    private function walkScope(mixed $value, array &$assignments, array &$calls, array &$foreaches): void
+    private function walkScope(mixed $value, array &$assignments, array &$calls): void
     {
         if (is_array($value)) {
             foreach ($value as $item) {
-                $this->walkScope($item, $assignments, $calls, $foreaches);
+                $this->walkScope($item, $assignments, $calls);
             }
             return;
         }
         if (!$value instanceof Node) {
             return;
         }
-        if ($value instanceof Function_ || $value instanceof ClassMethod) {
+        if ($value instanceof FunctionLike) {
             return;
         }
         if ($value instanceof Assign) {
             $assignments[] = $value;
         }
-        if ($value instanceof Foreach_) {
-            $foreaches[] = $value;
-        }
         if ($value instanceof FuncCall || $value instanceof MethodCall || $value instanceof StaticCall) {
             $calls[] = $value;
         }
         foreach ($value->getSubNodeNames() as $subNodeName) {
-            $this->walkScope($value->{$subNodeName}, $assignments, $calls, $foreaches);
+            $this->walkScope($value->{$subNodeName}, $assignments, $calls);
         }
     }
 }
