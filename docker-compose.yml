@@ -25,8 +25,8 @@ services:
       # worktree, y una variable vacia cuenta como "ya definida" para Dotenv) se resuelve con el
       # enlace del .env en cada worktree, documentado en CLAUDE.md.
       DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
+      DB_USER: ${DB_RUNTIME_USER}
+      DB_PASS: ${DB_RUNTIME_PASS}
       USE_GLOBAL_TABLES: "true"
     restart: unless-stopped
 
@@ -38,7 +38,13 @@ services:
     environment:
       TZ: America/Bogota
       MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_USER: ${DB_RUNTIME_USER}
+      MYSQL_PASSWORD: ${DB_RUNTIME_PASS}
+      MYSQL_ROOT_PASSWORD: ${DB_ADMIN_PASS}
+    configs:
+      - source: runtime_db_least_privilege
+        target: /docker-entrypoint-initdb.d/999-runtime-user-dml.sh
+        mode: 0444
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -57,6 +63,24 @@ services:
     depends_on:
       - db
     restart: unless-stopped
+
+configs:
+  runtime_db_least_privilege:
+    content: |
+      #!/bin/bash
+      if ! printenv MYSQL_USER | grep -Eq '^[A-Za-z0-9_]+$' \
+        || ! printenv MYSQL_DATABASE | grep -Eq '^[A-Za-z0-9_]+$'; then
+        echo 'Runtime DB user/database missing; refusing least-privilege initialization.' >&2
+        return 1
+      fi
+      if [ "$(printenv MYSQL_USER)" = root ]; then
+        echo 'Runtime DB user cannot be root.' >&2
+        return 1
+      fi
+      docker_process_sql <<EOSQL
+      REVOKE ALL PRIVILEGES, GRANT OPTION FROM '$(printenv MYSQL_USER)'@'%';
+      GRANT SELECT, INSERT, UPDATE, DELETE ON \`$(printenv MYSQL_DATABASE)\`.* TO '$(printenv MYSQL_USER)'@'%';
+      EOSQL
 
 volumes:
   db_data:

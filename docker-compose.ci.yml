@@ -22,8 +22,8 @@ services:
       DB_HOST: db
       DB_PORT: 3306
       DB_NAME: lastplanneraia_ci
-      DB_USER: root
-      DB_PASS: ci-only-password
+      DB_USER: ${CI_DB_RUNTIME_USER:-lps_runtime_ci}
+      DB_PASS: ${CI_DB_RUNTIME_PASS:-ci-runtime-only-password}
       USE_GLOBAL_TABLES: "true"
     depends_on:
       db:
@@ -44,7 +44,9 @@ services:
       - "13307:3306"
     environment:
       MYSQL_DATABASE: lastplanneraia_ci
-      MYSQL_ROOT_PASSWORD: ci-only-password
+      MYSQL_USER: ${CI_DB_RUNTIME_USER:-lps_runtime_ci}
+      MYSQL_PASSWORD: ${CI_DB_RUNTIME_PASS:-ci-runtime-only-password}
+      MYSQL_ROOT_PASSWORD: ${CI_DB_ADMIN_PASS:-ci-admin-only-password}
     volumes: !override
       - db_data:/var/lib/mysql
     restart: "no"

@@ -151,3 +151,40 @@ Los flujos compartidos viven en:
 La suite principal es:
 
 - `tests/browser/full-app-flow.spec.mjs`
+
+## Contrato RLS de schema — pendiente de aplicación
+
+La migración `database/migrations/20260828_project_scope_contract.php` deriva las tablas `Project`
+del `TableScopeCatalog`; no mantiene una segunda lista. Por defecto solo cuenta NULLs y propone DDL.
+`--apply` queda detrás del gate de freeze, respaldo restaurable y autorización explícita descrito en
+`docs/security/runtime-db-user.md`.
+
+Dry-run leído el 2026-08-29 sobre el schema de desarrollo, sin `--apply`:
+
+```text
+DRY-RUN SQL: ALTER TABLE `auto_program_log` MODIFY `project_id` INT NOT NULL
+DRY-RUN SQL: ALTER TABLE `bi_cic_contratistas` ADD INDEX `idx_bi_cic_contratistas_project_scope` (`project_id`)
+DRY-RUN SQL: ALTER TABLE `bi_cip_responsables` MODIFY `project_id` INT NOT NULL
+DRY-RUN SQL: ALTER TABLE `bi_cip_responsables` ADD INDEX `idx_bi_cip_responsables_project_scope` (`project_id`)
+DRY-RUN SQL: ALTER TABLE `bi_control_tower_summary` ADD INDEX `idx_bi_control_tower_summary_project_scope` (`project_id`)
+DRY-RUN SQL: ALTER TABLE `bi_curva_s_duracion` ADD INDEX `idx_bi_curva_s_duracion_project_scope` (`project_id`)
+DRY-RUN SQL: ALTER TABLE `bi_pdc_general` ADD INDEX `idx_bi_pdc_general_project_scope` (`project_id`)
+DRY-RUN SQL: ALTER TABLE `bi_pg_semana` ADD INDEX `idx_bi_pg_semana_project_scope` (`project_id`)
+DRY-RUN SQL: ALTER TABLE `bi_pi_restricciones` ADD INDEX `idx_bi_pi_restricciones_project_scope` (`project_id`)
+DRY-RUN SQL: ALTER TABLE `bi_ps_compromisos` ADD INDEX `idx_bi_ps_compromisos_project_scope` (`project_id`)
+DRY-RUN SQL: ALTER TABLE `bi_riesgos` ADD INDEX `idx_bi_riesgos_project_scope` (`project_id`)
+DRY-RUN SQL: ALTER TABLE `general_pdc_project_family_strategy` MODIFY `project_id` INT NOT NULL
+DRY-RUN SQL: ALTER TABLE `programa_consolidado_estado_respaldo_20260819` ADD INDEX `idx_programa_consolidado_estado_respaldo_20260819_project_scope` (`project_id`)
+DRY-RUN SQL: ALTER TABLE `system_notifications` MODIFY `project_id` INT NOT NULL
+DRY-RUN SQL: ALTER TABLE `system_notifications` ADD INDEX `idx_system_notifications_project_scope` (`project_id`)
+tables_checked=66 null_rows=0 columns_changed=4 indexes_added=11
+```
+
+No se encontró ninguna fila NULL, así que este snapshot no requiere backfill. Si el conteo cambia
+antes de la ventana de aplicación, el nuevo dry-run invalida esta evidencia: se registra por tabla,
+se deriva `project_id` desde su relación de pertenencia concreta y se reconcilia; nunca se usa el
+proyecto 0. Los 15 statements anteriores están propuestos, no aplicados.
+
+El contrato `--enforce` permanece bloqueado hasta aplicar el DDL y resolver por un gate separado la
+tabla denegada `backup_licify_general_informe_pdc_20260612`; no se reclasifica ni se elimina para
+forzar un verde.
