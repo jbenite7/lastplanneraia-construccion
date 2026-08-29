@@ -6,6 +6,7 @@ class Database
 {
     private static $instance = null;
     private $pdo;
+    private ?\App\Security\DataScope\TableScopeCatalog $tableScopeCatalog = null;
     private array $projectIdByPrefix = [];
     private array $tableExistsCache = [];
 
@@ -87,6 +88,11 @@ class Database
         }
 
         return self::$instance;
+    }
+
+    public function tableScopeCatalog(): \App\Security\DataScope\TableScopeCatalog
+    {
+        return $this->tableScopeCatalog ??= \App\Security\DataScope\TableScopeCatalog::fromPdo($this->pdo);
     }
 
     /**
