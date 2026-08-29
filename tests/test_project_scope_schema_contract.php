@@ -35,6 +35,32 @@ function schemaContractTrue(bool $condition, string $message): void
     schemaContractSame(true, $condition, $message);
 }
 
+/** @param list<string> $requiredLiterals
+ *  @return list<string>
+ */
+function schemaContractMissingLiterals(string $document, array $requiredLiterals): array
+{
+    $missing = [];
+    foreach ($requiredLiterals as $literal) {
+        if (!str_contains($document, $literal)) {
+            $missing[] = $literal;
+        }
+    }
+
+    return $missing;
+}
+
+/** @param list<string> $requiredLiterals */
+function schemaContractRequireLiterals(string $label, string $document, array $requiredLiterals): void
+{
+    foreach ($requiredLiterals as $literal) {
+        schemaContractTrue(
+            schemaContractMissingLiterals($document, [$literal]) === [],
+            "{$label} debe conservar el literal {$literal}.",
+        );
+    }
+}
+
 /** @return array{code: int, output: string} */
 function schemaContractRunGrantAudit(
     string $script,
@@ -344,6 +370,47 @@ $scannerFixture = <<<'PHP'
 $expected = 'ALTER TABLE expected_only ADD COLUMN x INT';
 $pdo->exec('CREATE TABLE fixture_omitida (id INT)');
 PHP;
+
+$securityDocumentPath = __DIR__ . '/../docs/security/rls-runtime-boundary.md';
+$securityDocument = @file_get_contents($securityDocumentPath);
+schemaContractTrue($securityDocument !== false, 'Falta el documento de frontera runtime.');
+if ($securityDocument !== false) {
+    schemaContractRequireLiterals(
+        'Documento de frontera runtime',
+        $securityDocument,
+        ['DML-only', 'admin-db', 'advisory', 'SHOW GRANTS', '--apply', 'backup', 'restore'],
+    );
+}
+
+$historicalReportPath = __DIR__ . '/../.superpowers/sdd/2026-08-28-rls-aplicacion-fail-closed/task-7-report.md';
+$historicalReport = @file_get_contents($historicalReportPath);
+schemaContractTrue($historicalReport !== false, 'Falta el reporte histórico de Task 7.');
+if ($historicalReport !== false) {
+    schemaContractRequireLiterals('Reporte histórico de Task 7', $historicalReport, ['CODE_BLOCKED']);
+    schemaContractTrue(
+        str_contains($historicalReport, '../../../docs/superpowers/plans/2026-08-29-rls-runtime-boundary.md'),
+        'El reporte histórico no enlaza la replanificación RLS Runtime Boundary.',
+    );
+}
+
+$historicalProgressPath = __DIR__ . '/../.superpowers/sdd/2026-08-28-rls-aplicacion-fail-closed/progress.md';
+$historicalProgress = @file_get_contents($historicalProgressPath);
+schemaContractTrue($historicalProgress !== false, 'Falta el progreso histórico de Task 7.');
+if ($historicalProgress !== false) {
+    schemaContractRequireLiterals('Progreso histórico de Task 7', $historicalProgress, ['CODE_BLOCKED']);
+    schemaContractTrue(
+        str_contains($historicalProgress, '../../../docs/superpowers/plans/2026-08-29-rls-runtime-boundary.md'),
+        'El progreso histórico no enlaza la replanificación RLS Runtime Boundary.',
+    );
+}
+
+$incompleteDocumentationFixture = 'DML-only admin-db advisory SHOW GRANTS --apply backup';
+schemaContractSame(
+    ['restore'],
+    schemaContractMissingLiterals($incompleteDocumentationFixture, ['DML-only', 'admin-db', 'advisory', 'SHOW GRANTS', '--apply', 'backup', 'restore']),
+    'El helper no detectó el literal restore ausente en documentación incompleta.',
+);
+
 schemaContractSame(
     [['call' => 'exec', 'line' => 3]],
     phpTestExecutableDdlCalls($scannerFixture),
