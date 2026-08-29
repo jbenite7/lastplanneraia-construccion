@@ -37,13 +37,11 @@ $tPrograma = TableResolver::resolveByPrefix($db, 'programa');
 $tProgConsolidado = TableResolver::resolveByPrefix($db, 'programa_consolidado');
 $tSemanasActivas = TableResolver::resolveByPrefix($db, 'semanas_activas');
 
-// Set project context for queryWithProject auto-injection
-$projectId = TableResolver::getProjectIdByPrefix($db);
-if ($projectId) {
-    $dbInstance->setProjectContext($projectId);
-} else {
-    throw new RuntimeException('Proyecto no encontrado.');
+$scope = $dbInstance->dataScope()->current();
+if (!$scope instanceof \App\Security\DataScope\ProjectScope) {
+    throw new \App\Security\DataScope\MissingProjectScope('La operación requiere un proyecto activo.');
 }
+$projectId = $scope->projectId();
 
 $restrictionConfig = RestrictionConfigResolver::resolve($db);
 $isPreConstruccion = $restrictionConfig['isPreConstruccion'];

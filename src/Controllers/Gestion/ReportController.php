@@ -4,6 +4,8 @@ namespace App\Controllers\Gestion;
 
 use App\Controllers\BaseController;
 use App\Core\Notifications\NotificationType;
+use App\Security\DataScope\ProjectScope;
+use App\Security\DataScope\SystemScopeRunner;
 use App\Services\NotificationService;
 use App\Services\RestrictionConfigResolver;
 use Exception;
@@ -68,117 +70,29 @@ class ReportController extends BaseController
 
                     // Processing Triggers (JSON Response)
                 case 'curva-s':
-                    $result = $this->reportProcessor->generateCurvaS();
+                    $result = $this->runGlobalReport($tipo, fn() => $this->reportProcessor->generateCurvaS());
                     echo json_encode($result);
                     exit;
                 case 'general':
-                    $result = $this->reportProcessor->generateReporteGeneral();
+                    $result = $this->runGlobalReport($tipo, fn() => $this->reportProcessor->generateReporteGeneral());
                     echo json_encode($result);
                     exit;
                 case 'restricciones-general':
-                    $result = $this->reportProcessor->generateRestriccionesGeneral();
+                    $result = $this->runGlobalReport($tipo, fn() => $this->reportProcessor->generateRestriccionesGeneral());
                     echo json_encode($result);
                     exit;
                 case 'pdc':
-                    $result = $this->reportProcessor->generateReportePDC();
+                    $result = $this->runGlobalReport($tipo, fn() => $this->reportProcessor->generateReportePDC());
                     echo json_encode($result);
                     exit;
                 case 'subcontratistas':
-                    $result = $this->reportProcessor->generateReporteSubcontratistas();
+                    $result = $this->runGlobalReport($tipo, fn() => $this->reportProcessor->generateReporteSubcontratistas());
                     echo json_encode($result);
                     exit;
 
                     // Run All (Cron Job Equivalent)
                 case 'run-all':
-                    $results = [];
-                    $parts = [];
-                    $hasErrors = false;
-
-                    // 1. Curva S
-                    try {
-                        $results['curva_s'] = $this->reportProcessor->generateCurvaS();
-                        $parts[] = "\xE2\x9C\x93 Curva S";
-                    } catch (Exception $e) {
-                        $hasErrors = true;
-                        $results['curva_s'] = ['success' => false, 'error' => $e->getMessage()];
-                        $parts[] = "\xE2\x9C\x97 Curva S (" . $e->getMessage() . ")";
-                    }
-
-                    // 2. Reporte General
-                    try {
-                        $results['general'] = $this->reportProcessor->generateReporteGeneral();
-                        $parts[] = "\xE2\x9C\x93 General";
-                    } catch (Exception $e) {
-                        $hasErrors = true;
-                        $results['general'] = ['success' => false, 'error' => $e->getMessage()];
-                        $parts[] = "\xE2\x9C\x97 General (" . $e->getMessage() . ")";
-                    }
-
-                    // 3. Restricciones General
-                    try {
-                        $results['restricciones'] = $this->reportProcessor->generateRestriccionesGeneral();
-                        $parts[] = "\xE2\x9C\x93 Restricciones";
-                    } catch (Exception $e) {
-                        $hasErrors = true;
-                        $results['restricciones'] = ['success' => false, 'error' => $e->getMessage()];
-                        $parts[] = "\xE2\x9C\x97 Restricciones (" . $e->getMessage() . ")";
-                    }
-
-                    // 4. Reporte PDC
-                    try {
-                        $results['pdc'] = $this->reportProcessor->generateReportePDC();
-                        $parts[] = "\xE2\x9C\x93 PDC";
-                    } catch (Exception $e) {
-                        $hasErrors = true;
-                        $results['pdc'] = ['success' => false, 'error' => $e->getMessage()];
-                        $parts[] = "\xE2\x9C\x97 PDC (" . $e->getMessage() . ")";
-                    }
-
-                    // 5. Reporte Subcontratistas
-                    try {
-                        $results['subcontratistas'] = $this->reportProcessor->generateReporteSubcontratistas();
-                        $parts[] = "\xE2\x9C\x93 Subcontratistas";
-                    } catch (Exception $e) {
-                        $hasErrors = true;
-                        $results['subcontratistas'] = ['success' => false, 'error' => $e->getMessage()];
-                        $parts[] = "\xE2\x9C\x97 Subcontratistas (" . $e->getMessage() . ")";
-                    }
-
-                    // 6. CIC Update
-                    try {
-                        $semana = $_GET['semana'] ?? null;
-                        if ($semana && is_numeric($semana)) {
-                            $results['cic'] = $this->reportProcessor->updateCICProyectos((int) $semana);
-                        } else {
-                            $results['cic'] = $this->reportProcessor->updateCICProyectos(null);
-                        }
-                        $parts[] = "\xE2\x9C\x93 CIC";
-                    } catch (Exception $e) {
-                        $hasErrors = true;
-                        $results['cic'] = ['success' => false, 'error' => $e->getMessage()];
-                        $parts[] = "\xE2\x9C\x97 CIC (" . $e->getMessage() . ")";
-                    }
-
-                    // Build notification message
-                    $prefix = $hasErrors ? 'Reportes consolidados con errores' : 'Reportes consolidados';
-                    $message = $prefix . ': ' . implode(', ', $parts);
-
-                    // Emit notification to current user
-                    try {
-                        $usuario = $_SESSION['usuario'] ?? null;
-                        if ($usuario) {
-                            $svc = new NotificationService();
-                            $svc->emit($usuario, NotificationType::REPORT_RUN_ALL, $message);
-                        }
-                    } catch (\Throwable $e) {
-                        error_log("REPORT_RUN_ALL_NOTIF_ERROR: " . $e->getMessage());
-                    }
-
-                    echo json_encode([
-                        'success' => !$hasErrors,
-                        'results' => $results,
-                        'notification' => $message,
-                    ]);
+                    echo json_encode($this->runGlobalReport($tipo, fn() => $this->runAllReports()));
                     exit;
 
                 default:
@@ -189,6 +103,73 @@ class ReportController extends BaseController
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
             exit;
         }
+    }
+
+    private function runGlobalReport(string $type, callable $operation): mixed
+    {
+        $context = $this->db->dataScope();
+        if ($context->current() instanceof ProjectScope) {
+            $context->clear();
+        }
+        $usuario = (string) ($_SESSION['usuario'] ?? 'desconocido');
+
+        return (new SystemScopeRunner($context))->run("report:{$type}:{$usuario}", $operation);
+    }
+
+    /** @return array{success: bool, results: array<string, mixed>, notification: string} */
+    private function runAllReports(): array
+    {
+        $results = [];
+        $parts = [];
+        $hasErrors = false;
+        $steps = [
+            'curva_s' => ['Curva S', 'generateCurvaS'],
+            'general' => ['General', 'generateReporteGeneral'],
+            'restricciones' => ['Restricciones', 'generateRestriccionesGeneral'],
+            'pdc' => ['PDC', 'generateReportePDC'],
+            'subcontratistas' => ['Subcontratistas', 'generateReporteSubcontratistas'],
+        ];
+
+        foreach ($steps as $key => [$label, $method]) {
+            try {
+                $results[$key] = $this->reportProcessor->{$method}();
+                $parts[] = "\xE2\x9C\x93 {$label}";
+            } catch (Exception $error) {
+                $hasErrors = true;
+                $results[$key] = ['success' => false, 'error' => $error->getMessage()];
+                $parts[] = "\xE2\x9C\x97 {$label} (" . $error->getMessage() . ")";
+            }
+        }
+
+        try {
+            $semana = $_GET['semana'] ?? null;
+            $results['cic'] = $this->reportProcessor->updateCICProyectos(
+                $semana && is_numeric($semana) ? (int) $semana : null,
+            );
+            $parts[] = "\xE2\x9C\x93 CIC";
+        } catch (Exception $error) {
+            $hasErrors = true;
+            $results['cic'] = ['success' => false, 'error' => $error->getMessage()];
+            $parts[] = "\xE2\x9C\x97 CIC (" . $error->getMessage() . ")";
+        }
+
+        $prefix = $hasErrors ? 'Reportes consolidados con errores' : 'Reportes consolidados';
+        $message = $prefix . ': ' . implode(', ', $parts);
+
+        try {
+            $usuario = $_SESSION['usuario'] ?? null;
+            if ($usuario) {
+                (new NotificationService())->emit($usuario, NotificationType::REPORT_RUN_ALL, $message);
+            }
+        } catch (\Throwable $error) {
+            error_log('REPORT_RUN_ALL_NOTIF_ERROR: ' . $error->getMessage());
+        }
+
+        return [
+            'success' => !$hasErrors,
+            'results' => $results,
+            'notification' => $message,
+        ];
     }
 
     /**

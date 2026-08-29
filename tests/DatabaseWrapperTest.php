@@ -6,6 +6,7 @@ declare(strict_types=1);
 use App\Security\DataScope\MissingProjectScope;
 use App\Security\DataScope\ProjectScope;
 use App\Security\DataScope\ProjectScopeViolation;
+use App\Security\DataScope\SystemScope;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -58,6 +59,21 @@ try {
         }
         throw new RuntimeException('El override sin ProjectScope fue aceptado.');
     });
+
+    $scope->bind(SystemScope::forMaintenance('wrapper controlled system query'));
+
+    wrapperCheck('active SystemScope reaches the shared guard for project SQL', static function () use ($db): void {
+        $count = (int) $db->queryWithProject(
+            'SELECT COUNT(*) FROM auto_program_log WHERE detalle LIKE ?',
+            ['WRAPPER_TEST_NO_MATCH_%'],
+            27,
+        )->fetchColumn();
+        if ($count !== 0) {
+            throw new RuntimeException("Esperaba cero filas, obtuvo {$count}.");
+        }
+    });
+
+    $scope->clear();
 
     $scope->bind(new ProjectScope(73, 'test.A', 'A'));
 

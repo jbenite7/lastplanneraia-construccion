@@ -211,7 +211,7 @@ class ControlCambiosApiController
 
     private function obtenerURLCambios(string $dbPrefix): void
     {
-        $url = $this->db->queryWithProject("SELECT urlCambios FROM general_proyectos_procesos WHERE Base_de_Datos = ? LIMIT 1", [$dbPrefix])->fetchColumn();
+        $url = $this->db->query("SELECT urlCambios FROM general_proyectos_procesos WHERE Base_de_Datos = ? LIMIT 1", [$dbPrefix])->fetchColumn();
         echo json_encode($url ?: '', JSON_UNESCAPED_UNICODE);
     }
 

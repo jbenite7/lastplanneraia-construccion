@@ -57,7 +57,7 @@ class ProgramacionIntermediaController extends BaseController
             $dbPrefix = $vars['dbName'] ?? '';
             if (!empty($dbPrefix) && preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
                 try {
-                    $stmtPc = $this->db->queryWithProject(
+                    $stmtPc = $this->db->query(
                         "SELECT pc_restr_2_nombre, pc_restr_3_nombre, pc_restr_4_nombre
                          FROM general_proyectos_procesos
                          WHERE Base_de_Datos = ?

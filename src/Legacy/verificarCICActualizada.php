@@ -19,17 +19,17 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $db)) {
 // Resolve table names via TableResolver
 $tCic = TableResolver::resolveByPrefix($db, 'cic');
 
-// Set project context for queryWithProject auto-injection
-$projectId = TableResolver::getProjectIdByPrefix($db);
-if ($projectId) {
-    $dbInstance->setProjectContext($projectId);
+$scope = $dbInstance->dataScope()->current();
+if (!$scope instanceof \App\Security\DataScope\ProjectScope) {
+    throw new \App\Security\DataScope\MissingProjectScope('La operación requiere un proyecto activo.');
 }
+$projectId = $scope->projectId();
 
 try {
     if ($db == 'cedi_pasto' || empty($db)) {
         $faltaCalificar = 0;
     } else {
-        $faltaCalificar = listar($db, $semana, $dbInstance, $tCic);
+        $faltaCalificar = listar($db, $semana, $dbInstance, $tCic, $projectId);
     }
 } catch (Throwable $e) {
     error_log("Error fatal en verificarCICActualizada.php: " . $e->getMessage());
@@ -37,9 +37,8 @@ try {
 }
 echo json_encode($faltaCalificar);
 
-function listar($db, $semana, $dbInstance, $tCic)
+function listar($db, $semana, $dbInstance, $tCic, $projectId)
 {
-    $projectId = TableResolver::getProjectIdByPrefix($db);
     $stmt = $dbInstance->queryWithProject(
         "SELECT COUNT(*) AS conteo FROM {$tCic} WHERE project_id = ? AND (Semana <= ?) AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'",
         [$projectId, $semana],

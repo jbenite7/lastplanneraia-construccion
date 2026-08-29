@@ -59,10 +59,11 @@ if ($dbSession === '') {
     $_SESSION['db'] = $dbPrefix;
 }
 
-$projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
-if ($projectId) {
-    $dbInstance->setProjectContext($projectId);
+$scope = $dbInstance->dataScope()->current();
+if (!$scope instanceof \App\Security\DataScope\ProjectScope) {
+    throw new \App\Security\DataScope\MissingProjectScope('La operación requiere un proyecto activo.');
 }
+$projectId = $scope->projectId();
 
 // Resolve table names via TableResolver
 $tProgConsolidado = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');

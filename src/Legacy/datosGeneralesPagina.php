@@ -18,11 +18,11 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
 // Resolve table names via TableResolver
 $tSemanasActivas = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
 
-// Set project context for queryWithProject auto-injection
-$projectId = TableResolver::getProjectIdByPrefix($dbName);
-if ($projectId) {
-    $dbInstance->setProjectContext($projectId);
+$scope = $dbInstance->dataScope()->current();
+if (!$scope instanceof \App\Security\DataScope\ProjectScope) {
+    throw new \App\Security\DataScope\MissingProjectScope('La operación requiere un proyecto activo.');
 }
+$projectId = $scope->projectId();
 
 $permisoCodigo = $_SESSION['permiso'] ?? '';
 $rolHumano = RbacCatalog::getRoleName($permisoCodigo);

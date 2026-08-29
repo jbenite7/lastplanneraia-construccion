@@ -27,7 +27,7 @@ class AuthenticationService
      */
     public function verifyCredentials(string $usuario, string $password): ?array
     {
-        $stmt = $this->db->queryWithProject(
+        $stmt = $this->db->query(
             'SELECT * FROM general_usuarios WHERE usuario = ? LIMIT 1',
             [$usuario],
         );
@@ -43,7 +43,7 @@ class AuthenticationService
 
         if (hash_equals($data['password'], hash('sha512', $password))) {
             $newHash = password_hash($password, PASSWORD_DEFAULT);
-            $this->db->queryWithProject(
+            $this->db->query(
                 'UPDATE general_usuarios SET password = ? WHERE usuario = ?',
                 [$newHash, $usuario],
             );

@@ -231,12 +231,16 @@ class Database
     }
 
     /**
-     * Adaptador legado que delega al único preflight. Sin ProjectScope solo
-     * permite SQL compuesto exclusivamente por tablas Identity y sin override.
+     * Adaptador legado que delega al único preflight. Un SystemScope ya activo
+     * es la autoridad de mantenimiento; su tercer argumento no crea autoridad.
+     * Sin scope solo permite SQL compuesto por tablas Identity y sin override.
      */
     public function queryWithProject(string $sql, array $params = [], ?int $projectId = null): PDOStatement
     {
         $scope = $this->dataScope()->current();
+        if ($scope instanceof \App\Security\DataScope\SystemScope) {
+            return $this->query($sql, $params);
+        }
         if (!$scope instanceof \App\Security\DataScope\ProjectScope) {
             if ($scope === null) {
                 $guard = new \App\Security\DataScope\ProjectSqlGuard($this);

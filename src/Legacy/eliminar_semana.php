@@ -22,11 +22,11 @@ $tProgConsolidado = TableResolver::resolveByPrefix($dbName, 'programa_consolidad
 $tProgSemanal = TableResolver::resolveByPrefix($dbName, 'programacion_semanal');
 $tCic = TableResolver::resolveByPrefix($dbName, 'cic');
 
-// Set project context for queryWithProject auto-injection
-$projectId = TableResolver::getProjectIdByPrefix($dbName);
-if ($projectId) {
-    $dbInstance->setProjectContext($projectId);
+$scope = $dbInstance->dataScope()->current();
+if (!$scope instanceof \App\Security\DataScope\ProjectScope) {
+    throw new \App\Security\DataScope\MissingProjectScope('La operación requiere un proyecto activo.');
 }
+$projectId = $scope->projectId();
 
 try {
     // 1. Verificar si es la última semana

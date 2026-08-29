@@ -84,7 +84,7 @@ class ProgramaGeneralController extends BaseController
 
             try {
                 if (!empty($dbName) && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
-                    $stmtPc = $this->db->queryWithProject(
+                    $stmtPc = $this->db->query(
                         "SELECT pc_restr_2_nombre, pc_restr_3_nombre, pc_restr_4_nombre
                          FROM general_proyectos_procesos
                          WHERE Base_de_Datos = ?

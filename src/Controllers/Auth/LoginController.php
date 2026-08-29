@@ -226,7 +226,7 @@ class LoginController
 
     private function userHasGlobalAdminRole(string $usuario): bool
     {
-        $stmt = $this->db->queryWithProject(
+        $stmt = $this->db->query(
             "SELECT COUNT(*) FROM project_members pm
              INNER JOIN general_usuarios u ON u.id = pm.user_id
              INNER JOIN general_proyectos_procesos p ON p.ID = pm.project_id

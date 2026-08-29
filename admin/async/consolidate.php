@@ -65,10 +65,9 @@ set_time_limit(0);
 // --- Run consolidation ---
 require_once ADMIN_PROJECT_ROOT . '/../src/Services/ReportProcessor.php';
 use App\Services\ReportProcessor;
+use App\Security\DataScope\SystemScopeRunner;
 
 $processor = new ReportProcessor();
-$parts = [];
-$hasErrors = false;
 
 $processor->setProgressCallback(function (string $reportLabel, string $project, int $index, int $total, string $status, ?string $message = null) use ($tracker) {
     $tracker->update($reportLabel, $project, $index, $total, $status, $message);
@@ -87,49 +86,56 @@ register_shutdown_function(function () use ($tracker) {
     }
 });
 
-$steps = [
-    'Curva S'         => 'generateCurvaS',
-    'General'         => 'generateReporteGeneral',
-    'Restricciones'   => 'generateRestriccionesGeneral',
-    'PDC'             => 'generateReportePDC',
-    'Subcontratistas' => 'generateReporteSubcontratistas',
-];
+(new SystemScopeRunner($db->dataScope()))->run(
+    "admin:consolidation:{$usuario}",
+    function () use ($db, $tracker, $processor, $usuario): void {
+        $parts = [];
+        $hasErrors = false;
+        $steps = [
+            'Curva S'         => 'generateCurvaS',
+            'General'         => 'generateReporteGeneral',
+            'Restricciones'   => 'generateRestriccionesGeneral',
+            'PDC'             => 'generateReportePDC',
+            'Subcontratistas' => 'generateReporteSubcontratistas',
+        ];
 
-foreach ($steps as $label => $method) {
-    try {
-        error_log('[ASYNC_CONSOLIDATE] Starting step: ' . $label);
-        $processor->{$method}();
-        $parts[] = "\xE2\x9C\x93 {$label}";
-        error_log('[ASYNC_CONSOLIDATE] Completed step: ' . $label);
-    } catch (\Exception $e) {
-        $hasErrors = true;
-        $parts[] = "\xE2\x9C\x97 {$label} (" . $e->getMessage() . ")";
-        error_log('[ASYNC_CONSOLIDATE] Exception in step ' . $label . ': ' . $e->getMessage());
-    }
-}
+        foreach ($steps as $label => $method) {
+            try {
+                error_log('[ASYNC_CONSOLIDATE] Starting step: ' . $label);
+                $processor->{$method}();
+                $parts[] = "\xE2\x9C\x93 {$label}";
+                error_log('[ASYNC_CONSOLIDATE] Completed step: ' . $label);
+            } catch (\Exception $e) {
+                $hasErrors = true;
+                $parts[] = "\xE2\x9C\x97 {$label} (" . $e->getMessage() . ")";
+                error_log('[ASYNC_CONSOLIDATE] Exception in step ' . $label . ': ' . $e->getMessage());
+            }
+        }
 
-try {
-    $processor->updateCICProyectos(null);
-    $parts[] = "\xE2\x9C\x93 CIC";
-} catch (\Exception $e) {
-    $hasErrors = true;
-    $parts[] = "\xE2\x9C\x97 CIC (" . $e->getMessage() . ")";
-}
+        try {
+            $processor->updateCICProyectos(null);
+            $parts[] = "\xE2\x9C\x93 CIC";
+        } catch (\Exception $e) {
+            $hasErrors = true;
+            $parts[] = "\xE2\x9C\x97 CIC (" . $e->getMessage() . ")";
+        }
 
-foreach (($tracker->toArray()['history'] ?? []) as $entry) {
-    if (($entry['status'] ?? '') === 'error') {
-        $hasErrors = true;
-        break;
-    }
-}
+        foreach (($tracker->toArray()['history'] ?? []) as $entry) {
+            if (($entry['status'] ?? '') === 'error') {
+                $hasErrors = true;
+                break;
+            }
+        }
 
-// --- Audit log ---
-$prefix = $hasErrors ? 'Reportes consolidados con errores' : 'Reportes consolidados';
-$message = $prefix . ': ' . implode(', ', $parts);
-$db->logActivity('Admin', 'CONSOLIDAR_REPORTES', "{$usuario} ejecutó consolidación de reportes. {$message}", null);
+        // --- Audit log ---
+        $prefix = $hasErrors ? 'Reportes consolidados con errores' : 'Reportes consolidados';
+        $message = $prefix . ': ' . implode(', ', $parts);
+        $db->logActivity('Admin', 'CONSOLIDAR_REPORTES', "{$usuario} ejecutó consolidación de reportes. {$message}", null);
 
-// --- Mark complete ---
-$tracker->complete(!$hasErrors, $message);
+        // --- Mark complete ---
+        $tracker->complete(!$hasErrors, $message);
 
-error_log('[ASYNC_CONSOLIDATE] Finished. ' . $message);
+        error_log('[ASYNC_CONSOLIDATE] Finished. ' . $message);
+    },
+);
 exit(0);

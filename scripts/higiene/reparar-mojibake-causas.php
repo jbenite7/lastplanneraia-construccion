@@ -13,6 +13,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/../../src/Core/Database.php';
 
+use App\Security\DataScope\SystemScopeRunner;
+
 $aplicar = in_array('--aplicar', $argv, true);
 
 if ($aplicar && getenv('AUTORIZADO_POR_FELIPE') !== '1') {
@@ -38,22 +40,27 @@ const EXISTE_EN_PROGRAMA = 'EXISTS ('
     . 'AND p.unique_id = programacion_semanal.unique_id'
     . ')';
 
-foreach (['CNC', 'CNP', 'Categoria_CNC', 'Categoria_CNP'] as $col) {
-    foreach ($reemplazos as $malo => $bueno) {
-        $n = (int) $db->query(
-            "SELECT COUNT(*) FROM programacion_semanal WHERE `$col` LIKE BINARY ? AND " . EXISTE_EN_PROGRAMA,
-            ["%$malo%"]
-        )->fetchColumn();
-        if ($n === 0) {
-            continue;
+(new SystemScopeRunner($db->dataScope()))->run(
+    'maintenance:repair-mojibake',
+    static function () use ($aplicar, $db, $reemplazos): void {
+        foreach (['CNC', 'CNP', 'Categoria_CNC', 'Categoria_CNP'] as $col) {
+            foreach ($reemplazos as $malo => $bueno) {
+                $n = (int) $db->query(
+                    "SELECT COUNT(*) FROM programacion_semanal WHERE `$col` LIKE BINARY ? AND " . EXISTE_EN_PROGRAMA,
+                    ["%$malo%"]
+                )->fetchColumn();
+                if ($n === 0) {
+                    continue;
+                }
+                printf("%s: %d filas con «%s» → «%s»%s\n", $col, $n, $malo, $bueno, $aplicar ? '' : ' (dry-run)');
+                if ($aplicar) {
+                    $db->query(
+                        "UPDATE programacion_semanal SET `$col` = REPLACE(`$col`, ?, ?) WHERE `$col` LIKE BINARY ? AND " . EXISTE_EN_PROGRAMA,
+                        [$malo, $bueno, "%$malo%"]
+                    );
+                }
+            }
         }
-        printf("%s: %d filas con «%s» → «%s»%s\n", $col, $n, $malo, $bueno, $aplicar ? '' : ' (dry-run)');
-        if ($aplicar) {
-            $db->query(
-                "UPDATE programacion_semanal SET `$col` = REPLACE(`$col`, ?, ?) WHERE `$col` LIKE BINARY ? AND " . EXISTE_EN_PROGRAMA,
-                [$malo, $bueno, "%$malo%"]
-            );
-        }
-    }
-}
-echo $aplicar ? "Aplicado.\n" : "Dry-run. Repetir con --aplicar (y AUTORIZADO_POR_FELIPE=1) para escribir.\n";
+        echo $aplicar ? "Aplicado.\n" : "Dry-run. Repetir con --aplicar (y AUTORIZADO_POR_FELIPE=1) para escribir.\n";
+    },
+);

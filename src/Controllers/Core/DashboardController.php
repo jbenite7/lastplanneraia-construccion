@@ -48,7 +48,7 @@ class DashboardController
             exit;
         }
         $db = \Database::getInstance();
-        $pStmt = $db->queryWithProject("SELECT ID FROM general_proyectos_procesos WHERE Proyecto_Proceso = ? AND Area = 'Construccion' LIMIT 1", [$_SESSION['proyecto'] ?? '']);
+        $pStmt = $db->query("SELECT ID FROM general_proyectos_procesos WHERE Proyecto_Proceso = ? AND Area = 'Construccion' LIMIT 1", [$_SESSION['proyecto'] ?? '']);
         $p = $pStmt->fetch(\PDO::FETCH_ASSOC);
         $projId = $p ? (int) $p['ID'] : 0;
 

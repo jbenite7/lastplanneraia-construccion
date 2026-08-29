@@ -8,6 +8,7 @@ use Admin\Models\User;
 use App\Core\ProgressTracker;
 use App\Services\FeatureFlagService;
 use App\Services\ReportProcessor;
+use App\Security\DataScope\SystemScopeRunner;
 use Database;
 
 class DashboardController extends AdminController
@@ -313,49 +314,54 @@ class DashboardController extends AdminController
                 }
             });
 
-            $steps = [
-                'Curva S'         => 'generateCurvaS',
-                'General'         => 'generateReporteGeneral',
-                'Restricciones'   => 'generateRestriccionesGeneral',
-                'PDC'             => 'generateReportePDC',
-                'Subcontratistas' => 'generateReporteSubcontratistas',
-            ];
+            (new SystemScopeRunner($db->dataScope()))->run(
+                "admin:consolidation:{$usuario}",
+                function () use ($db, $tracker, $processor, $usuario, &$parts, &$hasErrors): void {
+                    $steps = [
+                        'Curva S'         => 'generateCurvaS',
+                        'General'         => 'generateReporteGeneral',
+                        'Restricciones'   => 'generateRestriccionesGeneral',
+                        'PDC'             => 'generateReportePDC',
+                        'Subcontratistas' => 'generateReporteSubcontratistas',
+                    ];
 
-            foreach ($steps as $label => $method) {
-                try {
-                    error_log('[CONSOLIDACION] Starting step: ' . $label);
-                    $processor->{$method}();
-                    $parts[] = "\xE2\x9C\x93 {$label}";
-                    error_log('[CONSOLIDACION] Completed step: ' . $label);
-                } catch (\Exception $e) {
-                    $hasErrors = true;
-                    $parts[] = "\xE2\x9C\x97 {$label} (" . $e->getMessage() . ")";
-                    error_log('[CONSOLIDACION] Exception in step ' . $label . ': ' . $e->getMessage());
-                }
-            }
+                    foreach ($steps as $label => $method) {
+                        try {
+                            error_log('[CONSOLIDACION] Starting step: ' . $label);
+                            $processor->{$method}();
+                            $parts[] = "\xE2\x9C\x93 {$label}";
+                            error_log('[CONSOLIDACION] Completed step: ' . $label);
+                        } catch (\Exception $e) {
+                            $hasErrors = true;
+                            $parts[] = "\xE2\x9C\x97 {$label} (" . $e->getMessage() . ")";
+                            error_log('[CONSOLIDACION] Exception in step ' . $label . ': ' . $e->getMessage());
+                        }
+                    }
 
-            try {
-                $processor->updateCICProyectos(null);
-                $parts[] = "\xE2\x9C\x93 CIC";
-            } catch (\Exception $e) {
-                $hasErrors = true;
-                $parts[] = "\xE2\x9C\x97 CIC (" . $e->getMessage() . ")";
-            }
+                    try {
+                        $processor->updateCICProyectos(null);
+                        $parts[] = "\xE2\x9C\x93 CIC";
+                    } catch (\Exception $e) {
+                        $hasErrors = true;
+                        $parts[] = "\xE2\x9C\x97 CIC (" . $e->getMessage() . ")";
+                    }
 
-            foreach (($tracker->toArray()['history'] ?? []) as $entry) {
-                if (($entry['status'] ?? '') === 'error') {
-                    $hasErrors = true;
-                    break;
-                }
-            }
+                    foreach (($tracker->toArray()['history'] ?? []) as $entry) {
+                        if (($entry['status'] ?? '') === 'error') {
+                            $hasErrors = true;
+                            break;
+                        }
+                    }
 
-            $prefix = $hasErrors ? 'Reportes consolidados con errores' : 'Reportes consolidados';
-            $message = $prefix . ': ' . implode(', ', $parts);
-            $db->logActivity('Admin', 'CONSOLIDAR_REPORTES', "{$usuario} ejecutó consolidación de reportes. {$message}", null);
+                    $prefix = $hasErrors ? 'Reportes consolidados con errores' : 'Reportes consolidados';
+                    $message = $prefix . ': ' . implode(', ', $parts);
+                    $db->logActivity('Admin', 'CONSOLIDAR_REPORTES', "{$usuario} ejecutó consolidación de reportes. {$message}", null);
 
-            $tracker->complete(!$hasErrors, $message);
+                    $tracker->complete(!$hasErrors, $message);
 
-            error_log('[CONSOLIDACION] Finished. ' . $message);
+                    error_log('[CONSOLIDACION] Finished. ' . $message);
+                },
+            );
         } catch (\Exception $e) {
             error_log('[CONSOLIDACION] Fatal inline error: ' . $e->getMessage());
             try {

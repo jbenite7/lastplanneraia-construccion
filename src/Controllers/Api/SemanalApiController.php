@@ -4,6 +4,8 @@ namespace App\Controllers\Api;
 
 use App\Core\Lps\LpsService;
 use App\Security\CsrfTokenManager;
+use App\Security\DataScope\MissingProjectScope;
+use App\Security\DataScope\ProjectScope;
 use App\Security\LpsWeekEditPolicy;
 use App\Security\RbacService;
 use App\Security\SemanalReabrirPolicy;
@@ -244,7 +246,6 @@ class SemanalApiController
     private function modificar(string $dbPrefix, int $semana): void
     {
         $projectId = $this->projectId($dbPrefix);
-        $this->db->setProjectContext($projectId);
 
         $id = (int) ($_POST["Id"] ?? 0);
         if ($id <= 0 || $semana <= 0) {
@@ -380,7 +381,6 @@ private function autoprogramar(string $dbPrefix, int $semana): void
     {
         try {
             $projectId = $this->projectId($dbPrefix);
-            $this->db->setProjectContext($projectId);
             \CommitmentLockGuard::guard($dbPrefix, $semana, 'autoprogramar');
 
             $area = $_SESSION['area'] ?? 'Construccion';
@@ -1011,7 +1011,6 @@ private function autoprogramar(string $dbPrefix, int $semana): void
         $usuarioActual = (string) ($_SESSION['usuario'] ?? ($_SESSION['admin_user']['usuario'] ?? 'desconocido'));
 
         try {
-            $this->db->setProjectContext($projectId);
             $this->db->beginTransaction();
 
             $this->db->queryWithProject(
@@ -1160,7 +1159,6 @@ private function autoprogramar(string $dbPrefix, int $semana): void
     {
         try {
             $projectId = $this->projectId($dbPrefix);
-            $this->db->setProjectContext($projectId);
             $area = $_SESSION['area'] ?? 'Construccion';
             $confirmada = $this->db->queryWithProject(
                 "SELECT Semanal_Confirmada FROM " . $this->tbl($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ?",
@@ -1497,7 +1495,6 @@ private function autoprogramar(string $dbPrefix, int $semana): void
 
         try {
             $projectId = $this->projectId($dbPrefix);
-            $this->db->setProjectContext($projectId);
             $area = $_SESSION['area'] ?? 'Construccion';
             $detector = new ProgramChangeDetector();
             $log = $detector->run($dbPrefix, $semana);
@@ -1537,7 +1534,6 @@ private function autoprogramar(string $dbPrefix, int $semana): void
 
         try {
             $projectId = $this->projectId($dbPrefix);
-            $this->db->setProjectContext($projectId);
             $detector = new ProgramChangeDetector();
             $log = $detector->getLog($dbPrefix, $semana);
 
@@ -1554,11 +1550,11 @@ private function autoprogramar(string $dbPrefix, int $semana): void
 
     private function projectId(string $dbPrefix): int
     {
-        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
-        if (!$projectId) {
-            throw new \RuntimeException('Proyecto no encontrado.');
+        $scope = $this->db->dataScope()->current();
+        if (!$scope instanceof ProjectScope) {
+            throw new MissingProjectScope('La operación requiere un proyecto activo.');
         }
 
-        return $projectId;
+        return $scope->projectId();
     }
 }

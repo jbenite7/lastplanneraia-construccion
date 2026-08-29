@@ -48,7 +48,7 @@ class ProjectAccessService
                   AND p.Activo = 1
                 ORDER BY p.Proyecto_Proceso ASC";
 
-        $rows = $this->db->queryWithProject($sql, [$usuario])->fetchAll();
+        $rows = $this->db->query($sql, [$usuario])->fetchAll();
         $managementRoles = RbacCatalog::managementRoles();
         $proyectos = [];
 
@@ -102,7 +102,7 @@ class ProjectAccessService
                   AND p.Activo = 1
                 LIMIT 1";
 
-        $accessData = $this->db->queryWithProject($sql, [$usuario, $proyectoSeleccionado])->fetch();
+        $accessData = $this->db->query($sql, [$usuario, $proyectoSeleccionado])->fetch();
 
         if (!$accessData) {
             return $this->failure('No tienes permiso para acceder a este proyecto.');

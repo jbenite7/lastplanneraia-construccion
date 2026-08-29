@@ -9,6 +9,8 @@ use App\Support\ModuleRequestContext;
 use App\Services\ProgramaConsolidadoNormalizationService;
 use App\Services\ActivityMatcherService;
 use App\Services\WeeklyRealProgressCarryoverService;
+use App\Security\DataScope\MissingProjectScope;
+use App\Security\DataScope\ProjectScope;
 use PDO;
 use Exception;
 use TableResolver;
@@ -43,7 +45,6 @@ class GeneralApiController extends BaseController
                 throw new Exception("Base de datos inválida.");
             }
             $projectId = $this->projectId($dbPrefix);
-            $this->db->setProjectContext($projectId);
 
             // 2. Construir Filtros
             $conditions = [];
@@ -149,7 +150,6 @@ class GeneralApiController extends BaseController
                 throw new Exception("Base de datos inválida.");
             }
             $projectId = $this->projectId($dbPrefix);
-            $this->db->setProjectContext($projectId);
             $this->lpsService->disableProductivityMeasurementTemporarily($this->db, $projectId);
 
             $semanaParam = $_GET['semana_objetivo'] ?? $_GET['semana'] ?? null;
@@ -424,7 +424,6 @@ class GeneralApiController extends BaseController
                 throw new Exception('Parámetros inválidos.');
             }
             $projectId = $this->projectId($dbPrefix);
-            $this->db->setProjectContext($projectId);
 
             if (!$this->assertNotPastWeekOrPrivileged((int) $semana, $dbPrefix, $projectId)) {
                 return;
@@ -494,7 +493,6 @@ class GeneralApiController extends BaseController
         }
 
         $projectId = $this->projectId($dbPrefix);
-        $this->db->setProjectContext($projectId);
 
         $semanaData = $this->db->queryWithProject("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ? LIMIT 1", [$projectId, $semana], $projectId);
         $semanaRow = $semanaData->fetch(PDO::FETCH_ASSOC);
@@ -572,8 +570,6 @@ class GeneralApiController extends BaseController
                 throw new Exception("Base de datos inválida.");
             }
             $projectId = $this->projectId($dbPrefix);
-
-            $this->db->setProjectContext($projectId);
 
             $archivo = $_FILES['archivoExcel'] ?? null;
             if (!$archivo || $archivo['error'] !== UPLOAD_ERR_OK) {
@@ -1221,7 +1217,6 @@ class GeneralApiController extends BaseController
                 throw new Exception("Base de datos inválida.");
             }
             $projectId = $this->projectId($dbPrefix);
-            $this->db->setProjectContext($projectId);
 
             if (!$this->assertNotPastWeekOrPrivileged($semana, $dbPrefix, $projectId)) {
                 return;
@@ -1352,7 +1347,6 @@ class GeneralApiController extends BaseController
                 throw new Exception("Base de datos inválida.");
             }
             $projectId = $this->projectId($dbPrefix);
-            $this->db->setProjectContext($projectId);
 
             if ($semanaObjetivo === false || $semanaObjetivo === null || $semanaObjetivo <= 0) {
                 throw new Exception("semana_objetivo inválida o no especificada.");
@@ -1610,7 +1604,7 @@ class GeneralApiController extends BaseController
                 $label4 = null;
 
                 if (!empty($dbPrefix) && preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
-                    $stmt = $this->db->queryWithProject(
+                    $stmt = $this->db->query(
                         "SELECT pc_restr_2_nombre, pc_restr_3_nombre, pc_restr_4_nombre
                          FROM general_proyectos_procesos
                          WHERE Base_de_Datos = ?
@@ -1751,12 +1745,12 @@ class GeneralApiController extends BaseController
             throw new Exception('Base de datos inválida o sesión expirada.');
         }
 
-        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
-        if (!$projectId) {
-            throw new Exception('Proyecto no encontrado.');
+        $scope = $this->db->dataScope()->current();
+        if (!$scope instanceof ProjectScope) {
+            throw new MissingProjectScope('La operación requiere un proyecto activo.');
         }
 
-        return $projectId;
+        return $scope->projectId();
     }
 
     /**
