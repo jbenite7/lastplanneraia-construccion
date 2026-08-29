@@ -33,34 +33,46 @@ function schemaContractTrue(bool $condition, string $message): void
 }
 
 /** @return array{code: int, output: string} */
-function schemaContractRunGrantAudit(string $script, string $grant): array
+function schemaContractRunGrantAudit(string $script, string $grant, bool $stdin = false): array
 {
-    $fixture = tempnam(sys_get_temp_dir(), 'lps-grants-');
-    if ($fixture === false || file_put_contents($fixture, $grant . "\n") === false) {
-        throw new RuntimeException('No se pudo crear el fixture temporal de grants.');
+    $fixture = null;
+    if (!$stdin) {
+        $fixture = tempnam(sys_get_temp_dir(), 'lps-grants-');
+        if ($fixture === false || file_put_contents($fixture, $grant . "\n") === false) {
+            throw new RuntimeException('No se pudo crear el fixture temporal de grants.');
+        }
     }
 
-    $command = [PHP_BINARY, $script, '--grants-file=' . $fixture];
+    $command = [PHP_BINARY, $script];
+    if ($fixture !== null) {
+        $command[] = '--grants-file=' . $fixture;
+    }
     $pipes = [];
     $process = proc_open(
         $command,
-        [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+        [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
         $pipes,
         null,
         ['DB_NAME' => 'lps'],
     );
 
     if (!is_resource($process)) {
-        @unlink($fixture);
+        if ($fixture !== null) {
+            @unlink($fixture);
+        }
         throw new RuntimeException('No se pudo iniciar el auditor de grants.');
     }
 
+    fwrite($pipes[0], $stdin ? $grant . "\n" : '');
+    fclose($pipes[0]);
     $stdout = stream_get_contents($pipes[1]);
     $stderr = stream_get_contents($pipes[2]);
     fclose($pipes[1]);
     fclose($pipes[2]);
     $code = proc_close($process);
-    @unlink($fixture);
+    if ($fixture !== null) {
+        @unlink($fixture);
+    }
 
     return ['code' => $code, 'output' => (string) $stdout . (string) $stderr];
 }
@@ -78,6 +90,32 @@ if (!is_file($grantAudit)) {
             "GRANT USAGE ON *.* TO `lps_runtime`@`%`\n"
                 . 'GRANT SELECT, INSERT, UPDATE, DELETE ON `lps`.* TO `lps_runtime`@`%`',
             0,
+        ],
+        'DML exacto acepta case, orden y quoting alternos' => [
+            "grant delete, update, insert, select on lps.* to 'lps_runtime'@'%'",
+            0,
+        ],
+        'USAGE sin DML exacto' => [
+            'GRANT USAGE ON *.* TO `lps_runtime`@`%`',
+            1,
+        ],
+        'DML incompleto' => [
+            'GRANT SELECT, INSERT, UPDATE ON `lps`.* TO `lps_runtime`@`%`',
+            1,
+        ],
+        'sufijo no permitido' => [
+            'GRANT SELECT, INSERT, UPDATE, DELETE ON `lps`.* TO `lps_runtime`@`%`;',
+            1,
+        ],
+        'segundo GRANT DML' => [
+            "GRANT SELECT, INSERT, UPDATE, DELETE ON `lps`.* TO `lps_runtime`@`%`\n"
+                . 'GRANT SELECT, INSERT, UPDATE, DELETE ON `lps`.* TO `lps_runtime`@`%`',
+            1,
+        ],
+        'USAGE y DML para cuentas distintas' => [
+            "GRANT USAGE ON *.* TO `otra_runtime`@`%`\n"
+                . 'GRANT SELECT, INSERT, UPDATE, DELETE ON `lps`.* TO `lps_runtime`@`%`',
+            1,
         ],
         'usuario root' => [
             'GRANT SELECT ON `lps`.* TO `root`@`%`',
@@ -137,6 +175,34 @@ if (!is_file($grantAudit)) {
             "Auditor de grants: {$label} imprimió el grant recibido.",
         );
     }
+
+    $stdinResult = schemaContractRunGrantAudit(
+        $grantAudit,
+        "grant select, insert, update, delete on `lps`.* to 'lps_runtime'@'%'",
+        true,
+    );
+    schemaContractSame(0, $stdinResult['code'], 'Auditor de grants: stdin válido devolvió RC inesperado.');
+    schemaContractTrue(
+        stripos($stdinResult['output'], 'GRANT ') === false,
+        'Auditor de grants: stdin válido imprimió el grant recibido.',
+    );
+}
+
+$runtimeTestFiles = [
+    __DIR__ . '/unit/MetricExecutorTest.php',
+    __DIR__ . '/unit/PgAvanceEdicionManualTest.php',
+    __DIR__ . '/unit/PgAvanceEdicionManualFailureTest.php',
+];
+foreach ($runtimeTestFiles as $runtimeTestFile) {
+    $source = @file_get_contents($runtimeTestFile);
+    schemaContractTrue($source !== false, basename($runtimeTestFile) . ' no se pudo auditar.');
+    if ($source !== false) {
+        schemaContractSame(
+            0,
+            preg_match('/\b(?:CREATE|DROP|ALTER|TRUNCATE)\s+(?:TEMPORARY\s+)?TABLE\b/i', $source),
+            basename($runtimeTestFile) . ' contiene DDL bajo el canal de tests de app runtime.',
+        );
+    }
 }
 
 $migration = __DIR__ . '/../database/migrations/20260828_project_scope_contract.php';
@@ -164,8 +230,18 @@ if (!is_file($migration)) {
 
     $plan = projectScopeBuildPlan(
         [
-            'cic' => ['project_id_nullable' => 0, 'has_leading_index' => 1],
-            'programa' => ['project_id_nullable' => 1, 'has_leading_index' => 0],
+            'cic' => [
+                'TABLE_TYPE' => 'BASE TABLE',
+                'COLUMN_TYPE' => 'int',
+                'project_id_nullable' => 0,
+                'has_leading_index' => 1,
+            ],
+            'programa' => [
+                'TABLE_TYPE' => 'BASE TABLE',
+                'COLUMN_TYPE' => 'int',
+                'project_id_nullable' => 1,
+                'has_leading_index' => 0,
+            ],
         ],
         static fn(string $table): int => 0,
     );
@@ -184,7 +260,12 @@ if (!is_file($migration)) {
     );
 
     $blocked = projectScopeBuildPlan(
-        ['programa' => ['project_id_nullable' => 1, 'has_leading_index' => 0]],
+        ['programa' => [
+            'TABLE_TYPE' => 'BASE TABLE',
+            'COLUMN_TYPE' => 'int',
+            'project_id_nullable' => 1,
+            'has_leading_index' => 0,
+        ]],
         static fn(string $table): int => $table === 'programa' ? 3 : 0,
     );
     schemaContractSame(['programa' => 3], $blocked['null_tables'], 'El plan no registra la tabla con NULLs.');
@@ -196,10 +277,88 @@ if (!is_file($migration)) {
     );
 
     $converged = projectScopeBuildPlan(
-        ['programa' => ['project_id_nullable' => 0, 'has_leading_index' => 1]],
+        ['programa' => [
+            'TABLE_TYPE' => 'BASE TABLE',
+            'COLUMN_TYPE' => 'int',
+            'project_id_nullable' => 0,
+            'has_leading_index' => 1,
+        ]],
         static fn(string $table): int => 0,
     );
     schemaContractSame([], $converged['sql'], 'Una segunda planificación idempotente aún propone DDL.');
+
+    $viewRows = [];
+    for ($view = 1; $view <= 9; $view++) {
+        $viewRows['bi_view_' . $view] = [
+            'TABLE_TYPE' => 'VIEW',
+            'COLUMN_TYPE' => 'int',
+            'project_id_nullable' => 1,
+            'has_leading_index' => 0,
+        ];
+    }
+    $viewRows['programa'] = [
+        'TABLE_TYPE' => 'BASE TABLE',
+        'COLUMN_TYPE' => 'int unsigned',
+        'project_id_nullable' => 1,
+        'has_leading_index' => 1,
+    ];
+    $countedTables = [];
+    $viewsSkipped = projectScopeBuildPlan(
+        $viewRows,
+        static function (string $table) use (&$countedTables): int {
+            $countedTables[] = $table;
+            return 0;
+        },
+    );
+    schemaContractSame(['programa'], $countedTables, 'El preflight contó NULLs sobre una VIEW.');
+    schemaContractSame(
+        ['ALTER TABLE `programa` MODIFY `project_id` INT UNSIGNED NOT NULL'],
+        $viewsSkipped['sql'],
+        'El plan no preservó el entero seguro o propuso DDL para una VIEW.',
+    );
+    schemaContractSame(
+        'tables_checked=1 null_rows=0 columns_changed=1 indexes_added=0',
+        projectScopeFormatSummary($viewsSkipped),
+        'El resumen incluyó VIEWs como tablas físicas.',
+    );
+
+    $nullCounters = 0;
+    try {
+        projectScopeBuildPlan(
+            [
+                'programa' => [
+                    'TABLE_TYPE' => 'BASE TABLE',
+                    'COLUMN_TYPE' => 'int',
+                    'project_id_nullable' => 0,
+                    'has_leading_index' => 1,
+                ],
+                'tabla_incompatible' => [
+                    'TABLE_TYPE' => 'BASE TABLE',
+                    'COLUMN_TYPE' => 'varchar(100)',
+                    'project_id_nullable' => 1,
+                    'has_leading_index' => 0,
+                ],
+            ],
+            static function (string $table) use (&$nullCounters): int {
+                $nullCounters++;
+                return 0;
+            },
+        );
+        $failures[] = 'La migración aceptó project_id varchar en una BASE TABLE Project.';
+    } catch (RuntimeException) {
+        $checks++;
+    }
+    schemaContractSame(0, $nullCounters, 'El lote no se prevalidó completo antes de consultar o aplicar cambios.');
+
+    ob_start();
+    $preflightCode = projectScopeMigrationMain(
+        [],
+        static function (bool $apply): PDO {
+            throw new RuntimeException('connection-refused-for-test');
+        },
+    );
+    ob_end_clean();
+    schemaContractSame(1, $preflightCode, 'Un fallo de conexión/preflight terminó con RC 0.');
 }
 
 $catalog = Database::getInstance()->tableScopeCatalog();
@@ -209,7 +368,15 @@ foreach ($catalog->schemaRows() as $table => $row) {
     $kind = $catalog->kind($table);
 
     if ($kind === TableScopeKind::Project) {
+        if (($row['TABLE_TYPE'] ?? null) !== 'BASE TABLE') {
+            continue;
+        }
         $problems = [];
+        try {
+            projectScopeIntegerColumnType($row['COLUMN_TYPE'] ?? null);
+        } catch (RuntimeException) {
+            $problems[] = 'project_id tiene tipo incompatible';
+        }
         if ((int) ($row['project_id_nullable'] ?? 0) === 1) {
             $problems[] = 'project_id permite NULL';
         }

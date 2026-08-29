@@ -20,6 +20,11 @@ final class TableScopeCatalog
     {
         $rows = $pdo->query(
             "SELECT c.TABLE_NAME,
+                    t.TABLE_TYPE,
+                    MAX(CASE
+                        WHEN c.COLUMN_NAME = 'project_id' THEN c.COLUMN_TYPE
+                        ELSE NULL
+                    END) AS COLUMN_TYPE,
                     MAX(c.COLUMN_NAME = 'project_id') AS has_project_id,
                     MAX(c.COLUMN_NAME = 'project_id' AND c.IS_NULLABLE = 'YES') AS project_id_nullable,
                     EXISTS (
@@ -30,8 +35,11 @@ final class TableScopeCatalog
                           AND s.COLUMN_NAME = 'project_id'
                     ) AS has_leading_index
              FROM information_schema.COLUMNS c
+             INNER JOIN information_schema.TABLES t
+                ON t.TABLE_SCHEMA = c.TABLE_SCHEMA
+               AND t.TABLE_NAME = c.TABLE_NAME
              WHERE c.TABLE_SCHEMA = DATABASE()
-             GROUP BY c.TABLE_NAME
+             GROUP BY c.TABLE_NAME, t.TABLE_TYPE
              ORDER BY c.TABLE_NAME"
         )->fetchAll(PDO::FETCH_ASSOC);
 
@@ -49,6 +57,12 @@ final class TableScopeCatalog
                 continue;
             }
 
+            $row['TABLE_NAME'] = $table;
+            $row['TABLE_TYPE'] = strtoupper(trim((string) ($row['TABLE_TYPE'] ?? 'BASE TABLE')));
+            $columnType = $row['COLUMN_TYPE'] ?? null;
+            $row['COLUMN_TYPE'] = $columnType === null
+                ? null
+                : strtolower(trim((string) $columnType));
             $normalized[$table] = $row;
             $kinds[$table] = in_array($table, TableScopeDefinitions::IDENTITY, true)
                 ? TableScopeKind::Identity
@@ -100,6 +114,15 @@ final class TableScopeCatalog
         return array_keys(array_filter(
             $this->kinds,
             static fn(TableScopeKind $kind): bool => $kind === TableScopeKind::Project,
+        ));
+    }
+
+    /** @return list<string> */
+    public function projectScopedBaseTables(): array
+    {
+        return array_values(array_filter(
+            $this->projectScopedTables(),
+            fn(string $table): bool => ($this->schemaRows[$table]['TABLE_TYPE'] ?? null) === 'BASE TABLE',
         ));
     }
 

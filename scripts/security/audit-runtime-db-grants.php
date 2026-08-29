@@ -31,18 +31,50 @@ function runtimeGrantAuditParseArguments(array $arguments): array
 /** @return list<string> */
 function runtimeGrantAuditLines(string $input): array
 {
-    $grants = [];
+    $lines = [];
     foreach (preg_split('/\R/', $input) ?: [] as $line) {
         $line = trim($line);
+        if ($line === '') {
+            continue;
+        }
         if (str_starts_with($line, '|')) {
             $line = trim($line, "| \t");
         }
-        if (preg_match('/^GRANT\s+/i', $line) === 1) {
-            $grants[] = $line;
-        }
+        $lines[] = $line;
     }
 
-    return $grants;
+    return $lines;
+}
+
+/**
+ * @return array{privileges: list<string>, target: string, username: string, host: string}|null
+ */
+function runtimeGrantAuditParseLine(string $line): ?array
+{
+    $principal = "(?:'([^']+)'|`([^`]+)`|([A-Za-z0-9_]+))"
+        . "@(?:'([^']+)'|`([^`]+)`|([A-Za-z0-9_.:%-]+))";
+    if (preg_match(
+        '/\AGRANT\s+(.+?)\s+ON\s+(.+?)\s+TO\s+' . $principal . '\z/i',
+        $line,
+        $parts,
+    ) !== 1) {
+        return null;
+    }
+
+    $privileges = array_map(
+        static fn(string $privilege): string => strtoupper(trim($privilege)),
+        explode(',', $parts[1]),
+    );
+    if (in_array('', $privileges, true)) {
+        return null;
+    }
+
+    return [
+        'privileges' => $privileges,
+        'target' => strtolower(preg_replace('/[\s`]+/', '', trim($parts[2])) ?? ''),
+        'username' => strtolower((string) ($parts[3] ?: ($parts[4] ?: $parts[5]))),
+        'host' => strtolower((string) ($parts[6] ?: ($parts[7] ?: $parts[8]))),
+    ];
 }
 
 /** @return array{ok: bool, grants_checked: int, reason: string} */
@@ -52,56 +84,67 @@ function runtimeGrantAudit(string $input, string $database): array
         return ['ok' => false, 'grants_checked' => 0, 'reason' => 'invalid-database'];
     }
 
-    $grants = runtimeGrantAuditLines($input);
-    if ($grants === []) {
+    $lines = runtimeGrantAuditLines($input);
+    if ($lines === []) {
         return ['ok' => false, 'grants_checked' => 0, 'reason' => 'no-grants'];
     }
 
-    $allowedPrivileges = ['SELECT', 'INSERT', 'UPDATE', 'DELETE'];
-    $expectedTargets = [strtolower($database . '.*'), strtolower('`' . $database . '`.*')];
-
-    foreach ($grants as $grant) {
-        if (preg_match('/\bWITH\s+GRANT\s+OPTION\b/i', $grant) === 1) {
-            return ['ok' => false, 'grants_checked' => count($grants), 'reason' => 'grant-option'];
-        }
-
-        if (preg_match(
-            "/\bTO\s+(?:'([^']+)'|`([^`]+)`|([A-Za-z0-9_]+))@/i",
-            $grant,
-            $grantee,
-        ) !== 1) {
-            return ['ok' => false, 'grants_checked' => count($grants), 'reason' => 'unparsed-grantee'];
-        }
-        $username = strtolower((string) ($grantee[1] ?: ($grantee[2] ?: $grantee[3])));
-        if ($username === 'root') {
-            return ['ok' => false, 'grants_checked' => count($grants), 'reason' => 'root-account'];
-        }
-
-        if (preg_match('/^GRANT\s+(.+?)\s+ON\s+(.+?)\s+TO\s+/i', $grant, $parts) !== 1) {
-            return ['ok' => false, 'grants_checked' => count($grants), 'reason' => 'unparsed-grant'];
-        }
-
-        $privileges = array_map(
-            static fn(string $privilege): string => strtoupper(trim($privilege)),
-            explode(',', $parts[1]),
-        );
-
-        $target = strtolower(preg_replace('/\s+/', '', trim($parts[2])) ?? '');
-        if ($privileges === ['USAGE'] && $target === '*.*') {
-            continue;
-        }
-        if (!in_array($target, $expectedTargets, true)) {
-            return ['ok' => false, 'grants_checked' => count($grants), 'reason' => 'invalid-target'];
-        }
-
-        foreach ($privileges as $privilege) {
-            if (!in_array($privilege, $allowedPrivileges, true)) {
-                return ['ok' => false, 'grants_checked' => count($grants), 'reason' => 'forbidden-privilege'];
-            }
-        }
+    $grantsChecked = count($lines);
+    if ($grantsChecked > 2) {
+        return ['ok' => false, 'grants_checked' => $grantsChecked, 'reason' => 'unexpected-grant-count'];
     }
 
-    return ['ok' => true, 'grants_checked' => count($grants), 'reason' => 'ok'];
+    $requiredPrivileges = ['DELETE', 'INSERT', 'SELECT', 'UPDATE'];
+    $expectedTarget = strtolower($database . '.*');
+    $expectedPrincipal = null;
+    $hasDml = false;
+    $hasUsage = false;
+
+    foreach ($lines as $line) {
+        $grant = runtimeGrantAuditParseLine($line);
+        if ($grant === null) {
+            return ['ok' => false, 'grants_checked' => $grantsChecked, 'reason' => 'invalid-line'];
+        }
+        if ($grant['username'] === 'root') {
+            return ['ok' => false, 'grants_checked' => $grantsChecked, 'reason' => 'root-account'];
+        }
+        if (preg_match('/^[a-z0-9_]+$/', $grant['username']) !== 1) {
+            return ['ok' => false, 'grants_checked' => $grantsChecked, 'reason' => 'invalid-grantee'];
+        }
+
+        $principal = $grant['username'] . '@' . $grant['host'];
+        if ($expectedPrincipal !== null && !hash_equals($expectedPrincipal, $principal)) {
+            return ['ok' => false, 'grants_checked' => $grantsChecked, 'reason' => 'mixed-grantees'];
+        }
+        $expectedPrincipal = $principal;
+
+        if ($grant['privileges'] === ['USAGE'] && $grant['target'] === '*.*') {
+            if ($hasUsage) {
+                return ['ok' => false, 'grants_checked' => $grantsChecked, 'reason' => 'duplicate-usage'];
+            }
+            $hasUsage = true;
+            continue;
+        }
+        if ($grant['target'] !== $expectedTarget) {
+            return ['ok' => false, 'grants_checked' => $grantsChecked, 'reason' => 'invalid-target'];
+        }
+        if ($hasDml) {
+            return ['ok' => false, 'grants_checked' => $grantsChecked, 'reason' => 'duplicate-dml'];
+        }
+
+        $privileges = $grant['privileges'];
+        sort($privileges);
+        if ($privileges !== $requiredPrivileges) {
+            return ['ok' => false, 'grants_checked' => $grantsChecked, 'reason' => 'non-exact-dml'];
+        }
+        $hasDml = true;
+    }
+
+    if (!$hasDml) {
+        return ['ok' => false, 'grants_checked' => $grantsChecked, 'reason' => 'missing-dml'];
+    }
+
+    return ['ok' => true, 'grants_checked' => $grantsChecked, 'reason' => 'ok'];
 }
 
 function runtimeGrantAuditMain(array $arguments): int

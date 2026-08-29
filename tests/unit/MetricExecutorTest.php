@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\Security\DataScope\MultiProjectScope;
-use App\Security\DataScope\TableScopeCatalog;
 use App\Services\Bi\MetricDictionaryService;
 use App\Services\Bi\MetricExecutor;
 use App\Services\Bi\MetricScope;
 use Database;
+use PDOStatement;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -51,83 +51,33 @@ use PHPUnit\Framework\TestCase;
  * metrica que va a pedir, si debe pasar `week` o no; el executor solo obedece lo que el scope trae,
  * igual que ya hace con `project_id`.
  *
- * Nivel `db`: no hay PDO en memoria en este repo; corre contra el MySQL de desarrollo (Docker).
+ * Nivel `puro`: la frontera Database/PDOStatement se dobla en memoria. El guard SQL tiene sus
+ * propios tests focales; este contrato verifica cómo el executor interpreta sus resultados sin
+ * pedir DDL ni ampliar privilegios del usuario runtime.
  */
-#[Group('db')]
+#[Group('puro')]
 final class MetricExecutorTest extends TestCase
 {
     private const TABLA = 'bi_metric_executor_test_rows';
     private const PROJECT_A = 990101;
     private const PROJECT_B = 990102;
 
-    private Database $db;
-    private \PDO $pdo;
-    private ?TableScopeCatalog $catalogSnapshot = null;
-    private mixed $scopeSnapshot = null;
+    /** @var list<array{project_id: int, cumplido: int, activo: int, Semana: int}> */
+    private array $rows = [];
 
     protected function setUp(): void
     {
-        $this->db = Database::getInstance();
-        $reflection = new \ReflectionClass($this->db);
-        $pdoProperty = $reflection->getProperty('pdo');
-        $catalogProperty = $reflection->getProperty('tableScopeCatalog');
-        $this->pdo = $pdoProperty->getValue($this->db);
-        $this->catalogSnapshot = $catalogProperty->getValue($this->db);
-        $this->scopeSnapshot = $this->db->dataScope()->current();
-        $this->db->dataScope()->clear();
-
-        try {
-            $this->pdo->exec('DROP TEMPORARY TABLE IF EXISTS ' . self::TABLA);
-            $this->pdo->exec(
-                'CREATE TEMPORARY TABLE ' . self::TABLA . ' (
-                project_id INT NOT NULL,
-                cumplido TINYINT NOT NULL,
-                activo TINYINT NOT NULL DEFAULT 1,
-                Semana INT NOT NULL DEFAULT 0
-            )'
-            );
-
-            // MySQL no publica las temporales en information_schema. El test completa una copia
-            // del catálogo inmutable solo para esta conexión y la restaura al terminar.
-            $catalog = $this->catalogSnapshot ?? TableScopeCatalog::fromPdo($this->pdo);
-            $rows = array_values($catalog->schemaRows());
-            $rows[] = [
-                'TABLE_NAME' => self::TABLA,
-                'has_project_id' => 1,
-                'project_id_nullable' => 0,
-                'has_leading_index' => 0,
-            ];
-            $catalogProperty->setValue($this->db, TableScopeCatalog::fromRows($rows));
-        } catch (\Throwable $exception) {
-            $this->restoreFixture($catalogProperty);
-            throw $exception;
-        }
-    }
-
-    protected function tearDown(): void
-    {
-        $catalogProperty = (new \ReflectionClass($this->db))->getProperty('tableScopeCatalog');
-        $this->restoreFixture($catalogProperty);
+        $this->rows = [];
     }
 
     private function sembrar(int $projectId, int $cumplido, int $activo = 1, int $semana = 0): void
     {
-        $stmt = $this->pdo->prepare(
-            'INSERT INTO ' . self::TABLA . ' (project_id, cumplido, activo, Semana) VALUES (?, ?, ?, ?)',
-        );
-        $stmt->execute([$projectId, $cumplido, $activo, $semana]);
-    }
-
-    private function restoreFixture(\ReflectionProperty $catalogProperty): void
-    {
-        if (isset($this->pdo)) {
-            $this->pdo->exec('DROP TEMPORARY TABLE IF EXISTS ' . self::TABLA);
-        }
-        $catalogProperty->setValue($this->db, $this->catalogSnapshot);
-        $this->db->dataScope()->clear();
-        if ($this->scopeSnapshot !== null) {
-            $this->db->dataScope()->bind($this->scopeSnapshot);
-        }
+        $this->rows[] = [
+            'project_id' => $projectId,
+            'cumplido' => $cumplido,
+            'activo' => $activo,
+            'Semana' => $semana,
+        ];
     }
 
     private function ejecutor(): MetricExecutor
@@ -137,7 +87,44 @@ final class MetricExecutorTest extends TestCase
         // aunque este anidada lexicamente, porque la clase anonima extiende
         // `MetricDictionaryService`, no `MetricExecutorTest` — no hay relacion de herencia que
         // habilite el acceso, ni con `protected`. Bug real encontrado por rol B al implementar.
-        return new MetricExecutor($this->db, new class(self::TABLA) extends MetricDictionaryService {
+        $database = $this->createStub(Database::class);
+        $database->method('queryForProjects')->willReturnCallback(
+            function (MultiProjectScope $authority, string $sql, array $params = []): PDOStatement {
+                $rows = array_values(array_filter(
+                    $this->rows,
+                    static fn(array $row): bool => $authority->allows($row['project_id']),
+                ));
+                $parameter = 0;
+                foreach (['Semana', 'activo', 'cumplido'] as $column) {
+                    if (!str_contains($sql, "{$column} = ?")) {
+                        continue;
+                    }
+                    $expected = (int) ($params[$parameter++] ?? PHP_INT_MIN);
+                    $rows = array_values(array_filter(
+                        $rows,
+                        static fn(array $row): bool => $row[$column] === $expected,
+                    ));
+                }
+
+                $statement = $this->createStub(PDOStatement::class);
+                if (str_starts_with($sql, 'SELECT DISTINCT project_id')) {
+                    $projectIds = array_values(array_unique(array_column($rows, 'project_id')));
+                    $statement->method('fetchAll')->willReturn(array_map(
+                        static fn(int $projectId): array => ['project_id' => $projectId],
+                        $projectIds,
+                    ));
+                } else {
+                    $statement->method('fetch')->willReturn([
+                        'numerador' => array_sum(array_column($rows, 'cumplido')),
+                        'denominador' => count($rows),
+                    ]);
+                }
+
+                return $statement;
+            },
+        );
+
+        return new MetricExecutor($database, new class(self::TABLA) extends MetricDictionaryService {
             public function __construct(private readonly string $tabla)
             {
             }
@@ -205,10 +192,10 @@ final class MetricExecutorTest extends TestCase
         $this->assertSame(1, $basis['obras_incluidas'], 'solo el proyecto A aporto filas');
         $this->assertSame(1, $basis['obras_esperadas'], 'el scope pidio un solo proyecto');
         $this->assertSame(3, $basis['filas_usadas'], 'las 3 filas del proyecto A, ninguna del B');
-        $this->assertIsString($basis['corte']);
+        $this->assertNotSame('', $basis['corte']);
 
         $this->assertSame('completa', $resultado->completeness());
-        $this->assertIsArray($resultado->missing());
+        $this->assertSame([], $resultado->missing());
     }
 
     /**
@@ -233,7 +220,6 @@ final class MetricExecutorTest extends TestCase
         $this->assertArrayHasKey('obras_esperadas', $basis);
         $this->assertArrayHasKey('corte', $basis);
 
-        $this->assertIsArray($resultado->missing());
         $this->assertNotEmpty($resultado->missing(), 'debe declarar explicitamente que falto data, no callar');
     }
 

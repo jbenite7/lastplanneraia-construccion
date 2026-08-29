@@ -10,7 +10,8 @@ fecha: 2026-08-29
 La aplicación debe conectarse con una cuenta distinta de la administrativa. La cuenta de runtime
 solo recibe `SELECT`, `INSERT`, `UPDATE` y `DELETE` sobre la base de la aplicación; no recibe DDL,
 administración de usuarios, `GRANT OPTION` ni privilegios globales. `GRANT USAGE ON *.*`, que
-MySQL muestra para una cuenta sin capacidades globales, es neutro y el auditor lo acepta.
+MySQL muestra para una cuenta sin capacidades globales, solo se acepta como línea adicional neutra:
+la cuenta también debe tener exactamente los cuatro DML sobre la base esperada.
 
 La configuración versionada usa estas fronteras:
 
@@ -91,6 +92,35 @@ El resultado válido es `runtime_db_grants=ok`; el auditor nunca reimprime las l
 después se cargan `DB_RUNTIME_USER`/`DB_RUNTIME_PASS` en el `.env` local y, con autorización, se
 recrea `app`. La ejecución de este runbook no está implícitamente autorizada por su presencia.
 
+## Aplicación one-off del contrato de schema
+
+El dry-run usa la misma cuenta runtime de la aplicación:
+
+```bash
+docker compose exec -T app \
+  php database/migrations/20260828_project_scope_contract.php
+```
+
+`--apply` exige deliberadamente un canal administrativo efímero distinto mediante
+`DB_MIGRATION_ADMIN_USER` y `DB_MIGRATION_ADMIN_PASS`; nunca reutiliza `DB_USER`. Solo después de
+freeze, respaldo restaurable verificado, dry-run renovado y autorización explícita, un operador
+puede exportar esas variables desde su gestor seguro y ejecutar un contenedor one-off, sin
+guardarlas en Compose ni `.env`:
+
+```bash
+export DB_MIGRATION_ADMIN_USER="$RLS_DB_ADMIN_USER"
+export DB_MIGRATION_ADMIN_PASS="$RLS_DB_ADMIN_PASS"
+docker compose run -T --rm --no-deps \
+  -e DB_MIGRATION_ADMIN_USER \
+  -e DB_MIGRATION_ADMIN_PASS \
+  app php database/migrations/20260828_project_scope_contract.php --apply
+unset DB_MIGRATION_ADMIN_USER DB_MIGRATION_ADMIN_PASS
+```
+
+Este bloque documenta la invocación; no autoriza ejecutarla. Si el preflight encuentra un tipo de
+`project_id` no entero, una tabla con NULL o cualquier fallo de conexión, termina con RC distinto
+de cero antes del primer DDL.
+
 ## CI
 
 `docker-compose.ci.yml` declara credenciales efímeras distintas para administración y runtime:
@@ -99,6 +129,12 @@ solo dentro del proyecto Compose desechable de la corrida; ningún entorno persi
 La app de CI conecta como runtime y el contenedor `db` conserva la contraseña administrativa solo
 para inicialización y tareas de infraestructura explícitas. El mismo config final reduce el `ALL`
 que crea la imagen oficial antes de que la base efímera quede saludable.
+
+Los tests PHP que se ejecutan dentro de `app` no usan DDL: `MetricExecutorTest` dobla la frontera
+Database/PDO en memoria y el fallo de inserción de `PgAvanceEdicionManualService` se prueba con un
+double inyectado. La preparación estructural de la base desechable sigue exclusivamente en los SQL
+de `/docker-entrypoint-initdb.d`, ejecutados durante la inicialización administrativa de `db`; la
+suite runtime solo necesita DML.
 
 El gate CI del usuario runtime debe obtener `SHOW GRANTS FOR CURRENT_USER` desde esa cuenta y pasar
 la salida por `audit-runtime-db-grants.php`, con `DB_NAME=lastplanneraia_ci`.

@@ -66,4 +66,73 @@ final class TableScopeCatalogTest extends TestCase
         self::assertFalse($catalog->hasOnlyProjectTables(['programa', 'general_usuarios']));
         self::assertFalse($catalog->hasOnlyProjectTables(['programa', 'backup_fuera_de_runtime']));
     }
+
+    public function testSystemNotificationsEsIdentityAunqueTengaProjectIdVarcharNullable(): void
+    {
+        $catalog = TableScopeCatalog::fromRows([
+            [
+                'TABLE_NAME' => 'system_notifications',
+                'TABLE_TYPE' => 'BASE TABLE',
+                'COLUMN_TYPE' => 'varchar(100)',
+                'has_project_id' => 1,
+                'project_id_nullable' => 1,
+                'has_leading_index' => 0,
+            ],
+        ]);
+
+        self::assertSame(TableScopeKind::Identity, $catalog->kind('system_notifications'));
+        self::assertSame([], $catalog->projectScopedTables());
+    }
+
+    public function testMantieneNueveViewsProjectLogicasPeroNoLasExponeComoTablasFisicas(): void
+    {
+        $viewNames = [
+            'bi_cic_contractual',
+            'bi_cip_responsables',
+            'bi_control_contractual',
+            'bi_curva_control',
+            'bi_pdc_pipeline',
+            'bi_pg_avance',
+            'bi_pi_hitos',
+            'bi_ps_compromisos',
+            'bi_riesgos',
+        ];
+        $rows = [[
+            'TABLE_NAME' => 'programa',
+            'TABLE_TYPE' => 'BASE TABLE',
+            'COLUMN_TYPE' => 'int',
+            'has_project_id' => 1,
+        ]];
+        foreach ($viewNames as $viewName) {
+            $rows[] = [
+                'TABLE_NAME' => $viewName,
+                'TABLE_TYPE' => 'VIEW',
+                'COLUMN_TYPE' => 'int',
+                'has_project_id' => 1,
+            ];
+        }
+
+        $catalog = TableScopeCatalog::fromRows($rows);
+
+        self::assertSame(['programa', ...$viewNames], $catalog->projectScopedTables());
+        self::assertSame(['programa'], $catalog->projectScopedBaseTables());
+        foreach ($viewNames as $viewName) {
+            self::assertSame(TableScopeKind::Project, $catalog->kind($viewName));
+        }
+    }
+
+    public function testExponeTableTypeYColumnTypeNormalizados(): void
+    {
+        $catalog = TableScopeCatalog::fromRows([
+            [
+                'TABLE_NAME' => 'programa',
+                'TABLE_TYPE' => 'base table',
+                'COLUMN_TYPE' => 'int unsigned',
+                'has_project_id' => 1,
+            ],
+        ]);
+
+        self::assertSame('BASE TABLE', $catalog->schemaRows()['programa']['TABLE_TYPE']);
+        self::assertSame('int unsigned', $catalog->schemaRows()['programa']['COLUMN_TYPE']);
+    }
 }

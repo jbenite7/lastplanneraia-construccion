@@ -15,6 +15,7 @@ final class TableScopeDefinitions
         'rbac_permissions',
         'rbac_role_permissions',
         'rbac_roles',
+        'system_notifications',
     ];
 
     public const SYSTEM = [
