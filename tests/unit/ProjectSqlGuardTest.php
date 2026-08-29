@@ -325,6 +325,97 @@ final class ProjectSqlGuardTest extends TestCase
         self::assertSame(['crear', 'detalle', 73], $guarded->params);
     }
 
+    public function testRejectsLeftJoinWhenOnlyNullableDerivedSideIsScoped(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guard(
+            "INSERT INTO auto_program_log (project_id, semana, consecutivo, accion, detalle)
+             SELECT ?, a.Semana, 1, 'crear', 'detalle'
+             FROM programa a
+             LEFT JOIN (
+                 SELECT project_id FROM auto_program_log WHERE project_id = ?
+             ) d ON d.project_id = a.project_id",
+            [73, 73],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
+    public function testRejectsRightJoinWhenOnlyNullableDerivedSideIsScoped(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guard(
+            "INSERT INTO auto_program_log (project_id, semana, consecutivo, accion, detalle)
+             SELECT ?, a.Semana, 1, 'crear', 'detalle'
+             FROM (
+                 SELECT project_id FROM auto_program_log WHERE project_id = ?
+             ) d
+             RIGHT JOIN programa a ON d.project_id = a.project_id",
+            [73, 73],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
+    public function testAcceptsRightJoinWhenPreservedDerivedSideIsScoped(): void
+    {
+        $sql = "INSERT INTO auto_program_log (project_id, semana, consecutivo, accion, detalle)
+                SELECT ?, d.Semana, 1, 'crear', 'detalle'
+                FROM auto_program_log b
+                RIGHT JOIN (
+                    SELECT project_id, Semana FROM programa WHERE project_id = ?
+                ) d ON b.project_id = d.project_id";
+
+        $guarded = $this->guard->guard(
+            $sql,
+            [73, 73],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+
+        self::assertSame($sql, $guarded->sql);
+        self::assertSame([73, 73], $guarded->params);
+    }
+
+    public function testAcceptsInnerJoinPropagationFromScopedDerivedSide(): void
+    {
+        $sql = "INSERT INTO auto_program_log (project_id, semana, consecutivo, accion, detalle)
+                SELECT ?, a.Semana, 1, 'crear', 'detalle'
+                FROM programa a
+                INNER JOIN (
+                    SELECT project_id FROM auto_program_log WHERE project_id = ?
+                ) d ON d.project_id = a.project_id";
+
+        $guarded = $this->guard->guard(
+            $sql,
+            [73, 73],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+
+        self::assertSame($sql, $guarded->sql);
+        self::assertSame([73, 73], $guarded->params);
+    }
+
+    public function testRejectsUnsupportedFullOuterJoinInDerivedProjectQuery(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guard(
+            "INSERT INTO auto_program_log (project_id, semana, consecutivo, accion, detalle)
+             SELECT ?, a.Semana, 1, 'crear', 'detalle'
+             FROM programa a
+             FULL OUTER JOIN (
+                 SELECT project_id FROM auto_program_log WHERE project_id = ?
+             ) d ON d.project_id = a.project_id",
+            [73, 73],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
     public function testRejectsDerivedProjectRootWithoutCanonicalScopePredicate(): void
     {
         $this->expectException(ProjectScopeViolation::class);

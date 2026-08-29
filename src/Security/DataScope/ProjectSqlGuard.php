@@ -515,9 +515,10 @@ final class ProjectSqlGuard
             array_keys($physicalAliases),
             array_keys($derivedSources),
         )));
+        $this->assertSupportedDerivedJoinTypes($tokens);
         $comparisons = $this->projectComparisons($tokens, $projectAliases, $references);
         $anchored = [];
-        $relations = [];
+        $propagationEdges = [];
         foreach ($comparisons as $comparison) {
             if ($comparison['kind'] === 'placeholder') {
                 if ($comparison['alias'] === null) {
@@ -532,7 +533,10 @@ final class ProjectSqlGuard
                 $anchored[$comparison['alias']] = true;
                 continue;
             }
-            $relations[] = [$comparison['alias'], $comparison['rightAlias']];
+            array_push(
+                $propagationEdges,
+                ...$this->relationPropagationEdges($comparison, $tokens, $references, $derivedSources),
+            );
         }
 
         do {
@@ -543,13 +547,9 @@ final class ProjectSqlGuard
                     $changed = true;
                 }
             }
-            foreach ($relations as [$left, $right]) {
-                if (isset($anchored[$left]) && !isset($anchored[$right])) {
-                    $anchored[$right] = true;
-                    $changed = true;
-                }
-                if (isset($anchored[$right]) && !isset($anchored[$left])) {
-                    $anchored[$left] = true;
+            foreach ($propagationEdges as [$source, $destination]) {
+                if (isset($anchored[$source]) && !isset($anchored[$destination])) {
+                    $anchored[$destination] = true;
                     $changed = true;
                 }
             }
@@ -562,6 +562,163 @@ final class ProjectSqlGuard
         }
 
         return [$sql, $params];
+    }
+
+    /**
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     */
+    private function assertSupportedDerivedJoinTypes(array $tokens): void
+    {
+        foreach ($tokens as $index => $token) {
+            if ($token['type'] === 'word' && strtoupper($token['value']) === 'JOIN'
+                && $this->joinType($tokens, $index) === 'FULL') {
+                throw new ProjectScopeViolation('FULL OUTER JOIN no está soportado por el gate de proyecto.');
+            }
+        }
+    }
+
+    /**
+     * @param array{kind: string, alias: string|null, rightAlias?: string, placeholder?: int, predicate: string, lhsStart: int, lhsEnd: int} $comparison
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @param list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}> $references
+     * @param array<string, string> $derivedSources
+     * @return list<array{0: string, 1: string}> aristas dirigidas origen => destino
+     */
+    private function relationPropagationEdges(
+        array $comparison,
+        array $tokens,
+        array $references,
+        array $derivedSources,
+    ): array {
+        $left = $comparison['alias'];
+        $right = $comparison['rightAlias'];
+        if ($left === null) {
+            throw new ProjectScopeViolation('Relación project_id sin raíz izquierda demostrable.');
+        }
+        if ($comparison['predicate'] !== 'ON') {
+            return [[$left, $right], [$right, $left]];
+        }
+
+        $join = $this->owningJoinForComparison($tokens, $comparison['lhsStart']);
+        if ($join === null) {
+            throw new ProjectScopeViolation('Relación project_id en ON sin JOIN demostrable.');
+        }
+        $joinType = $this->joinType($tokens, $join);
+        if ($joinType === 'FULL') {
+            throw new ProjectScopeViolation('FULL OUTER JOIN no está soportado por el gate de proyecto.');
+        }
+
+        $joined = $this->joinedProjectNode($tokens, $join, $references, $derivedSources);
+        if ($joined === null) {
+            throw new ProjectScopeViolation('No se pudo demostrar la raíz Project del JOIN.');
+        }
+        if ($joined !== $left && $joined !== $right) {
+            return [];
+        }
+
+        $other = $joined === $left ? $right : $left;
+
+        return match ($joinType) {
+            'LEFT' => [[$other, $joined]],
+            'RIGHT' => [[$joined, $other]],
+            default => [[$left, $right], [$right, $left]],
+        };
+    }
+
+    /**
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     */
+    private function owningJoinForComparison(array $tokens, int $comparisonStart): ?int
+    {
+        $depth = $tokens[$comparisonStart]['depth'];
+        $on = null;
+        for ($index = $comparisonStart - 1; $index >= 0; $index--) {
+            if ($tokens[$index]['depth'] > $depth) {
+                continue;
+            }
+            if ($tokens[$index]['depth'] < $depth) {
+                break;
+            }
+            if ($tokens[$index]['type'] !== 'word') {
+                continue;
+            }
+            $keyword = strtoupper($tokens[$index]['value']);
+            if ($keyword === 'ON') {
+                $on = $index;
+                break;
+            }
+            if (in_array($keyword, ['WHERE', 'JOIN', 'FROM', 'SELECT'], true)) {
+                return null;
+            }
+        }
+        if ($on === null) {
+            return null;
+        }
+
+        for ($index = $on - 1; $index >= 0; $index--) {
+            if ($tokens[$index]['depth'] > $depth) {
+                continue;
+            }
+            if ($tokens[$index]['depth'] < $depth) {
+                break;
+            }
+            if ($tokens[$index]['type'] === 'word' && strtoupper($tokens[$index]['value']) === 'JOIN') {
+                return $index;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     */
+    private function joinType(array $tokens, int $join): string
+    {
+        $type = $this->previousSignificantIndex($tokens, $join - 1);
+        if ($type !== null && $tokens[$type]['type'] === 'word'
+            && strtoupper($tokens[$type]['value']) === 'OUTER') {
+            $type = $this->previousSignificantIndex($tokens, $type - 1);
+        }
+        if ($type === null || $tokens[$type]['depth'] !== $tokens[$join]['depth']
+            || $tokens[$type]['type'] !== 'word') {
+            return 'INNER';
+        }
+
+        $keyword = strtoupper($tokens[$type]['value']);
+
+        return in_array($keyword, ['LEFT', 'RIGHT', 'FULL'], true) ? $keyword : 'INNER';
+    }
+
+    /**
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @param list<array{table: string, originalTable: string, alias: string, depth: int, start: int, end: int, kind: TableScopeKind, prefixProjectId: int|null}> $references
+     * @param array<string, string> $derivedSources
+     */
+    private function joinedProjectNode(
+        array $tokens,
+        int $join,
+        array $references,
+        array $derivedSources,
+    ): ?string {
+        $source = $this->nextSignificantIndex($tokens, $join + 1);
+        if ($source === null) {
+            return null;
+        }
+        if ($tokens[$source]['raw'] === '(') {
+            $close = $this->matchingClose($tokens, $source);
+            [$alias] = $this->derivedAliasAfterClose($tokens, $close);
+
+            return isset($derivedSources[$alias]) ? $alias : null;
+        }
+
+        foreach ($references as $reference) {
+            if ($reference['start'] === $tokens[$source]['start']) {
+                return $this->projectReferenceKey($reference);
+            }
+        }
+
+        return null;
     }
 
     /**
