@@ -6,6 +6,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/../scripts/lib/php-test-ddl-inventory.php';
+require_once __DIR__ . '/../scripts/lib/php-test-lane-manifest.php';
 require_once __DIR__ . '/../scripts/security/audit-runtime-db-grants.php';
 
 use App\Security\DataScope\TableScopeKind;
@@ -44,7 +45,7 @@ function schemaContractRunGrantAudit(
 ): array
 {
     $fixture = null;
-    if (!$stdin) {
+    if (!$stdin && !in_array('--live', $arguments, true)) {
         $fixture = tempnam(sys_get_temp_dir(), 'lps-grants-');
         if ($fixture === false || file_put_contents($fixture, $grant . "\n") === false) {
             throw new RuntimeException('No se pudo crear el fixture temporal de grants.');
@@ -371,11 +372,10 @@ foreach ($testInventory as $testPath) {
         $testLevels[$testPath] = $declaredLevel;
     }
 }
-$ddlViolations = phpTestDdlLevelViolations($testLevels);
 schemaContractSame(
     [],
-    $ddlViolations,
-    'El inventario encontró DDL ejecutable fuera de admin-db: ' . json_encode($ddlViolations),
+    PhpTestLaneManifest::validateDeclaredLevels($testLevels),
+    'Cada declaración de lane debe ser conocida; el scanner DDL es sólo diagnóstico advisory.',
 );
 
 $migration = __DIR__ . '/../database/migrations/20260828_project_scope_contract.php';
@@ -534,35 +534,37 @@ if (!is_file($migration)) {
     schemaContractSame(1, $preflightCode, 'Un fallo de conexión/preflight terminó con RC 0.');
 }
 
-$catalog = Database::getInstance()->tableScopeCatalog();
 $schemaFindings = [];
 
-foreach ($catalog->schemaRows() as $table => $row) {
-    $kind = $catalog->kind($table);
+if ($mode === '--enforce') {
+    $catalog = Database::getInstance()->tableScopeCatalog();
+    foreach ($catalog->schemaRows() as $table => $row) {
+        $kind = $catalog->kind($table);
 
-    if ($kind === TableScopeKind::Project) {
-        if (($row['TABLE_TYPE'] ?? null) !== 'BASE TABLE') {
-            continue;
+        if ($kind === TableScopeKind::Project) {
+            if (($row['TABLE_TYPE'] ?? null) !== 'BASE TABLE') {
+                continue;
+            }
+            $problems = [];
+            try {
+                projectScopeIntegerColumnType($row['COLUMN_TYPE'] ?? null);
+            } catch (RuntimeException) {
+                $problems[] = 'project_id tiene tipo incompatible';
+            }
+            if ((int) ($row['project_id_nullable'] ?? 0) === 1) {
+                $problems[] = 'project_id permite NULL';
+            }
+            if ((int) ($row['has_leading_index'] ?? 0) === 0) {
+                $problems[] = 'project_id no es índice líder';
+            }
+            if ($problems !== []) {
+                $schemaFindings[] = "{$table}: " . implode('; ', $problems);
+            }
         }
-        $problems = [];
-        try {
-            projectScopeIntegerColumnType($row['COLUMN_TYPE'] ?? null);
-        } catch (RuntimeException) {
-            $problems[] = 'project_id tiene tipo incompatible';
-        }
-        if ((int) ($row['project_id_nullable'] ?? 0) === 1) {
-            $problems[] = 'project_id permite NULL';
-        }
-        if ((int) ($row['has_leading_index'] ?? 0) === 0) {
-            $problems[] = 'project_id no es índice líder';
-        }
-        if ($problems !== []) {
-            $schemaFindings[] = "{$table}: " . implode('; ', $problems);
-        }
-    }
 
-    if ($kind === TableScopeKind::Unclassified) {
-        $schemaFindings[] = "{$table}: denied (sin definición explícita de alcance)";
+        if ($kind === TableScopeKind::Unclassified) {
+            $schemaFindings[] = "{$table}: denied (sin definición explícita de alcance)";
+        }
     }
 }
 

@@ -56,6 +56,58 @@ function correrRunner(string $runner, array $args): array
     return ['codigo' => $codigo, 'salida' => implode("\n", $salida)];
 }
 
+/** @return array{dir: string, runtime: string, admin: string} */
+function crearFixturesDdlDeclarativos(): array
+{
+    $dir = sys_get_temp_dir() . '/lps-runner-lane-' . bin2hex(random_bytes(8));
+    if (!mkdir($dir, 0700) && !is_dir($dir)) {
+        throw new RuntimeException("No se pudo crear {$dir}.");
+    }
+
+    $runtime = $dir . '/test_runtime_db.php';
+    $admin = $dir . '/test_admin_db.php';
+    file_put_contents($runtime, <<<'PHP'
+<?php
+
+declare(strict_types=1);
+
+// @requiere: db
+
+function eliminarFixtureRuntime(object $pdo): void
+{
+    $pdo->exec('DROP TABLE fixture_runtime_declarativa');
+}
+
+eliminarFixtureRuntime($pdo);
+PHP
+    );
+    file_put_contents($admin, <<<'PHP'
+<?php
+
+declare(strict_types=1);
+
+// @requiere: admin-db
+
+function eliminarFixtureAdministrativa(object $pdo): void
+{
+    $pdo->exec('DROP TABLE fixture_admin_declarativa');
+}
+
+eliminarFixtureAdministrativa($pdo);
+PHP
+    );
+
+    return ['dir' => $dir, 'runtime' => $runtime, 'admin' => $admin];
+}
+
+/** @param array{dir: string, runtime: string, admin: string} $fixtures */
+function borrarFixturesDdlDeclarativos(array $fixtures): void
+{
+    @unlink($fixtures['runtime']);
+    @unlink($fixtures['admin']);
+    @rmdir($fixtures['dir']);
+}
+
 // Un directorio con un test etiquetado y verde sale 0.
 $r = correrRunner($runner, [$sinUnitarios, '--dir=' . $fixtures . '/con-etiqueta', '--nivel=puro']);
 verificar('un test etiquetado y verde devuelve 0', $r['codigo'] === 0);
@@ -70,54 +122,32 @@ verificar('el error nombra el archivo sin etiqueta', str_contains($r['salida'], 
 $r = correrRunner($runner, [$sinUnitarios, '--dir=' . $fixtures . '/con-etiqueta', '--nivel=inventado']);
 verificar('un nivel invalido devuelve 2', $r['codigo'] === 2);
 
-// El inventario DDL corre antes incluso de --solo-listar. El fixture contiene una llamada
-// ejecutable pero está mal etiquetado como db; el runner debe bloquearlo sin llegar a ejecutarlo.
-$r = correrRunner($runner, [
-    $sinUnitarios,
-    '--dir=' . $fixtures . '/ddl-mal-etiquetado',
-    '--nivel=db',
-    '--solo-listar',
-]);
-verificar('DDL ejecutable fuera de admin-db aborta el inventario con 2', $r['codigo'] === 2);
-verificar('el inventario DDL nombra el fixture mal etiquetado', str_contains($r['salida'], 'test_ddl_db.php'));
+// Una declaración runtime sigue siendo runtime aunque el scanner encuentre DDL en un helper. El
+// privilegio DML-only es la frontera de ejecución; --solo-listar sólo debe exponer la selección.
+$fixturesDdl = crearFixturesDdlDeclarativos();
+try {
+    $r = correrRunner($runner, [
+        $sinUnitarios,
+        '--dir=' . $fixturesDdl['dir'],
+        '--nivel=db',
+        '--solo-listar',
+    ]);
+    verificar('un helper DROP declarado db se lista sin abortar por inventario inferido', $r['codigo'] === 0);
+    verificar('la lane db lista el fixture runtime como ejecutable', str_contains($r['salida'], '[ejecuta] test_runtime_db.php'));
+    verificar('la lane db omite el fixture admin-db declarado', str_contains($r['salida'], '[omite]   test_admin_db.php'));
 
-// Un wrapper local anidado no debe ocultar el DDL al inventario. El runtime falla antes de listar;
-// el mismo flujo declarado admin-db sí puede inventariarse, pero nunca se ejecuta en este test.
-$r = correrRunner($runner, [
-    $sinUnitarios,
-    '--dir=' . $fixtures . '/ddl-wrappers-runtime',
-    '--nivel=db',
-    '--solo-listar',
-]);
-verificar('un wrapper DDL anidado bajo runtime aborta con 2', $r['codigo'] === 2);
-verificar('el bloqueo nombra el fixture wrapper runtime', str_contains($r['salida'], 'test_ddl_db.php'));
-
-$r = correrRunner($runner, [
-    '--dir=' . $fixtures . '/con-etiqueta',
-    '--dir-unit=' . $fixtures . '/unit-ddl-wrapper-runtime',
-    '--nivel=db',
-    '--solo-listar',
-]);
-verificar('un wrapper DDL en método PHPUnit bajo runtime aborta con 2', $r['codigo'] === 2);
-verificar('el bloqueo nombra el fixture PHPUnit con wrapper', str_contains($r['salida'], 'DdlWrapperRuntimeTest.php'));
-
-$r = correrRunner($runner, [
-    '--dir=' . $fixtures . '/con-etiqueta',
-    '--dir-unit=' . $fixtures . '/unit-ddl-r5-runtime',
-    '--nivel=db',
-    '--solo-listar',
-]);
-verificar('los bypasses R5 bajo runtime abortan con 2', $r['codigo'] === 2);
-verificar('el bloqueo nombra el fixture PHPUnit R5', str_contains($r['salida'], 'DdlR5RuntimeTest.php'));
-
-$r = correrRunner($runner, [
-    $sinUnitarios,
-    '--dir=' . $fixtures . '/ddl-wrappers-admin',
-    '--nivel=admin-db',
-    '--solo-listar',
-]);
-verificar('el mismo DDL declarado admin-db permite solo-listar', $r['codigo'] === 0);
-verificar('admin-db lista el fixture wrapper sin ejecutarlo', str_contains($r['salida'], '[ejecuta] test_ddl_admin_db.php'));
+    $r = correrRunner($runner, [
+        $sinUnitarios,
+        '--dir=' . $fixturesDdl['dir'],
+        '--nivel=admin-db',
+        '--solo-listar',
+    ]);
+    verificar('admin-db lista su fixture DDL sin ejecutar fixtures', $r['codigo'] === 0);
+    verificar('admin-db sólo selecciona su fixture declarado', str_contains($r['salida'], '[ejecuta] test_admin_db.php'));
+    verificar('admin-db no selecciona el fixture runtime', str_contains($r['salida'], '[omite]   test_runtime_db.php'));
+} finally {
+    borrarFixturesDdlDeclarativos($fixturesDdl);
+}
 
 // Pedir un nivel db sin base de datos alcanzable aborta con 2, no da verde.
 // Es el guardarrail que nace de lo medido el 2026-08-10: 26 tests de la suite

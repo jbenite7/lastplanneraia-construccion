@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/lib/php-test-ddl-inventory.php';
+require_once __DIR__ . '/lib/php-test-lane-manifest.php';
 
 /**
  * Runner de las pruebas PHP. Puerta única de las dos suites que conviven:
@@ -31,23 +31,6 @@ require_once __DIR__ . '/lib/php-test-ddl-inventory.php';
  *      del nivel pedido no está disponible, o falta el binario de PHPUnit habiendo tests suyos.
  *      Nunca se traduce una ausencia en un resultado verde.
  */
-
-const NIVELES = [
-    'puro' => 0,
-    'db' => 1,
-    'http' => 2,
-    'datos-proyecto' => 3,
-    'admin-db' => 4,
-];
-
-function nivelSeleccionado(string $pedido, string $declarado): bool
-{
-    if ($pedido === 'admin-db' || $declarado === 'admin-db') {
-        return $pedido === $declarado;
-    }
-
-    return NIVELES[$declarado] <= NIVELES[$pedido];
-}
 
 /**
  * Señales de que un test comprobó algo de verdad. Un test que sale 0 sin
@@ -191,7 +174,7 @@ function descubrirTests(string $directorio): array
             $sinEtiqueta[] = basename($ruta);
             continue;
         }
-        if (!isset(NIVELES[$nivel])) {
+        if (!array_key_exists($nivel, PhpTestLaneManifest::levels())) {
             abortar(basename($ruta) . " declara un nivel que no existe: '{$nivel}'");
         }
         $tests[$ruta] = $nivel;
@@ -201,7 +184,7 @@ function descubrirTests(string $directorio): array
         $lista = implode("\n  - ", $sinEtiqueta);
         abortar(
             count($sinEtiqueta) . " test(s) sin la etiqueta '// @requiere: <nivel>':\n  - {$lista}\n"
-            . '  Niveles válidos: ' . implode(', ', array_keys(NIVELES))
+            . '  Niveles válidos: ' . implode(', ', array_keys(PhpTestLaneManifest::levels()))
         );
     }
 
@@ -242,10 +225,10 @@ function descubrirTestsUnitarios(string $directorio): array
             $sinGrupo[] = basename($ruta);
             continue;
         }
-        if (!isset(NIVELES[$coincidencia[1]])) {
+        if (!array_key_exists($coincidencia[1], PhpTestLaneManifest::levels())) {
             abortar(
                 basename($ruta) . " declara un grupo que no es un nivel: '{$coincidencia[1]}'.\n"
-                . '  Niveles válidos: ' . implode(', ', array_keys(NIVELES))
+                . '  Niveles válidos: ' . implode(', ', array_keys(PhpTestLaneManifest::levels()))
             );
         }
         $clases[$ruta] = $coincidencia[1];
@@ -255,7 +238,7 @@ function descubrirTestsUnitarios(string $directorio): array
         $lista = implode("\n  - ", $sinGrupo);
         abortar(
             count($sinGrupo) . " clase(s) de PHPUnit sin el atributo #[Group('<nivel>')]:\n  - {$lista}\n"
-            . '  Niveles válidos: ' . implode(', ', array_keys(NIVELES)) . "\n"
+            . '  Niveles válidos: ' . implode(', ', array_keys(PhpTestLaneManifest::levels())) . "\n"
             . '  Sin declarar su entorno, un test nuevo queda fuera del CI sin que nadie se entere.'
         );
     }
@@ -435,37 +418,19 @@ function esVerdeSinRespaldo(int $codigo, string $salida): bool
 
 $opciones = leerOpciones($argv);
 
-if (!isset(NIVELES[$opciones['nivel']])) {
+if (!array_key_exists($opciones['nivel'], PhpTestLaneManifest::levels())) {
     abortar(
-        "el nivel '{$opciones['nivel']}' no existe. Válidos: " . implode(', ', array_keys(NIVELES))
+        "el nivel '{$opciones['nivel']}' no existe. Válidos: " . implode(', ', array_keys(PhpTestLaneManifest::levels()))
     );
 }
 
 $tests = descubrirTests($opciones['dir']);
 $unitarios = descubrirTestsUnitarios($opciones['dirUnit']);
-$ddlViolations = phpTestDdlLevelViolations($tests + $unitarios);
-if ($ddlViolations !== []) {
-    $details = array_map(
-        static function (array $violation): string {
-            $locations = implode(', ', array_map(
-                static fn(array $call): string => $call['call'] . ':' . $call['line'],
-                $violation['calls'],
-            ));
-
-            return basename($violation['file']) . " ({$violation['level']}; {$locations})";
-        },
-        $ddlViolations,
-    );
-    abortar(
-        "DDL ejecutable fuera de la lane admin-db:\n  - " . implode("\n  - ", $details)
-        . "\n  No se ejecutó ningún test."
-    );
-}
 
 $seleccionados = [];
 $omitidos = [];
 foreach ($tests as $ruta => $nivel) {
-    if (nivelSeleccionado($opciones['nivel'], $nivel)) {
+    if (PhpTestLaneManifest::select($opciones['nivel'], $nivel)) {
         $seleccionados[$ruta] = $nivel;
         continue;
     }
@@ -483,7 +448,7 @@ if ($opciones['soloListar']) {
     // tests/design-system/visual-ci-contract.test.mjs, y hasta el 2026-08-11 nada la comprobaba:
     // cambiando el '<=' de la selección por '===' el contrato seguía verde mientras
     // test_global_table_safety dejaba de correr en el CI.
-    foreach (array_keys(NIVELES) as $nivel) {
+    foreach (array_keys(PhpTestLaneManifest::levels()) as $nivel) {
         $delNivel = array_keys($tests, $nivel, true);
         if ($delNivel === []) {
             continue;
@@ -496,7 +461,7 @@ if ($opciones['soloListar']) {
     }
 
     foreach ($unitarios as $ruta => $nivel) {
-        $marca = nivelSeleccionado($opciones['nivel'], $nivel) ? '[ejecuta]' : '[omite]  ';
+        $marca = PhpTestLaneManifest::select($opciones['nivel'], $nivel) ? '[ejecuta]' : '[omite]  ';
         echo '    ' . $marca . ' ' . basename($ruta) . " (PHPUnit, {$nivel})\n";
     }
 
@@ -556,7 +521,7 @@ foreach ($seleccionados as $ruta => $nivel) {
 // exactamente el defecto que este runner vino a cerrar.
 $unitariosSeleccionados = [];
 foreach ($unitarios as $ruta => $nivel) {
-    if (nivelSeleccionado($opciones['nivel'], $nivel)) {
+    if (PhpTestLaneManifest::select($opciones['nivel'], $nivel)) {
         $unitariosSeleccionados[$ruta] = $nivel;
     }
 }
