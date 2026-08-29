@@ -94,6 +94,8 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $_SESSION['db'] = 'da_porto';
 $_SESSION['project_id'] = 73;
+$db->dataScope()->clear();
+$db->dataScope()->bind(new \App\Security\DataScope\ProjectScope(73, 'test.A', 'A'));
 
 try {
     $db->query(
@@ -150,6 +152,9 @@ try {
         "SELECT COUNT(*) FROM auto_program_log WHERE project_id = ? AND semana = ? AND detalle = ?",
         [73, 9999, 'E2E rewrite copy']
     )->fetchColumn();
+
+    $db->dataScope()->clear();
+    $db->dataScope()->bind(\App\Security\DataScope\SystemScope::forMaintenance('global safety cross-project verification'));
     $crossProjectCount = (int) $db->query(
         "SELECT COUNT(*) FROM auto_program_log WHERE project_id <> ? AND semana = ? AND detalle LIKE ?",
         [73, 9999, 'E2E rewrite%']
@@ -170,6 +175,7 @@ try {
     if ($db->inTransaction()) {
         $db->rollBack();
     }
+    $db->dataScope()->clear();
 }
 
 echo "=== Global Table Safety: OK ===\n";

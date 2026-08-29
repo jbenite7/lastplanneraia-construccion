@@ -111,21 +111,25 @@ class Database
      */
     public function query($sql, $params = [])
     {
-        // Auto-inyectar project_id para queries raw que bypass queryWithProject()
-        // Solo cuando hay contexto de proyecto y USE_GLOBAL_TABLES=true
-        if ($this->currentProjectId !== null && \TableResolver::useGlobalTables()) {
-            $injected = $this->injectProjectId($sql, $this->currentProjectId);
-            if ($injected !== null) {
-                // injectProjectId agregó placeholder ? al final → agregar project_id al final de params
-                $params[] = $this->currentProjectId;
-                $sql = $injected;
-            }
-        }
-
         try {
-            [$sql, $params] = $this->rewriteGlobalTableQuery($sql, $params);
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($params);
+            $scope = $this->dataScope()->current();
+            $guarded = (new \App\Security\DataScope\ProjectSqlGuard($this))->guard(
+                (string) $sql,
+                (array) $params,
+                $scope,
+                $this->tableScopeCatalog(),
+            );
+            $projectId = $scope instanceof \App\Security\DataScope\ProjectScope
+                ? $scope->projectId()
+                : null;
+            [$guardedSql, $guardedParams] = $this->rewriteGlobalTableQuery(
+                $guarded->sql,
+                $guarded->params,
+                $projectId,
+                $guarded->tables,
+            );
+            $stmt = $this->pdo->prepare($guardedSql);
+            $stmt->execute($guardedParams);
 
             return $stmt;
         } catch (PDOException $e) {
@@ -240,138 +244,24 @@ class Database
      */
     public function queryWithProject(string $sql, array $params = [], ?int $projectId = null): PDOStatement
     {
-        $pid = $projectId ?? $this->currentProjectId;
-
-        // Sin project_id → ejecutar sin modificar
-        if ($pid === null) {
-            error_log('queryWithProject: No project_id available, executing without injection. SQL: ' . substr($sql, 0, 120));
-            return $this->query($sql, $params);
+        $scope = $this->dataScope()->current();
+        if (!$scope instanceof \App\Security\DataScope\ProjectScope) {
+            if ($scope === null) {
+                throw new \App\Security\DataScope\MissingProjectScope(
+                    'queryWithProject exige un ProjectScope activo.',
+                );
+            }
+            throw new \App\Security\DataScope\ProjectScopeViolation(
+                'queryWithProject solo acepta un ProjectScope de un proyecto.',
+            );
+        }
+        if ($projectId !== null && $projectId !== $scope->projectId()) {
+            throw new \App\Security\DataScope\ProjectScopeViolation(
+                "El override {$projectId} contradice el ProjectScope {$scope->projectId()}.",
+            );
         }
 
-        $injected = $this->injectProjectId($sql, $pid);
-
-        if ($injected !== null) {
-            // Se inyectó project_id = ? al final de la query → agregar valor al final de params
-            $params[] = $pid;
-            return $this->query($injected, $params);
-        }
-
-        // No se inyectó (query no toca tabla global o ya tiene project_id)
         return $this->query($sql, $params);
-    }
-
-    /**
-     * Inyecta project_id en el WHERE de una query si toca una tabla global y no lo tiene ya.
-     *
-     * @return string|null SQL modificado, o null si no se necesita inyección.
-     */
-    /**
-     * Extract first table alias from FROM or UPDATE clause.
-     * Returns null if the query has no alias (simple single-table queries).
-     */
-    private function extractFirstTableAlias(string $sql): ?string
-    {
-        // SQL keywords that can follow a table name (not aliases)
-        $sqlKeywords = '\b(?:WHERE|JOIN|INNER|LEFT|RIGHT|CROSS|OUTER|FULL|STRAIGHT_JOIN|ON|AND|OR|SET|ORDER|GROUP|LIMIT|HAVING|INTO|VALUES|USING|NATURAL|AS)\b';
-
-        // Match: FROM table [AS] alias
-        if (preg_match('/\bFROM\s+(\w+)\s+(?:AS\s+)?(\w+)\b/i', $sql, $m)) {
-            if (!preg_match('/' . $sqlKeywords . '/i', $m[2])) {
-                return $m[2];
-            }
-        }
-
-        // Match: UPDATE table [AS] alias
-        if (preg_match('/\bUPDATE\s+(\w+)\s+(?:AS\s+)?(\w+)\b/i', $sql, $m)) {
-            if (!preg_match('/' . $sqlKeywords . '/i', $m[2])) {
-                return $m[2];
-            }
-        }
-
-        return null;
-    }
-
-    private function injectProjectId(string $sql, int $projectId): ?string
-    {
-        // Skip INSERT queries — rewriteGlobalTableQuery handles INSERT...SELECT via
-        // rewriteInsertSelect (injects project_id into both INSERT columns and SELECT's
-        // WHERE) and plain INSERT...VALUES via rewriteInsert. Injecting project_id as a
-        // WHERE append in INSERT...SELECT with JOIN causes MySQL "Unknown column
-        // 'project_id' in 'on clause'" when the JOIN involves a non-global table.
-        if (preg_match('/^\s*INSERT\s+(?:IGNORE\s+)?/i', $sql)) {
-            return null;
-        }
-
-        $sqlLower = strtolower($sql);
-
-        // 1. Verificar si ya tiene project_id en el WHERE
-        if (preg_match('/\bwhere\b.*\bproject_id\b/s', $sqlLower)) {
-            return null;
-        }
-
-        // 2. Detectar si la query toca una tabla global
-        $globalTableTypes = TableResolver::getValidTables();
-        $touchesGlobal = false;
-
-        // Buscar FROM/JOIN/UPDATE + nombre de tabla global
-        foreach ($globalTableTypes as $type) {
-            if (preg_match('/\b(?:from|join|update)\s+' . preg_quote($type, '/') . '\b/i', $sql)) {
-                $touchesGlobal = true;
-                break;
-            }
-        }
-
-        if (!$touchesGlobal) {
-            return null;
-        }
-
-        // 3. Determinar si necesita calificación con alias (tiene JOIN)
-        $hasJoin = (bool) preg_match('/\bJOIN\b/i', $sql);
-        $qualifier = $hasJoin ? $this->extractFirstTableAlias($sql) : null;
-        $projectIdExpr = $qualifier ? "{$qualifier}.project_id = ?" : "project_id = ?";
-
-        // 4. Inyectar AND/WHERE project_id = ? al FINAL del SQL
-        //    para que el parámetro pueda ir al final del array de params.
-        $pidExpr = "{$projectIdExpr}";
-
-        if (preg_match('/\bwhere\b/i', $sql)) {
-            // Ya tiene WHERE → añadir AND project_id = ? al final (o antes de ORDER BY, etc.)
-            $patterns = [
-                '/\s+(ORDER\s+BY)\b/i',
-                '/\s+(GROUP\s+BY)\b/i',
-                '/\s+(LIMIT)\b/i',
-                '/\s+(HAVING)\b/i',
-                '/\s+(ON\s+DUPLICATE\s+KEY)\b/i',
-            ];
-
-            foreach ($patterns as $pattern) {
-                if (preg_match($pattern, $sql, $matches, PREG_OFFSET_CAPTURE)) {
-                    $pos = $matches[0][1];
-                    return substr($sql, 0, $pos) . " AND {$pidExpr}" . substr($sql, $pos);
-                }
-            }
-
-            // No hay cláusulas posteriores → añadir AND al final
-            return rtrim($sql) . " AND {$pidExpr}";
-        }
-
-        // No hay WHERE → añadir al final (o antes de ORDER BY, LIMIT, etc.)
-        $patterns = [
-            '/\s+(ORDER\s+BY)\b/i',
-            '/\s+(GROUP\s+BY)\b/i',
-            '/\s+(LIMIT)\b/i',
-            '/\s+(HAVING)\b/i',
-            '/\s+(ON\s+DUPLICATE\s+KEY)\b/i',
-        ];
-
-        foreach ($patterns as $pattern) {
-            if (preg_match($pattern, $sql, $matches, PREG_OFFSET_CAPTURE)) {
-                $pos = $matches[0][1];
-                return substr($sql, 0, $pos) . " WHERE {$pidExpr}" . substr($sql, $pos);
-            }
-        }
-
-        return rtrim($sql) . " WHERE {$pidExpr}";
     }
 
     /**
@@ -475,18 +365,18 @@ class Database
 
     public function prepare($sql)
     {
-        if ($this->usesGlobalTables()) {
-            [, $matchedTables] = $this->rewritePrefixedTables($sql);
-            if (!empty($matchedTables)) {
-                return new DatabasePreparedStatement($this, $sql);
-            }
-        } else {
+        $guard = new \App\Security\DataScope\ProjectSqlGuard($this);
+        if ($guard->requiresDeferredExecution((string) $sql, $this->tableScopeCatalog())) {
+            return new DatabasePreparedStatement($this, (string) $sql);
+        }
+
+        if (!$this->usesGlobalTables()) {
             $sql = $this->rewriteLegacyArchiveTables($sql);
         }
         return $this->pdo->prepare($sql);
     }
 
-    private function rewriteGlobalTableQuery(string $sql, array $params): array
+    private function rewriteGlobalTableQuery(string $sql, array $params, ?int $projectId, array $tables): array
     {
         if (!$this->usesGlobalTables()) {
             return [$this->rewriteLegacyArchiveTables($sql), $params];
@@ -497,33 +387,17 @@ class Database
             return [$sql, $params];
         }
 
-        $projectId = $this->resolveProjectIdFromSession();
-        [$rewrittenSql, $matchedTables, $prefixProjectId, $prefixedReferenceCount] = $this->rewritePrefixedTables($sql);
-
-        if ($prefixProjectId !== null) {
-            $projectId = $prefixProjectId;
+        $matchedTables = array_values(array_intersect($tables, self::GLOBAL_TABLES));
+        if ($operation !== 'INSERT' || $projectId === null || $matchedTables === []) {
+            return [$sql, $params];
         }
 
-        if ($projectId === null || empty($matchedTables)) {
-            return [$rewrittenSql, $params];
+        $insertSelect = $this->rewriteInsertSelect($sql, $params, $matchedTables[0], $projectId);
+        if ($insertSelect !== null) {
+            return $insertSelect;
         }
 
-        if ($operation === 'INSERT') {
-            $insertSelect = $this->rewriteInsertSelect($rewrittenSql, $params, $matchedTables[0], $projectId);
-            if ($insertSelect !== null) {
-                return $insertSelect;
-            }
-
-            return $this->rewriteInsert($rewrittenSql, $params, $matchedTables[0], $projectId);
-        }
-
-        if (in_array($operation, ['SELECT', 'UPDATE', 'DELETE'], true)) {
-            [$scopedSql, $scopedParams] = $this->injectProjectFilter($rewrittenSql, $params, $matchedTables[0], $projectId, $operation);
-            $this->assertScopedPrefixedGlobalQuery($scopedSql, $matchedTables, $prefixedReferenceCount);
-            return [$scopedSql, $scopedParams];
-        }
-
-        return [$rewrittenSql, $params];
+        return $this->rewriteInsert($sql, $params, $matchedTables[0], $projectId);
     }
 
     private function usesGlobalTables(): bool
@@ -547,20 +421,6 @@ class Database
         return $available;
     }
 
-    private function resolveProjectIdFromSession(): ?int
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            @session_start();
-        }
-
-        if (!empty($_SESSION['project_id'])) {
-            return (int) $_SESSION['project_id'];
-        }
-
-        $prefix = (string) ($_SESSION['db'] ?? '');
-        return $prefix !== '' ? $this->resolveProjectIdByPrefix($prefix) : null;
-    }
-
     private function resolveProjectIdByPrefix(string $prefix): ?int
     {
         if ($prefix === '' || preg_match('/^[A-Za-z0-9_]+$/', $prefix) !== 1) {
@@ -579,62 +439,13 @@ class Database
         return $this->projectIdByPrefix[$prefix];
     }
 
-    private function rewritePrefixedTables(string $sql): array
+    /**
+     * Compatibilidad de prefijos para el preflight SQL. La autoridad sigue siendo
+     * el ProjectScope; este lookup solo traduce Base_de_Datos a su ID canónico.
+     */
+    public function resolveProjectIdForPrefix(string $prefix): ?int
     {
-        $matchedTables = [];
-        $projectId = null;
-        $prefixedReferenceCount = 0;
-        $tables = implode('|', array_map('preg_quote', self::GLOBAL_TABLES));
-        $pattern = '/`?([A-Za-z][A-Za-z0-9_]*)_(' . $tables . ')`?\b/';
-
-        $rewritten = preg_replace_callback($pattern, function (array $match) use (&$matchedTables, &$projectId, &$prefixedReferenceCount) {
-            $prefix = $match[1];
-            $table = $match[2];
-            $resolvedId = $this->resolveProjectIdByPrefix($prefix);
-
-            if ($resolvedId === null) {
-                return $match[0];
-            }
-
-            $projectId = $resolvedId;
-            $matchedTables[] = $table;
-            $prefixedReferenceCount++;
-            return $table;
-        }, $sql);
-
-        foreach (self::GLOBAL_TABLES as $table) {
-            if (preg_match('/\b' . preg_quote($table, '/') . '\b/', $rewritten)) {
-                $matchedTables[] = $table;
-            }
-        }
-
-        return [$rewritten, array_values(array_unique($matchedTables)), $projectId, $prefixedReferenceCount];
-    }
-
-    private function assertScopedPrefixedGlobalQuery(string $sql, array $matchedTables, int $prefixedReferenceCount): void
-    {
-        if ($prefixedReferenceCount <= 1) {
-            return;
-        }
-
-        $tableReferenceCount = 0;
-        foreach ($matchedTables as $table) {
-            $pattern = '/\b(?:FROM|JOIN|UPDATE|DELETE\s+FROM)\s+`?' . preg_quote($table, '/') . '`?\b/i';
-            $tableReferenceCount += preg_match_all($pattern, $sql);
-        }
-
-        if ($tableReferenceCount <= 1) {
-            return;
-        }
-
-        $scopeCount = preg_match_all(
-            '/(?:\b[A-Za-z_][A-Za-z0-9_]*\s*\.\s*)?`?project_id`?\b\s*(?:=|<=>|IN\b)/i',
-            $sql
-        );
-
-        if ($scopeCount < $tableReferenceCount) {
-            throw new RuntimeException('Consulta a tablas globales sin alcance completo por project_id.');
-        }
+        return $this->resolveProjectIdByPrefix($prefix);
     }
 
     private function rewriteLegacyArchiveTables(string $sql): string
@@ -711,11 +522,6 @@ class Database
             return null;
         }
 
-        $sourceTable = $this->resolveInsertSelectSourceTable($sql);
-        if ($sourceTable !== null) {
-            [$sql, $params] = $this->injectProjectFilter($sql, $params, $sourceTable, $projectId, 'SELECT');
-        }
-
         if (!isset($insertMatch[1]) || trim($insertMatch[1]) === '') {
             return [$sql, $params];
         }
@@ -781,66 +587,6 @@ class Database
         }
 
         return [$rewritten, $params];
-    }
-
-    private function injectProjectFilter(string $sql, array $params, string $table, int $projectId, string $operation): array
-    {
-        if (preg_match('/\bproject_id\b/i', $sql)) {
-            return [$sql, $params];
-        }
-
-        $alias = $this->resolveAlias($sql, $table, $operation);
-        $usesSequentialParams = $this->isSequentialArray($params);
-        $projectPlaceholder = $usesSequentialParams ? '?' : ':__global_project_id';
-        $condition = ($alias !== null ? $alias : $table) . '.project_id = ' . $projectPlaceholder;
-
-        $insertOffset = strlen($sql);
-        if (preg_match('/\bWHERE\b/i', $sql, $whereMatch, PREG_OFFSET_CAPTURE)) {
-            $insertOffset = $whereMatch[0][1];
-            $rewritten = preg_replace('/\bWHERE\b/i', 'WHERE ' . $condition . ' AND ', $sql, 1);
-        } else {
-            $splitPattern = '/\s+(ORDER\s+BY|GROUP\s+BY|LIMIT)\s+/i';
-            if (preg_match($splitPattern, $sql, $match, PREG_OFFSET_CAPTURE)) {
-                $pos = $match[0][1];
-                $insertOffset = $pos;
-                $rewritten = substr($sql, 0, $pos) . ' WHERE ' . $condition . substr($sql, $pos);
-            } else {
-                $rewritten = $sql . ' WHERE ' . $condition;
-            }
-        }
-
-        if ($usesSequentialParams) {
-            $projectParamIndex = substr_count(substr($sql, 0, $insertOffset), '?');
-            array_splice($params, $projectParamIndex, 0, [$projectId]);
-        } else {
-            $params['__global_project_id'] = $projectId;
-        }
-
-        return [$rewritten, $params];
-    }
-
-    private function resolveAlias(string $sql, string $table, string $operation): ?string
-    {
-        $keywordPattern = '(WHERE|SET|JOIN|LEFT|RIGHT|INNER|OUTER|ORDER|GROUP|LIMIT|ON)';
-
-        if ($operation === 'UPDATE' && preg_match('/UPDATE\s+`?' . preg_quote($table, '/') . '`?(?:\s+(?:AS\s+)?([A-Za-z_][A-Za-z0-9_]*))?/i', $sql, $match)) {
-            return isset($match[1]) && !preg_match('/^' . $keywordPattern . '$/i', $match[1]) ? $match[1] : null;
-        }
-
-        if (preg_match('/FROM\s+`?' . preg_quote($table, '/') . '`?(?:\s+(?:AS\s+)?([A-Za-z_][A-Za-z0-9_]*))?/i', $sql, $match)) {
-            return isset($match[1]) && !preg_match('/^' . $keywordPattern . '$/i', $match[1]) ? $match[1] : null;
-        }
-
-        return null;
-    }
-
-    private function resolveInsertSelectSourceTable(string $sql): ?string
-    {
-        if (!preg_match('/\bFROM\s+`?([A-Za-z_][A-Za-z0-9_]*)`?\b/i', $sql, $match)) {
-            return null;
-        }
-
-        return in_array($match[1], self::GLOBAL_TABLES, true) ? $match[1] : null;
     }
 
     private function projectScopedIdSelectExpression(string $table, string $column): string
@@ -1042,40 +788,31 @@ class Database
     }
 
     /**
-     * Injects project_id into SQL (like queryWithProject) but returns a prepared
-     * statement WITHOUT executing it. Use when you need to execute the same query
-     * multiple times in a loop with different params.
+     * Prepara una consulta que se validará con sus parámetros completos en execute().
+     * El override solo conserva compatibilidad de firma y no concede autoridad.
      *
-     * When injectProjectId() modifies the SQL (appends AND project_id = ? at the
-     * end), the caller MUST append the project_id value at the END of the params
-     * array passed to execute().
-     *
-     * Example:
-     *   $pid = $db->getCurrentProjectId();
-     *   $stmt = $db->prepareWithProject("UPDATE t SET x = ? WHERE id = ?");
-     *   foreach ($items as $item) {
-     *       $stmt->execute([$item['x'], $item['id'], $pid]);  // $pid LAST
-     *   }
-     *
-     * @param string $sql The SQL query with placeholders
-     * @param int|null $projectId Project ID (uses context if null)
-     * @return PDOStatement
+     * @return DatabasePreparedStatement|PDOStatement
      */
-    public function prepareWithProject(string $sql, ?int $projectId = null): PDOStatement
+    public function prepareWithProject(string $sql, ?int $projectId = null)
     {
-        $pid = $projectId ?? $this->currentProjectId;
-
-        if ($pid === null) {
-            return $this->pdo->prepare($sql);
+        $scope = $this->dataScope()->current();
+        if (!$scope instanceof \App\Security\DataScope\ProjectScope) {
+            if ($scope === null) {
+                throw new \App\Security\DataScope\MissingProjectScope(
+                    'prepareWithProject exige un ProjectScope activo.',
+                );
+            }
+            throw new \App\Security\DataScope\ProjectScopeViolation(
+                'prepareWithProject solo acepta un ProjectScope de un proyecto.',
+            );
+        }
+        if ($projectId !== null && $projectId !== $scope->projectId()) {
+            throw new \App\Security\DataScope\ProjectScopeViolation(
+                "El override {$projectId} contradice el ProjectScope {$scope->projectId()}.",
+            );
         }
 
-        $injected = $this->injectProjectId($sql, $pid);
-
-        if ($injected !== null) {
-            return $this->pdo->prepare($injected);
-        }
-
-        return $this->pdo->prepare($sql);
+        return $this->prepare($sql);
     }
 
     /**
