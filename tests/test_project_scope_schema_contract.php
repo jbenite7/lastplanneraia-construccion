@@ -217,6 +217,8 @@ if (!is_file($grantAudit)) {
             'DB_HOST' => '127.0.0.1',
             'DB_PORT' => '1',
             'DB_NAME' => 'lps',
+            'DB_USER' => 'runtime',
+            'DB_PASS' => '',
         ],
     );
     schemaContractSame(1, $liveUnavailable['code'], 'Auditor live sin conexión devolvió RC 0.');
