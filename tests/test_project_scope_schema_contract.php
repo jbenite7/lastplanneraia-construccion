@@ -6,6 +6,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/../scripts/lib/php-test-ddl-inventory.php';
+require_once __DIR__ . '/../scripts/security/audit-runtime-db-grants.php';
 
 use App\Security\DataScope\TableScopeKind;
 
@@ -34,7 +35,13 @@ function schemaContractTrue(bool $condition, string $message): void
 }
 
 /** @return array{code: int, output: string} */
-function schemaContractRunGrantAudit(string $script, string $grant, bool $stdin = false): array
+function schemaContractRunGrantAudit(
+    string $script,
+    string $grant,
+    bool $stdin = false,
+    array $arguments = [],
+    array $environment = ['DB_NAME' => 'lps'],
+): array
 {
     $fixture = null;
     if (!$stdin) {
@@ -45,6 +52,9 @@ function schemaContractRunGrantAudit(string $script, string $grant, bool $stdin 
     }
 
     $command = [PHP_BINARY, $script];
+    foreach ($arguments as $argument) {
+        $command[] = $argument;
+    }
     if ($fixture !== null) {
         $command[] = '--grants-file=' . $fixture;
     }
@@ -54,7 +64,7 @@ function schemaContractRunGrantAudit(string $script, string $grant, bool $stdin 
         [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
         $pipes,
         null,
-        ['DB_NAME' => 'lps'],
+        $environment,
     );
 
     if (!is_resource($process)) {
@@ -78,10 +88,147 @@ function schemaContractRunGrantAudit(string $script, string $grant, bool $stdin 
     return ['code' => $code, 'output' => (string) $stdout . (string) $stderr];
 }
 
+final class SchemaContractGrantStatement extends PDOStatement
+{
+    /** @var list<array<int, string>> */
+    private array $rows;
+
+    /** @param list<array<int, string>> $rows */
+    public function __construct(array $rows)
+    {
+        $this->rows = $rows;
+    }
+
+    public function fetch(
+        int $mode = PDO::FETCH_DEFAULT,
+        int $cursorOrientation = PDO::FETCH_ORI_NEXT,
+        int $cursorOffset = 0,
+    ): mixed {
+        unset($cursorOrientation, $cursorOffset);
+        $row = array_shift($this->rows);
+        if ($row === null) {
+            return false;
+        }
+
+        return match ($mode) {
+            PDO::FETCH_COLUMN => $row[0],
+            PDO::FETCH_NUM, PDO::FETCH_DEFAULT => $row,
+            default => $row,
+        };
+    }
+}
+
+final class SchemaContractGrantPdo extends PDO
+{
+    public string $queriedSql = '';
+
+    /** @param list<array<int, string>> $rows */
+    public function __construct(private array $rows, private ?Throwable $failure = null)
+    {
+    }
+
+    public function query(
+        string $query,
+        ?int $fetchMode = null,
+        mixed ...$fetchModeArgs,
+    ): PDOStatement|false {
+        unset($fetchMode, $fetchModeArgs);
+        $this->queriedSql = $query;
+        if ($this->failure !== null) {
+            throw $this->failure;
+        }
+
+        return new SchemaContractGrantStatement($this->rows);
+    }
+}
+
 $grantAudit = __DIR__ . '/../scripts/security/audit-runtime-db-grants.php';
 if (!is_file($grantAudit)) {
     $failures[] = 'Falta scripts/security/audit-runtime-db-grants.php.';
 } else {
+    schemaContractSame(
+        ['grants_file' => null, 'live' => true],
+        runtimeGrantAuditParseArguments(['--live']),
+        'El auditor no reconoce --live.',
+    );
+    schemaContractSame(
+        ['grants_file' => 'fixture.txt', 'live' => false],
+        runtimeGrantAuditParseArguments(['--grants-file=fixture.txt']),
+        'El parser dejó de reconocer --grants-file.',
+    );
+    try {
+        runtimeGrantAuditParseArguments(['--live', '--grants-file=fixture.txt']);
+        $failures[] = 'El auditor aceptó --live junto con --grants-file.';
+    } catch (InvalidArgumentException) {
+        $checks++;
+    }
+
+    $previousDatabase = getenv('DB_NAME');
+    putenv('DB_NAME=lps');
+    $liveGrantCases = [
+        'live DML exacto más USAGE' => [
+            [
+                ['GRANT USAGE ON *.* TO `lps_runtime`@`%`'],
+                ['GRANT SELECT, INSERT, UPDATE, DELETE ON `lps`.* TO `lps_runtime`@`%`'],
+            ],
+            true,
+        ],
+        'live root' => [
+            [['GRANT SELECT ON `lps`.* TO `root`@`%`']],
+            false,
+        ],
+        'live DDL' => [
+            [['GRANT CREATE ON `lps`.* TO `lps_runtime`@`%`']],
+            false,
+        ],
+        'live target global' => [
+            [['GRANT SELECT ON *.* TO `lps_runtime`@`%`']],
+            false,
+        ],
+    ];
+    foreach ($liveGrantCases as $label => [$rows, $expectedOk]) {
+        $pdo = new SchemaContractGrantPdo($rows);
+        ob_start();
+        $result = runtimeGrantAuditLive($pdo);
+        $liveOutput = (string) ob_get_clean();
+        schemaContractSame($expectedOk, $result['ok'], "PDO doble: {$label} devolvió estado inesperado.");
+        schemaContractSame(
+            'SHOW GRANTS FOR CURRENT_USER',
+            $pdo->queriedSql,
+            "PDO doble: {$label} usó una consulta distinta.",
+        );
+        schemaContractTrue(
+            stripos($liveOutput, 'GRANT ') === false,
+            "PDO doble: {$label} imprimió el contenido de grants.",
+        );
+    }
+    if ($previousDatabase === false) {
+        putenv('DB_NAME');
+    } else {
+        putenv('DB_NAME=' . $previousDatabase);
+    }
+
+    $liveUnavailable = schemaContractRunGrantAudit(
+        $grantAudit,
+        '',
+        false,
+        ['--live'],
+        [
+            'DB_HOST' => '127.0.0.1',
+            'DB_PORT' => '1',
+            'DB_NAME' => 'lps',
+        ],
+    );
+    schemaContractSame(1, $liveUnavailable['code'], 'Auditor live sin conexión devolvió RC 0.');
+    schemaContractTrue(
+        str_contains($liveUnavailable['output'], 'runtime_db_grants=fail reason=unavailable grants_checked=0'),
+        'Auditor live sin conexión no reportó reason=unavailable.',
+    );
+    schemaContractTrue(
+        stripos($liveUnavailable['output'], 'GRANT ') === false,
+        'Auditor live sin conexión imprimió contenido de grants.',
+    );
+
     $grantCases = [
         'DML explícito sobre lps.*' => [
             'GRANT SELECT, INSERT, UPDATE, DELETE ON `lps`.* TO `lps_runtime`@`%`',

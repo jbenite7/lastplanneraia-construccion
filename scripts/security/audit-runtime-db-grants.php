@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-/** @return array{grants_file: ?string} */
+/** @return array{grants_file: ?string, live: bool} */
 function runtimeGrantAuditParseArguments(array $arguments): array
 {
     $grantsFile = null;
+    $live = false;
 
     for ($index = 0, $count = count($arguments); $index < $count; $index++) {
         $argument = $arguments[$index];
@@ -17,6 +18,10 @@ function runtimeGrantAuditParseArguments(array $arguments): array
             $grantsFile = $arguments[++$index];
             continue;
         }
+        if ($argument === '--live') {
+            $live = true;
+            continue;
+        }
 
         throw new InvalidArgumentException('Opción no reconocida.');
     }
@@ -24,8 +29,11 @@ function runtimeGrantAuditParseArguments(array $arguments): array
     if ($grantsFile === '') {
         throw new InvalidArgumentException('--grants-file requiere una ruta.');
     }
+    if ($live && $grantsFile !== null) {
+        throw new InvalidArgumentException('--live no se puede combinar con --grants-file.');
+    }
 
-    return ['grants_file' => $grantsFile];
+    return ['grants_file' => $grantsFile, 'live' => $live];
 }
 
 /** @return list<string> */
@@ -147,12 +155,34 @@ function runtimeGrantAudit(string $input, string $database): array
     return ['ok' => true, 'grants_checked' => $grantsChecked, 'reason' => 'ok'];
 }
 
+/** @return array{ok: bool, grants_checked: int, reason: string} */
+function runtimeGrantAuditLive(PDO $pdo): array
+{
+    try {
+        $statement = $pdo->query('SHOW GRANTS FOR CURRENT_USER');
+        if (!$statement instanceof PDOStatement) {
+            return ['ok' => false, 'grants_checked' => 0, 'reason' => 'unavailable'];
+        }
+
+        $lines = [];
+        while (($row = $statement->fetch(PDO::FETCH_NUM)) !== false) {
+            if (is_array($row) && isset($row[0]) && is_string($row[0])) {
+                $lines[] = $row[0];
+            }
+        }
+
+        return runtimeGrantAudit(implode("\n", $lines), (string) (getenv('DB_NAME') ?: ''));
+    } catch (Throwable) {
+        return ['ok' => false, 'grants_checked' => 0, 'reason' => 'unavailable'];
+    }
+}
+
 function runtimeGrantAuditMain(array $arguments): int
 {
     try {
         $options = runtimeGrantAuditParseArguments($arguments);
     } catch (InvalidArgumentException) {
-        fwrite(STDERR, "Uso: php scripts/security/audit-runtime-db-grants.php [--grants-file=RUTA]\n");
+        fwrite(STDERR, "Uso: php scripts/security/audit-runtime-db-grants.php [--grants-file=RUTA|--live]\n");
         return 2;
     }
 
@@ -160,6 +190,42 @@ function runtimeGrantAuditMain(array $arguments): int
     if ($database === false || $database === '') {
         echo "runtime_db_grants=fail reason=missing-database grants_checked=0\n";
         return 1;
+    }
+
+    if ($options['live']) {
+        try {
+            $host = getenv('DB_HOST') ?: 'db';
+            $port = getenv('DB_PORT') ?: '3306';
+            $user = getenv('DB_USER');
+            $pass = getenv('DB_PASS');
+            if ($user === false || $user === '') {
+                throw new RuntimeException('runtime database user is unavailable');
+            }
+
+            $pdo = new PDO(
+                sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $host, $port, $database),
+                $user,
+                $pass === false ? '' : $pass,
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                    PDO::ATTR_TIMEOUT => 2,
+                ],
+            );
+            $result = runtimeGrantAuditLive($pdo);
+        } catch (Throwable) {
+            $result = ['ok' => false, 'grants_checked' => 0, 'reason' => 'unavailable'];
+        }
+
+        echo sprintf(
+            "runtime_db_grants=%s reason=%s grants_checked=%d\n",
+            $result['ok'] ? 'ok' : 'fail',
+            $result['reason'],
+            $result['grants_checked'],
+        );
+
+        return $result['ok'] ? 0 : 1;
     }
 
     if ($options['grants_file'] !== null) {
