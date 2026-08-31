@@ -74,6 +74,13 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
   (que sí modifica `NotificationController`) decida si retira la rama muerta o la deja como defensa
   en profundidad.
 
+- [ ] **`LpsService::getActivityComments()` y `addActivityComment()` quedaron sin llamador desde el
+  controlador.** Al normalizar el hilo en la Tarea 5 de T02 (`8e83a705`), `LpsApiController` pasó a
+  usar `LpsThreadService`; de los dos métodos viejos solo `addActivityComment()` sigue vivo, y lo
+  llama `escalarAlertasActivas()` internamente. Se dejaron intactos por estar fuera del alcance de esa
+  tarea. Revisar al recortar `LpsService`, para no dejar código muerto ni retirar por error el camino
+  que el escalamiento sí usa.
+
 ## Pendiente de decisión: despliegue a producción
 
 **El arreglo del arrastre de avance semanal está en `main` (`c1e3365e`) y desplegado en

@@ -233,6 +233,11 @@ Use actual T01 paths after its closure; expected owners include:
   condición de retiro: `programa_consolidado` todavía no distingue Programa General de Programación
   Intermedia (retirar cuando lo haga, momento en que los dos primeros adaptadores colapsan en uno), y
   `lps_escalamientos`/`profesionales` aún no tienen modelo propio portado (retirar cuando lo tengan).
+- **Añadido el 2026-08-31, al cerrar la Tarea 5.** El campo legado `data` de las respuestas de hilo,
+  que convive con el nuevo `comments`. Las dos vistas salen de una sola lectura, así que no divergen,
+  pero **`data` no tiene hoy fecha de retiro y eso hay que decidirlo aquí, no descubrirlo después**:
+  se retira cuando ningún consumidor legado lea `usuario_id` para distinguir los comentarios del
+  Sistema — es decir, cuando `lps_drawer.js` salga de esta misma lista.
 
 ## Task 1: Freeze ownership, routes and callers
 
