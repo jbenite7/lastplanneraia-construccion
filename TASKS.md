@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-28
+updated: 2026-08-31
 ---
 
 # Tareas
@@ -61,6 +61,18 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
   un estado artificial que en producción no ocurriría, o (b) existe un camino real que la pierde.
   En cualquiera de los dos casos, la pantalla no debe responder 500 nunca: en el único caso legítimo
   (proyecto nuevo sin cronograma) debe guiar a cargar el primero.
+- [ ] **La rama "sin sesión" de `NotificationController::getUnread()`/`::markAsRead()` es código
+  muerto por esta puerta.** Ambos métodos comprueban `$_SESSION['usuario']` y, si falta, responden
+  `403 {"error":"No autorizado"}` — pero `SessionMiddleware::check()` corre antes en el pipeline
+  (`public/index.php:55-57`, antes de que exista el router) y ya intercepta esa misma petición sin
+  sesión con `401 {"success":false,"sessionExpired":true,"reason":"missing_session","redirect":"/login"}`.
+  El bloque `if (!$userId)` de ambos métodos nunca se alcanza hoy por esta ruta. Descubierto
+  caracterizando T02 (`docs/superpowers/plans/2026-08-30-t02-contexto-lps-react.md`, Tarea 1) al
+  escribir `tests/test_lps_api_contract.php`: la primera versión del test esperaba el 403 del
+  controlador y falló en vivo con 401 — verificado con `curl -i` contra el contenedor. No se corrige
+  aquí (Tarea 1 es censo/caracterización, no cambia comportamiento); anotado para que Task 9 de T02
+  (que sí modifica `NotificationController`) decida si retira la rama muerta o la deja como defensa
+  en profundidad.
 
 ## Pendiente de decisión: despliegue a producción
 
