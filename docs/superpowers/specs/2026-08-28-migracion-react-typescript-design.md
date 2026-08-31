@@ -53,7 +53,7 @@ discrepan, manda el código.
 
 La primera spec hija ya existe:
 
-- `docs/superpowers/specs/2026-08-29-programa-general-react-design.md` — Programa General.
+- `docs/superpowers/specs/2026-08-30-s05-programa-general-react-design.md` — Programa General.
 
 Esta regla evita convertir el inventario global en 210 contratos imaginados. La spec maestra sí
 declara **qué debe auditarse y qué resultado debe producir cada pieza**; la spec hija declara la
@@ -74,7 +74,7 @@ vista/partial de `views/` tiene un único propietario en §12.
 | S02 | `2026-08-30-s02-recuperar-clave-react-design.md` | Spec autorrevisada; plan `2026-08-30-s02-recuperar-clave-react.md` escrito; sin decisiones pendientes |
 | S03 | `2026-08-30-s03-restablecer-clave-react-design.md` | Spec autorrevisada; plan `2026-08-30-s03-restablecer-clave-react.md` escrito; sin decisiones pendientes |
 | S04 | `2026-08-30-s04-selector-proyectos-react-design.md` | Spec autorrevisada; plan `2026-08-30-s04-selector-proyectos-react.md` escrito; sin decisiones pendientes |
-| S05 | `2026-08-29-programa-general-react-design.md` | Spec autorrevisada; plan `2026-08-30-s05-programa-general-react.md` escrito; sin decisiones pendientes |
+| S05 | `2026-08-30-s05-programa-general-react-design.md` | Spec autorrevisada; plan `2026-08-30-s05-programa-general-react.md` escrito; sin decisiones pendientes |
 | S06 | `2026-08-30-s06-actualizar-cronograma-react-design.md` | Spec autorrevisada; plan `2026-08-30-s06-actualizar-cronograma-react.md` escrito; sin decisiones pendientes |
 | S07 | `2026-08-30-s07-programacion-intermedia-react-design.md` | Spec autorrevisada; plan `2026-08-30-s07-programacion-intermedia-react.md` escrito; sin decisiones pendientes |
 | S08 | `2026-08-30-s08-programacion-semanal-react-design.md` | Spec autorrevisada; plan `2026-08-30-s08-programacion-semanal-react.md` escrito; sin decisiones pendientes |

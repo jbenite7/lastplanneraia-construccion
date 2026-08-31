@@ -28,7 +28,7 @@ Esta spec continúa las decisiones de:
 - [[docs/superpowers/specs/2026-08-28-migracion-react-typescript-design|Migración React + TypeScript]];
 - [[docs/superpowers/specs/2026-08-28-paridad-shell-react-rls-design|Paridad del shell React y RLS]];
 - [[docs/superpowers/specs/2026-08-30-t01-shell-runtime-react-design|T01 — shell/runtime React]];
-- [[docs/superpowers/specs/2026-08-29-programa-general-react-design|S05 — Programa General React]];
+- [[docs/superpowers/specs/2026-08-30-s05-programa-general-react-design|S05 — Programa General React]];
 - [[docs/security/rls-runtime-boundary|Frontera runtime de RLS]].
 
 T01 posee sesión, proyecto, semana, sidebar, tema y navegación. S04 posee el cambio de proyecto. S05

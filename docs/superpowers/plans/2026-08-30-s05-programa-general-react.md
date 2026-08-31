@@ -31,7 +31,7 @@ its exclusive assets are retired.
 **Tech Stack:** PHP 8.3 in Docker Compose, React 19, TypeScript 7, react-router-dom 7, Vite 8, Zod 4,
 Vitest 4, Testing Library, Playwright 1.61, Axe, PhpSpreadsheet and AIA design-system tokens.
 
-**Spec:** `docs/superpowers/specs/2026-08-29-programa-general-react-design.md`
+**Spec:** `docs/superpowers/specs/2026-08-30-s05-programa-general-react-design.md`
 
 ## Global Constraints
 
