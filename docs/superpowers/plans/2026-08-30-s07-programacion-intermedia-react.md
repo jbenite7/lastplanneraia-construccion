@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [lps, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s07-programacion-intermedia-react.md
+resumen: "migrate /programacion-intermedia from VIEW-35, Handsontable and global JavaScript to a native React look-ahead with server-authoritative restriction/state…"
+---
+
 # S07 Programación Intermedia React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` in an explicitly

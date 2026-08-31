@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [arquitectura, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s04-selector-proyectos-react.md
+resumen: "migrar /proyectos a React con paridad completa de listado, búsqueda, tarjetas, sidebar, BI autorizado, cambio de proyecto y landing contextual, preservando…"
+---
+
 # S04 Project Selector React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development

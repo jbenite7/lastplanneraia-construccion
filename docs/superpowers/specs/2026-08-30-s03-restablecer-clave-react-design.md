@@ -1,14 +1,14 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S03
 fecha: 2026-08-30
 superficie: restablecer-clave
 rutas: ["/password/reset"]
 depende_de: [S01, S02, T01]
 views: [VIEW-03]
-areas: [frontend, react, autenticacion, contrasena, csrf, seguridad, tema, accesibilidad]
+areas: [arquitectura, rbac, design-system]
 fuente: "auditoria de PasswordResetController, PasswordResetService, UserPasswordService, PasswordPolicyService, password-reset.view.php, auth_forms.js, rutas, pruebas y respuestas HTTP no mutantes en shell-minimo-react"
 resumen: "Migracion del enlace de restablecimiento a React, conservando token de un solo uso, cinco reglas de contraseña, redireccion segura, ambos temas y rollback sin ejecutar DML ni modificar RLS."
 ---

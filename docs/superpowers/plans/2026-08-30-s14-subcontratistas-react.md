@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [lps, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s14-subcontratistas-react.md
+resumen: "migrate /subcontratistas from VIEW-42, jQuery and Handsontable into the main React SPA while preserving the Construccion Subcontratistas and Pre-Construccion…"
+---
+
 # S14 Subcontratistas React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use superpowers:executing-plans in an explicitly

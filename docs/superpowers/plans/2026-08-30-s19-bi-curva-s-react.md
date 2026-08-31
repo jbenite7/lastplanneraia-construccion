@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [bi, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s19-bi-curva-s-react.md
+resumen: "migrate /bi/curva-s into the main React SPA as a read-only, decision-ready Curva S sheet that preserves the current authorized project/query contracts…"
+---
+
 # S19 BI Curva S React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use superpowers:executing-plans in an explicitly

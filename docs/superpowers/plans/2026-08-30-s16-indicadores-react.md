@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [bi, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s16-indicadores-react.md
+resumen: "migrate /indicadores from VIEW-27 and its legacy script/vendor stack into the main React SPA as an honest, responsive wrapper for the external global Power BI…"
+---
+
 # S16 Indicadores React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use superpowers:executing-plans in an explicitly

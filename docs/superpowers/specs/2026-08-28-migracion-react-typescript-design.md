@@ -1,10 +1,10 @@
 ---
 capa: fuente
 tipo: spec
-estado: borrador
+estado: vigente
 version: "0.1"
 fecha: 2026-08-29
-areas: [arquitectura, frontend, react, design-system, lps, pdc, bi]
+areas: [arquitectura, design-system]
 fuente: "auditoría del código en shell-minimo-react; decisiones de Felipe del 2026-08-29 y atlas aprobado el 2026-08-30"
 resumen: "Programa integral para migrar a una sola SPA React + TypeScript todas las superficies de la aplicación principal, con catálogo exhaustivo de módulos, páginas, vistas y piezas compartidas. /admin/ queda expresamente excluido."
 ---

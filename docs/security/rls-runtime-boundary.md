@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: contrato
+estado: vigente
+fecha: 2026-08-29
+areas: [datos, rbac]
+fuente: docs/security/rls-runtime-boundary.md
+resumen: "Frontera runtime de RLS y lanes de pruebas"
+---
+
 # Frontera runtime de RLS y lanes de pruebas
 
 ## Decisión

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [arquitectura, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s26-design-system-react.md
+resumen: "migrate /internal/design-system from 13 PHP views/partials and imperative JavaScript to a protected global React laboratory that can open without a selected…"
+---
+
 # S26 Design System React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` only in an

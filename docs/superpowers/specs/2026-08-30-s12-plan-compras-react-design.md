@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S12
 fecha: 2026-08-31
 superficie: plan-compras
@@ -17,7 +17,7 @@ rutas:
   - "/plan-compras/seguimiento/avance"
 depende_de: [T01, S05, S06]
 views: [VIEW-31]
-areas: [arquitectura, frontend, plan-compras, pdc-v2, rbac, accesibilidad, design-system]
+areas: [pdc, design-system]
 fuente: "auditoria de public/index.php, PlanComprasController, ocho controladores PlanCompras API y su trait de respuestas, servicios Pdc, RbacCatalog/RbacService, VIEW-31, pdc-app completa, docs/pdc-v2.md, manifiesto y pruebas PDC v2 en shell-minimo-react, 2026-08-30"
 resumen: "Migracion vertical S12 de la isla React Plan de Compras v2 a la SPA principal: ocho pantallas, 13 pestañas estables y una condicional, 69 contratos API preservados, 65 consumos con Zod, acciones efectivas, rutas anidadas con puente hash, AG Grid desktop/tablet, vistas nativas moviles, oscuro/claro y retiro del build separado, sin cambiar dominio, RLS, schema, datos ni permisos."
 ---

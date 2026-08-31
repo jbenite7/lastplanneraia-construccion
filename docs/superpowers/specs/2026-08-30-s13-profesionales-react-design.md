@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S13
 fecha: 2026-08-31
 superficie: profesionales
@@ -9,7 +9,7 @@ rutas:
   - "/profesionales"
 depende_de: [T01, S07, S08, S24]
 views: [VIEW-32]
-areas: [arquitectura, frontend, profesionales, rbac, accesibilidad, design-system]
+areas: [lps, rbac, design-system]
 fuente: "auditoria de public/index.php, ProfesionalesController, ProfesionalesApiController, ProjectProfessionalsSyncService, RbacCatalog, Database, VIEW-32, CSS, manifiesto y pruebas en shell-minimo-react, 2026-08-31"
 resumen: "Migracion vertical S13 de Profesionales a la SPA React principal: lectura pura por proyecto, sincronizacion explicita, CRUD con autosave, reglas de identidad administrada, dependencias, alta, eliminacion, recarga, CSV, tabla desktop/tablet, tarjetas moviles, oscuro/claro y contratos Zod/PHP, sin tocar admin, RLS, schema ni datos."
 ---

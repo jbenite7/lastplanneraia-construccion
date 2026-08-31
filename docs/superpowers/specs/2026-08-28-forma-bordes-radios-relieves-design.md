@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: aprobada
+estado: vigente
 fecha: 2026-08-28
 areas: [design-system]
 fuente: encuesta de 40 preguntas con Felipe sobre forma, bordes, radios, relieves y densidad de tablas, sesión 2026-08-28

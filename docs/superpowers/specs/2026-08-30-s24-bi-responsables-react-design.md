@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S24
 fecha: 2026-08-31
 superficie: bi-responsables
@@ -10,7 +10,7 @@ rutas:
   - "/api/bi/report/cip"
 depende_de: [T01, T03, S13, S17, S20, S21]
 views: [VIEW-04, VIEW-05, VIEW-06, VIEW-08]
-areas: [arquitectura, frontend, bi, cip, responsables, privacidad, rbac, accesibilidad, design-system]
+areas: [bi, rbac, design-system]
 fuente: "auditoria de public/index.php, BiViewController, BiControlTowerApiController, ControlTowerService, ReportProcessor, MetricDictionaryService, LineageService, StorytellingService, ActionRecommendationService, BiPreviewAccessPolicy, BiProjectScope, RbacCatalog, bi_cip_responsables, cip, programacion_semanal, profesionales, bi_pg_semana, bi_pi_restricciones, VIEW-04/05/06/08, control-tower.php, bi-spa.js, pruebas, respuestas read-only servidas, specs CT-6/CT-8.8/CT-9, reparto de lienzos, S13, S17, S20, S21 y frontend actual en shell-minimo-react, 2026-08-31"
 resumen: "Migracion vertical S24 de la hoja BI Responsables a React: alcance personal o de obra aplicado en servidor, poblacion canonica sin depender de cip, alerta factual PAC/criticos con completitud, carga y restricciones como contexto, contrapeso causal, filtros, drawer, responsive y oscuro/claro, sin ranking personal, mutaciones ni cambios RLS/schema/datos."
 ---

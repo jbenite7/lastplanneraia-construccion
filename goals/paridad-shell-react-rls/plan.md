@@ -3,7 +3,7 @@ capa: fuente
 tipo: plan
 estado: vigente
 fecha: 2026-08-29
-areas: [arquitectura, frontend, seguridad]
+areas: [arquitectura, datos, rbac, design-system]
 fuente: goals/paridad-shell-react-rls/plan.md
 resumen: "Secuencia de ejecución gobernada: RLS primero y paridad React después."
 ---

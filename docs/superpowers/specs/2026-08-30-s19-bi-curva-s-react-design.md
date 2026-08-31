@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S19
 fecha: 2026-08-31
 superficie: bi-curva-s
@@ -10,7 +10,7 @@ rutas:
   - "/api/bi/report/curva-s"
 depende_de: [T01, T03, S05, S06, S17, S18]
 views: [VIEW-04, VIEW-05, VIEW-06, VIEW-08]
-areas: [arquitectura, frontend, bi, curva-s, pronostico, rbac, accesibilidad, design-system]
+areas: [bi, design-system]
 fuente: "auditoria de public/index.php, BiViewController, BiControlTowerApiController, ControlTowerService, ForecastService, StorytellingService, ActionRecommendationService, MetricDictionaryService, LineageService, bi_curva_s_duracion, VIEW-04/05/06/08, bi-spa.js, CSS, pruebas, respuesta read-only servida, specs CT-8.5/N6, S17, S18 y frontend actual en shell-minimo-react, 2026-08-31"
 resumen: "Migracion vertical S19 de la hoja BI Curva S a la SPA React: plan vigente, avance real, proyeccion con banda de incertidumbre, fechas clave, tendencia, gatillo de replanificacion de 30 dias sostenido dos cortes, filtros, multi-proyecto, detalle accesible y linaje, sin mutaciones, RLS, schema ni datos."
 ---

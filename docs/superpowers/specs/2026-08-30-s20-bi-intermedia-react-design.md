@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S20
 fecha: 2026-08-31
 superficie: bi-intermedia
@@ -13,7 +13,7 @@ rutas:
   - "/api/bi/control-tower/restricciones/{id}/gestion"
 depende_de: [T01, T03, S07, S17, S18, S19, S21]
 views: [VIEW-04, VIEW-05, VIEW-06, VIEW-08]
-areas: [arquitectura, frontend, bi, intermedia, restricciones, rbac, accesibilidad, design-system]
+areas: [bi, design-system]
 fuente: "auditoria de public/index.php, BiViewController, BiControlTowerApiController, BiConstraintListController, BiRestrictionParetoController, BiConstraintWriteController, ControlTowerService, MetricDictionaryService, MetricExecutor, LineageService, ActionRecommendationService, bi_pi_restricciones, pi_shared_constraints, pi_shared_constraint_links, VIEW-04/05/06/08, bi-spa.js, ct-app, CSS, pruebas, respuesta read-only servida, specs CT-8.3/CT-9/CT-10/CT-18.3/N4, S07, S17 y frontend actual en shell-minimo-react, 2026-08-31"
 resumen: "Migracion vertical S20 de la hoja BI Intermedia a la SPA React principal: alarma de restricciones huerfanas, lista accionable y gestion, titular, semaforo 0-6, Pareto, filtros, alcance, linaje, responsive y oscuro/claro; absorbe ct-app y retira CT_PILOTO solo tras paridad, sin modificar RLS, schema ni datos."
 ---

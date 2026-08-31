@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S25
 fecha: 2026-08-31
 superficie: escalamientos
@@ -14,7 +14,7 @@ rutas:
   - "/api/lps/crisis/close"
 depende_de: [T01, T02, S05, S07, S08]
 views: [VIEW-12, VIEW-28]
-areas: [arquitectura, frontend, lps, escalamientos, crisis, comentarios, rbac, rls, accesibilidad, design-system]
+areas: [lps, rbac, design-system]
 fuente: "auditoria de public/index.php, DashboardController, LpsApiController, LpsService, RbacCatalog, ProjectScope, VIEW-12, VIEW-28, escalamientos.css, lps_drawer.js, notifications.js, NotificationController, contratos SQL versionados, pruebas browser/PHP/design-system, T01, S05, S07, S08 y frontend actual en shell-minimo-react, 2026-08-31"
 resumen: "Migracion vertical S25 del tablero de Escalamientos a React: lectura global de alertas activas por proyecto, jerarquia y conteos, drawer dirigido por alerta y su semana real, comentarios, aviso/SOS, cierre, responsive y oscuro/claro, sin activar autoescalamiento ni modificar RLS/schema/datos."
 ---

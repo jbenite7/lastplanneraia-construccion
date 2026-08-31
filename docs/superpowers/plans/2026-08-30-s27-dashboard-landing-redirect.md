@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [arquitectura, rbac]
+fuente: docs/superpowers/plans/2026-08-30-s27-dashboard-landing-redirect.md
+resumen: "close S27 by preserving GET /dashboard as a server-side, bodyless 302 transition that uses one authorized project/role/area/week decision, fixes the…"
+---
+
 # S27 Dashboard Landing Redirect Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` only in an

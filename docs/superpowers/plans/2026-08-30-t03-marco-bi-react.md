@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [arquitectura, bi, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-t03-marco-bi-react.md
+resumen: "deliver one shared BI runtime inside the main React SPA with a server-authoritative eight-sheet manifest, the approved Gerencia/Obra canvases, one canonical…"
+---
+
 # T03 Marco BI React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` only in an

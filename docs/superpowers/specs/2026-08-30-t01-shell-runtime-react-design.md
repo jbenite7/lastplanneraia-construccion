@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: T01
 fecha: 2026-08-31
 superficie: shell-runtime-react
@@ -18,7 +18,7 @@ rutas:
 depende_de: []
 consumido_por: [T02, T03, S01, S02, S03, S04, S05, S06, S07, S08, S09, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27]
 views: [VIEW-26, VIEW-29, VIEW-30]
-areas: [frontend, react, shell, routing, sesion, contexto, tema, accesibilidad, rbac, rls]
+areas: [arquitectura, rbac, design-system]
 fuente: "auditoría de shell legacy y React, rutas, controladores, contratos y pruebas en shell-minimo-react; arquitectura aprobada por Felipe el 2026-08-30 y auto-revisión del 2026-08-31"
 resumen: "Contrato transversal del shell React: arranque, sesión, routing, navegación autorizada, proyecto y semana, temas claro/oscuro, errores, responsive y convivencia con las rutas PHP."
 ---

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [bi, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s24-bi-responsables-react.md
+resumen: "migrate /bi/responsables into the main React SPA as a private A/D/R support sheet whose server-enforced scope is project for A/D and mine/project for R, whose…"
+---
+
 # S24 BI Responsables React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` in an explicitly

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [bi, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s21-bi-semanal-react.md
+resumen: "migrate /bi/semanal into the main React SPA as one read-only weekly/daily decision sheet: project-specific cutoff, truthful PAC with numerator and denominator…"
+---
+
 # S21 BI Programacion Semanal React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` in an explicitly

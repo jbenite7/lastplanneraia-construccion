@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S14
 fecha: 2026-08-31
 superficie: subcontratistas
@@ -9,7 +9,7 @@ rutas:
   - "/subcontratistas"
 depende_de: [T01, S07, S08, S11, S13, S23]
 views: [VIEW-42]
-areas: [arquitectura, frontend, subcontratistas, interesados, rbac, accesibilidad, design-system]
+areas: [lps, rbac, design-system]
 fuente: "auditoria de public/index.php, SubcontratistasController, SubcontratistasApiController, ProgramacionIntermediaController, ProgramacionSemanalController, CicApiController, RbacCatalog, Database, schema global, VIEW-42, CSS, manifiesto y pruebas en shell-minimo-react, 2026-08-31"
 resumen: "Migracion vertical S14 del catalogo Subcontratistas/Interesados Externos a la SPA React principal: vocabulario y tipos por area, lectura pura por proyecto, CRUD/autosave, NIT o identificacion, unicidades, renombre transaccional compatible con FK, dependencias CIC/PI/PS, recarga, CSV, tabla/tarjetas, oscuro/claro y contratos Zod/PHP, sin tocar PDC v2, RLS, schema ni datos."
 ---

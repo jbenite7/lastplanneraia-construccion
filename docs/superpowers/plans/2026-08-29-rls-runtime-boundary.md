@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-29
+areas: [datos, rbac]
+fuente: docs/superpowers/plans/2026-08-29-rls-runtime-boundary.md
+resumen: "hacer que la cuenta MySQL runtime DML-only sea la frontera autoritativa de seguridad y que la lane admin-db sea explícita, aislada y verificable, sin depender…"
+---
+
 # RLS Runtime Boundary Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

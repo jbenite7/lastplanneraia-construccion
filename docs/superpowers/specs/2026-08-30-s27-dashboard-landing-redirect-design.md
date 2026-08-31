@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S27
 fecha: 2026-08-31
 superficie: dashboard-landing-redirect
@@ -9,7 +9,7 @@ rutas:
   - "/dashboard"
 depende_de: [T01, S04, S05, S06, S08, S11, S26]
 views: []
-areas: [routing, sesion, proyecto, semanas, rbac, rls, seguridad, cobertura, pruebas]
+areas: [arquitectura, rbac]
 fuente: "auditoria de public/index.php, DashboardController, SessionMiddleware, ProjectAccessService, ProjectLandingService, ProjectScopeResolver, RbacService, SpaRouter, coverage-closure, coverage-debt, contratos S01-S26 y respuestas HTTP reales en shell-minimo-react, 2026-08-31"
 resumen: "Contrato S27 para conservar /dashboard como transición HTTP server-side sin interfaz: valida sesión y contexto de proyecto, reutiliza una sola autoridad de landing por área/rol/semana, emite un 302 interno sin cuerpo y sale de la deuda visual sin inventar una pantalla React."
 ---

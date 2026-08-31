@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [arquitectura, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-t01-shell-runtime-react.md
+resumen: "close the measured gaps in the existing React shell so T02, T03 and S01–S27 can rely on one server-authoritative runtime for bootstrap, session, navigation…"
+---
+
 # T01 Shell and React Runtime Implementation Plan
 
 > **For agentic workers:** this is an implementation plan, not implementation authorization. In a

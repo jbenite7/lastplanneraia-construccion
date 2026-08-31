@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-28
+areas: [design-system]
+fuente: docs/superpowers/plans/2026-08-28-fase-cero-temas-y-forma.md
+resumen: "Construir la capa compartida de las dos specs hermanas — paleta clara calibrada, bandera de gravedad, forma y densidad nuevas, conmutador de tema — de la que…"
+---
+
 # Fase cero de temas y forma — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: contrato
+estado: vigente
+fecha: 2026-08-28
+areas: [arquitectura, design-system]
+tags: [leer-antes-de-tocar]
+fuente: frontend/AGENTS.md
+resumen: "Reglas propias de esta carpeta. Complementan el AGENTS.md de la raíz, que sigue mandando."
+---
+
 # AGENTS.md — frontend React
 
 Reglas propias de esta carpeta. Complementan el AGENTS.md de la raíz, que sigue mandando.

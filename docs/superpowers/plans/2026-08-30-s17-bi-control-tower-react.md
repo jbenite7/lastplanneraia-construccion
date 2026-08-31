@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [bi, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s17-bi-control-tower-react.md
+resumen: "migrate /bi/control-tower into the main React SPA as the management-only Executive Summary: compare every authorized project, state which project needs…"
+---
+
 # S17 BI Control Tower React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use superpowers:executing-plans in an explicitly

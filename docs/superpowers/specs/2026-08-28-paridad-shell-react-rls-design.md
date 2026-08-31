@@ -1,9 +1,9 @@
 ---
 capa: fuente
 tipo: spec
-estado: aprobado
+estado: vigente
 fecha: 2026-08-28
-areas: [arquitectura, frontend, rbac, seguridad, design-system]
+areas: [arquitectura, datos, rbac, design-system]
 fuente: "sesión de brainstorming con Felipe, 2026-08-28; seis secciones aprobadas en chat"
 resumen: "Cierre de paridad funcional del shell React frente al shell legacy, con interfaz renovada, temas claro y oscuro, respuesta móvil/tablet/escritorio y aislamiento por proyecto fail-closed en la capa de aplicación."
 ---

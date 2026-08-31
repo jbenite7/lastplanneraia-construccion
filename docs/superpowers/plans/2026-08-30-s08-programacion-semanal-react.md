@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [lps, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s08-programacion-semanal-react.md
+resumen: "migrate /programacion-semanal from VIEW-39/40/41, Handsontable and global JavaScript to a native React weekly plan with server-authoritative phases, states…"
+---
+
 # S08 Programación Semanal React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` in an explicitly

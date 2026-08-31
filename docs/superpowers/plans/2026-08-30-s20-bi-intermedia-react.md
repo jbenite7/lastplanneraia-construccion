@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [bi, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s20-bi-intermedia-react.md
+resumen: "migrate /bi/intermedia from the legacy/pilot split into the main React SPA as one coherent weekly restriction-management sheet: authorized scope and cutoff…"
+---
+
 # S20 BI Intermedia React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` in an explicitly

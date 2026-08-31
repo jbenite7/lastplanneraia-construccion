@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S22
 fecha: 2026-08-31
 superficie: bi-pdc
@@ -11,7 +11,7 @@ rutas:
   - "/api/bi/report/pdc/detail"
 depende_de: [T01, T03, S12, S17]
 views: [VIEW-04, VIEW-05, VIEW-06, VIEW-08]
-areas: [arquitectura, frontend, bi, pdc-v2, compras, cobertura, vencimientos, rbac, accesibilidad, design-system]
+areas: [bi, pdc, rbac, design-system]
 fuente: "auditoria de public/index.php, BiViewController, BiControlTowerApiController, ControlTowerService, SeguimientoService, MetricDictionaryService, LineageService, StorytellingService, ActionRecommendationService, BiPreviewAccessPolicy, RbacCatalog, pdc_plan_paquete, pdc_plan_paso, pdc_paquete_frente, general_paquetes_contratacion, VIEW-04/09, control-tower.php, bi-spa.js, CSS, pruebas, respuestas read-only servidas, specs CT-8.6/CT-11.b, B3, S12, S17 y frontend actual en shell-minimo-react, 2026-08-31"
 resumen: "Migracion vertical S22 de la hoja BI Plan de Compras a React: cobertura por conteo y valor con denominadores, pasos planeados por horizonte, vencido confirmado separado de fecha pasada sin avance, lista accionable, responsables, duracion provisional, contrapeso de cierre real, filtros, drawer, eventos puros y enlaces al PDC v2, responsive y oscuro/claro, sin mutaciones ni cambios RLS/schema/datos."
 ---

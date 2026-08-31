@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S23
 fecha: 2026-08-31
 superficie: bi-proveedores
@@ -10,7 +10,7 @@ rutas:
   - "/api/bi/report/cic"
 depende_de: [T01, T03, S11, S14, S17]
 views: [VIEW-04, VIEW-05, VIEW-06, VIEW-08]
-areas: [arquitectura, frontend, bi, cic, proveedores, completitud, comparacion, rbac, accesibilidad, design-system]
+areas: [bi, rbac, design-system]
 fuente: "auditoria de public/index.php, BiViewController, BiControlTowerApiController, ControlTowerService, CicApiController, ReportProcessor, MetricDictionaryService, LineageService, StorytellingService, ActionRecommendationService, RiskScoringService, BiPreviewAccessPolicy, RbacCatalog, bi_cic_contratistas, cic, subcontratistas, programacion_semanal, VIEW-04/05/06/08, control-tower.php, bi-spa.js, pruebas, respuestas read-only servidas, specs CT-6.2/CT-8.7/CT-9, S11, S14, S17 y frontend actual en shell-minimo-react, 2026-08-31"
 resumen: "Migracion vertical S23 de la hoja BI Proveedores a React: poblacion y corte canonicos desde CIC, cinco componentes con completitud obligatoria, integral y estado inhabilitados cuando falta evidencia, decision actual/acumulada, comparacion, filtros, detalle, enlaces a CIC/Subcontratistas, responsive y oscuro/claro, sin mutaciones ni cambios RLS/schema/datos."
 ---

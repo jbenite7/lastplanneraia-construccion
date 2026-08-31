@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: aprobada
+estado: vigente
 fecha: 2026-08-28
 areas: [design-system]
 fuente: encuesta de 24 preguntas con Felipe, sesión 2026-08-28

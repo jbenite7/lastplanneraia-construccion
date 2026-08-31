@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [pdc, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s12-plan-compras-react.md
+resumen: "absorb the separate pdc-app/ island into the main React SPA without losing any of its eight screens, 65 consumed HTTP contracts, uploads, downloads…"
+---
+
 # S12 Plan de Compras v2 React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` in an explicitly

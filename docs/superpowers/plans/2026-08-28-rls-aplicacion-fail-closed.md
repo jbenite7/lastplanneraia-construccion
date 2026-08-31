@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-28
+areas: [datos, rbac]
+fuente: docs/superpowers/plans/2026-08-28-rls-aplicacion-fail-closed.md
+resumen: "impedir que cualquier lectura o mutación operativa se ejecute sin un alcance de proyecto autorizado, incluidos SQL global, compatibilidad por prefijo y…"
+---
+
 # RLS fail-closed en la aplicación Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

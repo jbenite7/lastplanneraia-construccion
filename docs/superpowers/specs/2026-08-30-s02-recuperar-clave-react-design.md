@@ -1,14 +1,14 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S02
 fecha: 2026-08-30
 superficie: recuperacion-clave
 rutas: ["/password/forgot"]
 depende_de: [S01, T01]
 views: [VIEW-02]
-areas: [frontend, react, autenticacion, correo, csrf, seguridad, tema, accesibilidad]
+areas: [arquitectura, rbac, design-system]
 fuente: "auditoria de PasswordResetController, PasswordResetService, password-forgot.view.php, pruebas y respuestas HTTP reales en shell-minimo-react"
 resumen: "Migracion de la solicitud de recuperacion de contraseña a la SPA React, con contrato JSON no enumerativo, error honesto de transporte, ambos temas y rollback sin cambiar correo, tokens, RLS ni datos."
 ---

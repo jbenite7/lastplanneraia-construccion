@@ -1,14 +1,14 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S04
 fecha: 2026-08-30
 superficie: selector-proyectos
 rutas: ["/proyectos"]
 depende_de: [S01, S02, S03, T01]
 views: [VIEW-11]
-areas: [frontend, react, proyectos, sesion, rbac, rls, csrf, tema, responsive, accesibilidad]
+areas: [arquitectura, rbac, design-system]
 fuente: "auditoria de rutas, ProjectSelectorController, ProjectApiController, ProjectAccessService, ProjectLandingService, BiAccessComponent, project_selector.view.php, React actual, contratos y pruebas en shell-minimo-react"
 resumen: "Migracion completa del selector de proyectos a React, preservando membresia, roles, proyectos cerrados, destino contextual, contexto de sesion/RLS, BI autorizado, busqueda, sidebar, ambos temas y rollback sin modificar la frontera de datos."
 ---

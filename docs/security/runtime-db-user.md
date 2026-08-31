@@ -1,8 +1,11 @@
 ---
-capa: guia
-tipo: seguridad
+capa: fuente
+tipo: guia
 estado: vigente
 fecha: 2026-08-29
+areas: [datos, rbac]
+fuente: docs/security/runtime-db-user.md
+resumen: "La aplicación debe conectarse con una cuenta distinta de la administrativa. La cuenta de runtime solo recibe SELECT, INSERT, UPDATE y DELETE sobre la base de…"
 ---
 
 # Cuenta MySQL de runtime

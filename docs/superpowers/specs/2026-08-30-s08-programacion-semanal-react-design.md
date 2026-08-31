@@ -1,14 +1,14 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S08
 fecha: 2026-08-30
 superficie: programacion-semanal
 rutas: ["/programacion-semanal"]
 depende_de: [T01, T02, S05, S06, S07]
 views: [VIEW-39, VIEW-40, VIEW-41]
-areas: [arquitectura, frontend, programacion-semanal, compromisos, autoprogramacion, tnp, rbac, accesibilidad, design-system]
+areas: [lps, design-system]
 fuente: "auditoría de public/index.php, ProgramacionSemanalController, SemanalApiController, CncApiController, ProgramChangeDetector, CommitmentLockGuard, LpsWeekEditPolicy, SemanalReabrirPolicy, LpsService, ReportController, VIEW-39/40/41, hot.js, stateMachine.js, changeMonitor.js, CSS, manifiestos, pruebas, RBAC, specs S05-S07 y frontend actual en shell-minimo-react, 2026-08-30"
 resumen: "Migración vertical S08 de Programación Semanal a React: programación y calificación, compromisos, avance real, CNC, TNP, actividad manual, conciliación/autoprogramación explícita, cierre/reapertura, log, filtros, CSV/XLSX, drawer, tabla y tarjetas accesibles en oscuro/claro, sin cambiar RLS, schema ni datos durante la fase documental."
 ---

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [arquitectura, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s01-login-react.md
+resumen: "migrar / y /login al shell React con paridad observable del acceso legacy, cambio obligatorio de contraseña, ambos temas y entrada oculta de mantenimiento, sin…"
+---
+
 # S01 Login React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

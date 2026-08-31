@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S18
 fecha: 2026-08-31
 superficie: bi-programa-general
@@ -16,7 +16,7 @@ rutas:
   - "/api/bi/report/programa-general/cnc-detail"
 depende_de: [T01, T03, S05, S09, S10, S17, S19, S20, S21]
 views: []
-areas: [arquitectura, frontend, bi, programa-general, metricas, rbac, accesibilidad, design-system, contratos]
+areas: [bi, design-system]
 fuente: "auditoria de public/index.php, BiViewController, BiControlTowerApiController, ControlTowerService, MetricDictionaryService, MetricExecutor, RiskScoringService, LineageService, LineaBaseContractualService, PDC v2, vistas BI, bi-spa.js, CSS, specs aprobadas y pruebas en shell-minimo-react, 2026-08-31"
 resumen: "Migracion vertical S18 de la hoja BI Programa General a React y TypeScript: pronostico P50 con rango y linea contractual, avance/cumplimiento, riesgo explicado, desempeño de cronograma en dinero solo con presupuesto suficiente, radar corregido, actividades y seis drilldowns paginados, titulares CNP/CNC y linaje; read-only, oscuro/claro, responsive y accesible, sin RLS, schema ni datos."
 ---

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [lps, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s13-profesionales-react.md
+resumen: "migrate /profesionales from VIEW-32, jQuery and Handsontable into the main React SPA while preserving project-scoped list, twelve cargos, manual/admin lock…"
+---
+
 # S13 Profesionales React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use superpowers:executing-plans in an explicitly

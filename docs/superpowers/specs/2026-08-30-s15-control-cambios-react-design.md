@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S15
 fecha: 2026-08-31
 superficie: control-cambios
@@ -13,7 +13,7 @@ rutas:
   - "/reportes/consolidado-odc"
 depende_de: [T01, S13, S16, D16]
 views: [VIEW-10]
-areas: [arquitectura, frontend, control-cambios, rbac, reportes, accesibilidad, design-system]
+areas: [lps, rbac, design-system]
 fuente: "auditoria de public/index.php, ControlCambiosController, ControlCambiosApiController, ReportController, RbacCatalog, Database, schema global, VIEW-10, CSS, manifiesto, pruebas y frontend actual en shell-minimo-react, 2026-08-31"
 resumen: "Migracion vertical S15 de Control de Cambios a la SPA React: lista project-scoped, filtros y conteos, recuperacion aprobada de CRUD, impactos, calculos, fechas, estados, soportes URL, PDF individual, XLSX consolidado, tabla/tarjetas responsive, oscuro/claro y contratos Zod/PHP, sin semanas propias, uploads, RLS, schema ni datos."
 ---

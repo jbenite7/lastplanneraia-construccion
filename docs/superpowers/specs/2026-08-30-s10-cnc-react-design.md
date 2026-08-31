@@ -1,14 +1,14 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S10
 fecha: 2026-08-30
 superficie: cnc
 rutas: ["/programacion-semanal/cnc"]
 depende_de: [T01, S08, S09]
 views: [VIEW-37]
-areas: [arquitectura, frontend, programacion-semanal, cnc, rbac, accesibilidad, design-system]
+areas: [lps, design-system]
 fuente: "auditoría de public/index.php, ProgramacionSemanalController::cnc, CncApiController, SemanalApiController, LpsWeekEditPolicy, RbacCatalog/RbacService, ProjectLandingService, ControlTowerService, MetricDictionaryService, VIEW-37, legacyCards.js, programacion-semanal.css, contratos de estados semanales, pruebas y documentos S08/S09 en shell-minimo-react, 2026-08-30"
 resumen: "Migración vertical S10 de Causas de No Cumplimiento a React: población operativa reparable, prioridad y diagnóstico independientes, cantidades y brecha de sólo lectura, catálogo por área, filtros/conteos, tabla y tarjetas editables, guardado individual, oscuro/claro y corte strangler, sin cambiar KPI BI, RLS, schema ni datos durante la fase documental."
 ---

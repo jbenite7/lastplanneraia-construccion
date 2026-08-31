@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [arquitectura, lps, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-t02-contexto-lps-react.md
+resumen: "deliver one typed React contextual LPS drawer and one shell notification inbox, backed by server-authoritative activity/alert targets, the approved…"
+---
+
 # T02 Contexto LPS React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` only in an

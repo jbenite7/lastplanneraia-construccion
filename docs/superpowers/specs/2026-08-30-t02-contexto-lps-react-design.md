@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: T02
 fecha: 2026-08-31
 superficie: contexto-lps-compartido
@@ -16,7 +16,7 @@ rutas:
 depende_de: [T01]
 consumido_por: [S05, S07, S08, S25, S26]
 views: [VIEW-28]
-areas: [frontend, react, drawer, lps, comentarios, crisis, notificaciones, rbac, rls, accesibilidad, responsive, temas]
+areas: [arquitectura, lps, rbac, design-system]
 fuente: "auditoria de VIEW-28, lps_drawer.js, adapters CSS, LpsApiController, LpsService, NotificationController, NotificationService, NotificationType, ProjectScope, RbacCatalog, RestrictionConfigResolver, rutas, tests, matriz de severidad, T01, S05, S07, S08 y S25 en shell-minimo-react, 2026-08-31"
 resumen: "Contrato transversal T02 para un único drawer contextual LPS React y una única bandeja de notificaciones del shell: contexto tipado, severidad e ITR compartidos, hilos, menciones, simulación/SOS, crisis, digest, targets server-authoritative, oscuro/claro y responsive, sin cambiar RLS ni datos."
 ---

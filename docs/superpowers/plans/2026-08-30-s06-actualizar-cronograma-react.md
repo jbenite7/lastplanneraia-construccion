@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [lps, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s06-actualizar-cronograma-react.md
+resumen: "migrate /programa-general-actualizar from VIEW-33, Handsontable and inline jQuery to a native React surface with safe XLSX preview/confirmation, deterministic…"
+---
+
 # S06 Actualizar Cronograma React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` in an explicitly

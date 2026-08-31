@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [lps, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s15-control-cambios-react.md
+resumen: "migrate /control-cambios from VIEW-10, jQuery and DataTables into the main React SPA, preserve its project-scoped list, 14-field summary, 12 column filters…"
+---
+
 # S15 Control de Cambios React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use superpowers:executing-plans in an explicitly

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [arquitectura, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s02-recuperar-clave-react.md
+resumen: "migrar /password/forgot a la SPA React con formulario accesible, contrato JSON no enumerativo, error técnico honesto y rollback comprobable, sin cambiar…"
+---
+
 # S02 Password Recovery React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [bi, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s23-bi-contratistas-react.md
+resumen: "migrate /bi/contratistas into the main React SPA as one shared A/D/R provider decision sheet that shows the five CIC components, withholds current and…"
+---
+
 # S23 BI Proveedores React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` in an explicitly

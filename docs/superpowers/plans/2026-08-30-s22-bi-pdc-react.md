@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [bi, pdc, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s22-bi-pdc-react.md
+resumen: "migrate /bi/pdc into the main React SPA as one read-only Obra sheet that distinguishes confirmed overdue steps from past dates without recorded progress…"
+---
+
 # S22 BI Plan de Compras React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` in an explicitly

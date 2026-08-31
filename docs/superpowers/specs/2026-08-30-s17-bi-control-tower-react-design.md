@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S17
 fecha: 2026-08-31
 superficie: bi-control-tower
@@ -10,7 +10,7 @@ rutas:
   - "/api/bi/control-tower"
 depende_de: [T01, T03, S18, S19, S20, S21, S22, S23, S24]
 views: []
-areas: [arquitectura, frontend, bi, control-tower, rbac, accesibilidad, design-system, contratos]
+areas: [bi, rbac, design-system]
 fuente: "auditoria de public/index.php, BiViewController, BiControlTowerApiController, BiPreviewAccessPolicy, BiProjectScope, BiAccessComponent, ControlTowerService, StorytellingService, RiskScoringService, ActionRecommendationService, LineageService, MetricDictionaryService, vistas BI, bi-spa.js, ct-app, specs aprobadas y pruebas en shell-minimo-react, 2026-08-31"
 resumen: "Migracion vertical S17 del Resumen Ejecutivo de Control Tower a React y TypeScript: hoja de gerencia con alcance multiproyecto autorizado, titular auditable, panorama ordenado por obra, scorecard y evidencia recuperables, riesgos, acciones con dueño y fecha, drilldowns entre hojas y linaje visible; oscuro/claro, responsive y accesible, sin escrituras, RLS, schema ni datos."
 ---

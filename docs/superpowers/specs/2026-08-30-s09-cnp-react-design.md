@@ -1,14 +1,14 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S09
 fecha: 2026-08-30
 superficie: cnp
 rutas: ["/programacion-semanal/cnp"]
 depende_de: [T01, S08]
 views: [VIEW-38]
-areas: [arquitectura, frontend, programacion-semanal, cnp, rbac, accesibilidad, design-system]
+areas: [lps, design-system]
 fuente: "auditoría de public/index.php, ProgramacionSemanalController::cnp, CnpApiController, CncApiController::reasons, LpsWeekEditPolicy, RbacCatalog/RbacService, RestrictionConfigResolver, VIEW-38, legacyCards.js, programacion-semanal.css, general_cnc, parches/fixtures, manifiestos y pruebas CNP en shell-minimo-react, 2026-08-30"
 resumen: "Migración vertical S09 de Causas de No Programación a React: contexto y semana del shell, catálogo por área, lista, filtros/conteos, cuatro prioridades, tabla y tarjetas editables, edición individual y reprogramación transaccional, oscuro/claro y corte strangler, sin cambiar RLS, schema ni datos durante la fase documental."
 ---

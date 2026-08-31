@@ -1,14 +1,14 @@
 ---
 capa: fuente
 tipo: spec
-estado: aprobado
+estado: vigente
 id: S01
 fecha: 2026-08-30
 superficie: acceso
 rutas: ["/", "/login"]
 depende_de: [T01]
 views: [VIEW-01]
-areas: [frontend, react, autenticacion, sesion, seguridad, tema, accesibilidad]
+areas: [arquitectura, rbac, design-system]
 fuente: "auditoría de LoginController, AuthApiController, AuthenticationService, login.view.php y frontend/src/shell/PantallaLogin.tsx"
 resumen: "Migración decision-complete del acceso principal a React, incluido login normal, mensajes seguros, cambio obligatorio de contraseña y entrada oculta durante mantenimiento."
 ---

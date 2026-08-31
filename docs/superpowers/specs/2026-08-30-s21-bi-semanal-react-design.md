@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S21
 fecha: 2026-08-31
 superficie: bi-semanal
@@ -12,7 +12,7 @@ rutas:
   - "/api/bi/report/programa-general/cnc-detail"
 depende_de: [T01, T03, S08, S09, S10, S17, S18, S20]
 views: [VIEW-04, VIEW-05, VIEW-06, VIEW-08]
-areas: [arquitectura, frontend, bi, semanal, pac, riesgo, cnp, cnc, tnp, rbac, accesibilidad, design-system]
+areas: [bi, design-system]
 fuente: "auditoria de public/index.php, BiViewController, BiControlTowerApiController, ControlTowerService, ForecastService, MetricDictionaryService, LineageService, RiskScoringService, StorytellingService, ActionRecommendationService, SemanalApiController, bi_ps_compromisos, bi_pg_semana, programacion_semanal, semanas_activas, VIEW-04/05/06/08, bi-spa.js, CSS, pruebas, respuestas read-only servidas, specs CT-8.4/CT-9/N5/N8, S08-S10, S17-S20 y frontend actual en shell-minimo-react, 2026-08-31"
 resumen: "Migracion vertical S21 de la hoja BI Programacion Semanal a React: PAC con numerador/denominador y variacion, riesgo de incumplimiento por compromiso en tres niveles, causas CNC/CNP por clic, cobertura de captura, TNP/crisis, filtros, ancla propia por obra, responsive y oscuro/claro, sin mutaciones ni cambios RLS/schema/datos."
 ---

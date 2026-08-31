@@ -1,14 +1,14 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S07
 fecha: 2026-08-30
 superficie: programacion-intermedia
 rutas: ["/programacion-intermedia"]
 depende_de: [T01, T02, S04, S05]
 views: [VIEW-35]
-areas: [arquitectura, frontend, programacion-intermedia, restricciones, rbac, accesibilidad, design-system]
+areas: [lps, design-system]
 fuente: "auditoría de public/index.php, ProgramacionIntermediaController, guardar_programacion_intermedia.php, RestrictionConfigResolver, GeneralApiController, ReportController, LpsApiController, VIEW-35, hot.js, stateMachine.js, CSS, pruebas, RBAC, S05 y frontend actual en shell-minimo-react, 2026-08-30"
 resumen: "Migración vertical S07 de Programación Intermedia a React: look-ahead de seis semanas, ocho estados operativos, restricciones dinámicas, asignaciones, edición individual y compartida, filtros, CSV/XLSX, drawer, tabla y tarjetas accesibles en oscuro/claro, sin modificar RLS ni datos durante la fase documental."
 ---

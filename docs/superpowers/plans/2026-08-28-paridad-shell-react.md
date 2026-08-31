@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-28
+areas: [arquitectura, datos, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-28-paridad-shell-react.md
+resumen: "convertir /app en el shell de uso real con, como mínimo, todas las capacidades observables del login, selector de proyecto y shell legacy, sin reescribir…"
+---
+
 # Paridad funcional del shell React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development

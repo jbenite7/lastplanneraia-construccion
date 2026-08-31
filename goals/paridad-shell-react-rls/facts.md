@@ -3,7 +3,7 @@ capa: fuente
 tipo: evidencia
 estado: vigente
 fecha: 2026-08-29
-areas: [arquitectura, frontend, seguridad]
+areas: [arquitectura, datos, rbac, design-system]
 fuente: goals/paridad-shell-react-rls/facts.md
 resumen: "Hechos de arranque medidos para el frente de paridad React y RLS."
 ---

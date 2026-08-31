@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [lps, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s25-escalamientos-react.md
+resumen: "migrate /dashboard/escalamientos into the main React SPA as a project-scoped board of all active LPS crises, preserving four hierarchical attention stations…"
+---
+
 # S25 Escalamientos React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` in an explicitly

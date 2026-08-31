@@ -3,7 +3,7 @@ capa: fuente
 tipo: goal-doc
 estado: vigente
 fecha: 2026-08-29
-areas: [arquitectura, frontend, rbac, seguridad, design-system]
+areas: [arquitectura, datos, rbac, design-system]
 fuente: goals/paridad-shell-react-rls/goal.md
 resumen: "Cerrar la paridad funcional del shell React y el aislamiento fail-closed por proyecto."
 ---

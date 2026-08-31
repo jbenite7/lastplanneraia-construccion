@@ -1,14 +1,14 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S06
 fecha: 2026-08-30
 superficie: actualizar-cronograma
 rutas: ["/programa-general-actualizar"]
 depende_de: [T01, S04, S05]
 views: [VIEW-33]
-areas: [arquitectura, frontend, programa-general-actualizar, importacion, rbac, accesibilidad, design-system]
+areas: [lps, design-system]
 fuente: "auditoría de public/index.php, ProgramaGeneralActualizarController, GeneralApiController, ActivityMatcherService, VIEW-33, hot_actualizar.js, rule_engine.js, decision_logger.js, CSS, pruebas, RBAC, S05 y frontend actual en shell-minimo-react, 2026-08-30"
 resumen: "Migración vertical S06 de Actualizar Cronograma a React: importación XLSX con preview/confirmación, borrador de semana objetivo, mapeo manual y automático trazable, edición responsive, contratos tipados y acciones resueltas por servidor, sin modificar RLS ni datos durante la fase documental."
 ---

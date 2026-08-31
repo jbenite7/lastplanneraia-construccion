@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: T03
 fecha: 2026-08-31
 superficie: marco-bi-compartido
@@ -23,7 +23,7 @@ rutas:
 depende_de: [T01]
 consumido_por: [S16, S17, S18, S19, S20, S21, S22, S23, S24, S26]
 views: [VIEW-04, VIEW-05, VIEW-06, VIEW-07, VIEW-08, VIEW-09]
-areas: [frontend, react, bi, rutas, filtros, multiobra, rbac, charts, linaje, accesibilidad, responsive, temas]
+areas: [arquitectura, bi, rbac, design-system]
 fuente: "auditoría de VIEW-04/05/06/07/08/09, public/index.php, BiViewController, BiControlTowerApiController, BiAccessComponent, BiProjectScope, BiPreviewAccessPolicy, ControlTowerService, bi-spa.js, bi_filter_drawer.js, bi_chart_theme.js, bi-access.js, CSS BI, ct-app, pruebas y specs S17–S24 en shell-minimo-react, 2026-08-31"
 resumen: "Contrato transversal T03 para absorber el layout PHP/JS y la isla ct-app en un único marco BI de la SPA React: manifiesto de ocho hojas, lienzos Gerencia/Obra, acceso por hoja, query URL, multiobra, períodos, filtros, estados, figuras, drawer/linaje, oscuro/claro, responsive y retiro por censo, sin tocar RLS, schema ni datos."
 ---

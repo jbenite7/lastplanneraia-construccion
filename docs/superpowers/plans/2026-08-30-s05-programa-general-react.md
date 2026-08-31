@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [lps, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s05-programa-general-react.md
+resumen: "migrate /programa-general from VIEW-34 + Handsontable/jQuery to a native React surface with complete read/edit/operations/drawer parity, server-resolved…"
+---
+
 # S05 Programa General React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development`

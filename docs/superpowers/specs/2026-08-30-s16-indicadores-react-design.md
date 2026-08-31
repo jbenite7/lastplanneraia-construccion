@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S16
 fecha: 2026-08-31
 superficie: indicadores
@@ -11,7 +11,7 @@ rutas:
   - "/api/indicadores/generar"
 depende_de: [T01, T03, S08, S10, S11, S13, S14, S17, S19, S23, S24]
 views: [VIEW-27]
-areas: [arquitectura, frontend, indicadores, power-bi, rbac, accesibilidad, design-system]
+areas: [bi, design-system]
 fuente: "auditoria de public/index.php, IndicadoresController, IndicadoresApiController, RbacCatalog, BiAccessComponent, BiProjectScope, schema global, VIEW-27, CSS, manifiesto, historial y pruebas en shell-minimo-react, 2026-08-31"
 resumen: "Migracion vertical S16 del wrapper Indicadores LPS a la SPA React: contexto server-authoritative, iframe Power BI publish-to-web global y externo, carga/error/reintento, responsive, oscuro/claro, permisos unificados y preservacion segura del generador semanal project-scoped, sin reimplementar KPIs, tocar RLS/schema/datos ni inventar un boton de generacion."
 ---

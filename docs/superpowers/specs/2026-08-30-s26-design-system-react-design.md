@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S26
 fecha: 2026-08-31
 superficie: design-system
@@ -10,7 +10,7 @@ rutas:
   - "/api/internal/design-system/catalog"
 depende_de: [T01, T02, T03, "S01-S25"]
 views: [VIEW-13, VIEW-14, VIEW-15, VIEW-16, VIEW-17, VIEW-18, VIEW-19, VIEW-20, VIEW-21, VIEW-22, VIEW-23, VIEW-24, VIEW-25]
-areas: [arquitectura, frontend, design-system, catalogo, rbac, rls, accesibilidad, responsive, temas, rendimiento, evidencia]
+areas: [arquitectura, design-system]
 fuente: "auditoria de public/index.php, SpaRouter, DesignSystemLabController, DesignSystemLabAccessPolicy, RbacCatalog, 13 vistas/partials design-system, design_system_lab.js, lab.css, homologation.json, family-approvals.json, component-catalog.json, ui-groups-inventory.json, state-semantics.json, operational-fixtures.json, vendors.json, version.json, manifiestos, goldens, pruebas PHP/browser/design-system, T01-T03, S01-S25 y frontend actual en shell-minimo-react, 2026-08-31"
 resumen: "Migracion S26 del laboratorio interno del Design System a React: ruta global protegida, catalogo tipado, diez familias, candidatos y aprobaciones no colapsadas, grupos UI, estados, fixtures locales y ledger de adapters vigentes, responsive y oscuro/claro, excluyendo por completo /admin/ y sin tocar RLS ni datos."
 ---

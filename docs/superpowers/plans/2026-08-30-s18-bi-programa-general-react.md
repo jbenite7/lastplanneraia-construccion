@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [bi, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s18-bi-programa-general-react.md
+resumen: "migrate /bi/programa-general into the main React SPA as the decision sheet for six-week program order, probable contractual finish, combined delivery risk and…"
+---
+
 # S18 BI Programa General React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use superpowers:executing-plans in an explicitly

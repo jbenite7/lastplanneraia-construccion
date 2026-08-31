@@ -1,8 +1,11 @@
 ---
-capa: contrato
-tipo: seguridad
+capa: fuente
+tipo: contrato
 estado: vigente
 fecha: 2026-08-28
+areas: [datos, rbac]
+fuente: docs/security/data-scope-table-catalog.md
+resumen: "TableScopeCatalog deriva las categorías del schema activo; no mantiene una segunda lista de tablas operativas. Una tabla con projectid es Project, salvo la…"
 ---
 
 # Catálogo de alcance de tablas

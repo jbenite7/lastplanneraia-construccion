@@ -1,14 +1,14 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S05
 fecha: 2026-08-30
 superficie: programa-general
 rutas: ["/programa-general"]
 depende_de: [T01, T02, S04]
 views: [VIEW-34]
-areas: [arquitectura, frontend, programa-general, rbac, accesibilidad, design-system]
+areas: [lps, design-system]
 fuente: "auditoría de public/index.php, ProgramaGeneralController, GeneralApiController, ReportController, LpsApiController, hot.js, VIEW-34, contratos, RBAC, T01 y frontend actual en shell-minimo-react, 2026-08-30"
 resumen: "Migración vertical S05 de Programa General a React con paridad funcional del legacy, tabla semántica en desktop/tablet, tarjetas editables en móvil, contratos tipados y autorización resuelta por servidor, sin modificar RLS ni datos."
 ---

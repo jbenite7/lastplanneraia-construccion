@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-30
+areas: [arquitectura, rbac, design-system]
+fuente: docs/superpowers/plans/2026-08-30-s03-restablecer-clave-react.md
+resumen: "migrar /password/reset a React con validación privada del bearer token, cinco reglas de contraseña, cambio de un solo uso y redirect seguro a S01, sin cambiar…"
+---
+
 # S03 Password Reset React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

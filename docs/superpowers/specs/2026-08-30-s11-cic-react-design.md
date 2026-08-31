@@ -1,14 +1,14 @@
 ---
 capa: fuente
 tipo: spec
-estado: autorrevisado
+estado: vigente
 id: S11
 fecha: 2026-08-30
 superficie: cic
 rutas: ["/programacion-semanal/cic"]
 depende_de: [T01, S08, S09, S10]
 views: [VIEW-36]
-areas: [arquitectura, frontend, programacion-semanal, cic, contratistas, rbac, accesibilidad, design-system]
+areas: [lps, design-system]
 fuente: "auditoria de public/index.php, ProgramacionSemanalController::cic, CicApiController, RbacCatalog/RbacService, ProjectLandingService, SemanalApiController, verificarCICActualizada.php, ReportProcessor, VIEW-36, legacyCards.js, programacion-semanal.css, schema global, pruebas de CIC/Programacion Semanal y specs T01/S08/S09/S10 en shell-minimo-react, 2026-08-30"
 resumen: "Migracion vertical S11 de Calificacion Integral de Contratistas a React: lecturas puras, proveedores persistidos o proyectados, cuestionarios completos por tipo y disciplina, cadencia cada ocho presencias, calculos actual/acumulado, guardado transaccional individual, permisos efectivos, tabla/tarjetas, oscuro/claro y corte strangler, sin cambiar RLS, schema, datos ni KPI BI durante la fase documental."
 ---
