@@ -31,7 +31,7 @@ function renderizar(rutaInicial = '/') {
   return render(
     <MemoryRouter initialEntries={[rutaInicial]}>
       <Routes>
-        <Route element={<AppShell recargar={vi.fn().mockResolvedValue(undefined)} sesion={sesionLista()} />} path="/">
+        <Route element={<AppShell cerrarSesion={vi.fn().mockResolvedValue(undefined)} recargar={vi.fn().mockResolvedValue(undefined)} sesion={sesionLista()} />} path="/">
           <Route element={<Link to="/otra-vista-interna">Ir a otra vista</Link>} index />
           <Route element={<p>Otra vista</p>} path="/otra-vista-interna" />
         </Route>

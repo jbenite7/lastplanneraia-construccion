@@ -1,15 +1,19 @@
 import { useId, useState } from 'react';
-import { z } from 'zod';
-import { pedir } from '../lib/api/cliente';
 import { PanelCambiarProyecto } from './PanelCambiarProyecto';
-
-const EsquemaCierreSesion = z.object({ success: z.boolean() });
 
 type PropiedadesMenuCuenta = {
   nombre: string;
   csrfToken: string;
   /** Se invoca tras un cambio de proyecto exitoso — recarga el bootstrap (spec T01 §6). */
   alCambiarProyecto: () => Promise<void>;
+  /**
+   * Cierra sesión vía el único `ControlActividad` del shell (Tarea 6, T01) — nunca un fetch propio.
+   * Es CSRF-idempotente y siempre invalida el estado local, así que este componente no necesita
+   * un camino de error propio: `SesionProvider.cerrarSesion` (ver `SesionProvider.tsx`) siempre
+   * resuelve. El valor resuelto (confirmado/red) no le importa a este componente presentacional —
+   * `logoutSinConfirmar` en el contexto de sesión es lo que decide el mensaje, no este botón.
+   */
+  cerrarSesion: () => Promise<unknown>;
 };
 
 /**
@@ -18,15 +22,15 @@ type PropiedadesMenuCuenta = {
  * duplicarlo aquí). "Cambiar proyecto" muestra `PanelCambiarProyecto`, que comparte el fetch/POST/
  * CSRF de `useSelectorProyecto` con la pantalla completa `SelectorProyecto` sin duplicar esa
  * lógica ni heredar su envoltorio de página (ronda de arreglos 1: un `<h1>` y `.aia-card` de
- * pantalla completa no pertenecen a un panel de menú angosto). "Cerrar sesión" es un POST con
- * CSRF contra `/api/auth/logout` (nunca el `GET /logout` legado): spec T01 §"no destructive GET".
+ * pantalla completa no pertenecen a un panel de menú angosto). "Cerrar sesión" (Tarea 6) delega en
+ * el `cerrarSesion` del `SesionProvider` — el único POST con CSRF contra `/api/auth/logout` de
+ * todo el árbol, nunca el `GET /logout` legado: spec T01 §"no destructive GET".
  */
-export function MenuCuenta({ nombre, csrfToken, alCambiarProyecto }: PropiedadesMenuCuenta) {
+export function MenuCuenta({ nombre, csrfToken, alCambiarProyecto, cerrarSesion }: PropiedadesMenuCuenta) {
   const idPanel = useId();
   const [abierto, setAbierto] = useState(false);
   const [vista, setVista] = useState<'menu' | 'proyectos'>('menu');
   const [cerrandoSesion, setCerrandoSesion] = useState(false);
-  const [errorCierre, setErrorCierre] = useState<string | null>(null);
 
   function alternar() {
     setAbierto((valor) => !valor);
@@ -42,19 +46,11 @@ export function MenuCuenta({ nombre, csrfToken, alCambiarProyecto }: Propiedades
     await alCambiarProyecto();
   }
 
-  async function cerrarSesion() {
-    setErrorCierre(null);
+  async function alCerrarSesion() {
     setCerrandoSesion(true);
-    try {
-      await pedir('/api/auth/logout', EsquemaCierreSesion, {
-        method: 'POST',
-        headers: { 'X-CSRF-Token': csrfToken },
-      });
-      window.location.href = '/login';
-    } catch {
-      setErrorCierre('No pudimos cerrar la sesión. Intenta de nuevo.');
-      setCerrandoSesion(false);
-    }
+    await cerrarSesion();
+    // Sin `finally`: si `cerrarSesion()` resuelve, la sesión ya se invalidó y `SesionProvider`
+    // desmontará este árbol al recargar — no queda un `setCerrandoSesion(false)` que pisar.
   }
 
   return (
@@ -91,15 +87,10 @@ export function MenuCuenta({ nombre, csrfToken, alCambiarProyecto }: Propiedades
               role="menuitem"
               className="aia-sidebar__account-item"
               disabled={cerrandoSesion}
-              onClick={() => void cerrarSesion()}
+              onClick={() => void alCerrarSesion()}
             >
               {cerrandoSesion ? 'Cerrando sesión…' : 'Cerrar sesión'}
             </button>
-            {errorCierre && (
-              <p role="alert" className="aia-alert aia-alert--error">
-                {errorCierre}
-              </p>
-            )}
           </>
         ) : (
           <>

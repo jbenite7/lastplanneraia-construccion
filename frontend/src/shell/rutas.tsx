@@ -40,7 +40,7 @@ export function Rutas() {
  * proyecto: cada estado se pinta desde cero.
  */
 function RutasSegunSesion() {
-  const { estado, arranque, autenticado, recargar } = useSesion();
+  const { estado, arranque, autenticado, recargar, cerrarSesion, logoutSinConfirmar } = useSesion();
 
   switch (estado) {
     case 'cargando':
@@ -49,7 +49,11 @@ function RutasSegunSesion() {
     case 'error_recuperable':
       return (
         <section role="alert">
-          <p>No pudimos conectar con la aplicación. Inténtalo de nuevo.</p>
+          <p>
+            {logoutSinConfirmar
+              ? 'Intentamos cerrar tu sesión pero no pudimos confirmarlo con el servidor. Revisa tu conexión e inténtalo de nuevo.'
+              : 'No pudimos conectar con la aplicación. Inténtalo de nuevo.'}
+          </p>
           <button type="button" onClick={() => void recargar()}>
             Reintentar
           </button>
@@ -80,7 +84,7 @@ function RutasSegunSesion() {
       return (
         <BrowserRouter>
           <Routes>
-            <Route element={<AppShell sesion={autenticado} recargar={recargar} />} path="*" />
+            <Route element={<AppShell cerrarSesion={cerrarSesion} recargar={recargar} sesion={autenticado} />} path="*" />
           </Routes>
         </BrowserRouter>
       );

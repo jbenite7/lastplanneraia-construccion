@@ -21,11 +21,13 @@ interface DetallesApiError {
   camposInvalidos?: Readonly<Record<string, string>> | null;
   redirect?: string | null;
   correlationId?: string | null;
+  /** El `reason` crudo de `SessionMiddleware::finishUnauthorized()` (`timeout`, `inactive`, …). */
+  razon?: string | null;
 }
 
 /**
  * Error tipado de `pedir()`. `status`/`codigo`/`camposInvalidos`/`redirect`/
- * `correlationId` quedan en `null` cuando esa respuesta no los trajo — nunca
+ * `correlationId`/`razon` quedan en `null` cuando esa respuesta no los trajo — nunca
  * se inventan valores para rellenar el contrato.
  */
 export class ApiError extends Error {
@@ -35,6 +37,7 @@ export class ApiError extends Error {
   readonly camposInvalidos: Readonly<Record<string, string>> | null;
   readonly redirect: string | null;
   readonly correlationId: string | null;
+  readonly razon: string | null;
 
   constructor(mensaje: string, detalles: DetallesApiError) {
     super(mensaje);
@@ -45,6 +48,7 @@ export class ApiError extends Error {
     this.camposInvalidos = detalles.camposInvalidos ?? null;
     this.redirect = detalles.redirect ?? null;
     this.correlationId = detalles.correlationId ?? null;
+    this.razon = detalles.razon ?? null;
   }
 }
 
@@ -131,6 +135,7 @@ export async function pedir<T>(
       camposInvalidos,
       redirect: detalle.redirect ?? null,
       correlationId: correlationId ?? detalle.correlationId ?? null,
+      razon: detalle.reason ?? null,
     });
   }
 

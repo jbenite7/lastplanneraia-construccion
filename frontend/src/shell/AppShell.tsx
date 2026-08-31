@@ -11,6 +11,8 @@ const ID_PANEL_CONTENIDO = 'contenido';
 type PropiedadesAppShell = {
   sesion: ArranqueAutenticado;
   recargar: () => Promise<void>;
+  /** Cierre de sesión centralizado en `ControlActividad` (Tarea 6) — ver `MenuCuenta`. */
+  cerrarSesion: () => Promise<unknown>;
 };
 
 /**
@@ -21,7 +23,7 @@ type PropiedadesAppShell = {
  * el `<nav>` en sí lo sigue renderizando `NavegacionLateral` — un solo landmark de navegación en
  * todo el árbol.
  */
-export function AppShell({ sesion, recargar }: PropiedadesAppShell) {
+export function AppShell({ sesion, recargar, cerrarSesion }: PropiedadesAppShell) {
   const [flotante, setFlotante] = useState(() =>
     esBarraLateralFlotante(typeof window === 'undefined' ? Infinity : window.innerWidth),
   );
@@ -141,7 +143,12 @@ export function AppShell({ sesion, recargar }: PropiedadesAppShell) {
         alAlternarEstado={() => setColapsado((valor) => !valor)}
         abiertoEnMovil={flotante ? abierto : undefined}
       >
-        <MenuCuenta nombre={sesion.user.displayName} csrfToken={sesion.csrfToken} alCambiarProyecto={recargar} />
+        <MenuCuenta
+          nombre={sesion.user.displayName}
+          csrfToken={sesion.csrfToken}
+          alCambiarProyecto={recargar}
+          cerrarSesion={cerrarSesion}
+        />
       </NavegacionLateral>
 
       <main id={ID_PANEL_CONTENIDO}>

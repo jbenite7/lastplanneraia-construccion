@@ -38,11 +38,15 @@ function establecerAncho(ancho: number) {
   window.dispatchEvent(new Event('resize'));
 }
 
-function renderizarConRuta(sesion: ArranqueAutenticado, recargar = vi.fn().mockResolvedValue(undefined)) {
+function renderizarConRuta(
+  sesion: ArranqueAutenticado,
+  recargar = vi.fn().mockResolvedValue(undefined),
+  cerrarSesion = vi.fn().mockResolvedValue(undefined),
+) {
   return render(
     <MemoryRouter initialEntries={['/']}>
       <Routes>
-        <Route element={<AppShell recargar={recargar} sesion={sesion} />} path="/">
+        <Route element={<AppShell cerrarSesion={cerrarSesion} recargar={recargar} sesion={sesion} />} path="/">
           <Route element={<p>Contenido del módulo</p>} index />
         </Route>
         <Route element={<p>Otra pantalla</p>} path="/otra" />

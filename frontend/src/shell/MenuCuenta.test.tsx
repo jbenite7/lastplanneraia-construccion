@@ -9,6 +9,10 @@ function respuesta(cuerpo: unknown, estado = 200): Response {
   return new Response(JSON.stringify(cuerpo), { status: estado });
 }
 
+function cerrarSesionFalso() {
+  return vi.fn().mockResolvedValue(undefined);
+}
+
 afterEach(() => vi.unstubAllGlobals());
 
 // Hallazgo del revisor de código (ronda de arreglos 1): `MenuCuenta` anidaba la pantalla
@@ -18,7 +22,7 @@ afterEach(() => vi.unstubAllGlobals());
 // ninguna de sus dos vistas.
 test('el panel de cuenta no contiene un h1 ni la clase de envoltorio de pantalla completa', async () => {
   const usuario = userEvent.setup();
-  render(<MenuCuenta alCambiarProyecto={vi.fn()} csrfToken={csrfToken} nombre="Ana" />);
+  render(<MenuCuenta alCambiarProyecto={vi.fn()} cerrarSesion={cerrarSesionFalso()} csrfToken={csrfToken} nombre="Ana" />);
 
   await usuario.click(screen.getByRole('button', { name: /cuenta · ana/i }));
 
@@ -28,7 +32,7 @@ test('el panel de cuenta no contiene un h1 ni la clase de envoltorio de pantalla
 });
 
 test('el disparador referencia el panel con aria-controls', () => {
-  render(<MenuCuenta alCambiarProyecto={vi.fn()} csrfToken={csrfToken} nombre="Ana" />);
+  render(<MenuCuenta alCambiarProyecto={vi.fn()} cerrarSesion={cerrarSesionFalso()} csrfToken={csrfToken} nombre="Ana" />);
 
   const disparador = screen.getByRole('button', { name: /cuenta · ana/i });
   const idPanel = disparador.getAttribute('aria-controls');
@@ -42,7 +46,7 @@ test('cambiar proyecto muestra la lista como menuitems, sin h1 ni .aia-card, y r
     projects: [{ id: 1, name: 'Da Porto', role: 'A' }],
   })));
   const usuario = userEvent.setup();
-  render(<MenuCuenta alCambiarProyecto={vi.fn()} csrfToken={csrfToken} nombre="Ana" />);
+  render(<MenuCuenta alCambiarProyecto={vi.fn()} cerrarSesion={cerrarSesionFalso()} csrfToken={csrfToken} nombre="Ana" />);
 
   await usuario.click(screen.getByRole('button', { name: /cuenta · ana/i }));
   await usuario.click(screen.getByRole('menuitem', { name: /cambiar proyecto/i }));
@@ -61,7 +65,7 @@ test('elegir un proyecto en el panel llama a alCambiarProyecto y cierra el menú
   vi.stubGlobal('fetch', fetchFalso);
   const alCambiarProyecto = vi.fn().mockResolvedValue(undefined);
   const usuario = userEvent.setup();
-  render(<MenuCuenta alCambiarProyecto={alCambiarProyecto} csrfToken={csrfToken} nombre="Ana" />);
+  render(<MenuCuenta alCambiarProyecto={alCambiarProyecto} cerrarSesion={cerrarSesionFalso()} csrfToken={csrfToken} nombre="Ana" />);
 
   await usuario.click(screen.getByRole('button', { name: /cuenta · ana/i }));
   await usuario.click(screen.getByRole('menuitem', { name: /cambiar proyecto/i }));
@@ -76,7 +80,7 @@ test('volver regresa del panel de proyectos al menú principal sin perder el fet
     projects: [{ id: 1, name: 'Da Porto', role: 'A' }],
   })));
   const usuario = userEvent.setup();
-  render(<MenuCuenta alCambiarProyecto={vi.fn()} csrfToken={csrfToken} nombre="Ana" />);
+  render(<MenuCuenta alCambiarProyecto={vi.fn()} cerrarSesion={cerrarSesionFalso()} csrfToken={csrfToken} nombre="Ana" />);
 
   await usuario.click(screen.getByRole('button', { name: /cuenta · ana/i }));
   await usuario.click(screen.getByRole('menuitem', { name: /cambiar proyecto/i }));
@@ -88,29 +92,37 @@ test('volver regresa del panel de proyectos al menú principal sin perder el fet
   expect(screen.queryByRole('menuitem', { name: /da porto/i })).not.toBeInTheDocument();
 });
 
-test('cerrar sesión envía el CSRF por header contra /api/auth/logout, nunca un GET a /logout', async () => {
-  const fetchFalso = vi.fn().mockResolvedValue(respuesta({ success: true }));
+// Tarea 6, T01: el logout ya no es un fetch propio de `MenuCuenta` — delega en el `cerrarSesion`
+// que expone `SesionProvider` (respaldado por el único `ControlActividad` del árbol). El contrato
+// de "CSRF por header contra /api/auth/logout, nunca un GET a /logout" ahora vive en
+// `ControlActividad.ciclo-vida.test.ts`; aquí solo se prueba la delegación.
+test('cerrar sesión llama al cerrarSesion del SesionProvider, nunca un fetch propio', async () => {
+  const fetchFalso = vi.fn();
   vi.stubGlobal('fetch', fetchFalso);
+  const cerrarSesion = cerrarSesionFalso();
   const usuario = userEvent.setup();
-  render(<MenuCuenta alCambiarProyecto={vi.fn()} csrfToken={csrfToken} nombre="Ana" />);
+  render(<MenuCuenta alCambiarProyecto={vi.fn()} cerrarSesion={cerrarSesion} csrfToken={csrfToken} nombre="Ana" />);
 
   await usuario.click(screen.getByRole('button', { name: /cuenta · ana/i }));
   await usuario.click(screen.getByRole('menuitem', { name: /cerrar sesión/i }));
 
-  await waitFor(() => expect(fetchFalso).toHaveBeenCalledWith('/api/auth/logout', expect.objectContaining({
-    method: 'POST',
-  })));
-  const opciones = fetchFalso.mock.calls[0]?.[1] as RequestInit;
-  expect(new Headers(opciones.headers).get('X-CSRF-Token')).toBe(csrfToken);
+  await waitFor(() => expect(cerrarSesion).toHaveBeenCalledOnce());
+  expect(fetchFalso).not.toHaveBeenCalled();
 });
 
-test('un fallo al cerrar sesión muestra alerta y no navega', async () => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(respuesta({ message: 'detalle interno' }, 500)));
+test('mientras cerrarSesion está en curso, el botón se deshabilita y muestra el estado de progreso', async () => {
+  let liberar!: () => void;
+  const cerrarSesion = vi.fn().mockReturnValue(new Promise<void>((resolver) => {
+    liberar = resolver;
+  }));
   const usuario = userEvent.setup();
-  render(<MenuCuenta alCambiarProyecto={vi.fn()} csrfToken={csrfToken} nombre="Ana" />);
+  render(<MenuCuenta alCambiarProyecto={vi.fn()} cerrarSesion={cerrarSesion} csrfToken={csrfToken} nombre="Ana" />);
 
   await usuario.click(screen.getByRole('button', { name: /cuenta · ana/i }));
   await usuario.click(screen.getByRole('menuitem', { name: /cerrar sesión/i }));
 
-  expect(await screen.findByRole('alert')).toHaveTextContent(/no pudimos cerrar la sesión/i);
+  expect(screen.getByRole('menuitem', { name: /cerrando sesión/i })).toBeDisabled();
+
+  liberar();
+  await waitFor(() => expect(cerrarSesion).toHaveBeenCalledOnce());
 });
