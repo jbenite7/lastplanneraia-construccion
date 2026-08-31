@@ -225,6 +225,14 @@ Use actual T01 paths after its closure; expected owners include:
 - `public/css/design-system/adapters/lps-drawer.css` only when S26 caller census is zero.
 - obsolete compatibility glue in each consumer already cut.
 - POST aliases only after explicit compatibility decision.
+- **Añadido el 2026-08-31, al cerrar la Tarea 4.** Las cinco clases `LpsLegacy*` que esa tarea creó
+  en `src/Services/Lps/`: `LpsLegacyGeneralActivityAdapter`, `LpsLegacyIntermediateActivityAdapter`,
+  `LpsLegacyWeeklyActivityAdapter`, `LpsLegacyAlertRepository` y `LpsLegacyActorCompatibilityChecker`.
+  Sus docblocks ya se declaran «temporales», pero esta lista es el inventario de retiro que manda, y
+  lo temporal que no figura aquí sobrevive. Existen por dos motivos concretos, y cada uno da su
+  condición de retiro: `programa_consolidado` todavía no distingue Programa General de Programación
+  Intermedia (retirar cuando lo haga, momento en que los dos primeros adaptadores colapsan en uno), y
+  `lps_escalamientos`/`profesionales` aún no tienen modelo propio portado (retirar cuando lo tengan).
 
 ## Task 1: Freeze ownership, routes and callers
 
