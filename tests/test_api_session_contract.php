@@ -150,6 +150,22 @@ comprobar(($conSesion['json']['user']['displayName'] ?? null) === 'Test A', 'dis
 comprobar(($conSesion['json']['user']['role'] ?? null) === 'A', 'test.A debe tener rol canónico A');
 comprobar(($conSesion['json']['project']['id'] ?? null) === 73, 'project.id debe provenir de una membresía activa');
 comprobar(($conSesion['json']['project']['name'] ?? null) === 'Da Porto', 'project.name debe conservar el proyecto cuyo scope quedó enlazado');
+comprobar(is_string($conSesion['json']['project']['area'] ?? null), 'project.area debe viajar como cadena (spec T01 §8.2)');
+comprobar(
+    is_array($conSesion['json']['navigation']['groups'] ?? null) && count($conSesion['json']['navigation']['groups']) > 0,
+    'con proyecto activo, navigation.groups debe traer al menos un grupo (rol A no tiene nada oculto)',
+);
+foreach ($conSesion['json']['navigation']['groups'] as $grupoNav) {
+    comprobar(is_string($grupoNav['id'] ?? null) && is_string($grupoNav['label'] ?? null), 'cada grupo de navigation.groups debe traer id y label');
+    comprobar(is_array($grupoNav['items'] ?? null) && count($grupoNav['items']) > 0, "el grupo '{$grupoNav['id']}' no debe viajar vacío");
+    foreach ($grupoNav['items'] as $itemNav) {
+        $esAccion = ($itemNav['action'] ?? false) === true;
+        comprobar(
+            $esAccion ? $itemNav['href'] === null : (is_string($itemNav['href'] ?? null) && str_starts_with($itemNav['href'], '/')),
+            "el item '{$itemNav['id']}' debe traer href absoluto o ser una acción sin href",
+        );
+    }
+}
 comprobar(
     array_key_exists('reason', $conSesion['json'] ?? []) && $conSesion['json']['reason'] === null,
     'una sesión autenticada debe traer reason=null',

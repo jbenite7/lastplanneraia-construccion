@@ -74,7 +74,7 @@ test('el Provider deriva "anonimo" de state=anonymous con reason=missing_session
     user: null,
     project: null,
     capabilities: {},
-    navigation: { bi: null },
+    navigation: { bi: null, groups: [] },
     week: null,
     csrfToken,
   });
@@ -96,7 +96,7 @@ test('el Provider deriva "expirado" de state=anonymous con reason=timeout', asyn
     user: null,
     project: null,
     capabilities: {},
-    navigation: { bi: null },
+    navigation: { bi: null, groups: [] },
     week: null,
     csrfToken,
   });
@@ -118,7 +118,7 @@ test('el Provider deriva "cambio_clave_requerido" de state=password_change_requi
     user: null,
     project: null,
     capabilities: {},
-    navigation: { bi: null },
+    navigation: { bi: null, groups: [] },
     week: null,
     csrfToken,
   });
@@ -140,7 +140,7 @@ test('el Provider deriva "autenticado_sin_proyecto" de authenticated con project
     user: { username: 'test.A', displayName: 'Ana', role: 'A' },
     project: null,
     capabilities: {},
-    navigation: { bi: null },
+    navigation: { bi: null, groups: [] },
     week: null,
     csrfToken,
   });
@@ -160,9 +160,9 @@ test('el Provider deriva "listo" de authenticated con project', async () => {
     authenticated: true,
     reason: null,
     user: { username: 'test.A', displayName: 'Ana', role: 'A' },
-    project: { id: 1, name: 'Da Porto' },
+    project: { id: 1, name: 'Da Porto', area: 'Construccion' },
     capabilities: {},
-    navigation: { bi: null },
+    navigation: { bi: null, groups: [] },
     week: { current: 6 },
     csrfToken,
   });
@@ -197,7 +197,7 @@ test('dos sondas bajo el mismo Provider comparten una sola consulta', async () =
       user: null,
       project: null,
       capabilities: {},
-      navigation: { bi: null },
+      navigation: { bi: null, groups: [] },
       week: null,
       csrfToken,
     }), { status: 200 }),

@@ -9,6 +9,7 @@ use App\Security\CsrfTokenManager;
 use App\Security\DataScope\ProjectScope;
 use App\Security\RbacManager;
 use App\Security\RbacService;
+use App\Services\Shell\ShellNavigationService;
 use App\View\Components\BiAccessComponent;
 
 /**
@@ -50,6 +51,9 @@ class SessionApiController
             ? $scope->role()
             : (new RbacService())->normalizeRole((string) ($_SESSION['permiso'] ?? ''));
 
+        $project = $this->activeProject();
+        $bi = $this->biNavigation($rol);
+
         echo json_encode([
             'state' => 'authenticated',
             'authenticated' => true,
@@ -59,10 +63,18 @@ class SessionApiController
                 'displayName' => (string) ($_SESSION['nombreUsuario'] ?? $usuario),
                 'role' => $rol,
             ],
-            'project' => $this->activeProject(),
+            'project' => $project,
             'capabilities' => RbacManager::getCapabilities($rol),
             'navigation' => [
-                'bi' => $this->biNavigation($rol),
+                'bi' => $bi,
+                // El manifiesto es server-authoritative (spec T01 §10.2): un ítem no
+                // autorizado no viaja. `$project` ya viene ligado al `ProjectScope`
+                // capturado, así que `area` es la del mismo proyecto que autorizó `$rol`.
+                // Sin `ProjectScope` activo (autenticado pero sin proyecto elegido) no hay
+                // membresía que autorice nada: lista vacía real, no un manifiesto fabricado.
+                'groups' => $project !== null
+                    ? ShellNavigationService::build($rol, $project['area'], $bi)
+                    : [],
             ],
             'week' => $this->activeWeek(),
             'csrfToken' => CsrfTokenManager::generate(self::CSRF_FORM_KEY),
@@ -102,6 +114,9 @@ class SessionApiController
             'capabilities' => new \stdClass(),
             'navigation' => [
                 'bi' => null,
+                // Sin sesión válida no hay rol que autorice nada: lista vacía real, no un
+                // manifiesto fabricado para disimular la ausencia (spec T01 §8.2).
+                'groups' => [],
             ],
             'week' => null,
             'csrfToken' => CsrfTokenManager::generate(self::CSRF_FORM_KEY),
@@ -123,7 +138,7 @@ class SessionApiController
         ];
     }
 
-    /** @return array{id:int,name:string}|null */
+    /** @return array{id:int,name:string,area:string}|null */
     private function activeProject(): ?array
     {
         $scope = \Database::getInstance()->dataScope()->current();
@@ -134,6 +149,9 @@ class SessionApiController
         return [
             'id' => $scope->projectId(),
             'name' => (string) $_SESSION['proyecto'],
+            // Mismo default que `views/partials/shell_sidebar.php` (`$shellArea`): sin dato
+            // en sesión se asume Construcción, la fase más larga y la que no oculta nada.
+            'area' => (string) ($_SESSION['area'] ?? 'Construccion'),
         ];
     }
 

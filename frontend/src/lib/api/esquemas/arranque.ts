@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EsquemaNavegacionBi, EsquemaProyecto, EsquemaUsuario } from './sesion';
+import { EsquemaGrupoNavegacion, EsquemaNavegacionBi, EsquemaProyecto, EsquemaUsuario } from './sesion';
 
 /**
  * Las siete pantallas de arranque del shell (spec T01 §7) se reparten así:
@@ -39,7 +39,7 @@ export const EsquemaArranqueAnonimo = z.object({
   user: z.null(),
   project: z.null(),
   capabilities: EsquemaCapacidades,
-  navigation: z.object({ bi: z.null() }),
+  navigation: z.object({ bi: z.null(), groups: z.array(EsquemaGrupoNavegacion) }),
   week: z.null(),
   csrfToken: EsquemaTokenCsrf,
 });
@@ -51,7 +51,7 @@ export const EsquemaArranqueCambioClaveRequerido = z.object({
   user: z.null(),
   project: z.null(),
   capabilities: EsquemaCapacidades,
-  navigation: z.object({ bi: z.null() }),
+  navigation: z.object({ bi: z.null(), groups: z.array(EsquemaGrupoNavegacion) }),
   week: z.null(),
   csrfToken: EsquemaTokenCsrf,
 });
@@ -63,7 +63,7 @@ export const EsquemaArranqueAutenticado = z.object({
   user: EsquemaUsuario,
   project: EsquemaProyecto.nullable(),
   capabilities: EsquemaCapacidades,
-  navigation: z.object({ bi: EsquemaNavegacionBi.nullable() }),
+  navigation: z.object({ bi: EsquemaNavegacionBi.nullable(), groups: z.array(EsquemaGrupoNavegacion) }),
   week: EsquemaSemanaActiva.nullable(),
   csrfToken: EsquemaTokenCsrf,
 });

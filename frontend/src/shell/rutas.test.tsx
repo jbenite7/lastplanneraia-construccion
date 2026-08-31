@@ -20,7 +20,7 @@ test('sin sesión (anonymous/missing_session) muestra el login', async () => {
     user: null,
     project: null,
     capabilities: {},
-    navigation: { bi: null },
+    navigation: { bi: null, groups: [] },
     week: null,
     csrfToken,
   });
@@ -38,7 +38,7 @@ test('una sesión expirada (timeout) también vuelve al login, no a una pantalla
     user: null,
     project: null,
     capabilities: {},
-    navigation: { bi: null },
+    navigation: { bi: null, groups: [] },
     week: null,
     csrfToken,
   });
@@ -56,7 +56,7 @@ test('con sesión pero sin proyecto muestra el selector', async () => {
     user: { username: 'test.A', displayName: 'Ana', role: 'A' },
     project: null,
     capabilities: { canManageWeeks: true },
-    navigation: { bi: null },
+    navigation: { bi: null, groups: [] },
     week: null,
     csrfToken,
   });
@@ -72,9 +72,9 @@ test('con sesión y proyecto muestra la aplicación', async () => {
     authenticated: true,
     reason: null,
     user: { username: 'test.A', displayName: 'Ana', role: 'A' },
-    project: { id: 1, name: 'Da Porto' },
+    project: { id: 1, name: 'Da Porto', area: 'Construccion' },
     capabilities: { canManageWeeks: true },
-    navigation: { bi: { visible: false, href: null } },
+    navigation: { bi: { visible: false, href: null }, groups: [] },
     week: { current: 6 },
     csrfToken,
   });

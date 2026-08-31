@@ -3,7 +3,7 @@ import { EsquemaArranque } from './arranque';
 const csrfToken = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 
 const usuario = { username: 'test.A', displayName: 'Ana', role: 'A' };
-const proyecto = { id: 73, name: 'Da Porto' };
+const proyecto = { id: 73, name: 'Da Porto', area: 'Construccion' };
 
 function arranqueValido(overrides: Record<string, unknown> = {}) {
   return {
@@ -13,7 +13,7 @@ function arranqueValido(overrides: Record<string, unknown> = {}) {
     user: usuario,
     project: proyecto,
     capabilities: { canManageWeeks: true },
-    navigation: { bi: null },
+    navigation: { bi: null, groups: [] },
     week: { current: 6 },
     csrfToken,
     ...overrides,
@@ -28,7 +28,7 @@ test('anonymous con missing_session es válido', () => {
     user: null,
     project: null,
     capabilities: {},
-    navigation: { bi: null },
+    navigation: { bi: null, groups: [] },
     week: null,
     csrfToken,
   });
@@ -46,7 +46,7 @@ test.each(['timeout', 'inactive', 'stale_session', 'session_unverified'] as cons
       user: null,
       project: null,
       capabilities: {},
-      navigation: { bi: null },
+      navigation: { bi: null, groups: [] },
       week: null,
       csrfToken,
     });
@@ -63,7 +63,7 @@ test('anonymous con una razón inventada es inválido — el vocabulario lo fija
     user: null,
     project: null,
     capabilities: {},
-    navigation: { bi: null },
+    navigation: { bi: null, groups: [] },
     week: null,
     csrfToken,
   });
@@ -79,7 +79,7 @@ test('password_change_required no expone usuario_temp ni ningún campo de usuari
     user: null,
     project: null,
     capabilities: {},
-    navigation: { bi: null },
+    navigation: { bi: null, groups: [] },
     week: null,
     csrfToken,
   });
@@ -95,7 +95,7 @@ test('password_change_required con user no nulo es inválido — combinación pr
     user: usuario,
     project: null,
     capabilities: {},
-    navigation: { bi: null },
+    navigation: { bi: null, groups: [] },
     week: null,
     csrfToken,
   });

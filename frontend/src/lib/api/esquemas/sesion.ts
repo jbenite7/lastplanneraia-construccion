@@ -9,6 +9,7 @@ export const EsquemaUsuario = z.object({
 export const EsquemaProyecto = z.object({
   id: z.number().int(),
   name: z.string(),
+  area: z.string(),
 });
 
 export const EsquemaNavegacionBi = z.object({
@@ -19,6 +20,27 @@ export const EsquemaNavegacionBi = z.object({
   { message: 'navigation.bi.href debe coincidir con su visibilidad' },
 );
 
+// Entrada del manifiesto de navegación (spec T01 §8.2/§10): el servidor ya resolvió rol,
+// membresía, área de proyecto y flags — un ítem no autorizado directamente no viaja. React
+// no vuelve a decidir nada: o es un enlace ya autorizado (`href`), o es una acción sin
+// destino propio (p. ej. abrir el flyout de semanas), nunca ambas cosas.
+export const EsquemaEntradaNavegacion = z.object({
+  id: z.string(),
+  label: z.string(),
+  href: z.string().startsWith('/').nullable(),
+  icon: z.string().nullable(),
+  action: z.boolean(),
+}).refine(
+  ({ action, href }) => action ? href === null : href !== null,
+  { message: 'una entrada de navegación es una acción sin href o un enlace con href, no ambas' },
+);
+
+export const EsquemaGrupoNavegacion = z.object({
+  id: z.string(),
+  label: z.string(),
+  items: z.array(EsquemaEntradaNavegacion),
+});
+
 export const EsquemaSesion = z.object({
   authenticated: z.boolean(),
   user: EsquemaUsuario.nullable(),
@@ -28,6 +50,7 @@ export const EsquemaSesion = z.object({
   capabilities: z.record(z.string(), z.boolean()),
   navigation: z.object({
     bi: EsquemaNavegacionBi.nullable(),
+    groups: z.array(EsquemaGrupoNavegacion),
   }),
   csrfToken: z.string().regex(/^[a-f0-9]{64}$/),
 });
