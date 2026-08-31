@@ -1,4 +1,40 @@
 @layer components {
+  /* Skip link del shell React (T01-Tarea 4): ningún token existente cubre "fuera de
+     pantalla hasta recibir foco" con posición fija — `.aia-visually-hidden` (core.css)
+     oculta permanentemente, sin ese revelado. Único componente nuevo que esta tarea
+     justifica per su propio contrato: "agrega un token nuevo solo si un contrato de
+     diseño que falla primero prueba que falta" (ver navigation-authority/AppShell
+     tests). Compone solo con tokens `--ds-*` ya existentes. */
+  .aia-skip-link {
+    position: fixed;
+    top: var(--ds-space-3);
+    left: var(--ds-space-3);
+    z-index: var(--ds-z-shell-toast);
+    padding: var(--ds-space-2) var(--ds-space-4);
+    border-radius: var(--ds-radius-control-sm);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+    font-weight: var(--ds-type-weight-semibold);
+    text-decoration: none;
+    transform: translateY(-200%);
+    transition: transform var(--ds-motion-standard);
+  }
+
+  .aia-skip-link:focus-visible {
+    transform: translateY(0);
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+    box-shadow: var(--ds-shadow-focus);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aia-skip-link {
+      transition: none;
+    }
+  }
+}
+
+@layer components {
   .aia-navigation {
     overflow: hidden;
     border: var(--ds-border-width) solid var(--ds-active-border);

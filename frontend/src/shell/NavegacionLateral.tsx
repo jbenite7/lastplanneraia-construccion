@@ -1,3 +1,4 @@
+import { useId, type ReactNode, type Ref } from 'react';
 import type { Sesion } from '../lib/api/esquemas/sesion';
 import { ConmutadorTema } from './ConmutadorTema';
 
@@ -12,22 +13,76 @@ function esEntradaActiva(href: string | null, pathname: string): boolean {
   return href !== null && href === pathname;
 }
 
-export function NavegacionLateral({ sesion }: { sesion: Sesion }) {
+type PropiedadesNavegacionLateral = {
+  sesion: Sesion;
+  /** Id estable del `<aside>`: el disparador del drawer móvil (`AppShell`) lo referencia vía
+   *  `aria-controls`. Un `useId()` interno serviría para el `<nav>` pero no para que un
+   *  hermano fuera de este árbol lo apunte. */
+  id?: string;
+  /** `AppShell` necesita el nodo real del `<aside>` para el respaldo inline del transform del
+   *  drawer — ver el comentario sobre `data-shell-drawer-open` más abajo. React 19 acepta `ref`
+   *  como prop normal, sin `forwardRef`. */
+  ref?: Ref<HTMLElement>;
+  /** Semana activa del proyecto (spec T01 §7, `week.current`). `null`/`undefined` la oculta. */
+  semana?: number | null;
+  /** Estado del rail persistente en escritorio (Tarea 4). `AppShell` es quien lo gobierna. */
+  estado?: 'expanded' | 'collapsed';
+  alAlternarEstado?: () => void;
+  /** Drawer flotante bajo el umbral responsive (Tarea 4, mismo contrato que shell-drawer.js). */
+  abiertoEnMovil?: boolean;
+  /** Utilidades extra del pie (p. ej. el menú de cuenta que arma `AppShell`). */
+  children?: ReactNode;
+};
+
+export function NavegacionLateral({
+  sesion,
+  id = 'app-shell-nav',
+  ref,
+  semana = null,
+  estado = 'expanded',
+  alAlternarEstado,
+  abiertoEnMovil,
+  children,
+}: PropiedadesNavegacionLateral) {
   const projectName = sesion.project?.name ?? 'Proyecto';
   const displayName = sesion.user?.displayName ?? 'Usuario';
   const pathname = window.location.pathname;
+  const navId = useId();
 
   return (
-    <aside className="aia-navigation aia-navigation--sidebar" aria-label="Aplicación">
+    <aside
+      ref={ref}
+      id={id}
+      className="aia-navigation aia-navigation--sidebar"
+      aria-label="Aplicación"
+      data-shell-pattern="sidebar"
+      data-sidebar-state={estado}
+      data-shell-drawer-open={abiertoEnMovil ? 'true' : undefined}
+    >
       <header className="aia-sidebar__header">
         <strong className="aia-sidebar__brand-name">Last Planner AIA</strong>
         <div className="aia-sidebar__context">
           <span>{projectName}</span>
           <small>{displayName}</small>
+          {semana !== null && <small>Semana {semana}</small>}
         </div>
+        {alAlternarEstado && (
+          <button
+            type="button"
+            className="aia-btn aia-btn--secondary aia-sidebar__toggle"
+            aria-controls={navId}
+            aria-expanded={estado === 'expanded'}
+            aria-label={estado === 'expanded' ? 'Colapsar menú' : 'Expandir menú'}
+            onClick={alAlternarEstado}
+          >
+            <span className="aia-sidebar__toggle-label">
+              {estado === 'expanded' ? 'Colapsar menú' : 'Expandir menú'}
+            </span>
+          </button>
+        )}
       </header>
 
-      <nav className="aia-sidebar__nav" aria-label="Navegación del proyecto">
+      <nav id={navId} className="aia-sidebar__nav" aria-label="Navegación del proyecto">
         {sesion.navigation.groups.map((grupo) => (
           <section className="aia-sidebar__group" aria-labelledby={`grupo-${grupo.id}`} key={grupo.id}>
             <h3 id={`grupo-${grupo.id}`}>{grupo.label}</h3>
@@ -62,6 +117,7 @@ export function NavegacionLateral({ sesion }: { sesion: Sesion }) {
 
       <footer className="aia-sidebar__footer">
         <ConmutadorTema />
+        {children}
       </footer>
     </aside>
   );

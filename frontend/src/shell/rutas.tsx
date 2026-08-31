@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { NavegacionLateral } from './NavegacionLateral';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { AppShell } from './AppShell';
 import { PantallaLogin } from './PantallaLogin';
 import { SelectorProyecto } from './SelectorProyecto';
 import { SesionProvider, useSesion } from './SesionProvider';
@@ -73,13 +74,15 @@ function RutasSegunSesion() {
         return null;
       }
 
+      // `AppShell` es la única raíz de rutas cliente: los módulos de S01-S27 cuelgan de su
+      // `Outlet` como rutas hijas (Tarea 4, checkpoint T01 "un solo contrato de shell/outlet,
+      // ninguna superficie migrada todavía" — de ahí que hoy no haya ninguna `<Route>` hija).
       return (
-        <>
-          <NavegacionLateral sesion={autenticado} />
-          <main>
-            <h1>{autenticado.project.name}</h1>
-          </main>
-        </>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<AppShell sesion={autenticado} recargar={recargar} />} path="*" />
+          </Routes>
+        </BrowserRouter>
       );
   }
 }
