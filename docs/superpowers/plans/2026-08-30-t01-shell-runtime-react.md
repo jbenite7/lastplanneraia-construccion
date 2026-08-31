@@ -535,5 +535,75 @@ A failed checkpoint blocks later tasks. T01-A and T01-R are separate claims.
 
 ## Cierre
 
-Pending future implementation. This document closes planning only; it records no implementation,
-test execution, commit, publication or retirement claim.
+**T01-A cerrado el 2026-08-31.** Tareas 1–10 ejecutadas en la rama `shell-minimo-react`, cada una con
+revisión independiente antes de commitear. **T01-R (Tarea 11, retiro de VIEW-26/29/30) sigue
+diferido y NO se ejecutó** — su censo de llamadores da distinto de cero, que es exactamente la
+condición que el plan puso para no borrar.
+
+### Commits (9, de `385e1242` a `5ec9cb3b`)
+
+| SHA | Tarea |
+|---|---|
+| `b03aca43` | 1 — baseline de rutas, censo de llamadores, caracterización de `cliente.ts` |
+| `3df83880` | 2 — cliente HTTP tipado, bootstrap de 7 estados, `SesionProvider` |
+| `3ffbe576` | 3 — `ShellNavigationService`, navegación server-authoritative |
+| `75dbabd9` | 4 — `AppShell`, outlet, drawer responsive, menú de cuenta |
+| `06dca377` | 5 — `WeekAdministrationService` y adaptadores tipados de semana |
+| `943244e0` | 6 — `ControlActividad`: timeout, touch, logout, invalidación por generación |
+| `374d2775` | 7 — oscuro como tema inicial/fallback sin destello |
+| `b0a935d4` | 8 — errores tipados, accesibilidad, contraste del rail en claro |
+| `5ec9cb3b` | 9 — coexistencia, deep links, rollback del mapa de rutas |
+
+Diff total: 96 archivos, +8.542 / −651.
+
+### Evidencia (Tarea 10, `.superpowers/sdd/2026-08-30-t01-shell-runtime-react/task-10-report.md`)
+
+24 comandos de gate, **24 verdes, 0 rojos**, cada código de retorno leído por separado y sin
+encadenar con `&&`: 11 scripts PHP sueltos, PHPUnit `puro` 115/115, frontend 177/177, typecheck,
+build, design-system estático 8/8, `css:minify:check`, 6 specs de Playwright (31 pruebas, 9 de ellas
+escenarios axe: 4 viewports × 2 temas + drawer, cero hallazgos serios o críticos) y phpstan.
+
+13 de los 14 criterios de aceptación (T01-AC-01…12 y 14) quedan con evidencia fresca. T01-AC-13 es
+de la Tarea 11 y queda fuera a propósito.
+
+Invariantes de seguridad reverificados por el coordinador, no solo por el agente: `fetch(` de
+producción fuera de `cliente.ts` = **0**; sin cambios en `admin/`, `database/`,
+`src/Security/DataScope/` ni `docs/security/`; `RbacCatalog.php` **intacto**; cero DDL/DML como
+evidencia; baselines visuales sin regenerar.
+
+Censo de llamadores al cierre — **todos distintos de cero, por eso nada se borra**: VIEW-26 = 1,
+VIEW-29 = 20, VIEW-30 = 14.
+
+### Salvedades que este cierre NO tapa
+
+1. **`PanelError.tsx` y `useRecuperacionErrorApi.ts` no tienen consumidor de producción todavía**;
+   solo `LimiteErrorRuta` está cableado en `AppShell`. Este cierre **no** afirma que 403/404/409/422/
+   5xx se recuperen de extremo a extremo: afirma que la clasificación y los componentes existen y
+   están probados en aislamiento. Las rutas que los consumirán llegan con S01–S27.
+2. **No existe un RC agregado de la suite PHP.** `scripts/run-php-tests.php --nivel=puro` aborta por
+   una causa ajena a este plan: `tests/test_php_test_lane_manifest.php` (commit `0d0d84aa`,
+   2026-08-29) no declara `// @requiere: <nivel>`. Se corrieron los 11 scripts de T01 uno por uno.
+   Ese archivo no se tocó, por estar fuera de alcance.
+3. **Hallazgo enrutado, no arreglado:** `/programa-general` responde 500 sin semana en sesión.
+   Registrado en `TASKS.md` con el encuadre de Felipe (siempre debe haber semana salvo proyecto nuevo
+   sin cronograma, así que el trabajo es hallar por qué se llegó a ese estado) y con sesión propia
+   asignada.
+4. **Visto de Felipe (2026-08-31):** ratificó dejar el arreglo de contraste del rail dentro de la
+   Tarea 8, porque sin él esa tarea no cumplía su propio criterio de «cero fallos serios de
+   accesibilidad en claro y oscuro». Citado aquí para no re-litigarlo.
+
+### Decisiones tomadas durante la ejecución
+
+- Tarea 3: se portó la tabla legacy `OCULTOS_POR_ROL` byte a byte en vez de derivar la visibilidad de
+  los permisos finos de `RbacCatalog`, que habría cambiado comportamiento de producto (p. ej. G/S/SG
+  ganando acceso a Programa General) sin decisión previa.
+- Tarea 5: `actions.deleteLast`/`create` pasaron a usar los permisos finos que el endpoint ya validaba
+  — antes usaban una capacidad gruesa que el rol `DCV` cumple sin tener `lps.semana.eliminar`, así que
+  el servidor emitía una acción que él mismo rechazaba con 403.
+- Tarea 6: `cerrarSesion()` distingue `confirmado` (403 idempotente del servidor) de `red` (fallo real
+  de red), que antes se conflacionaban como éxito silencioso.
+- Tarea 9: `sirveLaSpa()` quedó como función pura con parámetro por defecto, descartando una primera
+  versión con estado estático mutable y setters públicos en una clase de la que depende cada request.
+
+Sin push, PR ni despliegue desde este plan: el trabajo vive en la rama y se publica con el cierre de
+la Entrega 0.

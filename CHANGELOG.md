@@ -28,6 +28,42 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Añadido: plataforma del shell React — T01-A (2026-08-31)
+
+Primera pieza de la Entrega 0 del programa de migración a React. Completa el shell que la entrada
+`/app` había estrenado el 2026-08-28, hasta dejarlo utilizable como plataforma por los módulos que
+vienen después.
+
+- **Arranque y sesión:** `GET /api/session` es el único bootstrap y compone siete estados de arranque
+  (anónimo, cambio de clave requerido, autenticado sin proyecto, listo, expirado, error recuperable,
+  cargando) con `Cache-Control: no-store` y sin exponer base de datos, prefijos ni secretos.
+  `SesionProvider` los gobierna desde un Context único.
+- **Frontera HTTP:** `frontend/src/lib/api/cliente.ts` es el único punto con `fetch` de producción,
+  y parsea con Zod tanto el éxito como el error — antes descartaba el cuerpo de error tipado.
+- **Navegación autorizada por el servidor:** el manifiesto de grupos, ítems y acciones se compone en
+  PHP desde `RbacManager`, rol normalizado y membresía activa. React ya no contiene matriz de roles,
+  catálogo de rutas ni construcción de URL privilegiada.
+- **`AppShell` reutilizable:** un `nav`, un `main`, enlace de salto y outlet de módulos, con barra
+  lateral persistente en escritorio y cajón en móvil/tableta. Verificado en 390×844, 768×1024,
+  1180×820 y 1440×900, en ambos temas.
+- **Semanas:** las reglas de crear y eliminar la última semana salen del código legado a
+  `WeekAdministrationService`, con repositorio inyectable; los scripts legados quedan como llamadores
+  de compatibilidad. Probado con dobles de prueba, sin escribir en la base.
+- **Sesión viva:** un único `ControlActividad` posee el vencimiento de 3600 segundos, el latido y el
+  cierre de sesión; cambiar de proyecto o cerrar sesión aborta lo que esté en vuelo y descarta
+  respuestas de la generación anterior.
+- **Tema:** oscuro pasa a ser el inicial y el de reserva cuando no hay preferencia guardada, es
+  inválida o el almacenamiento falla, aplicado antes del primer pintado. Claro conserva controles y
+  comportamiento idénticos.
+
+### Corregido: texto ilegible del menú lateral en tema claro (2026-08-31)
+
+El panel lateral conserva fondo oscuro aunque la página pase a tema claro, pero el texto de sus
+enlaces sí seguía el tema de la página: quedaba oscuro sobre oscuro. Medido en 1,11:1 y 2,56:1 de
+contraste, muy por debajo del mínimo legible de 4,5:1. Ahora usa los tokens que el sistema de diseño
+ya tenía definidos para ese caso. El tema oscuro no cambia —ahí ambos tokens resuelven al mismo
+valor—, así que las pantallas PHP, que solo usan oscuro, quedan igual.
+
 ### Añadido: shell mínimo React (2026-08-28)
 
 - Nueva entrada `/app` con login, selector de proyecto, navegación lateral con restricciones por
