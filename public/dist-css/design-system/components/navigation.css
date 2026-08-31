@@ -134,7 +134,7 @@
     border: var(--ds-border-width) solid var(--ds-active-border);
     border-radius: var(--ds-radius-lg);
     background: var(--ds-active-nav-bg);
-    color: var(--ds-active-text-primary);
+    color: var(--ds-active-nav-text);
     overflow: visible;
     transition:
       width var(--ds-motion-standard),
@@ -159,7 +159,7 @@
     align-items: center;
     min-height: var(--ds-sidebar-item-min-height);
     gap: var(--ds-space-3);
-    color: var(--ds-active-text-primary);
+    color: var(--ds-active-nav-text);
     font: inherit;
     text-decoration: none;
   }
@@ -206,7 +206,7 @@
     font-size: var(--ds-type-size-sm);
   }
   .aia-sidebar__context span {
-    color: var(--ds-active-text-primary);
+    color: var(--ds-active-nav-text);
     font-weight: var(--ds-type-weight-semibold);
   }
   .aia-sidebar__toggle,
@@ -219,7 +219,7 @@
     border: var(--ds-border-width) solid transparent;
     border-radius: var(--ds-radius-control-sm);
     background: transparent;
-    color: var(--ds-active-text-secondary);
+    color: var(--ds-active-nav-text-muted);
     cursor: pointer;
     text-align: start;
   }
@@ -266,7 +266,7 @@
   }
   .aia-navigation--sidebar .aia-sidebar__group h3 {
     margin: var(--ds-space-2) var(--ds-space-3) 0 !important;
-    color: var(--ds-active-text-secondary) !important;
+    color: var(--ds-active-nav-text-muted) !important;
     font-size: var(--ds-type-size-xs);
     font-weight: var(--ds-type-weight-bold);
     letter-spacing: normal !important;

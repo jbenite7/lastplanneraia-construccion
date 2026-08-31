@@ -161,7 +161,9 @@
     border: var(--ds-border-width) solid var(--ds-active-border);
     border-radius: var(--ds-radius-lg);
     background: var(--ds-active-nav-bg);
-    color: var(--ds-active-text-primary);
+    /* Mismo motivo que `.aia-sidebar__link`/`.aia-sidebar__utility` más arriba: este fondo no
+       sigue el tema de página, así que el color por defecto tampoco puede hacerlo. */
+    color: var(--ds-active-nav-text);
     overflow: visible;
     transition:
       width var(--ds-motion-standard),
@@ -188,6 +190,15 @@
     border-block-end: var(--ds-border-width) solid var(--ds-active-border);
   }
 
+  /* `color` aquí NO puede ser `--ds-active-text-primary`: el rail (`.aia-navigation--sidebar`)
+     fija su fondo a `--ds-active-nav-bg`, que en tema claro sigue siendo oscuro a propósito
+     (`theme-claro.css`, decisión de marca — el rail no sigue el tema de página). Un texto que sí
+     siga el tema de página queda oscuro sobre fondo oscuro. `--ds-active-nav-text`/
+     `-muted` son los tokens que `theme-claro.css` ya define para exactamente este caso —
+     `.aia-sidebar__brand`/`.aia-sidebar__context` ya los usaban (líneas de abajo); `.aia-sidebar__
+     utility`/`.aia-sidebar__link` no, y eso dejaba "Indicadores LPS", "Tema: claro" y "Cuenta ·
+     …" en 1.11:1/2.56:1 de contraste en tema claro (hallazgo axe, Tarea 8 T01,
+     `tests/browser/shell-runtime-react-a11y.spec.mjs`). */
   .aia-sidebar__brand,
   .aia-sidebar__utility,
   .aia-sidebar__link {
@@ -195,7 +206,7 @@
     align-items: center;
     min-height: var(--ds-sidebar-item-min-height);
     gap: var(--ds-space-3);
-    color: var(--ds-active-text-primary);
+    color: var(--ds-active-nav-text);
     font: inherit;
     text-decoration: none;
   }
@@ -256,7 +267,7 @@
   }
 
   .aia-sidebar__context span {
-    color: var(--ds-active-text-primary);
+    color: var(--ds-active-nav-text);
     font-weight: var(--ds-type-weight-semibold);
   }
 
@@ -270,7 +281,7 @@
     border: var(--ds-border-width) solid transparent;
     border-radius: var(--ds-radius-control-sm);
     background: transparent;
-    color: var(--ds-active-text-secondary);
+    color: var(--ds-active-nav-text-muted);
     cursor: pointer;
     text-align: start;
   }
@@ -331,7 +342,9 @@
    group labels only. */
   .aia-navigation--sidebar .aia-sidebar__group h3 {
     margin: var(--ds-space-2) var(--ds-space-3) 0 !important;
-    color: var(--ds-active-text-secondary) !important;
+    /* Mismo motivo que `.aia-sidebar__link`/`.aia-sidebar__utility`: el fondo del rail no sigue
+       el tema de página (`--ds-active-nav-bg`), así que el color tampoco puede hacerlo. */
+    color: var(--ds-active-nav-text-muted) !important;
     font-size: var(--ds-type-size-xs);
     font-weight: var(--ds-type-weight-bold);
     letter-spacing: normal !important;

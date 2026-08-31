@@ -2,9 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import type { ArranqueAutenticado } from '../lib/api/esquemas/arranque';
 import { ContextoSemana } from './ContextoSemana';
+import { LimiteErrorRuta } from './errores/LimiteErrorRuta';
 import { MenuCuenta } from './MenuCuenta';
 import { esBarraLateralFlotante } from './modoBarraLateral';
 import { NavegacionLateral } from './NavegacionLateral';
+import { useTituloDocumento } from './useTituloDocumento';
+
+const SELECTOR_ENFOCABLES =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const ID_PANEL_CONTENIDO = 'contenido';
 
@@ -31,7 +36,20 @@ export function AppShell({ sesion, recargar, cerrarSesion }: PropiedadesAppShell
   const [colapsado, setColapsado] = useState(false);
   const disparadorRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
+  const contenidoRef = useRef<HTMLElement>(null);
   const location = useLocation();
+  const tituloVigente = useTituloDocumento(sesion.project?.name);
+
+  // El navegador desplaza la vista al seguir `href="#contenido"`, pero un `<main>` sin
+  // `tabindex` nunca es focoable — un usuario de teclado vería la página saltar pero el foco
+  // seguiría en el skip link (spec T01 §14 "skip link al contenido principal"). `tabIndex={-1}`
+  // en el `<main>` lo hace focoable programáticamente sin sumarlo al orden de tabulación normal,
+  // y este handler mueve el foco ahí de forma explícita en vez de confiar en el comportamiento
+  // de foco por fragmento —inconsistente entre navegadores— del `href`.
+  const alSaltarAlContenido = useCallback((evento: React.MouseEvent<HTMLAnchorElement>) => {
+    evento.preventDefault();
+    contenidoRef.current?.focus();
+  }, []);
 
   // Respaldo inline al `transform` del drawer (Tarea 4, ronda de arreglos 1). El contrato
   // documental de `shell-sidebar.css` es `data-shell-drawer-open="true"` — la regla que lo
@@ -96,24 +114,55 @@ export function AppShell({ sesion, recargar, cerrarSesion }: PropiedadesAppShell
     disparadorRef.current?.focus();
   }, []);
 
-  // Escape cierra el drawer y devuelve el foco a su disparador.
+  // Foco de entrada: al abrir el drawer flotante, el foco se mueve al primer control enfocable
+  // del nav — sin esto, tras un clic en "Menú" el foco queda huérfano en el botón que acaba de
+  // desaparecer detrás del velo (spec T01 §14 "apertura/cierre por teclado… trampa y retorno de
+  // foco en drawer"). En escritorio (`abierto` sin `flotante`) no aplica: no hay drawer que abrir.
   useEffect(() => {
-    if (!abierto) return;
+    if (!abierto || !flotante) return;
+    const primero = navRef.current?.querySelector<HTMLElement>(SELECTOR_ENFOCABLES);
+    primero?.focus();
+  }, [abierto, flotante]);
+
+  // Escape cierra el drawer y devuelve el foco a su disparador. Mientras está abierto, Tab/
+  // Shift+Tab quedan atrapados dentro del `<aside>` — de lo contrario el foco se escaparía hacia
+  // contenido tapado por el velo, invisible pero todavía en el árbol de tabulación.
+  useEffect(() => {
+    if (!abierto || !flotante) return;
     function alTeclado(evento: KeyboardEvent) {
       if (evento.key === 'Escape') {
         evento.preventDefault();
         cerrarDrawer();
+        return;
+      }
+      if (evento.key !== 'Tab') return;
+      const contenedor = navRef.current;
+      if (!contenedor) return;
+      const enfocables = contenedor.querySelectorAll<HTMLElement>(SELECTOR_ENFOCABLES);
+      if (enfocables.length === 0) return;
+      const primero = enfocables[0];
+      const ultimo = enfocables[enfocables.length - 1];
+      const activo = document.activeElement;
+      if (!contenedor.contains(activo)) {
+        evento.preventDefault();
+        primero.focus();
+      } else if (evento.shiftKey && activo === primero) {
+        evento.preventDefault();
+        ultimo.focus();
+      } else if (!evento.shiftKey && activo === ultimo) {
+        evento.preventDefault();
+        primero.focus();
       }
     }
     document.addEventListener('keydown', alTeclado);
     return () => document.removeEventListener('keydown', alTeclado);
-  }, [abierto, cerrarDrawer]);
+  }, [abierto, flotante, cerrarDrawer]);
 
   const abrirDrawer = useCallback(() => setAbierto(true), []);
 
   return (
     <>
-      <a className="aia-skip-link" href={`#${ID_PANEL_CONTENIDO}`}>
+      <a className="aia-skip-link" href={`#${ID_PANEL_CONTENIDO}`} onClick={alSaltarAlContenido}>
         Saltar al contenido
       </a>
 
@@ -151,8 +200,17 @@ export function AppShell({ sesion, recargar, cerrarSesion }: PropiedadesAppShell
         />
       </NavegacionLateral>
 
-      <main id={ID_PANEL_CONTENIDO}>
-        <Outlet />
+      {/* Anuncios en vivo (spec T01 §14): un cambio de ruta actualiza `document.title` y esta
+          región lo repite para quien no esté mirando la pestaña — el mismo texto en ambos sitios,
+          calculado una sola vez por `useTituloDocumento`. */}
+      <div aria-live="polite" className="aia-visually-hidden" role="status">
+        {tituloVigente}
+      </div>
+
+      <main id={ID_PANEL_CONTENIDO} ref={contenidoRef} tabIndex={-1}>
+        <LimiteErrorRuta>
+          <Outlet />
+        </LimiteErrorRuta>
       </main>
     </>
   );

@@ -146,7 +146,10 @@ test.describe('ControlActividad — red completamente interceptada', () => {
     await page.getByRole('menuitem', { name: /cambiar proyecto/i }).click();
     await page.getByRole('menuitem', { name: /otro proyecto/i }).click();
 
-    await expect(page.getByText('Otro Proyecto')).toBeVisible();
+    // `{ exact: true }` a propósito: desde la Tarea 8 (T01 §14) existe una región `aria-live`
+    // oculta con el título de la pestaña ("App · Otro Proyecto · Last Planner AIA"), que también
+    // contiene el nombre del proyecto como subcadena — sin `exact` el match deja de ser único.
+    await expect(page.getByText('Otro Proyecto', { exact: true })).toBeVisible();
 
     // El cambio de proyecto recarga el bootstrap (nueva generación) pero el CSRF de sesión es el
     // mismo — `ControlActividad` no debió destruirse y recrearse de forma que perdiera su reloj;
