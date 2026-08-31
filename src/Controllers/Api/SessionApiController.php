@@ -9,7 +9,9 @@ use App\Security\CsrfTokenManager;
 use App\Security\DataScope\ProjectScope;
 use App\Security\RbacManager;
 use App\Security\RbacService;
+use App\Services\Shell\DatabaseWeekAdministrationRepository;
 use App\Services\Shell\ShellNavigationService;
+use App\Services\Shell\WeekContextService;
 use App\View\Components\BiAccessComponent;
 
 /**
@@ -76,7 +78,7 @@ class SessionApiController
                     ? ShellNavigationService::build($rol, $project['area'], $bi)
                     : [],
             ],
-            'week' => $this->activeWeek(),
+            'week' => $this->activeWeek($rol),
             'csrfToken' => CsrfTokenManager::generate(self::CSRF_FORM_KEY),
         ]);
     }
@@ -156,26 +158,25 @@ class SessionApiController
     }
 
     /**
-     * `null` sin proyecto activo o sin semana elegida (`semana` en sesión es
-     * `0`/ausente): el selector semanal completo — opciones y acciones de
-     * crear/eliminar — lo compone `WeekAdministrationService` en la Tarea 5;
-     * aquí solo viaja la semana actualmente activa, consistente con lo que
-     * `BaseController`/`ContextController` ya guardan en sesión hoy.
+     * `null` sin proyecto activo o sin semana elegida (`semana` en sesión es `0`/ausente). Con
+     * proyecto y semana, compone el manifiesto completo — opciones y acciones de
+     * crear/eliminar/seleccionar — vía `WeekContextService` (Tarea 5, T01), la misma fuente que
+     * usan `ContextController` y `WeekContextApiController` para que el bootstrap y la respuesta
+     * de cada mutación nunca diverjan.
      *
-     * @return array{current:int}|null
+     * @return array{current:int,options:list<array{number:int,startsOn:string,endsOn:string}>,actions:array{select:bool,create:bool,deleteLast:bool}}|null
      */
-    private function activeWeek(): ?array
+    private function activeWeek(string $rol): ?array
     {
-        $scope = \Database::getInstance()->dataScope()->current();
+        $db = \Database::getInstance();
+        $scope = $db->dataScope()->current();
         if (!$scope instanceof ProjectScope) {
             return null;
         }
 
         $semana = (int) ($_SESSION['semana'] ?? 0);
-        if ($semana <= 0) {
-            return null;
-        }
+        $servicio = new WeekContextService($db, new DatabaseWeekAdministrationRepository($db));
 
-        return ['current' => $semana];
+        return $servicio->contextoActual($scope->projectId(), $semana, $rol);
     }
 }

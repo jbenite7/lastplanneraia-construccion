@@ -27,7 +27,7 @@ function sesionLista(overrides: Partial<ArranqueAutenticado> = {}): ArranqueAute
         },
       ],
     },
-    week: { current: 6 },
+    week: { current: 6, options: [{ number: 6, startsOn: "2026-08-24", endsOn: "2026-08-30" }], actions: { select: true, create: true, deleteLast: true } },
     csrfToken,
     ...overrides,
   };
@@ -86,7 +86,7 @@ test('muestra el proyecto y la semana activos', () => {
   renderizarConRuta(sesionLista());
 
   expect(screen.getByText('Da Porto')).toBeInTheDocument();
-  expect(screen.getByText(/semana 6/i)).toBeInTheDocument();
+  expect(screen.getAllByText(/semana 6/i).length).toBeGreaterThan(0);
 });
 
 test('el menú de cuenta abre y ofrece cambiar proyecto y cerrar sesión', async () => {

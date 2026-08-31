@@ -23,8 +23,10 @@ type PropiedadesNavegacionLateral = {
    *  drawer — ver el comentario sobre `data-shell-drawer-open` más abajo. React 19 acepta `ref`
    *  como prop normal, sin `forwardRef`. */
   ref?: Ref<HTMLElement>;
-  /** Semana activa del proyecto (spec T01 §7, `week.current`). `null`/`undefined` la oculta. */
-  semana?: number | null;
+  /** Selector semanal completo (Tarea 5, T01): número, rango y acciones server-issued.
+   *  `AppShell` arma este nodo (`ContextoSemana`) — este componente solo le da su lugar en el
+   *  header, igual que ya hace con `children` en el footer para `MenuCuenta`. */
+  contextoSemana?: ReactNode;
   /** Estado del rail persistente en escritorio (Tarea 4). `AppShell` es quien lo gobierna. */
   estado?: 'expanded' | 'collapsed';
   alAlternarEstado?: () => void;
@@ -38,7 +40,7 @@ export function NavegacionLateral({
   sesion,
   id = 'app-shell-nav',
   ref,
-  semana = null,
+  contextoSemana = null,
   estado = 'expanded',
   alAlternarEstado,
   abiertoEnMovil,
@@ -64,8 +66,8 @@ export function NavegacionLateral({
         <div className="aia-sidebar__context">
           <span>{projectName}</span>
           <small>{displayName}</small>
-          {semana !== null && <small>Semana {semana}</small>}
         </div>
+        {contextoSemana}
         {alAlternarEstado && (
           <button
             type="button"

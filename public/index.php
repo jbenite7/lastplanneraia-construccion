@@ -337,6 +337,8 @@ $router->post('/legacy/funciones_generales/php/buscadorTabla.php', function () {
     require_once PROJECT_ROOT . '/src/Legacy/buscadorTabla.php';
 });
 $router->post('/context/clear-week', [\App\Controllers\Core\ContextController::class, 'clearWeek']);
+$router->post('/api/context/weeks/create', [\App\Controllers\Api\WeekContextApiController::class, 'crear']);
+$router->post('/api/context/weeks/delete-last', [\App\Controllers\Api\WeekContextApiController::class, 'eliminarUltima']);
 
 // Maintenance Secret Access (ruta oculta para admins durante mantenimiento)
 $router->get(MaintenanceMode::SECRET_PATH, [\App\Controllers\Auth\LoginController::class, 'index']);

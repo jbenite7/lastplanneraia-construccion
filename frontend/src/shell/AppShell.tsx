@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import type { ArranqueAutenticado } from '../lib/api/esquemas/arranque';
+import { ContextoSemana } from './ContextoSemana';
 import { MenuCuenta } from './MenuCuenta';
 import { esBarraLateralFlotante } from './modoBarraLateral';
 import { NavegacionLateral } from './NavegacionLateral';
@@ -135,7 +136,7 @@ export function AppShell({ sesion, recargar }: PropiedadesAppShell) {
       <NavegacionLateral
         ref={navRef}
         sesion={sesion}
-        semana={sesion.week?.current ?? null}
+        contextoSemana={<ContextoSemana semana={sesion.week} csrfToken={sesion.csrfToken} recargar={recargar} />}
         estado={colapsado ? 'collapsed' : 'expanded'}
         alAlternarEstado={() => setColapsado((valor) => !valor)}
         abiertoEnMovil={flotante ? abierto : undefined}

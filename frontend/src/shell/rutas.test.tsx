@@ -75,7 +75,7 @@ test('con sesión y proyecto muestra la aplicación', async () => {
     project: { id: 1, name: 'Da Porto', area: 'Construccion' },
     capabilities: { canManageWeeks: true },
     navigation: { bi: { visible: false, href: null }, groups: [] },
-    week: { current: 6 },
+    week: { current: 6, options: [{ number: 6, startsOn: "2026-08-24", endsOn: "2026-08-30" }], actions: { select: true, create: true, deleteLast: true } },
     csrfToken,
   });
 

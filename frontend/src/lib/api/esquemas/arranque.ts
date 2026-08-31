@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { EsquemaSemanaActiva } from './contexto';
 import { EsquemaGrupoNavegacion, EsquemaNavegacionBi, EsquemaProyecto, EsquemaUsuario } from './sesion';
 
 /**
@@ -18,7 +19,6 @@ import { EsquemaGrupoNavegacion, EsquemaNavegacionBi, EsquemaProyecto, EsquemaUs
 
 const EsquemaCapacidades = z.record(z.string(), z.boolean());
 const EsquemaTokenCsrf = z.string().regex(/^[a-f0-9]{64}$/);
-const EsquemaSemanaActiva = z.object({ current: z.number().int().positive() });
 
 /** Motivos que `SessionMiddleware` produce hoy para una sesión no autenticada. */
 export const RAZONES_NO_AUTENTICADO = [

@@ -17,7 +17,7 @@ function sesionLista(): ArranqueAutenticado {
     project: { id: 1, name: 'Da Porto', area: 'Construccion' },
     capabilities: {},
     navigation: { bi: null, groups: [] },
-    week: { current: 6 },
+    week: { current: 6, options: [{ number: 6, startsOn: "2026-08-24", endsOn: "2026-08-30" }], actions: { select: true, create: true, deleteLast: true } },
     csrfToken,
   };
 }
