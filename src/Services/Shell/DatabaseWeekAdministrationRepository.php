@@ -133,7 +133,7 @@ final class DatabaseWeekAdministrationRepository implements WeekAdministrationRe
     {
         $tPrograma = TableResolver::resolve($projectId, 'programa');
         $tConsolidado = TableResolver::resolve($projectId, 'programa_consolidado');
-        $baseId = $this->maxRowIdConsolidado($projectId, $tConsolidado);
+        $baseId = $this->maxRowIdConsolidado($projectId);
 
         $sql = $preConstruccion
             ? "INSERT INTO {$tConsolidado}(project_id, row_id, Consecutivo, Semana, unique_id, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, restriccion_pc_1, restriccion_pc_2, restriccion_pc_3, restriccion_pc_4, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana)
@@ -210,7 +210,7 @@ final class DatabaseWeekAdministrationRepository implements WeekAdministrationRe
             array_map('trim', explode(',', $cols)),
         ));
 
-        $baseId = $this->maxRowIdConsolidado($projectId, $t);
+        $baseId = $this->maxRowIdConsolidado($projectId);
         $sql = "INSERT INTO {$t}(project_id, row_id, Consecutivo, Semana, $cols)
                 SELECT ?, ? + ROW_NUMBER() OVER (ORDER BY COALESCE(row_id, Consecutivo), unique_id, Id), ? + ROW_NUMBER() OVER (ORDER BY COALESCE(row_id, Consecutivo), unique_id, Id), ?, $selectCols FROM {$t} WHERE project_id = ? AND Semana = ?";
         $this->db->query($sql, [$projectId, $baseId, $baseId, $semanaDestino, $projectId, $semanaOrigen]);
@@ -224,18 +224,28 @@ final class DatabaseWeekAdministrationRepository implements WeekAdministrationRe
     public function resetearCapitulosSemana(int $projectId, int $semana, bool $preConstruccion): void
     {
         $t = TableResolver::resolve($projectId, 'programa_consolidado');
-        $sql = $preConstruccion
-            ? "UPDATE {$t} SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, restriccion_pc_1='0%', restriccion_pc_2='0%', restriccion_pc_3='0%', restriccion_pc_4='0%', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE project_id = ? AND Semana = ? AND Titulo=1"
-            : "UPDATE {$t} SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, D_y_E='0', Materiales='0', MdeO='0', Equipos='0', Predecesora='0', Pdto_Cons='0', Modelo='0', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE project_id = ? AND Semana = ? AND Titulo=1";
+        // `if/else` con asignación literal en cada rama, no ternario: el audit de
+        // `queryWithProject` (`tests/test_project_scope_callsite_audit.php`) resuelve SQL
+        // estáticamente token por token y no evalúa operadores ternarios — solo asignaciones
+        // directas de literal. El original en `nueva_semana.php` ya usaba esta forma.
+        if ($preConstruccion) {
+            $sql = "UPDATE {$t} SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, restriccion_pc_1='0%', restriccion_pc_2='0%', restriccion_pc_3='0%', restriccion_pc_4='0%', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE project_id = ? AND Semana = ? AND Titulo=1";
+        } else {
+            $sql = "UPDATE {$t} SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, D_y_E='0', Materiales='0', MdeO='0', Equipos='0', Predecesora='0', Pdto_Cons='0', Modelo='0', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE project_id = ? AND Semana = ? AND Titulo=1";
+        }
         $this->db->queryWithProject($sql, [$projectId, $semana], $projectId);
     }
 
     public function resetearFilasOperativasNulas(int $projectId, int $semana, bool $preConstruccion): void
     {
         $t = TableResolver::resolve($projectId, 'programa_consolidado');
-        $sql = $preConstruccion
-            ? "UPDATE {$t} SET Ejecutado = 0, Estado_Restricciones = '0', restriccion_pc_1 = '0%', restriccion_pc_2 = '0%', restriccion_pc_3 = '0%', restriccion_pc_4 = '0%' WHERE project_id = ? AND Ejecutado IS NULL AND Semana = ? AND Titulo=0"
-            : "UPDATE {$t} SET Ejecutado = 0, Estado_Restricciones = '0', D_y_E = '0', Materiales = '0', MdeO = '0', Equipos = '0', Predecesora = '0', Pdto_Cons = '0', Modelo = '0' WHERE project_id = ? AND Ejecutado IS NULL AND Semana = ? AND Titulo=0";
+        // Misma razón que en `resetearCapitulosSemana`: if/else en vez de ternario para que el
+        // audit de callsites resuelva el SQL estáticamente.
+        if ($preConstruccion) {
+            $sql = "UPDATE {$t} SET Ejecutado = 0, Estado_Restricciones = '0', restriccion_pc_1 = '0%', restriccion_pc_2 = '0%', restriccion_pc_3 = '0%', restriccion_pc_4 = '0%' WHERE project_id = ? AND Ejecutado IS NULL AND Semana = ? AND Titulo=0";
+        } else {
+            $sql = "UPDATE {$t} SET Ejecutado = 0, Estado_Restricciones = '0', D_y_E = '0', Materiales = '0', MdeO = '0', Equipos = '0', Predecesora = '0', Pdto_Cons = '0', Modelo = '0' WHERE project_id = ? AND Ejecutado IS NULL AND Semana = ? AND Titulo=0";
+        }
         $this->db->queryWithProject($sql, [$projectId, $semana], $projectId);
     }
 
@@ -336,10 +346,21 @@ final class DatabaseWeekAdministrationRepository implements WeekAdministrationRe
         return $resultado;
     }
 
-    private function maxRowIdConsolidado(int $projectId, string $tablaResuelta): int
+    /**
+     * Siempre resuelve `programa_consolidado` — sus dos llamadores ya solo lo invocaban con ese
+     * tipo de tabla. Antes recibía el nombre ya resuelto como parámetro (`$tablaResuelta`), pero
+     * el audit de callsites (`tests/test_project_scope_callsite_audit.php`) no hace resolución
+     * interprocedural: un parámetro de función nunca queda en su tabla de "strings conocidos",
+     * así que el SQL interpolado con él nunca se resolvía estáticamente. Resolver aquí adentro,
+     * con el mismo tipo fijo que ya tenían ambos llamadores, preserva el comportamiento y deja
+     * el SQL resoluble.
+     */
+    private function maxRowIdConsolidado(int $projectId): int
     {
+        $t = TableResolver::resolve($projectId, 'programa_consolidado');
+
         return (int) $this->db
-            ->queryWithProject("SELECT COALESCE(MAX(row_id), MAX(Consecutivo), 0) FROM {$tablaResuelta} WHERE project_id = ?", [$projectId], $projectId)
+            ->queryWithProject("SELECT COALESCE(MAX(row_id), MAX(Consecutivo), 0) FROM {$t} WHERE project_id = ?", [$projectId], $projectId)
             ->fetchColumn();
     }
 

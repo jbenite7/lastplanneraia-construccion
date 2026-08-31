@@ -217,7 +217,15 @@ function auditResolveString(
     $callNameIndex = $open === null ? null : auditPreviousMeaningful($meaningful, $open - 1);
     $operatorIndex = $callNameIndex === null ? null : auditPreviousMeaningful($meaningful, $callNameIndex - 1);
     $receiverIndex = $operatorIndex === null ? null : auditPreviousMeaningful($meaningful, $operatorIndex - 1);
-    $isTableResolver = $callName === 'resolveByPrefix'
+    // `TableResolver` expone dos entradas públicas de resolución con la misma forma de
+    // confianza: `resolveByPrefix($prefix, $tableType)` para el código orientado a legacy que
+    // ya trae el prefijo, y `resolve($projectId, $tableType)` para el código orientado a
+    // tablas globales que solo trae el projectId (ver docblock de `resolveByPrefix` en
+    // `src/Core/TableResolver.php`: "Útil para código legacy que solo tiene $dbName"). Ambos
+    // validan `$tableType` contra la misma whitelist interna (`self::$validTables`) sin importar
+    // el primer argumento, así que el nivel de confianza es idéntico — el audit solo necesita
+    // resolver `arguments[1]` (el tipo de tabla) igual que ya hace con `resolveByPrefix`.
+    $isTableResolver = in_array($callName, ['resolveByPrefix', 'resolve'], true)
         && $operatorIndex !== null
         && $receiverIndex !== null
         && $meaningful[$operatorIndex]->id === T_DOUBLE_COLON
