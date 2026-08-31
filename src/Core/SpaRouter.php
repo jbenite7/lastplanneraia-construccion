@@ -13,7 +13,17 @@ class SpaRouter
     /** Prefijos que ya sirve la SPA. Crece un renglón por módulo migrado. */
     public const RUTAS_MIGRADAS = ['/app'];
 
-    public static function sirveLaSpa(string $ruta): bool
+    /**
+     * `$rutasMigradas` es un parámetro con valor por defecto, no estado — `sirveLaSpa()` es una
+     * función pura. En producción (`public/index.php:55,387` y cualquier otro llamador) nunca se
+     * pasa el segundo argumento, así que siempre corre contra `RUTAS_MIGRADAS`, el único origen
+     * de verdad. Las pruebas de rollback (Tarea 9, plan T01) ejercitan un mapa hipotético pasando
+     * un array distinto explícitamente, sin tocar ningún estado compartido entre llamadas ni
+     * necesitar restaurar nada después (ver `tests/test_shell_route_map_rollback.php`).
+     *
+     * @param list<string> $rutasMigradas
+     */
+    public static function sirveLaSpa(string $ruta, array $rutasMigradas = self::RUTAS_MIGRADAS): bool
     {
         // La API responde JSON siempre, aunque una ruta migrada exista cerca.
         if (str_starts_with($ruta, '/api/')) {
@@ -25,7 +35,7 @@ class SpaRouter
             return false;
         }
 
-        foreach (self::RUTAS_MIGRADAS as $prefijo) {
+        foreach ($rutasMigradas as $prefijo) {
             if ($ruta === $prefijo || str_starts_with($ruta, $prefijo . '/')) {
                 return true;
             }

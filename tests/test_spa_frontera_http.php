@@ -63,6 +63,13 @@ try {
     comprobarFronteraSpa($loginSpa['codigo'] === 200, "/app/login debe responder el shell, llegó {$loginSpa['codigo']}");
     comprobarFronteraSpa(str_contains($loginSpa['cuerpo'], '<div id="root"></div>'), '/app/login debe devolver el HTML del shell');
 
+    // Refresh / deep-link: pedir directo (sin pasar por el enrutador cliente de React) una
+    // subruta profunda del shell debe devolver el mismo HTML — así se comporta una recarga F5
+    // sobre cualquier pantalla React, no solo sobre /app o /app/login.
+    $deepLink = pedirFronteraSpa("{$base}/app/proyectos/73/semana/6");
+    comprobarFronteraSpa($deepLink['codigo'] === 200, "el deep-link/refresh profundo bajo /app debe responder 200, llegó {$deepLink['codigo']}");
+    comprobarFronteraSpa(str_contains($deepLink['cuerpo'], '<div id="root"></div>'), 'el deep-link/refresh profundo bajo /app debe devolver el HTML del shell');
+
     $assets = glob(__DIR__ . '/../public/app/assets/*');
     $asset = $assets[0] ?? null;
     comprobarFronteraSpa($asset !== null, 'el bundle debe incluir al menos un asset para probar su entrega');

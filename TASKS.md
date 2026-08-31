@@ -40,6 +40,27 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
   navegación React antes de migrar los módulos de programación.
 - [ ] **Definir QA y goldens durante la convivencia:** decidir por cada módulo si su golden PHP se
   archiva o se reemplaza al cruzar a React, y mantener cobertura extremo a extremo en ambos mundos.
+- [ ] **`/programa-general` responde 500 si se entra sin semana en sesión.** Descubierto el
+  2026-08-31 en la Tarea 9 del plan T01 (`docs/superpowers/plans/2026-08-30-t01-shell-runtime-react.md`)
+  al escribir `tests/browser/shell-coexistence-navigation.spec.mjs`: navegar directo a
+  `/programa-general` tras login (sin pasar antes por `changeWeek()`, el helper que fija la semana
+  vía `POST /context/week`) dispara `ProjectSqlGuard::"Alias de tabla de proyecto ambiguo:
+  semanas_activas"` en `src/Security/DataScope/ProjectSqlGuard.php:925`. Reproducir: `login()` +
+  `selectProject()` (o la puerta de desarrollo `/dev/entrar?u=test.R&p=<proyecto>`) y luego
+  `page.goto('/proyectos... /programa-general')` sin ninguna petición previa a
+  `/context/week` — responde 500 en vez del HTML de la vista. El spec de la Tarea 9 lo rodeó
+  navegando a `/proyectos` en su lugar (decisión de alcance correcta, no toca este bug). Ya tiene
+  sesión propia asignada por el coordinador para investigarlo y arreglarlo.
+  **Encuadre de Felipe (2026-08-31), que cambia qué hay que arreglar:** la invariante del producto es
+  que **siempre debe haber una semana**, salvo proyecto nuevo sin su primer cronograma cargado. Luego
+  «sesión sin semana» no es un caso legítimo que haya que soportar con gracia: es un estado que no
+  debería ser alcanzable, y el trabajo es averiguar **por qué se llegó a él**, no solo calificar el
+  alias SQL. Dato que estrecha la búsqueda: `PDC Sandbox E2E` **sí** tiene semanas —el shell React
+  mostraba «Semana 1» en la misma sesión—, así que el proyecto la tiene y la sesión no. Dos hipótesis
+  a discriminar antes de escribir el arreglo: (a) la puerta de servicio no siembra la semana y crea
+  un estado artificial que en producción no ocurriría, o (b) existe un camino real que la pierde.
+  En cualquiera de los dos casos, la pantalla no debe responder 500 nunca: en el único caso legítimo
+  (proyecto nuevo sin cronograma) debe guiar a cargar el primero.
 
 ## Pendiente de decisión: despliegue a producción
 

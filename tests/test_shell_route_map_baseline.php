@@ -65,6 +65,13 @@ foreach ([
     comprobar(!SpaRouter::sirveLaSpa($ruta), "'{$ruta}' es un asset del bundle, no debe devolver el HTML del shell");
 }
 
+// --- Falsos positivos de substring de la propia exclusión de assets: NO empiezan por
+// '/app/assets' + '/' ni son exactamente '/app/assets', así que siguen siendo rutas de
+// pantalla React normales (el prefijo '/app' migrado sí las alcanza). ---
+foreach (['/app/assets2', '/app/asset', '/app/assetsfoo/bar'] as $ruta) {
+    comprobar(SpaRouter::sirveLaSpa($ruta), "'{$ruta}' se parece a la exclusión de assets pero no lo es; React debe servirla");
+}
+
 // --- /api/* excluido incluso anidado bajo una ruta que de otro modo migraría ---
 comprobar(!SpaRouter::sirveLaSpa('/api/app/lo-que-sea'), "'/api/app/lo-que-sea' sigue siendo API, el prefijo /app no aplica dentro de /api/*");
 
