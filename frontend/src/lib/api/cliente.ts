@@ -71,7 +71,16 @@ export async function pedir<T>(
 ): Promise<T> {
   const encabezados = new Headers({ Accept: 'application/json' });
 
-  if (opciones.body) {
+  // `URLSearchParams`/`FormData`/`Blob` ya traen su propio Content-Type correcto
+  // (form-urlencoded, multipart, el suyo propio): fetch lo fija solo. Forzar
+  // `application/json` encima rompería endpoints legado que leen `$_POST`, que PHP
+  // solo puebla para form-urlencoded/multipart, nunca para JSON.
+  const esCuerpoAutodescriptivo =
+    opciones.body instanceof URLSearchParams ||
+    (typeof FormData !== 'undefined' && opciones.body instanceof FormData) ||
+    (typeof Blob !== 'undefined' && opciones.body instanceof Blob);
+
+  if (opciones.body && !esCuerpoAutodescriptivo) {
     encabezados.set('Content-Type', 'application/json');
   }
 

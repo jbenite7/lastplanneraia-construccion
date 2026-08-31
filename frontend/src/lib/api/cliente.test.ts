@@ -56,6 +56,25 @@ test('envía cookies de mismo origen y conserva el header CSRF del llamador', as
   expect(encabezados.get('X-CSRF-Token')).toBe('a'.repeat(64));
 });
 
+test('cuerpo form-urlencoded: URLSearchParams como body NO fuerza Content-Type application/json', async () => {
+  const fetchFalso = vi.fn().mockResolvedValue(
+    new Response(JSON.stringify({ nombre: 'obra' }), { status: 200 }),
+  );
+  vi.stubGlobal('fetch', fetchFalso);
+
+  const cuerpo = new URLSearchParams({ consecutivo: '1', comentario: 'censo' });
+  await pedir('/api/x', esquemaDePrueba, { method: 'POST', body: cuerpo });
+
+  const [, opciones] = fetchFalso.mock.calls[0];
+  const encabezados = new Headers(opciones.headers);
+
+  // `fetch` nativo ya fija `application/x-www-form-urlencoded;charset=UTF-8` solo
+  // porque el body es un URLSearchParams — cliente.ts no debe pisarlo con
+  // `application/json` como hace hoy para cualquier body no vacío.
+  expect(encabezados.get('Content-Type')).not.toBe('application/json');
+  expect(opciones.body).toBe(cuerpo);
+});
+
 test('rechaza un token CSRF que no tenga 64 caracteres hexadecimales', () => {
   const sesion = EsquemaSesion.safeParse({
     authenticated: false,
