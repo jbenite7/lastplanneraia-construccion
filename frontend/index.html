@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Last Planner AIA</title>
     <script>
-      document.documentElement.setAttribute('data-aia-theme', 'light');
+      document.documentElement.setAttribute('data-aia-theme', 'dark');
+      document.documentElement.classList.add('aia-theme-dark');
       try {
         var tema = localStorage.getItem('aia-theme');
-        if (tema === 'dark') {
-          document.documentElement.setAttribute('data-aia-theme', 'dark');
-          document.documentElement.classList.add('aia-theme-dark');
+        if (tema === 'light') {
+          document.documentElement.setAttribute('data-aia-theme', 'light');
+          document.documentElement.classList.remove('aia-theme-dark');
         }
       } catch (error) {}
     </script>

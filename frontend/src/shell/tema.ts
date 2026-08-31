@@ -2,16 +2,30 @@ export type Tema = 'claro' | 'oscuro';
 
 const CLAVE_TEMA = 'aia-theme';
 
+// Tarea 7 (T01): oscuro es el fallback cuando falta preferencia, es inválida o el storage
+// está bloqueado — contrario al fallback claro que caracterizaba el bootstrap original.
+const TEMA_FALLBACK: Tema = 'oscuro';
+
 const temaCss: Record<Tema, 'light' | 'dark'> = {
   claro: 'light',
   oscuro: 'dark',
 };
 
+const temaDesdeValorAlmacenado: Record<'light' | 'dark', Tema> = {
+  light: 'claro',
+  dark: 'oscuro',
+};
+
+function esValorValido(valor: string | null): valor is 'light' | 'dark' {
+  return valor === 'light' || valor === 'dark';
+}
+
 export function leerTemaGuardado(): Tema {
   try {
-    return localStorage.getItem(CLAVE_TEMA) === 'dark' ? 'oscuro' : 'claro';
+    const valor = localStorage.getItem(CLAVE_TEMA);
+    return esValorValido(valor) ? temaDesdeValorAlmacenado[valor] : TEMA_FALLBACK;
   } catch {
-    return 'claro';
+    return TEMA_FALLBACK;
   }
 }
 
