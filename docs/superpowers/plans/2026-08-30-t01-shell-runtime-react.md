@@ -563,6 +563,27 @@ encadenar con `&&`: 11 scripts PHP sueltos, PHPUnit `puro` 115/115, frontend 177
 build, design-system estático 8/8, `css:minify:check`, 6 specs de Playwright (31 pruebas, 9 de ellas
 escenarios axe: 4 viewports × 2 temas + drawer, cero hallazgos serios o críticos) y phpstan.
 
+> **Corrección del 2026-08-31, el mismo día: «24 de 24 verdes» era cierto pero incompleto, y por eso
+> engañoso.** Los 24 gates elegidos pasaron; el problema es que
+> `tests/test_project_scope_callsite_audit.php` **no estaba entre ellos, y nuestro propio código lo
+> rompe**: 20 hallazgos `queryWithProject-sql-no-resuelto`, 19 en
+> `src/Services/Shell/DatabaseWeekAdministrationRepository.php` y 1 en `WeekContextService.php`, los
+> dos archivos que creó la Tarea 5. Medido, no supuesto: extraer el árbol de `385e1242` con
+> `git archive`, enlazarle `vendor/` y correr el mismo test da `OK (0 hallazgos)` — el gate estaba
+> verde antes de este plan. Lo destapó la Tarea 4 de T02, que lo reportó como «preexistente y ajeno»;
+> al comprobarlo resultó ser nuestro.
+>
+> **La causa de fondo no es el descuido de una tarea, es el método.** Todo el plan se ejecutó
+> corriendo los tests PHP *por archivo*, porque el agregador `scripts/run-php-tests.php` está roto
+> desde el 2026-08-29 por un archivo ajeno sin etiqueta de nivel. Se trató esa rotura como una
+> molestia de entorno; en realidad era el único mecanismo que corría los tests que **nadie eligió**.
+> Correr por archivo solo prueba lo que uno se acuerda de probar. El agregador roto no fue un
+> inconveniente: fue lo que dejó pasar una regresión durante nueve tareas.
+>
+> El arreglo se ejecuta dentro de T02 y el gate debe quedar en `OK (0 hallazgos)` antes de que la
+> Entrega 0 llegue a pull request — el test declara `// @requiere: db` y el CI corre `--nivel=http`,
+> que acumula ese nivel, así que en rojo bloquearía el PR.
+
 13 de los 14 criterios de aceptación (T01-AC-01…12 y 14) quedan con evidencia fresca. T01-AC-13 es
 de la Tarea 11 y queda fuera a propósito.
 
