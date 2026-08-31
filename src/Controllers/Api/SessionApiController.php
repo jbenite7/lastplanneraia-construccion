@@ -12,11 +12,19 @@ use App\Security\RbacService;
 use App\View\Components\BiAccessComponent;
 
 /**
- * Estado mínimo de arranque del shell React.
+ * Bootstrap canónico del shell React (spec T01 §8).
  *
  * Esta ruta queda fuera del guard global porque consultar el estado antes de
  * entrar es el flujo normal. Aun así usa el validador central de sesión: una
- * cookie vencida, inactiva o huérfana nunca se presenta como autenticada.
+ * cookie vencida, inactiva, huérfana o de cambio de clave pendiente nunca se
+ * presenta como autenticada.
+ *
+ * `state` solo acepta `anonymous`, `password_change_required` o
+ * `authenticated` (spec §8.2). Los cinco motivos que hoy produce
+ * `SessionMiddleware` (`missing_session`, `timeout`, `inactive`,
+ * `stale_session`, `session_unverified`) viajan todos bajo `state=anonymous`
+ * en `reason`; el cliente decide si eso es "nunca hubo sesión" o "hubo una y
+ * expiró" — ver `frontend/src/lib/api/esquemas/arranque.ts`.
  */
 class SessionApiController
 {
@@ -28,8 +36,10 @@ class SessionApiController
         header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
         $reason = SessionMiddleware::requestFailureReason();
-        if ($reason !== null) {
-            $this->respondAnonymous($reason);
+        $estado = self::estadoParaRazon($reason);
+
+        if (!$estado['authenticated']) {
+            $this->respondNotAuthenticated($estado['state'], $estado['reason']);
 
             return;
         }
@@ -41,7 +51,9 @@ class SessionApiController
             : (new RbacService())->normalizeRole((string) ($_SESSION['permiso'] ?? ''));
 
         echo json_encode([
+            'state' => 'authenticated',
             'authenticated' => true,
+            'reason' => null,
             'user' => [
                 'username' => $usuario,
                 'displayName' => (string) ($_SESSION['nombreUsuario'] ?? $usuario),
@@ -52,13 +64,37 @@ class SessionApiController
             'navigation' => [
                 'bi' => $this->biNavigation($rol),
             ],
+            'week' => $this->activeWeek(),
             'csrfToken' => CsrfTokenManager::generate(self::CSRF_FORM_KEY),
         ]);
     }
 
-    private function respondAnonymous(string $reason): void
+    /**
+     * Mapeo puro razón → estado de arranque. Sin dependencias de sesión ni de
+     * base de datos a propósito: es lo que hace testeable en `puro` el
+     * contrato de `password_change_required`, `inactive` y
+     * `session_unverified` ("fallo recuperable de servidor") sin forzar una
+     * sesión artificial ni una caída real de la base de datos.
+     *
+     * @return array{state:string, authenticated:bool, reason:string|null}
+     */
+    public static function estadoParaRazon(?string $reason): array
+    {
+        if ($reason === null) {
+            return ['state' => 'authenticated', 'authenticated' => true, 'reason' => null];
+        }
+
+        if ($reason === SessionMiddleware::REASON_PASSWORD_CHANGE_REQUIRED) {
+            return ['state' => 'password_change_required', 'authenticated' => false, 'reason' => null];
+        }
+
+        return ['state' => 'anonymous', 'authenticated' => false, 'reason' => $reason];
+    }
+
+    private function respondNotAuthenticated(string $state, ?string $reason): void
     {
         echo json_encode([
+            'state' => $state,
             'authenticated' => false,
             'reason' => $reason,
             'user' => null,
@@ -67,6 +103,7 @@ class SessionApiController
             'navigation' => [
                 'bi' => null,
             ],
+            'week' => null,
             'csrfToken' => CsrfTokenManager::generate(self::CSRF_FORM_KEY),
         ]);
     }
@@ -98,5 +135,29 @@ class SessionApiController
             'id' => $scope->projectId(),
             'name' => (string) $_SESSION['proyecto'],
         ];
+    }
+
+    /**
+     * `null` sin proyecto activo o sin semana elegida (`semana` en sesión es
+     * `0`/ausente): el selector semanal completo — opciones y acciones de
+     * crear/eliminar — lo compone `WeekAdministrationService` en la Tarea 5;
+     * aquí solo viaja la semana actualmente activa, consistente con lo que
+     * `BaseController`/`ContextController` ya guardan en sesión hoy.
+     *
+     * @return array{current:int}|null
+     */
+    private function activeWeek(): ?array
+    {
+        $scope = \Database::getInstance()->dataScope()->current();
+        if (!$scope instanceof ProjectScope) {
+            return null;
+        }
+
+        $semana = (int) ($_SESSION['semana'] ?? 0);
+        if ($semana <= 0) {
+            return null;
+        }
+
+        return ['current' => $semana];
     }
 }

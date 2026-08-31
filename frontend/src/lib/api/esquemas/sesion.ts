@@ -11,7 +11,7 @@ export const EsquemaProyecto = z.object({
   name: z.string(),
 });
 
-const EsquemaNavegacionBi = z.object({
+export const EsquemaNavegacionBi = z.object({
   visible: z.boolean(),
   href: z.string().startsWith('/').nullable(),
 }).refine(

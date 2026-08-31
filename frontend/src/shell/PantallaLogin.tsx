@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { z } from 'zod';
-import { pedir } from '../lib/api/cliente';
+import { ApiError, pedir } from '../lib/api/cliente';
 
 const EsquemaRespuestaLogin = z.object({
   success: z.boolean(),
@@ -44,7 +44,7 @@ export function PantallaLogin({ alEntrar, csrfToken }: PropiedadesPantallaLogin)
 
       await alEntrar();
     } catch (fallo) {
-      setError(fallo instanceof Error && fallo.message.includes('401')
+      setError(fallo instanceof ApiError && fallo.status === 401
         ? 'Usuario o contraseña incorrectos.'
         : 'No pudimos conectar. Intenta de nuevo.');
     } finally {

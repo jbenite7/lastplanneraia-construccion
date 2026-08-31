@@ -12,13 +12,34 @@ function responderSesion(cuerpo: unknown) {
 
 afterEach(() => vi.unstubAllGlobals());
 
-test('sin sesión muestra el login', async () => {
+test('sin sesión (anonymous/missing_session) muestra el login', async () => {
   responderSesion({
+    state: 'anonymous',
     authenticated: false,
+    reason: 'missing_session',
     user: null,
     project: null,
     capabilities: {},
     navigation: { bi: null },
+    week: null,
+    csrfToken,
+  });
+
+  render(<Rutas />);
+
+  await waitFor(() => expect(screen.getByRole('heading', { name: /entrar/i })).toBeInTheDocument());
+});
+
+test('una sesión expirada (timeout) también vuelve al login, no a una pantalla operativa', async () => {
+  responderSesion({
+    state: 'anonymous',
+    authenticated: false,
+    reason: 'timeout',
+    user: null,
+    project: null,
+    capabilities: {},
+    navigation: { bi: null },
+    week: null,
     csrfToken,
   });
 
@@ -29,11 +50,14 @@ test('sin sesión muestra el login', async () => {
 
 test('con sesión pero sin proyecto muestra el selector', async () => {
   responderSesion({
+    state: 'authenticated',
     authenticated: true,
+    reason: null,
     user: { username: 'test.A', displayName: 'Ana', role: 'A' },
     project: null,
     capabilities: { canManageWeeks: true },
     navigation: { bi: null },
+    week: null,
     csrfToken,
   });
 
@@ -44,11 +68,14 @@ test('con sesión pero sin proyecto muestra el selector', async () => {
 
 test('con sesión y proyecto muestra la aplicación', async () => {
   responderSesion({
+    state: 'authenticated',
     authenticated: true,
+    reason: null,
     user: { username: 'test.A', displayName: 'Ana', role: 'A' },
     project: { id: 1, name: 'Da Porto' },
     capabilities: { canManageWeeks: true },
     navigation: { bi: { visible: false, href: null } },
+    week: { current: 6 },
     csrfToken,
   });
 
@@ -70,4 +97,12 @@ test('un error de sesión muestra alerta y permite reintentar sin mostrar el log
   fireEvent.click(screen.getByRole('button', { name: /reintentar/i }));
 
   expect(await screen.findByRole('status')).toHaveTextContent(/cargando/i);
+});
+
+test('un contrato roto (JSON malformado) cae en el mismo estado recuperable que un fallo de red', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{"roto":', { status: 200 })));
+
+  render(<Rutas />);
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(/no pudimos conectar/i);
 });
