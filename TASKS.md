@@ -478,6 +478,19 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] 2026-09-01 — **El sistema de diseño valida escritorio en un ancho que su propio token llama
+  tablet.** `--ds-breakpoint-desktop` vale `1200px` (`public/css/tokens.css:731`), pero `DESIGN.md`,
+  `AGENTS.md` y `docs/design-system/README.md` declaran **1180×820 como viewport canónico de
+  validación** de todo el sistema. Con el token, el ancho en que se valida cae del lado de tablet:
+  se estaría revisando siempre una presentación que ningún usuario de escritorio ve.
+  **No es teórico ni nuevo:** cinco módulos ya lo sortearon escribiendo `1180px` a mano —
+  `handsontable-module.css:343`, `project-selector.css:41`, `programacion-intermedia.css:130`,
+  `programacion-semanal.css:1513,1547` y ahora `auth-react.css:24` — cada uno repitiendo su propia
+  nota explicativa. El sexto va a repetirla otra vez.
+  **Es decisión de diseño, no técnica**, y por eso no la tomé: o el token baja a 1180, o el viewport
+  canónico sube a 1200. Lo que no se sostiene es que difieran. Lo destapó la Tarea 11 de
+  `docs/superpowers/plans/2026-08-30-s01-login-react.md`.
+
 - [ ] 2026-08-31 — **El login tarda distinto según si la cuenta existe, y eso se puede medir desde
   fuera.** `AuthenticationService::verifyCredentials()` devuelve `null` de inmediato cuando el usuario
   no existe, saltándose `password_verify()`; con un usuario que sí existe siempre paga el costo de
