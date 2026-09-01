@@ -5,6 +5,7 @@ namespace App\Controllers\Api;
 use App\Security\CsrfTokenManager;
 use App\Security\RbacService;
 use App\Services\Pdc\DuracionesCatalogoService;
+use App\Services\Pdc\DuracionesObraService;
 use App\Services\Pdc\PasosContratacionService;
 use App\Services\Pdc\PlanFechasService;
 use App\Support\SesionUsuario;
@@ -540,6 +541,68 @@ class PlanComprasPlanController
         $this->ok($this->service->calcular($projectId, $this->usuario()));
     }
 
+    /**
+     * POST /plan-compras/api/plan/duraciones/obra  {duracionRef, dias:{columna: dias}}
+     *
+     * Corrige la duración PARA ESTA OBRA. El catálogo de la empresa no se toca, y por eso ninguna
+     * otra obra cambia: las demás siguen leyendo el catálogo, que sigue diciendo lo mismo.
+     * Recalcula esta obra al terminar, igual que `guardarDuracion()`.
+     */
+    public function guardarDuracionObra(): void
+    {
+        $projectId = $this->guardEditarObra();
+        if ($projectId === null) {
+            return;
+        }
+        $body = $this->body();
+        $ref = $this->refDeEstaObra($projectId, $body['duracionRef'] ?? null);
+        if ($ref === null) {
+            return;
+        }
+        $dias = is_array($body['dias'] ?? null) ? $body['dias'] : null;
+        if ($dias === null) {
+            $this->fail('DIAS_INVALIDOS', 'Falta el detalle de días.', 422);
+            return;
+        }
+        $r = (new DuracionesObraService($this->db))
+            ->guardar($projectId, $ref, $dias, SesionUsuario::resolverId($this->db));
+        if (!$r['ok']) {
+            $this->fail($r['code'] ?? 'DIAS_INVALIDOS', $r['mensaje'] ?? 'No se pudo guardar.', 422);
+            return;
+        }
+        $this->ok($this->service->calcular($projectId, $this->usuario()));
+    }
+
+    /**
+     * POST /plan-compras/api/plan/duraciones/obra/borrar  {duracionRef, columnas:[…]}
+     *
+     * Quita la corrección y la obra vuelve al número de la empresa. No hay migración de vuelta:
+     * borrar la fila ES la vuelta atrás.
+     */
+    public function borrarDuracionObra(): void
+    {
+        $projectId = $this->guardEditarObra();
+        if ($projectId === null) {
+            return;
+        }
+        $body = $this->body();
+        $ref = $this->refDeEstaObra($projectId, $body['duracionRef'] ?? null);
+        if ($ref === null) {
+            return;
+        }
+        $columnas = is_array($body['columnas'] ?? null) ? array_values($body['columnas']) : null;
+        if ($columnas === null) {
+            $this->fail('COLUMNAS_INVALIDAS', 'Falta la lista de pasos que se quieren restablecer.', 422);
+            return;
+        }
+        $r = (new DuracionesObraService($this->db))->borrar($projectId, $ref, $columnas);
+        if (!$r['ok']) {
+            $this->fail($r['code'] ?? 'COLUMNA_INVALIDA', $r['mensaje'] ?? 'No se pudo restablecer.', 422);
+            return;
+        }
+        $this->ok($this->service->calcular($projectId, $this->usuario()));
+    }
+
     /** Responde el 403 y devuelve false si el origen no es una obra que este usuario pueda copiar. */
     private function origenPermitido(PasosContratacionService $svc, int $projectId, int $origenId): bool
     {
@@ -641,6 +704,52 @@ class PlanComprasPlanController
             return null;
         }
         return $projectId;
+    }
+
+    /**
+     * Guard de la EXCEPCIÓN DE OBRA, que no es la misma puerta que el catálogo global.
+     *
+     * `.reglas` protege `general_dias_procesos_contratacion`, el estándar de toda la empresa.
+     * Corregir la duración de una obra no lo toca, así que exige `.editar`. Hoy los dos permisos
+     * viajan juntos en `$allWrite` y no cambia quién puede; cambiará el día que el catálogo se
+     * gobierne desde /admin/ y los dos alcances dejen de coincidir.
+     */
+    private function guardEditarObra(): ?int
+    {
+        if (!(new RbacService($this->db))->can('lps.paquetes_contratacion.editar')) {
+            $this->fail('FORBIDDEN', 'No autorizado para cambiar las duraciones de esta obra.', 403);
+            return null;
+        }
+        $projectId = (int) ($_SESSION['project_id'] ?? 0);
+        if ($projectId <= 0) {
+            $this->fail('NO_PROJECT', 'No hay proyecto activo. Selecciona un proyecto.', 409);
+            return null;
+        }
+        $csrf = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf_token'] ?? '';
+        if (!CsrfTokenManager::validate(is_string($csrf) ? $csrf : '', 'plan_compras_v2')) {
+            $this->fail('CSRF_INVALID', 'Token CSRF inválido o ausente.', 403);
+            return null;
+        }
+        return $projectId;
+    }
+
+    /**
+     * La fila tiene que ser una que ESTA obra use: `duracionRef` llega del cliente, y sin esta
+     * comprobación la pantalla de una obra podría corregir filas que no le tocan.
+     */
+    private function refDeEstaObra(int $projectId, mixed $bruto): ?int
+    {
+        $ref = filter_var($bruto, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($ref === false) {
+            $this->fail('DURACION_INVALIDA', 'Falta la fila del catálogo que se quiere corregir.', 422);
+            return null;
+        }
+        $svc = new DuracionesCatalogoService($this->db);
+        if (!in_array($ref, array_column($svc->deProyecto($projectId), 'duracionRef'), true)) {
+            $this->fail('DURACION_NO_DISPONIBLE', 'Esa duración no la usa ningún paquete de esta obra.', 403);
+            return null;
+        }
+        return $ref;
     }
 
     /**
