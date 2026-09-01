@@ -1809,7 +1809,7 @@ class PlanFechasService
     {
         $rows = $this->db->query(
             "SELECT pp.paquete_id, pp.subpaquete_id, pp.unique_id, pp.fecha_ancla, pp.fecha_arranque,
-                    pp.dias_totales,
+                    pp.dias_totales, pp.duracion_ref,
                     pp.duracion_provisional, pp.responsable_user_id, p.nombre, p.tipo_negociacion,
                     p.modalidad_contratacion, f.frente_nombre,
                     s.nombre AS lote_nombre, s.modalidad_contratacion AS lote_modalidad, s.es_resto,
@@ -1842,6 +1842,19 @@ class PlanFechasService
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         $hoyStr = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $excepciones = (new DuracionesObraService($this->db))->deProyecto($projectId);
+        // paquete_id:subpaquete_id → duracion_ref, para saber qué excepción mira cada paso.
+        $refPorDestino = [];
+        foreach ($rows as $r) {
+            $refPorDestino[(int) $r['paquete_id'] . ':' . (int) $r['subpaquete_id']]
+                = $r['duracion_ref'] === null ? null : (int) $r['duracion_ref'];
+        }
+        // clave del paso → columna legacy. Se casa por CLAVE y no por nombre porque la obra puede
+        // haber renombrado el paso con su alias.
+        $colPorClave = [];
+        foreach (self::PASOS as $pp) {
+            $colPorClave[$pp['clave']] = $pp['col'];
+        }
         $pasos = [];
         foreach ($this->db->query(
             'SELECT pp.paquete_id, pp.subpaquete_id, pp.orden, pp.paso, pp.dias, pp.fecha_inicio,
@@ -1861,6 +1874,14 @@ class PlanFechasService
                 // La identidad del paso, para que el consumidor no tenga que casar por nombre —que la
                 // obra puede haber renombrado con su alias.
                 'clave' => (string) ($p['clave'] ?? ''),
+                'colLegacy' => $colPorClave[(string) ($p['clave'] ?? '')] ?? null,
+                // De dónde sale el número. La pantalla lo muestra para que nadie corrija el estándar
+                // de la empresa creyendo que corrige solo su obra, ni al revés.
+                'origen' => (function () use ($p, $colPorClave, $refPorDestino, $excepciones): string {
+                    $col = $colPorClave[(string) ($p['clave'] ?? '')] ?? null;
+                    $ref = $refPorDestino[(int) $p['paquete_id'] . ':' . (int) $p['subpaquete_id']] ?? null;
+                    return $col !== null && $ref !== null && isset($excepciones[$ref][$col]) ? 'obra' : 'empresa';
+                })(),
                 'fechaReal' => $fechaReal,
                 // El semáforo lo resuelve la MISMA función que el tablero de vencimientos. Es lo único
                 // que garantiza que el color de esta tabla y la lista de la pestaña no se contradigan:
@@ -1898,6 +1919,7 @@ class PlanFechasService
                 'fechaAncla' => (string) $r['fecha_ancla'],
                 'fechaArranque' => (string) $r['fecha_arranque'],
                 'diasTotales' => (int) $r['dias_totales'],
+                'duracionRef' => $r['duracion_ref'] === null ? null : (int) $r['duracion_ref'],
                 'duracionProvisional' => (int) $r['duracion_provisional'] === 1,
                 'responsableUserId' => $r['responsable_user_id'] === null ? null : (int) $r['responsable_user_id'],
                 'responsableNombre' => (string) ($r['responsable_nombre'] ?? ''),
