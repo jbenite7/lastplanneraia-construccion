@@ -137,4 +137,39 @@ final class LpsActionPolicyTest extends TestCase
 
         self::assertTrue($actions['comment']);
     }
+
+    // --- notifyNextBlockReason (Tarea 6, hallazgo de revisión: LpsApiController no debe elegir
+    // el LpsApiError de notifyNext=false por exclusión — la política da el motivo explícito) ---
+
+    public function testRazonDeBloqueoEsForbiddenSinCapacidadDeEditarAunqueElTargetSeaElegible(): void
+    {
+        $razon = $this->policy()->notifyNextBlockReason($this->activityTarget(), false);
+
+        self::assertSame('forbidden', $razon);
+    }
+
+    public function testRazonDeBloqueoEsStaleConAlertaCerrada(): void
+    {
+        $razon = $this->policy()->notifyNextBlockReason($this->alertTarget(level: 2, active: false), true);
+
+        self::assertSame('stale', $razon);
+    }
+
+    public function testRazonDeBloqueoEsTerminalEnNivel5ConAlertaActivaYCapacidad(): void
+    {
+        // Éste es exactamente el caso que motivó el hallazgo: canEdit=true, alerta activa (no
+        // stale) — la única causa que queda es el nivel terminal, y antes cualquiera de estas
+        // tres condiciones caía en CAPABILITY_REQUIRED (403) por ser el "else" por defecto.
+        $razon = $this->policy()->notifyNextBlockReason($this->alertTarget(level: 5, active: true), true);
+
+        self::assertSame('terminal', $razon);
+    }
+
+    public function testRazonDeBloqueoEsNuloCuandoNotifyNextEnRealidadEsVerdadero(): void
+    {
+        $target = $this->alertTarget(level: 3, active: true);
+        self::assertTrue($this->policy()->evaluate($target, true, true, LpsActorEligibility::ELIGIBLE)['notifyNext']);
+
+        self::assertNull($this->policy()->notifyNextBlockReason($target, true));
+    }
 }

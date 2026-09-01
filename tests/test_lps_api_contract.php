@@ -184,6 +184,68 @@ if (!preg_match('/<meta name="lps-drawer-csrf-token" content="([a-f0-9]{64})"/',
 }
 
 // ---------------------------------------------------------------------------
+// Sección 3c (T02 Tarea 6, AC-105..129): crisis/register y crisis/close — validación tipada que
+// falla ANTES de tocar el repositorio de escritura (sin DML: `trigger`/`justificacion` inválidos
+// se rechazan antes de resolver el target, y un target inexistente sólo dispara un SELECT).
+//
+// D E L I B E R A D O: esta sección NO prueba el camino de éxito de crisis/register. A diferencia
+// de comments/add, `actions.notifyNext` (la puerta de registro) NO exige actor compatible con
+// `profesionales` (D-T02-09) — sólo capacidad de edición, que test.R sí tiene. Un
+// consecutivo+modulo+trigger válidos aquí SÍ escribiría en la base (INSERT + 2 UPDATE), violando
+// la restricción global "sin DDL/DML". Ese camino queda cubierto sólo a nivel unitario, con dobles,
+// en tests/unit/LpsCrisisServiceTest.php — ver también task-6-report.md.
+// ---------------------------------------------------------------------------
+
+if (isset($csrfToken)) {
+    [$code, $data] = jsonReq(BASE . '/api/lps/crisis/register', [
+        'consecutivo' => (string) ACTIVIDAD_PG_SEMBRADA,
+        'modulo' => 'PG',
+        'trigger' => 'AUTO-DESCONOCIDO',
+        '_csrf_token' => $csrfToken,
+    ], $jar);
+    afirmar($code === 422, "POST crisis/register con trigger fuera del enum debería responder HTTP 422 (fue $code)");
+    afirmar(($data['error']['code'] ?? null) === 'VALIDATION_FAILED', 'trigger inválido trae error.code=VALIDATION_FAILED (T02-AC-109)');
+    afirmar(array_key_exists('trigger', $data['error']['fields'] ?? []), 'trigger inválido señala el campo "trigger" en error.fields');
+
+    [$code, $data] = jsonReq(BASE . '/api/lps/crisis/register', [
+        'consecutivo' => (string) ACTIVIDAD_PG_SEMBRADA,
+        'modulo' => 'ZZ',
+        'trigger' => 'MANUAL',
+        '_csrf_token' => $csrfToken,
+    ], $jar);
+    afirmar($code === 422, "POST crisis/register con módulo fuera de PG/PI/PS debería responder HTTP 422 (fue $code)");
+    afirmar(($data['error']['code'] ?? null) === 'VALIDATION_FAILED', 'módulo inválido en crisis/register trae error.code=VALIDATION_FAILED');
+
+    [$code, $data] = jsonReq(BASE . '/api/lps/crisis/register', [
+        'alerta_id' => '999999999',
+        'trigger' => 'MANUAL',
+        '_csrf_token' => $csrfToken,
+    ], $jar);
+    afirmar($code === 404, "POST crisis/register con alerta_id inexistente debería responder HTTP 404 (fue $code, sin DML: SELECT sin filas)");
+    afirmar(($data['error']['code'] ?? null) === 'LPS_TARGET_NOT_FOUND', 'alerta inexistente en crisis/register trae error.code=LPS_TARGET_NOT_FOUND');
+
+    [$code, $data] = jsonReq(BASE . '/api/lps/crisis/close', [
+        'alerta_id' => '1',
+        'justificacion' => str_repeat('x', 50),
+        '_csrf_token' => $csrfToken,
+    ], $jar);
+    afirmar($code === 422, "POST crisis/close con justificación corta debería responder HTTP 422 (fue $code)");
+    afirmar(($data['error']['code'] ?? null) === 'VALIDATION_FAILED', 'justificación corta trae error.code=VALIDATION_FAILED (T02-AC-124)');
+    afirmar(array_key_exists('justificacion', $data['error']['fields'] ?? []), 'justificación corta señala el campo "justificacion" en error.fields');
+
+    [$code, $data] = jsonReq(BASE . '/api/lps/crisis/close', [
+        'alerta_id' => '999999999',
+        'justificacion' => str_repeat('x', 100),
+        '_csrf_token' => $csrfToken,
+    ], $jar);
+    afirmar($code === 404, "POST crisis/close con alerta_id inexistente debería responder HTTP 404 (fue $code, sin DML: SELECT sin filas)");
+    afirmar(($data['error']['code'] ?? null) === 'LPS_TARGET_NOT_FOUND', 'alerta inexistente en crisis/close trae error.code=LPS_TARGET_NOT_FOUND');
+} else {
+    $fallos++;
+    echo "FALLO: sección 3c no pudo obtener el token CSRF real (bloque de sección 3b falló antes)\n";
+}
+
+// ---------------------------------------------------------------------------
 // Sección 4: /api/notifications/* — sobre de sesión ausente (sin cookie de sesión)
 // ---------------------------------------------------------------------------
 

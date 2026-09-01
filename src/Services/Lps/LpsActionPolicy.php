@@ -18,10 +18,7 @@ final class LpsActionPolicy
      */
     public function evaluate(LpsTarget $target, bool $canRead, bool $canEdit, string $actorEligibility): array
     {
-        $isAlert = $target->isAlert();
-        $terminal = $isAlert && $target->alertLevel !== null && $target->alertLevel >= self::MAX_LEVEL;
-        $activeAlert = $isAlert && $target->alertActive;
-        $staleAlert = $isAlert && !$target->alertActive;
+        ['terminal' => $terminal, 'staleAlert' => $staleAlert, 'activeAlert' => $activeAlert] = $this->targetState($target);
 
         $actorWriteBlock = match (true) {
             !$canEdit => 'forbidden',
@@ -39,6 +36,42 @@ final class LpsActionPolicy
             'notifyNext' => $canEdit && !($terminal || $staleAlert),
             'close' => $canEdit && $actorWriteBlock === 'none' && $activeAlert,
             'actorWriteBlock' => $actorWriteBlock,
+        ];
+    }
+
+    /**
+     * Distingue POR QUÉ `notifyNext` salió en `false`, para que el llamador (controlador) pueda
+     * elegir el {@see LpsApiError} correcto sin recalcular ni adivinar por exclusión (hallazgo de
+     * revisión de la Tarea 6): `forbidden` es RBAC, `stale` es alerta ya cerrada, `terminal` es
+     * nivel 5 sin superior al que escalar. Null si `notifyNext` en realidad es `true` — llamarlo
+     * en ese caso es un error del llamador, no un estado válido de negocio.
+     *
+     * @return 'forbidden'|'stale'|'terminal'|null
+     */
+    public function notifyNextBlockReason(LpsTarget $target, bool $canEdit): ?string
+    {
+        if (!$canEdit) {
+            return 'forbidden';
+        }
+
+        ['terminal' => $terminal, 'staleAlert' => $staleAlert] = $this->targetState($target);
+
+        return match (true) {
+            $staleAlert => 'stale',
+            $terminal => 'terminal',
+            default => null,
+        };
+    }
+
+    /** @return array{terminal: bool, staleAlert: bool, activeAlert: bool} */
+    private function targetState(LpsTarget $target): array
+    {
+        $isAlert = $target->isAlert();
+
+        return [
+            'terminal' => $isAlert && $target->alertLevel !== null && $target->alertLevel >= self::MAX_LEVEL,
+            'staleAlert' => $isAlert && !$target->alertActive,
+            'activeAlert' => $isAlert && $target->alertActive,
         ];
     }
 }

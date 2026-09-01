@@ -48,6 +48,24 @@ final readonly class LpsApiError
         return new self(409, 'LPS_TARGET_STALE', 'El contexto de la alerta cambió; recarga la actividad.');
     }
 
+    /**
+     * Hueco detectado durante la Tarea 6 (T02-AC-121): nivel terminal (5, Gerente General) sin
+     * superior al que escalar. La spec original (docs/superpowers/specs/
+     * 2026-08-30-t02-contexto-lps-react-design.md §Errores LPS) no traía un código para este
+     * caso — se añadió aquí y se documentó en esa tabla en la misma tarea que lo destapó.
+     *
+     * 409, no 403: no es un problema de permisos (el actor SÍ tiene `lps.programacion_semanal.
+     * editar` y SÍ es elegible) — es un conflicto de estado, igual categoría que
+     * `LPS_TARGET_STALE`/`PROFILE_REQUIRED` (ambos 409): la alerta ya no admite la acción pedida
+     * por su propio estado, no por falta de autorización del actor. Responder 403 le diría a
+     * alguien en medio de una crisis "te falta un permiso" cuando lo que falta es un nivel al que
+     * escalar — un mensaje que lo manda a pedir un permiso que no necesita.
+     */
+    public static function escalationTerminal(): self
+    {
+        return new self(409, 'LPS_ESCALATION_TERMINAL', 'La alerta ya está en el nivel más alto; no hay a quién escalar.');
+    }
+
     public static function profileRequired(): self
     {
         return new self(409, 'PROFILE_REQUIRED', 'La bitácora queda disponible en modo lectura.');

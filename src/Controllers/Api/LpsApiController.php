@@ -7,8 +7,11 @@ use App\Security\RbacService;
 use App\Services\Lps\LpsActionPolicy;
 use App\Services\Lps\LpsActorEligibility;
 use App\Services\Lps\LpsApiError;
+use App\Services\Lps\LpsCrisisService;
+use App\Services\Lps\LpsCrisisTrigger;
 use App\Services\Lps\LpsLegacyActorCompatibilityChecker;
 use App\Services\Lps\LpsLegacyAlertRepository;
+use App\Services\Lps\LpsLegacyCrisisRepository;
 use App\Services\Lps\LpsLegacyGeneralActivityAdapter;
 use App\Services\Lps\LpsLegacyIntermediateActivityAdapter;
 use App\Services\Lps\LpsLegacyThreadRepository;
@@ -19,19 +22,16 @@ use App\Services\Lps\LpsTargetRequest;
 use App\Services\Lps\LpsTargetResolver;
 use App\Services\Lps\LpsThreadPresenter;
 use App\Services\Lps\LpsThreadService;
-use App\Services\LpsService;
 use PDO;
 use Throwable;
 
 class LpsApiController
 {
     private $db;
-    private $lpsService;
 
     public function __construct()
     {
         $this->db = \Database::getInstance();
-        $this->lpsService = new LpsService();
     }
 
     private function getContext(): array
@@ -339,6 +339,16 @@ class LpsApiController
         ], JSON_UNESCAPED_UNICODE);
     }
 
+    /**
+     * POST /api/lps/crisis/register y alias /api/lps/crisis (T02-AC-105..121). El target se
+     * resuelve server-authoritative igual que en `comments`/`addComment` (consecutivo+modulo o
+     * alerta_id); el `trigger` es un enum cerrado (T02-AC-109) y se valida ANTES de tocar el
+     * resolver para no gastar una consulta con un input ya inválido. La puerta de autorización es
+     * `actions.notifyNext`: no exige actor compatible con `profesionales` (T02-AC-100 no aplica
+     * aquí — ver `LpsActionPolicy`), sólo capacidad de edición y que el nivel no sea terminal ni la
+     * alerta esté cerrada (T02-AC-121). El registro es idempotente (T02-AC-111) y nunca cambia de
+     * nivel ni llama `LpsService::escalarAlertasActivas()` (T02-AC-113).
+     */
     public function registerCrisis(): void
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
@@ -351,31 +361,79 @@ class LpsApiController
             return;
         }
 
-        $consecutivo = filter_var($_POST['consecutivo'] ?? 0, FILTER_VALIDATE_INT);
-        $modulo = $_POST['modulo'] ?? '';
-        $trigger = $_POST['trigger'] ?? 'MANUAL';
-
-        if ($consecutivo <= 0 || !in_array($modulo, ['PG', 'PI', 'PS'], true)) {
-            echo json_encode(["respuesta" => "ERROR", "mensaje" => "Módulo y actividad requeridos."], JSON_UNESCAPED_UNICODE);
+        $scope = $this->db->dataScope()->current();
+        if (!$scope instanceof ProjectScope) {
+            $this->renderApiError(LpsApiError::sessionRequired());
             return;
         }
 
-        try {
-            $res = $this->lpsService->registerCrisisAlert(
-                $context['dbPrefix'],
-                $context['proyectoId'],
-                $context['semana'],
-                $consecutivo,
-                $modulo,
-                $trigger,
-            );
+        $trigger = (string) ($_POST['trigger'] ?? LpsCrisisTrigger::MANUAL);
+        if (!LpsCrisisTrigger::isValid($trigger)) {
+            $this->renderApiError(LpsApiError::validationFailed([
+                'trigger' => 'Debe ser MANUAL, SOS-RES, SOS-DIR, SOS-COO o SOS-GER.',
+            ]));
+            return;
+        }
 
-            echo json_encode(["respuesta" => $res ? "OK" : "ERROR", "mensaje" => $res ? "Alerta registrada" : "No se pudo registrar la alerta"], JSON_UNESCAPED_UNICODE);
+        $alertaIdRaw = $_POST['alerta_id'] ?? null;
+        $consecutivoRaw = $_POST['consecutivo'] ?? null;
+        $modulo = (isset($_POST['modulo']) && $_POST['modulo'] !== '') ? strtoupper(trim((string) $_POST['modulo'])) : null;
+        $request = $this->buildTargetRequest($consecutivoRaw, $modulo, $alertaIdRaw, null);
+
+        try {
+            $target = $this->buildTargetResolver($scope, $context['dbPrefix'])->resolve($request);
+
+            $rbac = new RbacService($this->db);
+            $canRead = $rbac->can('lps.programacion_semanal.ver');
+            $canEdit = $rbac->can('lps.programacion_semanal.editar');
+            $eligibility = new LpsActorEligibility(new LpsLegacyActorCompatibilityChecker($this->db, $context['dbPrefix']));
+            $actorEligibility = $eligibility->evaluate($target->projectId, $context['usuarioId'], $canEdit);
+            $actionPolicy = new LpsActionPolicy();
+            $actions = $actionPolicy->evaluate($target, $canRead, $canEdit, $actorEligibility);
+
+            if (!$actions['notifyNext']) {
+                // notifyNext ignora actorEligibility (D-T02-09): sólo lo bloquean RBAC, el nivel
+                // terminal o una alerta ya cerrada (T02-AC-121). El motivo lo da la propia
+                // política (notifyNextBlockReason), no una reconstrucción por exclusión aquí.
+                $error = match ($actionPolicy->notifyNextBlockReason($target, $canEdit)) {
+                    'stale' => LpsApiError::targetStale(),
+                    'terminal' => LpsApiError::escalationTerminal(),
+                    default => LpsApiError::capabilityRequired(),
+                };
+                $this->renderApiError($error);
+
+                return;
+            }
+
+            $service = new LpsCrisisService(new LpsLegacyCrisisRepository($this->db, $context['dbPrefix']));
+            $result = $service->register($target, $trigger);
+
+            echo json_encode([
+                'respuesta' => 'OK',
+                'ok' => true,
+                'mensaje' => 'Alerta registrada',
+                'data' => ['alertId' => $result->alertId, 'wasActive' => $result->wasActive],
+                'target' => $this->targetToArray($target),
+                'meta' => ['requestId' => bin2hex(random_bytes(8))],
+            ], JSON_UNESCAPED_UNICODE);
+        } catch (LpsTargetException $e) {
+            $this->renderApiError($e->apiError());
         } catch (Throwable $t) {
-            echo json_encode(["respuesta" => "ERROR", "mensaje" => $t->getMessage()], JSON_UNESCAPED_UNICODE);
+            // Nunca $t->getMessage(): el detalle de una excepción de infraestructura no es un
+            // mensaje seguro para el cliente.
+            error_log('LpsApiController::registerCrisis — ' . $t->getMessage());
+            $this->renderApiError(LpsApiError::serviceUnavailable());
         }
     }
 
+    /**
+     * POST /api/lps/crisis/close (T02-AC-122..129). La justificación se valida ANTES de resolver
+     * el target (T02-AC-124: trim + mínimo 100 caracteres), así que un `alerta_id` inválido nunca
+     * llega a consultarse cuando la justificación ya reprobó — ninguna de las dos validaciones
+     * toca el repositorio de escritura. La puerta de autorización es `actions.close`, que sí exige
+     * actor elegible y alerta activa (a diferencia de `notifyNext`). Éxito no limpia banderas
+     * localmente en el cliente (T02-AC-128): React recarga el snapshot autoritativo.
+     */
     public function closeCrisis(): void
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
@@ -388,25 +446,68 @@ class LpsApiController
             return;
         }
 
-        $alertaId = filter_var($_POST['alerta_id'] ?? 0, FILTER_VALIDATE_INT);
-        $justificacion = trim($_POST['justificacion'] ?? '');
-
-        if ($alertaId <= 0 || mb_strlen($justificacion) < 100) {
-            echo json_encode(["respuesta" => "ERROR", "mensaje" => "Justificación obligatoria de al menos 100 caracteres."], JSON_UNESCAPED_UNICODE);
+        $scope = $this->db->dataScope()->current();
+        if (!$scope instanceof ProjectScope) {
+            $this->renderApiError(LpsApiError::sessionRequired());
             return;
         }
 
-        try {
-            $res = $this->lpsService->closeCrisisAlert(
-                $context['dbPrefix'],
-                (int) $alertaId,
-                $context['usuarioId'],
-                $justificacion,
-            );
+        $justificacion = trim((string) ($_POST['justificacion'] ?? ''));
+        if (mb_strlen($justificacion) < 100) {
+            $this->renderApiError(LpsApiError::validationFailed([
+                'justificacion' => 'Debe tener al menos 100 caracteres (recortada).',
+            ]));
+            return;
+        }
 
-            echo json_encode(["respuesta" => $res ? "OK" : "ERROR", "mensaje" => $res ? "Crisis mitigada exitosamente" : "No se pudo mitigar la crisis"], JSON_UNESCAPED_UNICODE);
+        $alertaIdRaw = $_POST['alerta_id'] ?? null;
+        $request = $this->buildTargetRequest(null, null, $alertaIdRaw, null);
+
+        try {
+            $target = $this->buildTargetResolver($scope, $context['dbPrefix'])->resolve($request);
+
+            $rbac = new RbacService($this->db);
+            $canRead = $rbac->can('lps.programacion_semanal.ver');
+            $canEdit = $rbac->can('lps.programacion_semanal.editar');
+            $eligibility = new LpsActorEligibility(new LpsLegacyActorCompatibilityChecker($this->db, $context['dbPrefix']));
+            $actorEligibility = $eligibility->evaluate($target->projectId, $context['usuarioId'], $canEdit);
+            $actions = (new LpsActionPolicy())->evaluate($target, $canRead, $canEdit, $actorEligibility);
+
+            if (!$actions['close']) {
+                $error = match (true) {
+                    !$canEdit => LpsApiError::capabilityRequired(),
+                    $actions['actorWriteBlock'] === 'profile_required' => LpsApiError::profileRequired(),
+                    $actions['actorWriteBlock'] === 'forbidden' => LpsApiError::capabilityRequired(),
+                    default => LpsApiError::targetStale(), // canEdit + actor elegible pero alerta ya no activa
+                };
+                $this->renderApiError($error);
+
+                return;
+            }
+
+            $service = new LpsCrisisService(new LpsLegacyCrisisRepository($this->db, $context['dbPrefix']));
+            $closed = $service->close($target, $context['usuarioId'], $justificacion);
+
+            if (!$closed) {
+                // Carrera perdida: la alerta se cerró entre la validación de actions.close y este
+                // punto. Mismo código que "ya no activa" — el cliente recarga igual.
+                $this->renderApiError(LpsApiError::targetStale());
+                return;
+            }
+
+            echo json_encode([
+                'respuesta' => 'OK',
+                'ok' => true,
+                'mensaje' => 'Crisis mitigada exitosamente',
+                'data' => ['alertId' => $target->alertId],
+                'target' => $this->targetToArray($target),
+                'meta' => ['requestId' => bin2hex(random_bytes(8))],
+            ], JSON_UNESCAPED_UNICODE);
+        } catch (LpsTargetException $e) {
+            $this->renderApiError($e->apiError());
         } catch (Throwable $t) {
-            echo json_encode(["respuesta" => "ERROR", "mensaje" => $t->getMessage()], JSON_UNESCAPED_UNICODE);
+            error_log('LpsApiController::closeCrisis — ' . $t->getMessage());
+            $this->renderApiError(LpsApiError::serviceUnavailable());
         }
     }
 }
