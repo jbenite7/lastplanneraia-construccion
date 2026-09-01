@@ -56,6 +56,39 @@ vienen después.
   inválida o el almacenamiento falla, aplicado antes del primer pintado. Claro conserva controles y
   comportamiento idénticos.
 
+### Añadido: contexto LPS, cajón contextual y bandeja de avisos — T02-A (2026-08-31)
+
+Segunda pieza de la Entrega 0. Construye el contexto compartido que las pantallas de programación
+usarán para abrir restricciones, comentar y escalar, sin que ninguna tenga que reimplementarlo.
+
+- **Reglas del dominio LPS en un solo sitio:** restricciones, ITR, severidad, diagnóstico y resumen
+  salen del JavaScript antiguo a módulos propios, probados contra el original. Se conservaron tal cual
+  sus rarezas —incluidos dos niveles de escalamiento que colisionan— para que después se sepa qué
+  cambió por el traslado y qué por una corrección.
+- **El servidor decide el objetivo y las acciones:** qué actividad o alerta se abre, y si quien mira
+  puede comentar, cerrar o escalar, se resuelve en el servidor a partir de la sesión y la membresía.
+  El navegador no inventa autoridad.
+- **Hilo de comentarios normalizado:** raíces y respuestas de un solo nivel, menciones como metadato,
+  y una respuesta que sirve a la vez a las pantallas antiguas y a las nuevas desde una sola lectura.
+- **Crisis y simulación endurecidas:** registrar y cerrar una crisis nunca dispara el escalamiento
+  masivo, y la simulación no muta nada.
+- **Bandeja de avisos** con su servicio propio, aislado de la base de datos.
+
+### Corregido: marcar un aviso como leído no exigía token de seguridad (2026-08-31)
+
+El endpoint que marca avisos como leídos aceptaba peticiones sin token CSRF. Ahora lo exige, como el
+resto de las mutaciones del shell. Verificado que no rompe nada: el cliente antiguo se autodesactiva
+cuando no encuentra sus anclajes, y ninguna vista los dibuja ya — con el aviso escrito en ese mismo
+archivo para quien vuelva a activarlos algún día.
+
+### Corregido: la barra lateral se veía rota (2026-08-31)
+
+Desde que se le añadió el bloque de semana, el encabezado repartía mal su espacio: «Last Planner AIA»
+se componía una letra por línea y el nombre del proyecto quedaba invisible. Además el menú se
+desbordaba y se pintaba encima del conmutador de tema y del botón de cuenta. Ambos corregidos y
+cubiertos por una prueba que mide el resultado en un navegador real, porque ninguna prueba anterior
+podía verlo.
+
 ### Corregido: texto ilegible del menú lateral en tema claro (2026-08-31)
 
 El panel lateral conserva fondo oscuro aunque la página pase a tema claro, pero el texto de sus

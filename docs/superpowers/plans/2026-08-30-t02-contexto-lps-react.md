@@ -1025,18 +1025,85 @@ rollback. Apply the same fetch/integrate/reverify/push/PR/CI gate.
 
 ### T02-A
 
-**Estado de ejecución:** no iniciado. La plataforma y sus pruebas aún no se han implementado. Al
-ejecutar, registrar:
+**T02-A cerrado el 2026-08-31.** Tareas 1–11 ejecutadas en la rama `shell-minimo-react`, cada una con
+revisión independiente antes de commitear. **T02-R (Tarea 12, retiro de `drawer_unificado.php` y
+`lps_drawer.js`) sigue diferido y NO se ejecutó** — el censo sigue dando cuatro consumidores vivos,
+que es exactamente la condición que el plan puso para no borrar.
 
-- SHA inicial/verificado:
-- commits y tareas:
-- PHP/frontend/browser outputs y códigos:
-- caller census de compatibilidad:
-- oscuro/claro/responsive/Axe:
-- DDL/DML/datos:
-- diffs Admin/RLS/database:
-- rollback:
-- PR/CI/publicación:
+### Commits (17, de `9205de16` a `2e59e1f3`)
+
+Diff total: 115 archivos, +11.812 / −172.
+
+| SHA | Qué |
+|---|---|
+| `94139be0` | 1 — censo de propiedad, rutas y consumidores |
+| `195d6c8f` | 2 — el transporte respeta el Content-Type de cuerpos autodescriptivos |
+| `8fd71e48` | 3 — dominio LPS portado a TypeScript puro |
+| `fb3887ce` | 4 — objetivo con alcance y frontera de acciones |
+| `8e83a705` | 5 — hilo, comentarios, respuestas y menciones |
+| `26e9a3f3` | 6 — crisis, simulación y contrato de escalamiento |
+| `3d585c7d` | 7 — pasarelas de validación |
+| `63a8e20c` | 8 — proveedor y cajón contextual |
+| `334585dd` | 9 — bandeja de notificaciones con CSRF y aislamiento real |
+| `52336714` | 10 — costura de los cuatro consumidores sin tocar datos |
+| `2e59e1f3` | 11 — reparación del censo |
+| `e403cc13`, `9d11aa6c`, `013fd7d6`, `40f8ef14` | correcciones de regresiones propias y de método (ver abajo) |
+| `11da5adb`, `344a6199` | anotaciones de retiro y de código sin llamador |
+
+### Evidencia (`.superpowers/sdd/2026-08-30-t02-contexto-lps-react/task-11-report.md`)
+
+10 comandos de gate, **8 verdes**, cada código de retorno leído por separado: pruebas de frontend
+(496), typecheck, PHPUnit de unidad, contrato de la API LPS (65 aserciones), contrato de
+notificaciones (50), CSRF, phpstan y `git diff --check`.
+
+Los **2 rojos** están explicados, no encubiertos: uno era el propio censo, roto por su diseño y ya
+reparado en `2e59e1f3`; el otro son dos pruebas de navegador que no existen — ver salvedad 3.
+
+Invariantes de alcance verificados: diffs vacíos en `admin/`, `src/Security/DataScope/`,
+`docs/security/` y `database/`; árbol limpio; cero DDL/DML como evidencia.
+
+### Salvedades que este cierre NO tapa
+
+1. **Nada de T02 es alcanzable todavía en la aplicación.** Medido en navegador real: `/app` monta el
+   shell sin rutas hijas — «ninguna superficie migrada todavía». La evidencia demuestra **lógica,
+   contratos, estados y accesibilidad en pruebas**; **no** demuestra que el cajón o la bandeja
+   funcionen dentro de un módulo real. Los módulos que los consumirán llegan en Entregas posteriores.
+2. **La bandeja de notificaciones no está cableada al shell.** Su cableado existe, pero está apartado
+   en la rama `wip-cableado-bandeja` esperando una decisión de producto: montada y desplegada dejaba
+   **2 de 10 entradas de menú visibles** a 1180×820 con sesión real de Admin, porque un aviso legible
+   exige 256 px de alto. Este cierre no afirma que la bandeja esté integrada.
+3. **Faltan las dos pruebas de navegador que el plan pedía** (`t02-lps-drawer-react.spec.mjs` y
+   `t02-lps-notifications-react.spec.mjs`). No se escribieron porque exigirían montar un disparador de
+   producto, prohibido por el brief de la Tarea 10. Hueco declarado, no cubierto: no hay evidencia de
+   navegador de responsive, tema ni accesibilidad para los cuatro consumidores.
+4. **Lo que la Tarea 10 demuestra, con precisión:** que desde un contexto bien tipado hasta la red no
+   se filtra ningún dato crudo de la fila. **No** demuestra que un adaptador real produzca un contexto
+   correcto, porque ningún adaptador real existe aún.
+5. **27 pruebas PHP rojas y 8 avisos de phpstan preexistentes y ajenos** al frente
+   (`MissingProjectScope`, del frente de seguridad anterior a esta rama). Verificados contra el árbol
+   base. Contexto, no deuda propia.
+
+### Regresiones propias detectadas y corregidas durante el frente
+
+Se registran porque su valor está en cómo se encontraron, no en que existieran:
+
+- **El audit de alcance de proyecto** llevaba 20 infracciones nuestras desde T01, invisibles porque el
+  agregador de pruebas estaba roto y todo se corría archivo por archivo — es decir, se probaba lo que
+  alguien recordaba. Arreglado (`e403cc13`) enseñándole al audit un método que no conocía, no
+  silenciándolo; y arreglada la causa de fondo (`9d11aa6c`).
+- **La barra lateral estaba rota en dos ejes** desde que T01 le añadió el bloque de semana: el título
+  se componía una letra por línea y el menú se pintaba encima del pie. Solo se vio al abrir la
+  aplicación (`013fd7d6`).
+- **El CSS del cajón no estaba importado en ninguna parte**, así que ninguna de sus reglas llegaba al
+  navegador — lo que hacía invisible cualquier defecto de ese archivo (dentro de `63a8e20c`).
+- **El cierre de T01-A afirmaba «24 de 24 verdes»** sin incluir el gate que nuestro propio código
+  rompía. Corregido (`40f8ef14`).
+
+El patrón común: ninguna la detectó una prueba automática. Las encontró abrir la aplicación y mirarla,
+o desconfiar de una afirmación y medirla.
+
+Sin push, PR ni despliegue desde este plan: el trabajo vive en la rama y se publica con el cierre de
+la Entrega 0.
 ### T02-R
 
 **Estado de ejecución:** diferido por diseño hasta que S05, S07, S08 y S25 estén publicados. Esto no
