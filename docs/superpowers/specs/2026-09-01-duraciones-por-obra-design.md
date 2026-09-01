@@ -164,7 +164,7 @@ escritura de `pdc_plan_paso`. La excepción cambia una entrada del cálculo, no 
 
 | Verbo y ruta | Permiso | Qué hace |
 |---|---|---|
-| `GET /plan-compras/api/plan/duraciones` | `.reglas` (sin cambio) | Sigue sirviendo el editor del catálogo; **gana por cada número su valor vigente y su origen** (`empresa` \| `obra`) |
+| `GET /plan-compras/api/plan/duraciones` | `.reglas` (sin cambio) | **No cambia.** Sigue sirviendo el editor del catálogo de la empresa, tal como está |
 | `POST /plan-compras/api/plan/duraciones/obra` | **`.editar`** | `{duracionRef, dias:{columna: dias}}` — guarda la excepción y recalcula esta obra |
 | `DELETE /plan-compras/api/plan/duraciones/obra` | **`.editar`** | `{duracionRef, columnas:[…]}` — borra la excepción, vuelve el estándar y recalcula |
 
@@ -175,6 +175,11 @@ Validaciones obligatorias, todas con prueba:
 3. `columna` contra la lista blanca de `columnasLegacy()`. Va interpolada como nombre de columna en SQL: sin el filtro, es una inyección.
 4. `dias` entero ≥ 0.
 5. CSRF del ámbito `plan_compras_v2`, como el resto de mutaciones del módulo.
+
+**Corregido el 2026-09-01, al escribir el plan.** La versión aprobada de esta tabla decía que el
+`GET` ganaba «el valor vigente y su origen». Sobra: ese endpoint alimenta la pantalla de Pasos, que
+por la decisión T1 no cambia, y el origen que la pantalla del Plan necesita viaja en la respuesta
+del plan, no aquí. Tocarlo habría sido trabajo sin consumidor.
 
 ## 8. La pantalla
 
