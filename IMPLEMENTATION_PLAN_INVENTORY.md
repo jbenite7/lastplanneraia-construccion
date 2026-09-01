@@ -10,7 +10,7 @@ resumen: "Catálogo del trabajo fechado: cada spec de diseño con el plan que la
 project: lps-aia
 type: plan-inventory
 status: activo
-updated: 2026-08-24
+updated: 2026-08-31
 ---
 # Registro de trabajo
 
@@ -41,15 +41,49 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_143 trabajos · 53 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_177 trabajos · 83 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
 | Trabajo | Documentos | Archivado |
 |---|---|---|
+| S01 — Login React | [[docs/superpowers/specs/2026-08-30-s01-login-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s01-login-react|plan]] | — |
+| S02 — Recuperar contraseña en React | [[docs/superpowers/specs/2026-08-30-s02-recuperar-clave-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s02-recuperar-clave-react|plan]] | — |
+| S03 — Restablecer contraseña en React | [[docs/superpowers/specs/2026-08-30-s03-restablecer-clave-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s03-restablecer-clave-react|plan]] | — |
+| S04 — Selector de proyectos en React | [[docs/superpowers/specs/2026-08-30-s04-selector-proyectos-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s04-selector-proyectos-react|plan]] | — |
+| S05 — Programa General en React | [[docs/superpowers/specs/2026-08-30-s05-programa-general-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s05-programa-general-react|plan]] | — |
+| S06 — Actualizar Cronograma en React | [[docs/superpowers/specs/2026-08-30-s06-actualizar-cronograma-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s06-actualizar-cronograma-react|plan]] | — |
+| S07 — Programación Intermedia en React | [[docs/superpowers/specs/2026-08-30-s07-programacion-intermedia-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s07-programacion-intermedia-react|plan]] | — |
+| S08 — Programación Semanal en React | [[docs/superpowers/specs/2026-08-30-s08-programacion-semanal-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s08-programacion-semanal-react|plan]] | — |
+| S09 — Causas de No Programación en React | [[docs/superpowers/specs/2026-08-30-s09-cnp-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s09-cnp-react|plan]] | — |
+| S10 — Causas de No Cumplimiento en React | [[docs/superpowers/specs/2026-08-30-s10-cnc-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s10-cnc-react|plan]] | — |
+| S11 — Calificacion Integral de Contratistas en React | [[docs/superpowers/specs/2026-08-30-s11-cic-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s11-cic-react|plan]] | — |
+| S12 — Plan de Compras v2 en la SPA React principal | [[docs/superpowers/specs/2026-08-30-s12-plan-compras-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s12-plan-compras-react|plan]] | — |
+| S13 — Profesionales en React | [[docs/superpowers/specs/2026-08-30-s13-profesionales-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s13-profesionales-react|plan]] | — |
+| S14 — Subcontratistas e Interesados Externos en React | [[docs/superpowers/specs/2026-08-30-s14-subcontratistas-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s14-subcontratistas-react|plan]] | — |
+| S15 — Control de Cambios en React | [[docs/superpowers/specs/2026-08-30-s15-control-cambios-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s15-control-cambios-react|plan]] | — |
+| S16 — Indicadores LPS en React | [[docs/superpowers/specs/2026-08-30-s16-indicadores-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s16-indicadores-react|plan]] | — |
+| S17 — Resumen Ejecutivo de Control Tower en React | [[docs/superpowers/specs/2026-08-30-s17-bi-control-tower-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s17-bi-control-tower-react|plan]] | — |
+| S18 — Hoja BI Programa General en React | [[docs/superpowers/specs/2026-08-30-s18-bi-programa-general-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s18-bi-programa-general-react|plan]] | — |
+| S19 — Hoja BI Curva S en React | [[docs/superpowers/specs/2026-08-30-s19-bi-curva-s-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s19-bi-curva-s-react|plan]] | — |
+| S20 — Hoja BI Intermedia en React | [[docs/superpowers/specs/2026-08-30-s20-bi-intermedia-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s20-bi-intermedia-react|plan]] | — |
+| S21 — Hoja BI Programacion Semanal en React | [[docs/superpowers/specs/2026-08-30-s21-bi-semanal-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s21-bi-semanal-react|plan]] | — |
+| S22 — Hoja BI Plan de Compras en React | [[docs/superpowers/specs/2026-08-30-s22-bi-pdc-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s22-bi-pdc-react|plan]] | — |
+| S23 — Hoja BI Proveedores en React | [[docs/superpowers/specs/2026-08-30-s23-bi-contratistas-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s23-bi-contratistas-react|plan]] | — |
+| S24 — Hoja BI Responsables en React | [[docs/superpowers/specs/2026-08-30-s24-bi-responsables-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s24-bi-responsables-react|plan]] | — |
+| S25 — Escalamientos en React | [[docs/superpowers/specs/2026-08-30-s25-escalamientos-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s25-escalamientos-react|plan]] | — |
+| S26 — Design System en React | [[docs/superpowers/specs/2026-08-30-s26-design-system-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-s26-design-system-react|plan]] | — |
+| S27 — Landing redirect de /dashboard | [[docs/superpowers/specs/2026-08-30-s27-dashboard-landing-redirect-design|spec]] · [[docs/superpowers/plans/2026-08-30-s27-dashboard-landing-redirect|plan]] | — |
+| T01 — Shell y runtime React | [[docs/superpowers/specs/2026-08-30-t01-shell-runtime-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-t01-shell-runtime-react|plan]] | — |
+| T02 — Contexto LPS, drawer y notificaciones compartidas | [[docs/superpowers/specs/2026-08-30-t02-contexto-lps-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-t02-contexto-lps-react|plan]] | — |
+| T03 — Marco compartido de Control Tower BI en React | [[docs/superpowers/specs/2026-08-30-t03-marco-bi-react-design|spec]] · [[docs/superpowers/plans/2026-08-30-t03-marco-bi-react|plan]] | — |
+| RLS Runtime Boundary Implementation Plan | [[docs/superpowers/plans/2026-08-29-rls-runtime-boundary|plan]] | — |
 | Fase cero de temas y forma | [[docs/superpowers/plans/2026-08-28-fase-cero-temas-y-forma|plan]] | — |
 | Forma, bordes, radios y relieves — spec en construcción | [[docs/superpowers/specs/2026-08-28-forma-bordes-radios-relieves-design|spec]] | — |
-| Migración a React + TypeScript — diseño v0.1 | [[docs/superpowers/specs/2026-08-28-migracion-react-typescript-design|spec]] | — |
+| Migración integral a React + TypeScript — diseño v0.1 | [[docs/superpowers/specs/2026-08-28-migracion-react-typescript-design|spec]] | — |
+| Paridad funcional del shell React Implementation Plan | [[docs/superpowers/plans/2026-08-28-paridad-shell-react|plan]] | — |
+| Paridad del shell React y RLS — diseño | [[docs/superpowers/specs/2026-08-28-paridad-shell-react-rls-design|spec]] | — |
+| RLS fail-closed en la aplicación Implementation Plan | [[docs/superpowers/plans/2026-08-28-rls-aplicacion-fail-closed|plan]] | — |
 | Shell mínimo React | [[docs/superpowers/plans/2026-08-28-shell-minimo-react|plan]] | — |
 | Temas claro y oscuro end to end — spec en construcción | [[docs/superpowers/specs/2026-08-28-temas-claro-oscuro-end-to-end-design|spec]] | — |
 | Ola 1 — La Torre escribe · Etapa piloto · Plan de implementación | [[docs/superpowers/plans/2026-08-26-ola1-torre-etapa-piloto|plan]] | — |
@@ -305,3 +339,23 @@ La única **pendiente** sin rastro de ejecución: `organizar-la-casa` (2026-08-1
 
 El estado de ejecución vive aquí y en el informe; el frontmatter de las specs conserva su
 vocabulario documental (`vigente`/`cerrado`) a propósito.
+
+## Lote de migración a React — auditoría del 2026-08-31
+
+El catálogo de arriba ya emparejaba spec y plan de S01–S26 y T01–T03 (29 pares, generados por
+`scripts/wiki-registro.mjs`), pero antes de esta pasada solo dos filas de shell mínimo estaban
+registradas y ninguna traía estado de ejecución. Se leyó la sección `## Cierre` de cada uno de los
+29 planes (`docs/superpowers/plans/2026-08-30-*-react.md`) y se cruzó con `git log` sobre esos
+archivos.
+
+**Las 29 son propuesto: ningún par tiene implementación.** S01–S04 no traen siquiera sección
+`## Cierre` (terminan en `Completion Gate`/`Explicit Non-Goals`, que documentan el criterio futuro,
+no un cierre alcanzado); S05–S26 y T01–T03 sí la traen y todas dicen lo mismo con sus propias
+palabras: «plan escrito y autorrevisado; implementación no iniciada», sin commits, DDL/DML, cambios
+RLS, PR ni deploy. `git log --all` sobre los 29 archivos solo devuelve `385e1242` y `ee1db095`,
+ambos de cerrar la **documentación** (normalizar metadatos, cerrar planificación), no de ejecutar
+código — consistente con la restricción explícita de cada plan («Documentation phase only now: do
+not implement, commit, push, publish or deploy»).
+
+No hay estado intermedio que registrar: no es que falte marcar «ejecutado» en algunos, es que
+ninguno de los 29 lo está.
