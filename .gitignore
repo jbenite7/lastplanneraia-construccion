@@ -299,6 +299,7 @@ tests/browser/*
 !tests/browser/pdc-v2-historial.spec.mjs
 !tests/browser/pdc-v2-desamarrar.spec.mjs
 !tests/browser/pdc-v2-pasos.spec.mjs
+!tests/browser/pdc-v2-duraciones-obra.spec.mjs
 !tests/browser/pdc-v2-sin-scroll-x.spec.mjs
 !tests/browser/pdc-v2-vencimientos.spec.mjs
 !tests/browser/entrypoint-segmentation-dryrun.mjs

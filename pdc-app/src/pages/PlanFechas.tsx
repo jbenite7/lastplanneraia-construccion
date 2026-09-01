@@ -51,6 +51,7 @@ import {
   uniqueIdPorEtiquetaFrente,
   valorResponsableMostrado,
 } from '../lib/planFechas'
+import { esCorregido, validarDias } from '../lib/duracionesObra'
 import { etiquetaMovimiento, resumenDelta } from '../lib/reprogramacion'
 import { claseCorte, etiquetaCorte } from '../lib/vencimientos'
 import type { AnclaDisponible, MotivoSinPropuesta, PanelCorrespondencias, Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResponsableElegible, ResumenPaquetes, SimulacionReprogramacion, SugerenciaFrente } from '../lib/types'
@@ -341,6 +342,36 @@ export default function PlanFechas() {
     try {
       const r = await apiPost<{ calculados: number; sinDuracion: number }>('/plan-compras/api/plan/calcular', {})
       dispatch({ type: 'LISTO', mensaje: mensajeCalculo(r) })
+      cargar()
+    } catch (e) {
+      dispatch({ type: 'FALLO', mensaje: mensajeError(e) })
+    }
+  }
+
+  /**
+   * A4.2 — la obra corrige la duración de un paso.
+   *
+   * Recarga entera y no solo la fila: el servidor recalcula TODO el plan de la obra, así que las
+   * fechas de otros paquetes que compartan esa fila del catálogo también se movieron. Refrescar
+   * solo la fila dejaría el resto de la pantalla mostrando fechas que ya no son.
+   */
+  const onGuardarDuracionObra = async (duracionRef: number, columna: string, dias: number) => {
+    dispatch({ type: 'OCUPADO' })
+    try {
+      await apiPost('/plan-compras/api/plan/duraciones/obra', { duracionRef, dias: { [columna]: dias } })
+      dispatch({ type: 'LISTO', mensaje: 'Duración guardada para esta obra.' })
+      cargar()
+    } catch (e) {
+      dispatch({ type: 'FALLO', mensaje: mensajeError(e) })
+      cargar()   // el campo vuelve a mostrar lo que el servidor tiene, no lo que se tecleó
+    }
+  }
+
+  const onRestablecerDuracionObra = async (duracionRef: number, columna: string) => {
+    dispatch({ type: 'OCUPADO' })
+    try {
+      await apiPost('/plan-compras/api/plan/duraciones/obra/borrar', { duracionRef, columnas: [columna] })
+      dispatch({ type: 'LISTO', mensaje: 'Este paso vuelve a la duración de la empresa.' })
       cargar()
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: mensajeError(e) })
@@ -849,6 +880,12 @@ export default function PlanFechas() {
       {filaExpandida && (
         <div className="pdc-plan-detalle" data-testid="pdc-plan-detalle">
           <h3>Pasos de «{filaExpandida.nombre}»</h3>
+          {/* Dice lo CONTRARIO que el aviso del catálogo de pasos, y a propósito: allá se cambia el
+              estándar de la empresa, aquí solo esta obra. */}
+          <p className="pdc-sub" data-testid="pdc-plan-pasos-alcance">
+            Estos días son de esta obra: cambiarlos mueve las fechas de este paquete aquí, y no
+            toca a las demás obras.
+          </p>
           <table className="pdc-plan-pasos">
             <thead>
               {/* «Hasta», no «Fin»: el intervalo de cada paso es medio abierto —esa fecha es la
@@ -860,7 +897,42 @@ export default function PlanFechas() {
             <tbody>
               {filaExpandida.pasos.map((p) => (
                 <tr key={p.orden}>
-                  <td>{p.paso}</td><td>{p.dias}</td><td>{p.fechaInicio}</td><td>{p.fechaFin}</td>
+                  <td>{p.paso}</td>
+                  <td className={esCorregido(p.origen) ? 'pdc-dias-obra' : undefined}>
+                    <input
+                      type="number"
+                      min={0}
+                      /* Remonta cuando el servidor devuelve otro número: el campo no es controlado,
+                         así que sin esta clave restablecer dejaría en pantalla el valor viejo. */
+                      key={`${p.orden}-${p.dias}-${p.origen}`}
+                      className="pdc-dias-input"
+                      data-testid={`pdc-plan-paso-dias-${p.orden}`}
+                      defaultValue={p.dias}
+                      disabled={filaExpandida.duracionRef === null || p.colLegacy === null}
+                      aria-label={`Días de «${p.paso}»${esCorregido(p.origen) ? ', corregido por esta obra' : ', valor de la empresa'}`}
+                      onBlur={(e) => {
+                        const v = validarDias(e.target.value)
+                        if (!v.ok) {
+                          dispatch({ type: 'FALLO', mensaje: v.motivo })
+                          e.target.value = String(p.dias)
+                          return
+                        }
+                        if (v.dias === p.dias) return
+                        void onGuardarDuracionObra(filaExpandida.duracionRef as number, p.colLegacy as string, v.dias)
+                      }}
+                    />
+                    {esCorregido(p.origen) && (
+                      <button
+                        type="button"
+                        className="pdc-paq-secundario"
+                        data-testid={`pdc-plan-paso-restablecer-${p.orden}`}
+                        onClick={() => void onRestablecerDuracionObra(filaExpandida.duracionRef as number, p.colLegacy as string)}
+                      >
+                        Volver al de la empresa
+                      </button>
+                    )}
+                  </td>
+                  <td>{p.fechaInicio}</td><td>{p.fechaFin}</td>
                   {/* El corte lo decide el servidor con la misma función que la pestaña de
                       Vencimientos: aquí solo se le pone color y palabra. Calcularlo en el navegador
                       sería la forma más fácil de que la lista y el color acaben diciendo cosas
