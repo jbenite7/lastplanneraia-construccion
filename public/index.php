@@ -43,7 +43,7 @@ if (file_exists(PROJECT_ROOT . '/.env')) {
 }
 
 // 3.5 Verificar Sesión y Timeout (Protección Universal)
-$publicRoutes = ['/', '/login', '/login/cancelar', '/password/forgot', '/password/reset', '/password/update', '/api/session', '/api/auth/login', '/api/auth/logout', '/runtime/frontend-config.js', '/runtime/css/aia-design-system.css', '/runtime/css/design-system/lab-entrypoint.css', '/runtime/css/design-system/entrypoints/core.css', '/runtime/css/design-system/entrypoints/attach-jquery-ui.css', '/runtime/css/design-system/entrypoints/attach-anychart.css', '/runtime/css/design-system/entrypoints/attach-select2.css', '/runtime/css/design-system/entrypoints/attach-sweetalert2.css', '/runtime/css/design-system/entrypoints/attach-handsontable.css', MaintenanceMode::SECRET_PATH];
+$publicRoutes = ['/', '/login', '/login/cancelar', '/password/forgot', '/password/reset', '/password/update', '/api/session', '/api/auth/login', '/api/auth/logout', '/api/auth/password/change', '/api/auth/password/cancel', '/runtime/frontend-config.js', '/runtime/css/aia-design-system.css', '/runtime/css/design-system/lab-entrypoint.css', '/runtime/css/design-system/entrypoints/core.css', '/runtime/css/design-system/entrypoints/attach-jquery-ui.css', '/runtime/css/design-system/entrypoints/attach-anychart.css', '/runtime/css/design-system/entrypoints/attach-select2.css', '/runtime/css/design-system/entrypoints/attach-sweetalert2.css', '/runtime/css/design-system/entrypoints/attach-handsontable.css', MaintenanceMode::SECRET_PATH];
 
 // Puerta de servicio de desarrollo: solo existe si el candado triple lo permite
 // (APP_ENV development/testing + petición local + DEV_DOOR=1). Ver src/Core/DevDoor.php.
@@ -159,6 +159,8 @@ $router->get('/control-cambios', [\App\Controllers\Integracion\ControlCambiosCon
 $router->get('/api/session', [\App\Controllers\Api\SessionApiController::class, 'show']);
 $router->post('/api/auth/login', [\App\Controllers\Api\AuthApiController::class, 'login']);
 $router->post('/api/auth/logout', [\App\Controllers\Api\AuthApiController::class, 'logout']);
+$router->post('/api/auth/password/change', [\App\Controllers\Api\AuthApiController::class, 'changePassword']);
+$router->post('/api/auth/password/cancel', [\App\Controllers\Api\AuthApiController::class, 'cancelPasswordChange']);
 $router->get('/api/proyectos', [\App\Controllers\Api\ProjectApiController::class, 'index']);
 $router->post('/api/proyectos/seleccionar', [\App\Controllers\Api\ProjectApiController::class, 'select']);
 

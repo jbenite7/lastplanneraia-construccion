@@ -184,7 +184,7 @@ class LoginController
 
         $password = $_POST['password'] ?? '';
         $confirm = $_POST['confirm_password'] ?? '';
-        $usuario = $_SESSION['usuario'] ?? $_SESSION['usuario_temp'];
+        $usuario = self::identidadParaCambioDeClave();
 
         header('Content-Type: application/json');
 
@@ -222,6 +222,24 @@ class LoginController
             echo json_encode(['success' => false, 'message' => 'Error al actualizar la contraseña: ' . $e->getMessage()]);
         }
         exit();
+    }
+
+    /**
+     * Identidad a la que aplica un cambio de contraseña en curso.
+     *
+     * Prioriza `usuario_temp` sobre `usuario`: cuando ambos coexisten (un cambio obligatorio
+     * pendiente sobre una sesión que además conserva una identidad completa previa), la
+     * pendiente es la que el usuario está intentando resolver. Priorizar `usuario` en su lugar
+     * —el bug original, corregido en la Tarea 5 de S01— le cambiaría la contraseña a la cuenta
+     * equivocada.
+     */
+    private static function identidadParaCambioDeClave(): ?string
+    {
+        if (isset($_SESSION['usuario_temp'])) {
+            return (string) $_SESSION['usuario_temp'];
+        }
+
+        return isset($_SESSION['usuario']) ? (string) $_SESSION['usuario'] : null;
     }
 
     private function userHasGlobalAdminRole(string $usuario): bool
