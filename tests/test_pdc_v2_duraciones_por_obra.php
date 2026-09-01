@@ -7,6 +7,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 
 use App\Services\Pdc\DuracionesObraService;
+use App\Services\Pdc\PasosContratacionService;
+use App\Services\Pdc\PlanFechasService;
 
 $failures = [];
 $assert = static function (bool $c, string $m) use (&$failures): void {
@@ -67,6 +69,88 @@ $assert($r['ok'] === true && $svcObra->deProyecto($P) === [],
     'Borrar la corrección devuelve la obra al catálogo de la empresa.');
 
 $limpiar();
+
+echo "=== la obra manda sobre la empresa ===\n";
+$refl = new \ReflectionMethod(PlanFechasService::class, 'proyectar');
+$assert($refl->getNumberOfParameters() === 7,
+    'proyectar() acepta las excepciones. Tiene ' . $refl->getNumberOfParameters() . ' parámetros.');
+$assert($refl->getParameters()[5]->getName() === 'excepciones',
+    'El sexto parámetro de proyectar() se llama $excepciones.');
+
+$fuentePlan = file_get_contents(__DIR__ . '/../src/Services/Pdc/PlanFechasService.php');
+$assert(substr_count($fuentePlan, 'DuracionesObraService($this->db))->deProyecto($projectId)') === 2,
+    'calcular() y simularReprogramacion() cargan las excepciones. Si solo una lo hace, la '
+    . 'simulación promete fechas distintas de las que el cálculo escribe.');
+
+// La resolución en sí es aritmética sobre dos arrays y se prueba sin base.
+$catalogo = ['diasFabricacion' => 180, 'diasLegalizacionContrato' => 30];
+$resolver = static function (array $paq, array $exc): array {
+    foreach ($exc as $col => $d) { if (array_key_exists($col, $paq)) { $paq[$col] = $d; } }
+    return $paq;
+};
+$assert($resolver($catalogo, [])['diasFabricacion'] === 180,
+    'Sin excepción manda el número de la empresa.');
+$assert($resolver($catalogo, ['diasFabricacion' => 120])['diasFabricacion'] === 120,
+    'Con excepción manda el número de la obra.');
+$assert($resolver($catalogo, ['diasFabricacion' => 120])['diasLegalizacionContrato'] === 30,
+    'La excepción de un paso no toca los demás pasos.');
+
+echo "=== la misma fila del catálogo, dos obras, resultados distintos ===\n";
+$cols = PasosContratacionService::columnasLegacy();
+$selectCols = ', ' . implode(', ', array_map(static fn (string $c): string => 'd.' . $c, $cols));
+$pasosSint = [];
+foreach (PlanFechasService::PASOS as $i => $p) {
+    $pasosSint[] = [
+        'pasoId' => $i + 1, 'clave' => $p['clave'], 'nombre' => $p['paso'],
+        'colLegacy' => $p['col'], 'diasFijos' => null, 'peso' => null,
+    ];
+}
+
+// Una fila del catálogo y un paquete que la usa. Las DOS obras comparten ambos: si el aislamiento
+// fallara, la corrección de una se vería en la otra. Los siete números suman 33.
+$db->query(
+    "INSERT INTO general_dias_procesos_contratacion (paqueteContratacion, tipoPaquete,
+        diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos,
+        diasLegalizacionContrato, diasFabricacion, diasInsumosObra)
+     VALUES ('ZZTEST OBRA DUR', 'a_todo_costo', 3, 2, 7, 4, 5, 10, 2)",
+);
+$refSint = (int) $db->lastInsertId();
+$db->query(
+    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion,
+        modalidad_contratacion, duracion_ref, activo, creado_por, created_at)
+     VALUES ('ZZTEST OBRA DUR', 'zztest obra dur', 'a_todo_costo', 'contrato', ?, 1, 'test-dur-obra', NOW())",
+    [$refSint],
+);
+$paqSint = (int) $db->lastInsertId();
+
+// `proyectar()` es privado a propósito: lo que se prueba es su contrato, no su visibilidad.
+$proyectar = new \ReflectionMethod(PlanFechasService::class, 'proyectar');
+$proyectar->setAccessible(true);
+$plan = new PlanFechasService($db);
+$correr = static fn (array $exc): int => (int) $proyectar->invoke(
+    $plan, $paqSint, '2026-12-31', $pasosSint, [], $selectCols, $exc,
+)['total'];
+
+try {
+    $sinNada = $correr([]);
+    $assert($sinNada === 33, 'Sin correcciones el proceso dura lo del catálogo: 33 días. Dio ' . $sinNada);
+
+    $obraQueCorrige = $correr([$refSint => ['diasFabricacion' => 15]]);
+    $assert($obraQueCorrige === 38,
+        'La obra que corrigió Fabricación de 10 a 15 pasa a 38 días. Dio ' . $obraQueCorrige);
+
+    $obraQueNoCorrige = $correr([]);
+    $assert($obraQueNoCorrige === 33,
+        'Y la otra obra, con el MISMO paquete y la MISMA fila del catálogo, sigue en 33. Dio '
+        . $obraQueNoCorrige);
+
+    $otraFila = $correr([$refSint + 100000 => ['diasFabricacion' => 15]]);
+    $assert($otraFila === 33,
+        'Una corrección sobre otra fila del catálogo no afecta a este paquete. Dio ' . $otraFila);
+} finally {
+    $db->query('DELETE FROM general_paquetes_contratacion WHERE creado_por = ?', ['test-dur-obra']);
+    $db->query("DELETE FROM general_dias_procesos_contratacion WHERE paqueteContratacion = 'ZZTEST OBRA DUR'");
+}
 
 echo $failures === [] ? "\nOK\n" : "\n" . count($failures) . " fallo(s)\n";
 exit($failures === [] ? 0 : 1);

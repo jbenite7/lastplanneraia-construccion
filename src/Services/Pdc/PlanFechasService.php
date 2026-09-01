@@ -1301,6 +1301,8 @@ class PlanFechasService
      *
      * @param list<array{pasoId:?int,clave:string,nombre:string,colLegacy:?string,diasFijos:?int,peso:?float}> $pasos
      * @param array<string, int> $medianas
+     * @param array<int, array<string,int>> $excepciones duracionRef => [columna => días], las
+     *        correcciones de ESTA obra. Se anteponen al catálogo global.
      * @return array{arranque:string,total:int,dias:list<int>,provisional:bool,duracionRef:?int}|null
      *         null si el paquete está inactivo o su modalidad ya no genera proceso de contratación
      */
@@ -1310,6 +1312,7 @@ class PlanFechasService
         array $pasos,
         array $medianas,
         string $selectCols,
+        array $excepciones = [],
         ?string $modalidadDestino = null,
     ): ?array {
         // Cuando el destino es un LOTE, la modalidad que decide si hay proceso es la suya y no la del
@@ -1332,6 +1335,21 @@ class PlanFechasService
         )->fetch(\PDO::FETCH_ASSOC);
         if ($paq === false) {
             return null;
+        }
+
+        // La obra corrige; la empresa es el valor por defecto. Va ANTES del cálculo de
+        // `$desgloseCompleto` a propósito: una obra debe poder dar un número donde el catálogo tiene
+        // NULL, y ese es justamente uno de los casos útiles. Aplicada después, el paquete ya se
+        // habría marcado provisional y la corrección no serviría de nada.
+        $ref = $paq['duracion_ref'] === null ? null : (int) $paq['duracion_ref'];
+        if ($ref !== null && isset($excepciones[$ref])) {
+            foreach ($excepciones[$ref] as $col => $dias) {
+                // Solo columnas que esta consulta trajo: `$selectCols` pide únicamente las que la
+                // obra usa, y escribir una clave que no vino inventaría una columna en el array.
+                if (array_key_exists($col, $paq)) {
+                    $paq[$col] = $dias;
+                }
+            }
         }
 
         // «Sin duración» se decide por las columnas del desglose que ESTA obra usa, no por
@@ -1405,6 +1423,8 @@ class PlanFechasService
         $modalidadPorLote = $this->modalidadPorLote($projectId);
         $medianas = $this->medianasPorTipo();
         $pasos = $this->pasos->deProyecto($projectId);
+        // Una sola consulta por obra, fuera del bucle: `proyectar()` consulta por paquete.
+        $excepciones = (new DuracionesObraService($this->db))->deProyecto($projectId);
         // Las columnas legacy que ESTA obra necesita, no las siete siempre. `columnasLegacy()` es la
         // lista blanca: `colLegacy` viene de la base y aquí se interpola como nombre de columna.
         $cols = [];
@@ -1431,6 +1451,7 @@ class PlanFechasService
                 $pasos,
                 $medianas,
                 $selectCols,
+                $excepciones,
                 $modalidadPorLote[$subpaqueteId] ?? null,
             );
             if ($pr === null) {
@@ -2058,6 +2079,7 @@ class PlanFechasService
 
         $medianas = $this->medianasPorTipo();
         $pasos = $this->pasos->deProyecto($projectId);
+        $excepciones = (new DuracionesObraService($this->db))->deProyecto($projectId);
         self::exigirIdentidad($pasos);
         $cols = [];
         foreach ($pasos as $p) {
@@ -2081,7 +2103,7 @@ class PlanFechasService
                 ];
                 continue;
             }
-            $pr = $this->proyectar($d['paqueteId'], $d['fechaActual'], $pasos, $medianas, $selectCols);
+            $pr = $this->proyectar($d['paqueteId'], $d['fechaActual'], $pasos, $medianas, $selectCols, $excepciones);
             if ($pr === null) {
                 // Inactivo o sin proceso de contratación: `calcular()` tampoco lo tocaría, así que
                 // prometer un delta que luego no se aplicaría sería mentir en pantalla.
