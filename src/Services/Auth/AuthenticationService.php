@@ -54,10 +54,18 @@ class AuthenticationService
         return null;
     }
 
-    /** @param array<string, mixed> $user */
+    /**
+     * Simétrico a `beginAuthenticatedSession()`: limpia toda identidad y contexto de
+     * proyecto previos antes de abrir la sesión temporal, para que un re-login sobre una
+     * sesión ya completa no deje `usuario` y `usuario_temp` coexistiendo.
+     *
+     * @param array<string, mixed> $user
+     */
     public function beginPasswordChange(string $usuario, array $user): void
     {
         $this->regenerateSessionId();
+        unset($_SESSION['usuario']);
+        $this->clearProjectContext();
         $_SESSION['usuario_temp'] = $usuario;
         $_SESSION['nombreUsuario'] = (string) ($user['nombre'] ?? '');
         $_SESSION['must_change_password'] = true;
@@ -71,6 +79,24 @@ class AuthenticationService
         $_SESSION['nombreUsuario'] = (string) ($user['nombre'] ?? '');
         unset($_SESSION['usuario_temp']);
         unset($_SESSION['must_change_password']);
+        $this->clearProjectContext();
+    }
+
+    /**
+     * Promueve la sesión pendiente de cambio de contraseña a sesión completa. Exige que
+     * `$username` coincida con `usuario_temp`: es la guardarraíl que impide promover una
+     * identidad distinta a la que quedó pendiente.
+     */
+    public function completePasswordChange(string $username): void
+    {
+        $pending = (string) ($_SESSION['usuario_temp'] ?? '');
+        if ($pending === '' || !hash_equals($pending, $username)) {
+            throw new \LogicException('La sesión no corresponde al cambio pendiente.');
+        }
+
+        $this->regenerateSessionId();
+        $_SESSION['usuario'] = $username;
+        unset($_SESSION['usuario_temp'], $_SESSION['must_change_password']);
         $this->clearProjectContext();
     }
 
