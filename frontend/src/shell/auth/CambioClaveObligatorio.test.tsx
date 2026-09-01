@@ -326,3 +326,13 @@ test('Shift+Tab en el primer control del diálogo vuelve al último (foco atrapa
 
   expect(ultimo).toHaveFocus();
 });
+
+// --- presentación responsive (Tarea 11) -----------------------------------------------
+
+test('S01-T11: el diálogo trae la clase de panel móvil sin perder aia-modal-surface ni el atrapa-foco', () => {
+  render(<CambioClaveObligatorio {...propiedades()} />);
+
+  const dialogo = screen.getByRole('dialog');
+  expect(dialogo).toHaveClass('aia-modal-surface');
+  expect(dialogo).toHaveClass('aia-auth__dialog');
+});

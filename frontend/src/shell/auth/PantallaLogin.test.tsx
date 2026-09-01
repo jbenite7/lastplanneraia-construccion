@@ -48,6 +48,14 @@ test('S01-UX-01: MarcoAcceso trae un único h1, marca, tema y pie', () => {
   );
 });
 
+test('S01-T11: MarcoAcceso trae el scope de presentación responsive sin perder las primitivas del shell', () => {
+  const { container } = render(<PantallaLogin {...propiedades()} />);
+
+  const raiz = container.querySelector('.aia-shell');
+  expect(raiz).toHaveClass('aia-auth');
+  expect(container.querySelector('main.aia-page')).toHaveClass('aia-auth__layout');
+});
+
 test('S01-UX-02: el enlace de recuperación de contraseña sigue apuntando a la ruta PHP', () => {
   render(<PantallaLogin {...propiedades()} />);
 

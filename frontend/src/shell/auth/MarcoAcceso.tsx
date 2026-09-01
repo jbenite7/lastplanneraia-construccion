@@ -22,6 +22,11 @@ type PropiedadesMarcoAcceso = {
  * el skip link (mismo patrón de foco explícito que `AppShell`, ver su comentario),
  * la marca, el `ConmutadorTema` y el pie — nunca más de un `<main>` ni de un `<h1>`
  * por pantalla.
+ *
+ * `aia-auth`/`aia-auth__layout` (Tarea 11) son clases **añadidas**, nunca sustitutas,
+ * de las primitivas `aia-shell`/`aia-page`: acotan la hoja `public/css/auth-react.css`
+ * a esta pantalla, porque `frontend/index.html` es el documento de toda la SPA y sin
+ * ese scope la disposición de dos paneles se filtraría a pantallas no relacionadas.
  */
 export function MarcoAcceso({ titulo, idTitulo, children }: PropiedadesMarcoAcceso) {
   const contenidoRef = useRef<HTMLElement>(null);
@@ -32,7 +37,7 @@ export function MarcoAcceso({ titulo, idTitulo, children }: PropiedadesMarcoAcce
   }, []);
 
   return (
-    <div className="aia-shell">
+    <div className="aia-shell aia-auth">
       <a className="aia-skip-link" href={`#${ID_CONTENIDO_ACCESO}`} onClick={alSaltarAlContenido}>
         Saltar al contenido
       </a>
@@ -42,7 +47,7 @@ export function MarcoAcceso({ titulo, idTitulo, children }: PropiedadesMarcoAcce
         <ConmutadorTema />
       </header>
 
-      <main id={ID_CONTENIDO_ACCESO} ref={contenidoRef} className="aia-page" tabIndex={-1}>
+      <main id={ID_CONTENIDO_ACCESO} ref={contenidoRef} className="aia-page aia-auth__layout" tabIndex={-1}>
         <section className="aia-card">
           <h1 id={idTitulo}>{titulo}</h1>
           {children}

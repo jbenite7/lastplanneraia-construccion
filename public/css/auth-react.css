@@ -1,0 +1,97 @@
+/*
+ * Presentación responsive de las pantallas de acceso React (S01, Tarea 11).
+ *
+ * Ámbito: `.aia-auth` es el único punto de entrada, montado por `MarcoAcceso`
+ * (frontend/src/shell/auth/MarcoAcceso.tsx) junto a `.aia-shell`, nunca en su
+ * lugar. `frontend/index.html` es el documento de toda la SPA — no solo el de
+ * acceso — así que sin este scope una regla aquí se filtraría a las pantallas
+ * que se monten después de S02/S03. Todo lo demás (`.aia-shell`, `.aia-page`,
+ * `.aia-card`, `.aia-btn`, `.aia-input`, `.aia-modal-surface`, `.aia-dialog`)
+ * ya es primitiva del sistema (`core.css`) y no se repite aquí — esta hoja
+ * solo aporta la disposición de dos paneles en desktop/wide y el ajuste de
+ * panel móvil del diálogo de cambio de clave, siempre por encima de esas
+ * primitivas gracias al orden de capas (`module` va después de `components`).
+ *
+ * Cuatro layouts. Mobile/tablet/wide toman el breakpoint de `--ds-breakpoint-*`
+ * (tokens.css) expresado en rem; desktop NO usa `--ds-breakpoint-desktop`
+ * (1200px) a propósito — el viewport canónico de validación de todo el sistema
+ * es 1180×820 (DESIGN.md §6, "Diseña y valida solo en desktop... 1180x820") y
+ * el brief de esta tarea pide dos paneles exactamente ahí. Con 1200px el propio
+ * viewport canónico se hubiera quedado en una columna, un desajuste medido al
+ * verificar en el navegador integrado antes de cerrar la tarea:
+ *   - mobile  (< 48rem / 768px): una columna, diálogo como panel de borde a borde.
+ *   - tablet  (>= 48rem): una columna con más aire — "contexto reducido".
+ *   - desktop (>= 73.75rem / 1180px): dos paneles.
+ *   - wide    (>= 90rem / 1440px): dos paneles, con más margen para el panel de apoyo.
+ */
+
+@layer module {
+  .aia-auth {
+    min-block-size: 100dvh;
+  }
+
+  .aia-auth__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ds-space-8);
+    align-items: start;
+  }
+
+  /* Objetivos táctiles de la superficie de acceso: el core ya los aplica a
+     `.aia-btn`/`.aia-input`, esto cubre los enlaces de texto plano
+     ("¿Olvidaste tu contraseña?", "Actualizar sesión" en línea) que no llevan
+     esa clase. */
+  .aia-auth :where(a) {
+    min-block-size: var(--ds-target-min);
+    display: inline-flex;
+    align-items: center;
+  }
+
+  @media (min-width: 48rem) {
+    .aia-auth__layout {
+      gap: var(--ds-space-12);
+    }
+  }
+
+  @media (min-width: 73.75rem) {
+    .aia-auth__layout {
+      grid-template-columns: minmax(0, 1.1fr) minmax(20rem, 0.9fr);
+      align-items: center;
+      min-block-size: calc(100dvh - 2 * var(--ds-page-padding));
+    }
+  }
+
+  @media (min-width: 90rem) {
+    .aia-auth__layout {
+      grid-template-columns: minmax(0, 1.2fr) minmax(24rem, 0.8fr);
+    }
+  }
+
+  /* Panel móvil del diálogo de cambio de clave obligatorio: a partir de aquí
+     el `<dialog>` deja de ser tarjeta flotante (tratamiento genérico de
+     `.aia-dialog .aia-modal-surface` en `core.css`, que ya lo baja a hoja
+     inferior con `max-height: 80dvh`) y pasa a panel de borde a borde a toda
+     la altura — refina el mismo elemento, no lo duplica: `module` cae después
+     de `components` en el orden de capas, así que gana por cascada normal, sin
+     forzar la especificidad. La trampa de foco y el aislamiento del `<dialog>`
+     (CambioClaveObligatorio.tsx) no cambian: esto es solo geometría. */
+  @media (max-width: 24.375rem) {
+    .aia-auth__dialog {
+      inline-size: 100%;
+      max-width: 100%;
+      min-block-size: 100dvh;
+      max-height: 100dvh;
+      margin: 0;
+      border-radius: var(--ds-radius-none);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aia-auth,
+    .aia-auth * {
+      scroll-behavior: auto;
+      transition-duration: 0.01ms;
+      animation-duration: 0.01ms;
+    }
+  }
+}

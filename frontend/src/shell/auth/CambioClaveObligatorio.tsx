@@ -92,6 +92,11 @@ function clasificarErrorCambio(causa: unknown): EstadoErrorCambio {
  * "Actualizar y continuar"). El fondo del diálogo es inocuo a propósito: no se le
  * añade ningún manejador de clic, así que un clic fuera no hace nada — perder la
  * sesión por un clic mal puesto sería demasiado fácil.
+ *
+ * **Tarea 11:** `aia-auth__dialog` es una clase añadida (no sustituta) sobre
+ * `aia-modal-surface`, puramente de geometría (`public/css/auth-react.css`) para
+ * que el panel se presente a toda pantalla bajo 390px. No toca `showModal()`, la
+ * trampa de foco ni el aislamiento del `<dialog>`.
  */
 export function CambioClaveObligatorio({ csrfToken, alCompletar, alSalir }: PropiedadesCambioClaveObligatorio) {
   const [password, setPassword] = useState('');
@@ -247,7 +252,7 @@ export function CambioClaveObligatorio({ csrfToken, alCompletar, alSalir }: Prop
         <dialog
           ref={dialogoRef}
           open={SOPORTA_DIALOGO_MODAL ? undefined : true}
-          className="aia-modal-surface"
+          className="aia-modal-surface aia-auth__dialog"
           aria-modal="true"
           aria-labelledby={confirmandoSalida ? 'titulo-confirmacion-salida-clave' : ID_TITULO}
           onCancel={alCancelarNativo}
