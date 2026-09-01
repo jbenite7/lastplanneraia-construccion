@@ -32,6 +32,15 @@ import {
 const DIRECTORIO_CANDIDATOS = path.join('test-output', 's01-login-candidates');
 const GOLDENS_APROBADOS = process.env.S01_GOLDENS_APROBADOS === '1';
 
+/**
+ * El nombre del archivo lo fija el contrato ejecutable del sistema de diseño, no el gusto de
+ * esta suite: `scripts/design-system-contracts.mjs` exige que cada golden declarado en un
+ * manifiesto termine en `-<theme>-<ancho>x<alto>.png` con el tema en el vocabulario del
+ * manifiesto (`dark`/`light`). Con `-oscuro-`/`-claro-` el gate falla, y con razón: el nombre
+ * es lo que ata la imagen a la fila del manifiesto que la declara.
+ */
+const TEMA_EN_MANIFIESTO = { oscuro: 'dark', claro: 'light' };
+
 /** Deja la pantalla de acceso anónima quieta y lista para capturar. */
 async function prepararPantallaDeAcceso(page, tema, viewport) {
   await page.setViewportSize({ width: viewport.width, height: viewport.height });
@@ -47,15 +56,16 @@ async function prepararPantallaDeAcceso(page, tema, viewport) {
 
 for (const tema of TEMAS) {
   for (const viewport of VIEWPORTS) {
-    const nombre = `login-${tema}-${viewport.nombre}`;
+    const nombre = `login-${TEMA_EN_MANIFIESTO[tema]}-${viewport.nombre}`;
 
+    // `fullPage` queda descartado a propósito: el mismo contrato comprueba que el PNG mida
+    // exactamente el viewport declarado, y una captura de página completa lo excede (a
+    // 1180×820 salía de 1180×976). El candidato usa el mismo encuadre que el golden para que
+    // lo que se aprueba sea literalmente lo que se congela.
     test(`candidate ${nombre}`, async ({ page }) => {
       await prepararPantallaDeAcceso(page, tema, viewport);
       await mkdir(DIRECTORIO_CANDIDATOS, { recursive: true });
-      await page.screenshot({
-        path: path.join(DIRECTORIO_CANDIDATOS, `${nombre}.png`),
-        fullPage: true,
-      });
+      await page.screenshot({ path: path.join(DIRECTORIO_CANDIDATOS, `${nombre}.png`) });
     });
 
     test(`golden ${nombre}`, async ({ page }) => {
@@ -64,7 +74,7 @@ for (const tema of TEMAS) {
         'Baseline pendiente de la aprobación visual explícita de Felipe (S01 Tarea 14, paso 3).',
       );
       await prepararPantallaDeAcceso(page, tema, viewport);
-      await expect(page).toHaveScreenshot(`${nombre}.png`, { fullPage: true });
+      await expect(page).toHaveScreenshot(`${nombre}.png`);
     });
   }
 }

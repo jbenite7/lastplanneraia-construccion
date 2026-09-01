@@ -241,6 +241,21 @@ test.describe('acceso React — accesibilidad en la matriz', () => {
         expect(medidas.overflow).toBeLessThanOrEqual(1);
         expect(medidas.objetivosPequenos).toBe(0);
 
+        // El pie tiene que verse. El documento va con `overflow: hidden`, así que un contenido
+        // más alto que la ventana no produce scroll: se recorta y se pierde, sin síntoma. Pasó
+        // exactamente eso a 1180×820 y 1440×900 — pie a 889px con ventana de 820, `scrollY`
+        // clavado en 0 y cero píxeles visibles — y ninguna comprobación lo vio, porque la de
+        // arriba mide desbordamiento HORIZONTAL. Un elemento que existe en el DOM pero que
+        // nadie puede alcanzar es, para el usuario, un elemento que no está.
+        const pieVisible = await page.evaluate(() => {
+          const pie = document.querySelector('footer');
+          if (!pie) return null;
+          window.scrollTo(0, document.documentElement.scrollHeight);
+          const caja = pie.getBoundingClientRect();
+          return Math.max(0, Math.min(caja.bottom, window.innerHeight) - Math.max(caja.top, 0));
+        });
+        expect(pieVisible).toBeGreaterThan(0);
+
         // Foco visible: el elemento enfocado debe dibujar algún anillo, no perderse en la página.
         await page.getByLabel('Usuario').focus();
         const anillo = await page.evaluate(() => {
