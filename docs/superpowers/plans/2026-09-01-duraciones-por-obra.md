@@ -13,8 +13,15 @@
 ## Restricciones globales
 
 - **Rama y base.** Todo el trabajo va en `fix/pdc-duraciones-pasos`, worktree `.claude/worktrees/produccion`, anclada al commit **desplegado en producción** `6fa3cff10b7011ec1cb0001dbd00f4bbd2a8cb0b`. **No mezclar con `main`**, que va 457 commits por delante.
-- **El contenedor sirve la raíz del repo, no el worktree.** `docker-compose.override.yml` monta la raíz por ruta absoluta. Para que las pruebas de navegador midan ESTE código: `LPS_CODE_ROOT="$(pwd)" docker compose up -d app`, y devolverlo a la raíz al terminar. Sin esto se verifica el código equivocado — es el fallo medido el 2026-08-18.
-- **`.env` es un enlace**, ya creado en este worktree. Sin él `docker compose` resuelve `${DB_NAME}` a cadena vacía y todo muere con «Access denied for user ''».
+- **TODO se corre en el stack del espejo, nunca en el compartido.** Desde el 2026-09-01 este frente tiene su propio entorno completo: `docker-compose.espejo.yml`, proyecto `lps-espejo-prod`, app en **8083**, base en **3308**, con una **copia verificada de la base de producción** (104 tablas, ocho conteos comparados exactos contra el origen). El prefijo de cualquier comando es:
+
+  ```bash
+  docker compose -f docker-compose.espejo.yml --env-file .env.espejo exec -T app php <lo que sea>
+  ```
+
+  **Nunca `docker compose exec app`.** Ese es el stack compartido: sirve `main`, tiene aplicadas todas sus migraciones, y lo está usando otra sesión. El código de este frente es 457 commits anterior y no conoce ese esquema, así que probar ahí produce verdes y rojos que no significan nada — y de paso le mueve el suelo a la otra sesión. **Donde el texto de una tarea diga `docker compose exec app`, léase el prefijo de arriba.** Tampoco hace falta ya `LPS_CODE_ROOT`: el compose del espejo monta este worktree por ruta absoluta, así que no existe forma de verificar contra el árbol equivocado.
+- **`.env.espejo` guarda las credenciales del espejo** y no se versiona (`.gitignore: .env*`). Sin él el stack no levanta. `.env` a secas sigue siendo el enlace al de la raíz y apunta a la base **compartida**; por eso el compose del espejo inyecta `DB_NAME`, `DB_USER` y `DB_PASS` como variables de contenedor, que `Dotenv::createImmutable()` no puede sobrescribir.
+- **La base del espejo tiene datos reales de obra.** No se publica, no sale del disco, y su volumen se borra con `down -v` al cerrar el frente.
 - **Las siete columnas legacy**, lista blanca de todo el plan, salen de `PasosContratacionService::columnasLegacy()`, derivada de `PlanFechasService::PASOS`: `diasElaboracionPliegos`, `diasEntregaPliegos`, `diasReciboPropuestas`, `diasCuadrosComparativos`, `diasLegalizacionContrato`, `diasFabricacion`, `diasInsumosObra`.
 - **Nombre de columna nunca va como parámetro PDO.** Se interpola, y por eso se valida contra esa lista blanca antes. Sin el filtro es una inyección.
 - **`project_id` sale de la sesión**, jamás del cliente.
