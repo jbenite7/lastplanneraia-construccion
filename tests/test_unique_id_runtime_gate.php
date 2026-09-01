@@ -22,6 +22,17 @@ $scanDirs = [
     $root . '/src',
     $root . '/public',
     $root . '/views',
+    $root . '/frontend/src',
+];
+
+// Directorios de salida compilada: bundles minificados sin saltos de linea reales, donde el
+// patron "WHERE|JOIN|ON ... Consecutivo en la misma linea" produce falsos positivos estructurales
+// (texto interno de librerias de terceros como Zod cae a metros de distancia de un ON o WHERE
+// sueltos). El codigo fuente legible que los genera vive en frontend/src, que si se escanea.
+$excludedDirs = [
+    $root . '/public/app/assets',
+    $root . '/public/pdc-app/assets',
+    $root . '/public/ct-app/assets',
 ];
 
 $forbiddenPatterns = [
@@ -39,8 +50,14 @@ foreach ($scanDirs as $dir) {
         }
 
         $path = $file->getPathname();
-        if (!preg_match('/\.(php|js)$/', $path)) {
+        if (!preg_match('/\.(php|js|ts|tsx)$/', $path)) {
             continue;
+        }
+
+        foreach ($excludedDirs as $excludedDir) {
+            if (str_starts_with($path, $excludedDir . '/')) {
+                continue 2;
+            }
         }
 
         $lines = file($path);
