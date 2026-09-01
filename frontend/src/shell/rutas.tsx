@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AppShell } from './AppShell';
-import { PantallaLogin } from './PantallaLogin';
+import { limpiarParametrosAviso, resolverAvisoAcceso } from './auth/avisos';
+import { PantallaLogin } from './auth/PantallaLogin';
 import { SelectorProyecto } from './SelectorProyecto';
 import { SesionProvider, useSesion } from './SesionProvider';
 
@@ -42,6 +43,49 @@ export function Rutas() {
 function RutasSegunSesion() {
   const { estado, arranque, autenticado, recargar, cerrarSesion, logoutSinConfirmar, generacion } = useSesion();
 
+  // Se congela en el PRIMER render, antes de que el efecto de abajo limpie la URL — `estado`
+  // arranca en `cargando` y solo pasa a `anonimo`/`expirado` de forma asíncrona (tras resolver
+  // `/api/session`), así que sin esta captura el efecto de limpieza (que sí corre desde el primer
+  // commit) borraría `reset=1`/`timeout=1`/`inactive=1` antes de que la rama de login llegara a
+  // leerlos: el aviso nunca se veía. Verificado en el navegador integrado — `/app?reset=1` no
+  // mostraba nada hasta este fix.
+  //
+  // Ronda de arreglos 1: congelarla PARA SIEMPRE (con `useState` sin setter) reabría el problema
+  // por otro lado — `RutasSegunSesion` nunca se desmonta (`cerrarSesion` recarga el bootstrap sin
+  // recargar la página), así que un logout voluntario vuelve a `anonimo` con `reason=missing_session`
+  // en el MISMO montaje, `resolverAvisoAcceso` cae a mirar la query (a propósito, ver `avisos.ts`)
+  // y la copia congelada seguía diciendo `?reset=1` horas después de que nadie hubiera restablecido
+  // nada. Por eso ahora es estado mutable: se lee para pintar el aviso mientras la pantalla de
+  // acceso está en pantalla, y se invalida (abajo) en cuanto se sale de ella — así sobrevive la
+  // carrera del montaje inicial sin sobrevivir un ciclo completo de login/logout.
+  const [searchAviso, setSearchAviso] = useState(() => window.location.search);
+  const enPantallaAcceso = estado === 'anonimo' || estado === 'expirado';
+  const estabaEnPantallaAccesoRef = useRef(false);
+
+  // Los avisos consumibles por query (`reset=1`, legacy `timeout=1|inactive=1`) sobreviven un
+  // recargo o un "atrás" del navegador porque viven en la URL, a diferencia de los que trae la
+  // razón de servidor (ver `avisos.ts`) — así que se consumen una sola vez limpiando la URL al
+  // montar, sin esperar a que se muestre ningún aviso en particular.
+  useEffect(() => {
+    const limpia = limpiarParametrosAviso(window.location.href);
+    if (limpia !== window.location.href) {
+      window.history.replaceState(null, '', limpia);
+    }
+  }, []);
+
+  // Invalida `searchAviso` en cuanto se SALE de la pantalla de acceso (login exitoso, redirección
+  // a cambio de clave, etc.) — no antes, porque mientras el usuario sigue viendo esa pantalla
+  // (reintentos de credenciales incluidos) el aviso debe seguir visible sin parpadear. Si más
+  // tarde se vuelve a `anonimo`/`expirado` en el mismo montaje (logout sin recargar la página), la
+  // query ya vale `''` y `resolverAvisoAcceso` no tiene nada que mostrar salvo que el servidor dé
+  // una razón nueva de verdad (timeout/inactive/stale_session reales).
+  useEffect(() => {
+    if (estabaEnPantallaAccesoRef.current && !enPantallaAcceso) {
+      setSearchAviso('');
+    }
+    estabaEnPantallaAccesoRef.current = enPantallaAcceso;
+  }, [enPantallaAcceso]);
+
   switch (estado) {
     case 'cargando':
       return <p role="status">Cargando…</p>;
@@ -68,7 +112,25 @@ function RutasSegunSesion() {
     // vuelven al mismo punto de entrada sin arrastrar estado del proyecto.
     case 'anonimo':
     case 'expirado':
-      return <PantallaLogin alEntrar={recargar} csrfToken={arranque?.csrfToken ?? ''} />;
+      return (
+        <PantallaLogin
+          csrfToken={arranque?.csrfToken ?? ''}
+          aviso={resolverAvisoAcceso(
+            arranque?.state === 'anonymous' ? arranque.reason : null,
+            searchAviso,
+          )}
+          modo={{ tipo: 'normal' }}
+          alRevalidar={recargar}
+          alResolver={async (next) => {
+            // El cambio obligatorio sigue en PHP junto con el flujo de recuperación.
+            if (next === 'password_change') {
+              window.location.href = '/login';
+              return;
+            }
+            await recargar();
+          }}
+        />
+      );
 
     case 'autenticado_sin_proyecto':
       return <SelectorProyecto alElegir={recargar} csrfToken={autenticado?.csrfToken ?? ''} />;

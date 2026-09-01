@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, expect, test, vi } from 'vitest';
 import { Rutas } from './rutas';
 
@@ -10,7 +11,10 @@ function responderSesion(cuerpo: unknown) {
   ));
 }
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  window.history.pushState({}, '', '/');
+});
 
 test('sin sesión (anonymous/missing_session) muestra el login', async () => {
   responderSesion({
@@ -105,4 +109,93 @@ test('un contrato roto (JSON malformado) cae en el mismo estado recuperable que 
   render(<Rutas />);
 
   expect(await screen.findByRole('alert')).toHaveTextContent(/no pudimos conectar/i);
+});
+
+// --- avisos consumibles una vez (ronda de arreglos 1) --------------------------
+
+const ANONIMA_MISSING_SESSION = {
+  state: 'anonymous',
+  authenticated: false,
+  reason: 'missing_session',
+  user: null,
+  project: null,
+  capabilities: {},
+  navigation: { bi: null, groups: [] },
+  week: null,
+  csrfToken,
+};
+
+const AUTENTICADA_CON_PROYECTO = {
+  state: 'authenticated',
+  authenticated: true,
+  reason: null,
+  user: { username: 'test.A', displayName: 'Ana', role: 'A' },
+  project: { id: 1, name: 'Da Porto', area: 'Construccion' },
+  capabilities: { canManageWeeks: true },
+  navigation: { bi: { visible: false, href: null }, groups: [] },
+  week: { current: 6, options: [{ number: 6, startsOn: '2026-08-24', endsOn: '2026-08-30' }], actions: { select: true, create: true, deleteLast: true } },
+  csrfToken,
+};
+
+test('/app?reset=1 muestra el aviso una vez y limpia la URL', async () => {
+  window.history.pushState({}, '', '/app?reset=1');
+  responderSesion(ANONIMA_MISSING_SESSION);
+
+  render(<Rutas />);
+
+  await screen.findByRole('heading', { name: /entrar/i });
+  expect(await screen.findByText(/restablecida correctamente/i)).toBeInTheDocument();
+  await waitFor(() => expect(window.location.search).toBe(''));
+});
+
+test('tras un ciclo de logout en el mismo montaje, el aviso de reset ya consumido no reaparece', async () => {
+  window.history.pushState({}, '', '/app?reset=1');
+
+  let autenticado = false;
+
+  const fetchFalso = vi.fn(async (entrada: RequestInfo | URL, opciones?: RequestInit) => {
+    const ruta = typeof entrada === 'string' ? entrada : entrada.toString();
+    const metodo = opciones?.method ?? 'GET';
+
+    if (ruta === '/api/session') {
+      return new Response(JSON.stringify(autenticado ? AUTENTICADA_CON_PROYECTO : ANONIMA_MISSING_SESSION), {
+        status: 200,
+      });
+    }
+    if (ruta === '/api/auth/login' && metodo === 'POST') {
+      autenticado = true;
+      return new Response(JSON.stringify({ success: true, next: 'projects', message: null }), { status: 200 });
+    }
+    if (ruta === '/api/auth/logout' && metodo === 'POST') {
+      autenticado = false;
+      return new Response(JSON.stringify({ success: true }), { status: 200 });
+    }
+
+    // Peticiones de fondo ajenas a este escenario (notificaciones, semana, etc.): no participan
+    // en la aserción y no deben hacer fallar el montaje.
+    return new Response(JSON.stringify({}), { status: 200 });
+  });
+  vi.stubGlobal('fetch', fetchFalso);
+
+  const usuario = userEvent.setup();
+  render(<Rutas />);
+
+  // 1) primera visita: el aviso de reset aparece y la URL se limpia.
+  await screen.findByRole('heading', { name: /entrar/i });
+  expect(await screen.findByText(/restablecida correctamente/i)).toBeInTheDocument();
+  await waitFor(() => expect(window.location.search).toBe(''));
+
+  // 2) login exitoso.
+  await usuario.type(screen.getByLabelText('Usuario'), 'test.A');
+  await usuario.type(screen.getByLabelText('Contraseña'), 'clave-valida');
+  await usuario.click(screen.getByRole('button', { name: 'Entrar' }));
+  await waitFor(() => expect(screen.getByRole('navigation')).toBeInTheDocument());
+
+  // 3) logout desde el menú de cuenta, sin recargar la página (mismo montaje de `Rutas`).
+  await usuario.click(screen.getByRole('button', { name: /cuenta/i }));
+  await usuario.click(screen.getByRole('menuitem', { name: /cerrar sesión/i }));
+
+  // 4) de vuelta al login: el aviso de reset, ya consumido en el paso 1, no reaparece.
+  await waitFor(() => expect(screen.getByRole('heading', { name: /entrar/i })).toBeInTheDocument());
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
 });
