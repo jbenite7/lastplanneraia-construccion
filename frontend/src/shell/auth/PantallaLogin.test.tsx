@@ -11,6 +11,7 @@ vi.mock('../../lib/api/auth', () => ({
 
 const csrfToken = '0'.repeat(64);
 const MENSAJE_401 = 'invalid_credentials';
+const MENSAJE_CREDENCIALES_TEXTO = 'Usuario o contraseña incorrectos.';
 
 function propiedades() {
   return {
@@ -264,16 +265,58 @@ test('sin aviso, no aparece ningún status', () => {
   expect(screen.queryByRole('status')).not.toBeInTheDocument();
 });
 
-// --- modo mantenimiento ----------------------------------------------------------
+// --- modo mantenimiento (Tarea 12: ruta oculta servida por SpaHostRenderer) ---------------
 
-test('en modo mantenimiento no se ofrece el formulario', () => {
+test('en modo mantenimiento el formulario es un POST nativo al host oculto, no fetch a /api/auth/login', () => {
   render(
     <PantallaLogin
       {...propiedades()}
-      modo={{ tipo: 'mantenimiento', mensaje: 'Estamos en mantenimiento. Vuelve más tarde.' }}
+      modo={{ tipo: 'mantenimiento', action: '/_aia/host-oculto', error: false, csrfToken }}
     />,
   );
 
-  expect(screen.queryByRole('button', { name: 'Entrar' })).not.toBeInTheDocument();
-  expect(screen.getByText('Estamos en mantenimiento. Vuelve más tarde.')).toBeInTheDocument();
+  const formulario = screen.getByRole('button', { name: 'Entrar' }).closest('form');
+  expect(formulario).toHaveAttribute('method', 'post');
+  expect(formulario).toHaveAttribute('action', '/_aia/host-oculto');
+
+  // Nombres legacy — es el mismo contrato que `MaintenanceLoginController::submit()` lee de $_POST.
+  expect(screen.getByLabelText('Usuario')).toHaveAttribute('name', 'usuario');
+  expect(screen.getByLabelText('Contraseña')).toHaveAttribute('name', 'password');
+
+  expect(iniciarSesion).not.toHaveBeenCalled();
+});
+
+test('en modo mantenimiento el csrfToken viaja en un campo oculto, nunca visible ni en la URL', () => {
+  const { container } = render(
+    <PantallaLogin
+      {...propiedades()}
+      modo={{ tipo: 'mantenimiento', action: '/_aia/host-oculto', error: false, csrfToken }}
+    />,
+  );
+
+  const campoCsrf = container.querySelector('input[name="csrf_token"]');
+  expect(campoCsrf).toHaveAttribute('type', 'hidden');
+  expect(campoCsrf).toHaveValue(csrfToken);
+});
+
+test('en modo mantenimiento, error=true muestra un rechazo genérico sin distinguir la causa', () => {
+  render(
+    <PantallaLogin
+      {...propiedades()}
+      modo={{ tipo: 'mantenimiento', action: '/_aia/host-oculto', error: true, csrfToken }}
+    />,
+  );
+
+  expect(screen.getByRole('alert')).toHaveTextContent(MENSAJE_CREDENCIALES_TEXTO);
+});
+
+test('en modo mantenimiento, error=false no muestra ninguna alerta', () => {
+  render(
+    <PantallaLogin
+      {...propiedades()}
+      modo={{ tipo: 'mantenimiento', action: '/_aia/host-oculto', error: false, csrfToken }}
+    />,
+  );
+
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });

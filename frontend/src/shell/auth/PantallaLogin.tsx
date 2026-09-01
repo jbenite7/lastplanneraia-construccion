@@ -5,7 +5,14 @@ import { CampoClave } from './CampoClave';
 import { MarcoAcceso } from './MarcoAcceso';
 import type { AvisoAcceso } from './avisos';
 
-export type ModoPantallaLogin = { tipo: 'normal' } | { tipo: 'mantenimiento'; mensaje: string };
+/**
+ * `mantenimiento` es la ruta oculta (Tarea 12, S01): el servidor (`MaintenanceLoginController`)
+ * inyecta `action`/`error`/`csrfToken` vía `configuracion.ts` — nunca se calculan aquí. Esta
+ * pantalla nunca conoce la ruta oculta en sí, solo la recibe ya resuelta por request.
+ */
+export type ModoPantallaLogin =
+  | { tipo: 'normal' }
+  | { tipo: 'mantenimiento'; action: string; error: boolean; csrfToken: string };
 
 type PropiedadesPantallaLogin = {
   csrfToken: string;
@@ -80,11 +87,53 @@ export function PantallaLogin({ csrfToken, aviso, alResolver, alRevalidar, modo 
   }, [error]);
 
   if (modo.tipo === 'mantenimiento') {
+    // Formulario nativo: `method="post" action={modo.action}` — un POST real de navegador,
+    // nunca una llamada a `iniciarSesion()` (que usa `pedir()`/fetch contra `/api/auth/login`).
+    // El servidor resuelve la respuesta (200/401/303) y
+    // vuelve a servir este mismo host con una configuración de runtime nueva; esta pantalla
+    // no interpreta ni retiene nada entre envíos.
     return (
       <MarcoAcceso titulo="Entrar">
-        <p role="status" className="aia-alert">
-          {modo.mensaje}
-        </p>
+        {modo.error && (
+          <p role="alert" className="aia-alert">
+            {MENSAJE_CREDENCIALES}
+          </p>
+        )}
+
+        <form method="post" action={modo.action}>
+          <input type="hidden" name="csrf_token" value={modo.csrfToken} />
+
+          <div className="aia-field">
+            <label className="aia-label" htmlFor="usuario">
+              Usuario
+            </label>
+            <input
+              id="usuario"
+              name="usuario"
+              className="aia-input"
+              value={usuario}
+              onChange={(evento) => setUsuario(evento.target.value)}
+              autoComplete="username"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              required
+            />
+          </div>
+
+          <CampoClave
+            id="clave"
+            name="password"
+            label="Contraseña"
+            value={clave}
+            onChange={setClave}
+            autoComplete="current-password"
+          />
+
+          <button type="submit" className="aia-btn">
+            Entrar
+          </button>
+        </form>
       </MarcoAcceso>
     );
   }

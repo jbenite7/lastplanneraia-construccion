@@ -28,10 +28,10 @@ class LoginController
             exit();
         }
 
-        $requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '/';
-        $formAction = $requestUri === MaintenanceMode::SECRET_PATH
-            ? MaintenanceMode::SECRET_PATH
-            : '/login';
+        // La ruta oculta de mantenimiento ya no pasa por aquí (Tarea 12, S01: la sirve
+        // `MaintenanceLoginController` con el shell React) — `index()` solo se enruta desde
+        // `/` y `/login`, así que `formAction` no necesita bifurcar más.
+        $formAction = '/login';
 
         $timeoutNotice = ($_GET['timeout'] ?? '') === '1';
         $inactiveNotice = ($_GET['inactive'] ?? '') === '1';
@@ -242,75 +242,4 @@ class LoginController
         return isset($_SESSION['usuario']) ? (string) $_SESSION['usuario'] : null;
     }
 
-    private function userHasGlobalAdminRole(string $usuario): bool
-    {
-        $stmt = $this->db->query(
-            "SELECT COUNT(*) FROM project_members pm
-             INNER JOIN general_usuarios u ON u.id = pm.user_id
-             INNER JOIN general_proyectos_procesos p ON p.ID = pm.project_id
-             WHERE u.usuario = ?
-               AND pm.role = 'A'
-               AND p.Area = 'Construccion'
-               AND p.Activo = 1",
-            [$usuario]
-        );
-        return (int) $stmt->fetchColumn() > 0;
-    }
-
-    public function maintenanceLogin()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            exit;
-        }
-
-        $usuario = htmlspecialchars(strtolower($_POST['usuario'] ?? ''));
-        $password = $_POST['password'] ?? '';
-
-        if (empty($usuario) || empty($password)) {
-            MaintenanceMode::renderPage();
-        }
-
-        $data = $this->authentication->verifyCredentials($usuario, $password);
-
-        if (!$data) {
-            MaintenanceMode::renderPage();
-        }
-
-        if (isset($data['activo']) && (int) $data['activo'] !== 1) {
-            if (method_exists($this->db, 'logActivity')) {
-                $this->db->logActivity('Login', 'LOGIN_BLOQUEADO_INACTIVO', "Intento de acceso con cuenta inactiva: $usuario");
-            }
-            MaintenanceMode::renderPage();
-        }
-
-        if (!$this->userHasGlobalAdminRole($usuario)) {
-            if (method_exists($this->db, 'logActivity')) {
-                $this->db->logActivity('Login', 'MAINTENANCE_BLOQUEADO', "Usuario $usuario sin rol A intentó acceso por ruta oculta");
-            }
-            MaintenanceMode::renderPage();
-        }
-
-        $_SESSION['maintenance_bypass'] = true;
-
-        if (isset($data['force_password_change']) && $data['force_password_change'] == 1) {
-            $this->authentication->beginPasswordChange($usuario, $data);
-
-            if (method_exists($this->db, 'logActivity')) {
-                $this->db->logActivity('Login', 'LOGIN_PENDIENTE_CLAVE', "Usuario $usuario requiere cambio de contraseña.");
-            }
-
-            header("Location: " . MaintenanceMode::SECRET_PATH);
-            exit();
-        }
-
-        $this->authentication->beginAuthenticatedSession($usuario, $data);
-
-        if (method_exists($this->db, 'logActivity')) {
-            $this->db->logActivity('Login', 'MAINTENANCE_LOGIN', "Admin $usuario accedió por ruta oculta durante mantenimiento");
-        }
-
-        header("Location: /proyectos");
-        exit();
-    }
 }

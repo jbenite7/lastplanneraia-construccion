@@ -302,3 +302,77 @@ test('login exitoso seguido de un fallo de arranque muestra el error recuperable
   expect(loginFalso).toHaveBeenCalledOnce();
   expect(fetchFalso).toHaveBeenCalledWith('/api/auth/login', expect.objectContaining({ method: 'POST' }));
 });
+
+// --- host oculto de mantenimiento (Tarea 12, S01) ------------------------------
+
+test('con configuracionRuntime de mantenimiento (anonymous) se ve el login sin llamar a /api/session', async () => {
+  const fetchEspia = vi.fn();
+  vi.stubGlobal('fetch', fetchEspia);
+
+  render(
+    <Rutas
+      configuracionRuntime={{
+        mode: 'maintenance',
+        action: '/_aia/host-oculto',
+        error: false,
+        state: 'anonymous',
+        csrfToken,
+      }}
+    />,
+  );
+
+  expect(await screen.findByRole('heading', { name: /entrar/i })).toBeInTheDocument();
+  expect(fetchEspia).not.toHaveBeenCalled();
+
+  const formulario = screen.getByRole('button', { name: 'Entrar' }).closest('form');
+  expect(formulario).toHaveAttribute('action', '/_aia/host-oculto');
+  expect(formulario).toHaveAttribute('method', 'post');
+});
+
+test('con configuracionRuntime de mantenimiento y error=true se ve el rechazo genérico', async () => {
+  vi.stubGlobal('fetch', vi.fn());
+
+  render(
+    <Rutas
+      configuracionRuntime={{
+        mode: 'maintenance',
+        action: '/_aia/host-oculto',
+        error: true,
+        state: 'anonymous',
+        csrfToken,
+      }}
+    />,
+  );
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(/usuario o contraseña incorrectos/i);
+});
+
+test('con configuracionRuntime de mantenimiento (password_change_required) se ve el cambio de clave, sin /api/session', async () => {
+  const fetchEspia = vi.fn();
+  vi.stubGlobal('fetch', fetchEspia);
+
+  render(
+    <Rutas
+      configuracionRuntime={{
+        mode: 'maintenance',
+        action: '/_aia/host-oculto',
+        error: false,
+        state: 'password_change_required',
+        csrfToken,
+      }}
+    />,
+  );
+
+  expect(await screen.findByRole('button', { name: 'Actualizar y continuar' })).toBeInTheDocument();
+  expect(fetchEspia).not.toHaveBeenCalledWith('/api/session', expect.anything());
+});
+
+test('con configuracionRuntime inválida se ve una alerta recuperable, sin llamar a /api/session', async () => {
+  const fetchEspia = vi.fn();
+  vi.stubGlobal('fetch', fetchEspia);
+
+  render(<Rutas configuracionRuntime={{ mode: 'invalid' }} />);
+
+  expect(await screen.findByRole('alert')).toBeInTheDocument();
+  expect(fetchEspia).not.toHaveBeenCalled();
+});

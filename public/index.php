@@ -342,9 +342,10 @@ $router->post('/context/clear-week', [\App\Controllers\Core\ContextController::c
 $router->post('/api/context/weeks/create', [\App\Controllers\Api\WeekContextApiController::class, 'crear']);
 $router->post('/api/context/weeks/delete-last', [\App\Controllers\Api\WeekContextApiController::class, 'eliminarUltima']);
 
-// Maintenance Secret Access (ruta oculta para admins durante mantenimiento)
-$router->get(MaintenanceMode::SECRET_PATH, [\App\Controllers\Auth\LoginController::class, 'index']);
-$router->post(MaintenanceMode::SECRET_PATH, [\App\Controllers\Auth\LoginController::class, 'maintenanceLogin']);
+// Maintenance Secret Access (ruta oculta para admins durante mantenimiento, servida como
+// shell React desde la Tarea 12 de S01 — ver App\Core\SpaHostRenderer)
+$router->get(MaintenanceMode::SECRET_PATH, [\App\Controllers\Auth\MaintenanceLoginController::class, 'show']);
+$router->post(MaintenanceMode::SECRET_PATH, [\App\Controllers\Auth\MaintenanceLoginController::class, 'submit']);
 
 // --- BI Control Tower API ---
 $router->get('/api/bi/control-tower', [\App\Controllers\Api\BiControlTowerApiController::class, 'controlTower']);

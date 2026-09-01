@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import type { ConfiguracionRuntime } from '../lib/runtime/configuracion';
 import { AppShell } from './AppShell';
 import { CambioClaveObligatorio } from './auth/CambioClaveObligatorio';
 import { limpiarParametrosAviso, resolverAvisoAcceso } from './auth/avisos';
@@ -7,18 +8,90 @@ import { PantallaLogin } from './auth/PantallaLogin';
 import { SelectorProyecto } from './SelectorProyecto';
 import { SesionProvider, useSesion } from './SesionProvider';
 
+const CONFIGURACION_APLICACION_POR_DEFECTO: ConfiguracionRuntime = { mode: 'application' };
+
 /**
  * Punto de entrada de la SPA (spec T01 §6: `SesionProvider` envuelve
  * `AuthOutlet`/`ProjectPicker`/`AppShell`). El árbol completo de rutas vive
  * dentro del Provider para que cualquier descendiente —incluidos los módulos
  * que las Tareas 3–10 cuelguen del outlet— consuma `useSesion()` del mismo
  * Context en vez de volver a resolver sesión por su cuenta.
+ *
+ * `configuracionRuntime` (Tarea 12, S01) es lo que `App.tsx` lee de
+ * `#aia-runtime-config` — nunca resuelto aquí. Con `mode: 'maintenance'` esta
+ * función bifurca ANTES de montar `SesionProvider`: el propósito entero del
+ * host oculto es no depender de `/api/session`, que exige una app completa.
+ * Con `mode: 'invalid'` (JSON corrupto) se ofrece una pantalla recuperable en
+ * vez de arrancar como si nada se hubiera inyectado.
  */
-export function Rutas() {
+export function Rutas({ configuracionRuntime = CONFIGURACION_APLICACION_POR_DEFECTO }: { configuracionRuntime?: ConfiguracionRuntime }) {
+  if (configuracionRuntime.mode === 'invalid') {
+    return <PantallaConfiguracionInvalida />;
+  }
+
+  if (configuracionRuntime.mode === 'maintenance') {
+    return <RutaMantenimiento configuracion={configuracionRuntime} />;
+  }
+
   return (
     <SesionProvider>
       <RutasSegunSesion />
     </SesionProvider>
+  );
+}
+
+/**
+ * `#aia-runtime-config` existe pero no cumple el contrato — nunca ocurre en producción salvo
+ * un bug del propio inyector. Recuperable con una recarga: no hay estado de sesión que perder
+ * porque este camino nunca llegó a pedir `/api/session`.
+ */
+function PantallaConfiguracionInvalida() {
+  return (
+    <section role="alert">
+      <p>No pudimos cargar la configuración de la página. Inténtalo de nuevo.</p>
+      <button type="button" onClick={() => window.location.reload()}>
+        Reintentar
+      </button>
+    </section>
+  );
+}
+
+type ConfiguracionMantenimiento = Extract<ConfiguracionRuntime, { mode: 'maintenance' }>;
+
+/**
+ * Árbol del host oculto de mantenimiento. Deliberadamente fuera de `SesionProvider`: ese
+ * Provider dispara `/api/session` al montar, y el punto entero de esta rama es no tocar esa
+ * ruta (Tarea 5: bloqueada por `MaintenanceMode` salvo `maintenance_bypass`). Todo lo que
+ * necesita esta pantalla ya vino inyectado por `MaintenanceLoginController::show()`.
+ */
+function RutaMantenimiento({ configuracion }: { configuracion: ConfiguracionMantenimiento }) {
+  if (configuracion.state === 'password_change_required') {
+    return (
+      <CambioClaveObligatorio
+        csrfToken={configuracion.csrfToken}
+        alCompletar={async () => {
+          window.location.assign('/proyectos');
+        }}
+        alSalir={async () => {
+          window.location.assign(configuracion.action);
+        }}
+      />
+    );
+  }
+
+  return (
+    <PantallaLogin
+      csrfToken={configuracion.csrfToken}
+      aviso={null}
+      modo={{
+        tipo: 'mantenimiento',
+        action: configuracion.action,
+        error: configuracion.error,
+        csrfToken: configuracion.csrfToken,
+      }}
+      alRevalidar={async () => {}}
+      alResolver={async () => {}}
+    />
   );
 }
 
