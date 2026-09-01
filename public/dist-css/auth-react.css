@@ -12,6 +12,8 @@
     min-block-size: var(--ds-target-min);
     display: inline-flex;
     align-items: center;
+    color: var(--ds-active-action-primary);
+    text-decoration: underline;
   }
   @media (min-width: 48rem) {
     .aia-auth__layout {

@@ -40,11 +40,25 @@
   /* Objetivos táctiles de la superficie de acceso: el core ya los aplica a
      `.aia-btn`/`.aia-input`, esto cubre los enlaces de texto plano
      ("¿Olvidaste tu contraseña?", "Actualizar sesión" en línea) que no llevan
-     esa clase. */
+     esa clase.
+
+     `color` y `text-decoration` (Tarea 14): sin ellos estos enlaces caen a la
+     regla `a` de Bootstrap 4 (`public/vendor/bootstrap/bootstrap.min.css`, capa
+     `vendor`), que fija su propio azul y quita el subrayado — el sistema de
+     diseño no define ninguna primitiva de enlace de texto, así que un `<a>` sin
+     clase hereda del vendor. Medido con Axe sobre `/login` en tema claro: ese
+     azul sobre la superficie blanca da **3,97:1**, por debajo del 4,5:1 de
+     WCAG 2.2 AA (SC 1.4.3). En oscuro pasaba, así que el defecto solo se veía
+     en el tema que es la cara del producto. `--ds-active-action-primary` es el
+     token de acción por tema: ~8,7:1 sobre blanco, y no introduce ningún valor
+     literal. El subrayado va junto al color a propósito: Bootstrap lo quitaba,
+     y sin él el enlace se distinguía del texto **solo** por color (SC 1.4.1). */
   .aia-auth :where(a) {
     min-block-size: var(--ds-target-min);
     display: inline-flex;
     align-items: center;
+    color: var(--ds-active-action-primary);
+    text-decoration: underline;
   }
 
   @media (min-width: 48rem) {
