@@ -460,6 +460,14 @@ export type PasoPlan = {
   fechaFin: string
   fechaReal: string | null
   vencimiento: string
+  /**
+   * De qué columna del catálogo legacy salen los días de este paso. `null` = paso de días fijos,
+   * que la obra ya configura en la pantalla de Pasos: aquí no se edita para no abrir un segundo
+   * camino al mismo dato.
+   */
+  colLegacy: string | null
+  /** `'obra'` cuando esta obra corrigió el número; `'empresa'` cuando es el del catálogo. */
+  origen: 'empresa' | 'obra'
 }
 
 export type FilaPlan = {
@@ -482,6 +490,11 @@ export type FilaPlan = {
   responsableCargo: string
   responsableHuerfano: boolean
   diasRetraso: number
+  /**
+   * La fila del catálogo de duraciones de la que cuelga este paquete. `null` = el paquete no tiene
+   * respaldo en el catálogo, así que no hay a qué colgarle una corrección de la obra.
+   */
+  duracionRef: number | null
   pasos: PasoPlan[]
 }
 

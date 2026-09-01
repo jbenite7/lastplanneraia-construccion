@@ -45,7 +45,7 @@ const fila = (over: Partial<FilaPlan> = {}): FilaPlan => ({
   frenteNombre: 'ESTRUCTURA', uniqueId: 9001, fechaAncla: '2026-08-18', fechaArranque: '2026-05-23',
   diasTotales: 87, duracionProvisional: false,
   responsableUserId: null, responsableNombre: '', responsableCargo: '', responsableHuerfano: false,
-  diasRetraso: 0, pasos: [],
+  diasRetraso: 0, duracionRef: null, pasos: [],
   ...over,
 })
 
@@ -261,7 +261,7 @@ describe('paquetesAmarradosSinCalcular', () => {
     uniqueId: 9001, fechaAncla: '2026-08-18', fechaArranque: '2026-05-23', diasTotales: 87,
     duracionProvisional: false,
     responsableUserId: null, responsableNombre: '', responsableCargo: '', responsableHuerfano: false,
-    diasRetraso: 0, pasos: [],
+    diasRetraso: 0, duracionRef: null, pasos: [],
   })
 
   // Importante 2 del review final A4: amarrar sin recalcular dejaba el paquete invisible en las
