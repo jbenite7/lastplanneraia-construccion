@@ -750,18 +750,15 @@ git commit -m "feat(pdc): el plan expone duracionRef y el origen de cada duraci�
 - Consume: `DuracionesObraService` de la Tarea 2.
 - Produce:
   - `POST /plan-compras/api/plan/duraciones/obra` — cuerpo `{duracionRef:int, dias:{columna:int}}`
-  - `DELETE /plan-compras/api/plan/duraciones/obra` — cuerpo `{duracionRef:int, columnas:string[]}`
+  - `POST /plan-compras/api/plan/duraciones/obra/borrar` — cuerpo `{duracionRef:int, columnas:string[]}`
   - Ambos responden el plan recalculado, igual que `guardarDuracion()`.
 
-- [ ] **Paso 1: Comprobar si el router tiene `delete`**
+> **Resuelto en el barrido previo (C2).** `src/Core/Router.php` declara únicamente `get()` y
+> `post()`, y `pdc-app/src/lib/api.ts` exporta únicamente `apiGet`, `apiPost` y `apiUpload`. No hay
+> `DELETE` sin ampliar dos capas compartidas por todo el módulo, y eso queda fuera del alcance.
+> **Los dos verbos son POST**, y el de restablecer vive en `…/duraciones/obra/borrar`.
 
-```bash
-grep -n 'public function delete' src/Core/Router.php
-```
-
-Si no existe, usar `POST /plan-compras/api/plan/duraciones/obra/borrar` en su lugar y ajustar el nombre en el resto de esta tarea y en la Tarea 6. Decidirlo **ahora**, no a mitad.
-
-- [ ] **Paso 2: Escribir la prueba de contrato que falla**
+- [ ] **Paso 1: Escribir la prueba de contrato que falla**
 
 Crear `tests/test_pdc_v2_duraciones_obra_contrato.php`:
 
@@ -801,7 +798,7 @@ echo $failures === [] ? "\nOK\n" : "\n" . count($failures) . " fallo(s)\n";
 exit($failures === [] ? 0 : 1);
 ```
 
-- [ ] **Paso 3: Correrla y ver que falla**
+- [ ] **Paso 2: Correrla y ver que falla**
 
 ```bash
 docker compose exec app php tests/test_pdc_v2_duraciones_obra_contrato.php
@@ -809,7 +806,7 @@ docker compose exec app php tests/test_pdc_v2_duraciones_obra_contrato.php
 
 Esperado: FAIL en las rutas y en el guard.
 
-- [ ] **Paso 4: Escribir el guard de `.editar` y el validador de la fila**
+- [ ] **Paso 3: Escribir el guard de `.editar` y el validador de la fila**
 
 En `PlanComprasPlanController.php`, junto a `guardReglas()` (línea 632):
 
@@ -861,7 +858,7 @@ En `PlanComprasPlanController.php`, junto a `guardReglas()` (línea 632):
     }
 ```
 
-- [ ] **Paso 5: Escribir los dos métodos**
+- [ ] **Paso 4: Escribir los dos métodos**
 
 Después de `guardarDuracion()`:
 
@@ -899,7 +896,7 @@ Después de `guardarDuracion()`:
     }
 
     /**
-     * DELETE /plan-compras/api/plan/duraciones/obra  {duracionRef, columnas:[…]}
+     * POST /plan-compras/api/plan/duraciones/obra/borrar  {duracionRef, columnas:[…]}
      *
      * Quita la corrección y la obra vuelve al número de la empresa. No hay migración de vuelta:
      * borrar la fila ES la vuelta atrás.
@@ -931,18 +928,16 @@ Después de `guardarDuracion()`:
 
 Añadir `use App\Services\Pdc\DuracionesObraService;` en la cabecera si falta.
 
-- [ ] **Paso 6: Registrar las rutas**
+- [ ] **Paso 5: Registrar las rutas**
 
 En `public/index.php`, junto a la línea 224:
 
 ```php
 $router->post('/plan-compras/api/plan/duraciones/obra', [\App\Controllers\Api\PlanComprasPlanController::class, 'guardarDuracionObra']);
-$router->delete('/plan-compras/api/plan/duraciones/obra', [\App\Controllers\Api\PlanComprasPlanController::class, 'borrarDuracionObra']);
+$router->post('/plan-compras/api/plan/duraciones/obra/borrar', [\App\Controllers\Api\PlanComprasPlanController::class, 'borrarDuracionObra']);
 ```
 
-Con el resultado del Paso 1: si no hay `delete()`, la segunda línea es un `post()` a `/plan-compras/api/plan/duraciones/obra/borrar`.
-
-- [ ] **Paso 7: Correr las pruebas y verlas pasar**
+- [ ] **Paso 6: Correr las pruebas y verlas pasar**
 
 ```bash
 docker compose exec app php tests/test_pdc_v2_duraciones_obra_contrato.php
@@ -954,7 +949,7 @@ docker compose exec app php scripts/run-php-tests.php --nivel=puro
 
 Esperado: las dos en verde. Leer el código de salida de cada una **en su propia línea**, sin encadenar.
 
-- [ ] **Paso 8: Commit**
+- [ ] **Paso 7: Commit**
 
 ```bash
 git add src/Controllers/Api/PlanComprasPlanController.php public/index.php tests/test_pdc_v2_duraciones_obra_contrato.php
@@ -1107,10 +1102,8 @@ no se introduce estado nuevo:
   }
 ```
 
-**Si el Paso 1 encontró que `Router` sí tiene `delete()`**, el segundo manejador usa un `apiDelete`
-equivalente contra `/plan-compras/api/plan/duraciones/obra`. Comprobar qué expone `lib/api.ts`
-(`grep -n 'export' pdc-app/src/lib/api.ts`) antes de escribirlo: si solo hay `apiGet` y `apiPost`,
-la ruta `/borrar` por POST es la opción que no obliga a ampliar el cliente.
+Los dos son `apiPost` por el fallo C2 del barrido previo: el `Router` no tiene `delete()` y el
+cliente tampoco. No hay condicional que resolver.
 
 - [ ] **Paso 6: Hacer editable la columna Días**
 
