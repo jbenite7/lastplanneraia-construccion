@@ -478,6 +478,18 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] 2026-08-31 — **La longitud mínima de contraseña se mide distinto en el navegador y en el
+  servidor cuando hay caracteres multibyte.** El JS del modal usa `password.length`
+  (`views/auth/login.view.php:170`, unidades UTF-16) y el PHP usa `strlen()`
+  (`src/Services/Auth/PasswordPolicyService.php`, bytes). Con acentos o emoji, una clave puede
+  pasar el umbral de 6 en un lado y no en el otro. **Preexistente, no lo introdujo la migración
+  React:** lo destapó la revisión de la Tarea 3 de `docs/superpowers/plans/2026-08-30-s01-login-react.md`,
+  que verificó las cinco reglas en las tres fuentes (servidor, `pattern` del HTML, JS del modal) y
+  las encontró idénticas salvo en esto. Se deja fuera del frente a propósito: **cambiar cómo se
+  cuenta la longitud es una decisión de producto** — hoy hay usuarios con claves válidas que
+  podrían dejar de serlo. Cuando se vuelva a tocar el flujo de contraseñas, decidir primero qué
+  unidad manda y alinear las tres fuentes a ella.
+
 - [ ] 2026-08-28 — **El botón de colapsar el sidebar del laboratorio no responde a Enter por
   teclado** (`design-system-lab-keyboard.mjs:83`, ambas patas del CI, tema claro y oscuro). El test
   enfoca `[data-sidebar-toggle]` y presiona Enter; `data-sidebar-state` se queda en `expanded` en
