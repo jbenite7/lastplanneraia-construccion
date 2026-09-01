@@ -68,7 +68,13 @@ function listSourceFiles(dir) {
 function isCommentOnly(line) {
   const trimmed = line.trim();
   return trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('*')
-    || (trimmed.startsWith('<!--') && trimmed.endsWith('-->'));
+    || (trimmed.startsWith('<!--') && trimmed.endsWith('-->'))
+    // Comentario de bloque de una sola línea, p. ej. el JSDoc de procedencia que usa
+    // frontend/src/shared/lps/dominio/*.ts: `/** Puerto de ... (lps_drawer.js:539-542). */`.
+    // Sin esta rama esas líneas cuelan como "llamador" porque empiezan con `/**`, no con
+    // `*` a secas — mismo criterio que tests/design-system/shell-runtime-react-caller-census.test.mjs,
+    // extendido para cubrir la sintaxis de comentario que ese censo hermano no necesitaba.
+    || (trimmed.startsWith('/*') && trimmed.endsWith('*/'));
 }
 
 /**
@@ -358,22 +364,5 @@ test('el CSS adaptador del cajón LPS existe y se importa desde los puntos de en
       source.includes(ADAPTER_CSS.importSpecifier),
       `esperaba que ${importer} importara ${ADAPTER_CSS.importSpecifier}`,
     );
-  }
-});
-
-// ---------------------------------------------------------------------------
-// Guard: cero duplicado React de T02
-// ---------------------------------------------------------------------------
-
-test('no existe todavía ningún directorio/archivo "lps" bajo frontend/src (T02 aún no construyó su React)', () => {
-  // T02-A crea frontend/src/shared/lps/*; hasta que ese frente se ejecute, cualquier
-  // coincidencia aquí sería un duplicado prematuro o un nombre en conflicto.
-  const candidates = [
-    'frontend/src/shared/lps',
-    'frontend/src/shell/lps',
-    'frontend/src/lps',
-  ];
-  for (const candidate of candidates) {
-    assert.equal(exists(candidate), false, `no debería existir todavía: ${candidate}`);
   }
 });
