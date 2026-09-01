@@ -129,11 +129,29 @@ function RutasSegunSesion() {
   // nunca al propio botón que disparó la cancelación (ya no existe). Va en un efecto, no en el
   // `.then()` de `alSalir`, porque el `<input id="usuario">` de `PantallaLogin` todavía no existe
   // en el DOM en el instante en que esa promesa resuelve — el commit de React llega después.
+  //
+  // Tarea 14: `cargando` se ignora en vez de tratarse como "cualquier otro estado". `recargar()`
+  // hace `setCargando(true)` + `setArranque(null)` ANTES de pedir el bootstrap nuevo, así que
+  // entre el cambio de clave y el login hay siempre un commit intermedio. Medido en navegador
+  // con un observador de mutaciones sobre `#root`:
+  //   h1=Actualiza tu contraseña → h1=null status=Cargando… → h1=Entrar (foco en BODY)
+  // Con la versión anterior ese commit intermedio entraba por la última línea y ponía el ref en
+  // `false` (porque `cargando` !== `cambio_clave_requerido`), así que al llegar `anonimo` la
+  // condición ya no se cumplía y el foco NUNCA volvía al campo de usuario. Ninguna prueba lo
+  // cubría: `rutas.test.tsx` no menciona foco ni cancelación.
   useEffect(() => {
+    if (estado === 'cambio_clave_requerido') {
+      veniaDeCambioClaveRef.current = true;
+      return;
+    }
+
+    // Estado transitorio de `recargar()`: no confirma ni desmiente de dónde se viene.
+    if (estado === 'cargando') return;
+
     if (veniaDeCambioClaveRef.current && estado === 'anonimo') {
       document.getElementById('usuario')?.focus();
     }
-    veniaDeCambioClaveRef.current = estado === 'cambio_clave_requerido';
+    veniaDeCambioClaveRef.current = false;
   }, [estado]);
 
   // Los avisos consumibles por query (`reset=1`, legacy `timeout=1|inactive=1`) sobreviven un
