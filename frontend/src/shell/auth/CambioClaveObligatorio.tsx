@@ -322,17 +322,21 @@ export function CambioClaveObligatorio({ csrfToken, alCompletar, alSalir }: Prop
                 error={errorConfirmacion}
               />
 
-              <button type="submit" className="aia-btn" disabled={enviando}>
-                {enviando ? 'Actualizando…' : 'Actualizar y continuar'}
-              </button>
-              <button
-                type="button"
-                className="aia-btn aia-btn--secondary"
-                disabled={enviando}
-                onClick={abrirConfirmacion}
-              >
-                Salir
-              </button>
+              {/* Mismo contenedor que `PantallaLogin` (Tarea 14): sueltos en el flujo del
+                  formulario los dos botones quedaban pegados uno junto al otro. */}
+              <div className="aia-auth__acciones">
+                <button type="submit" className="aia-btn" disabled={enviando}>
+                  {enviando ? 'Actualizando…' : 'Actualizar y continuar'}
+                </button>
+                <button
+                  type="button"
+                  className="aia-btn aia-btn--secondary"
+                  disabled={enviando}
+                  onClick={abrirConfirmacion}
+                >
+                  Salir
+                </button>
+              </div>
             </form>
           )}
         </dialog>

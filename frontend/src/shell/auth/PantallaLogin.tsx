@@ -130,9 +130,11 @@ export function PantallaLogin({ csrfToken, aviso, alResolver, alRevalidar, modo 
             autoComplete="current-password"
           />
 
-          <button type="submit" className="aia-btn">
-            Entrar
-          </button>
+          <div className="aia-auth__acciones">
+            <button type="submit" className="aia-btn">
+              Entrar
+            </button>
+          </div>
         </form>
       </MarcoAcceso>
     );
@@ -230,11 +232,17 @@ export function PantallaLogin({ csrfToken, aviso, alResolver, alRevalidar, modo 
           error={errorClave}
         />
 
-        <button type="submit" className="aia-btn" disabled={enviando}>
-          {enviando ? 'Entrando…' : 'Entrar'}
-        </button>
+        {/* Tarea 14: el botón y el enlace estaban sueltos en el flujo del formulario, así que
+            quedaban pegados en la misma línea y se leían como "Entrar¿Olvidaste tu contraseña?".
+            El contenedor los separa y los apila: la acción principal a ancho completo, la salida
+            secundaria debajo. */}
+        <div className="aia-auth__acciones">
+          <button type="submit" className="aia-btn" disabled={enviando}>
+            {enviando ? 'Entrando…' : 'Entrar'}
+          </button>
 
-        <a href="/password/forgot">¿Olvidaste tu contraseña?</a>
+          <a href="/password/forgot">¿Olvidaste tu contraseña?</a>
+        </div>
       </form>
     </MarcoAcceso>
   );

@@ -8,33 +8,114 @@
  * que se monten después de S02/S03. Todo lo demás (`.aia-shell`, `.aia-page`,
  * `.aia-card`, `.aia-btn`, `.aia-input`, `.aia-modal-surface`, `.aia-dialog`)
  * ya es primitiva del sistema (`core.css`) y no se repite aquí — esta hoja
- * solo aporta la disposición de dos paneles en desktop/wide y el ajuste de
- * panel móvil del diálogo de cambio de clave, siempre por encima de esas
- * primitivas gracias al orden de capas (`module` va después de `components`).
+ * aporta la disposición de la superficie de acceso y el ajuste de panel móvil
+ * del diálogo de cambio de clave, siempre por encima de esas primitivas gracias
+ * al orden de capas (`module` va después de `components`).
  *
  * Cuatro layouts. Mobile/tablet/wide toman el breakpoint de `--ds-breakpoint-*`
  * (tokens.css) expresado en rem; desktop NO usa `--ds-breakpoint-desktop`
  * (1200px) a propósito — el viewport canónico de validación de todo el sistema
- * es 1180×820 (DESIGN.md §6, "Diseña y valida solo en desktop... 1180x820") y
- * el brief de esta tarea pide dos paneles exactamente ahí. Con 1200px el propio
- * viewport canónico se hubiera quedado en una columna, un desajuste medido al
- * verificar en el navegador integrado antes de cerrar la tarea:
+ * es 1180×820 (DESIGN.md §6, "Diseña y valida solo en desktop... 1180x820"), y
+ * con 1200px el propio viewport canónico se hubiera quedado en el tramo de
+ * tablet, un desajuste medido al verificar en el navegador antes de cerrar la
+ * Tarea 11:
  *   - mobile  (< 48rem / 768px): una columna, diálogo como panel de borde a borde.
  *   - tablet  (>= 48rem): una columna con más aire — "contexto reducido".
- *   - desktop (>= 73.75rem / 1180px): dos paneles.
- *   - wide    (>= 90rem / 1440px): dos paneles, con más margen para el panel de apoyo.
+ *   - desktop (>= 73.75rem / 1180px): tarjeta centrada, algo más ancha.
+ *   - wide    (>= 90rem / 1440px): igual, con más aire todavía.
+ *
+ * **Corregido en la Tarea 14:** hasta entonces desktop y wide declaraban dos
+ * columnas para un "panel de apoyo" que ningún componente llena, así que en los
+ * dos anchos grandes media pantalla quedaba vacía. La rejilla de dos paneles
+ * vuelve el día que exista ese panel; mientras tanto, no se reserva el hueco.
  */
 
 @layer module {
+  /* Tres filas (cabecera / contenido / pie) para que el pie se apoye en el borde inferior en
+     vez de quedar pegado bajo la tarjeta con un vacío grande debajo — el alto de `100dvh` ya
+     estaba, pero nada distribuía el espacio sobrante. */
   .aia-auth {
     min-block-size: 100dvh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
   }
 
   .aia-auth__layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--ds-space-8);
-    align-items: start;
+    justify-items: center;
+    align-content: center;
+  }
+
+  /* Ancho de lectura de la tarjeta. Sin esto se estiraba a todo el ancho disponible y los
+     campos quedaban desproporcionados en pantallas grandes. */
+  .aia-auth__layout > .aia-card {
+    inline-size: 100%;
+    max-inline-size: 26rem;
+  }
+
+  /* Los campos no llevan margen propio (`.aia-field` sale con `margin-bottom: 0`), así que
+     sin este gap la etiqueta de un campo quedaba pegada al borde del campo anterior: medido,
+     el segundo campo empezaba exactamente en el píxel donde terminaba el primero. */
+  .aia-auth :where(form) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-4);
+  }
+
+  /* Acciones del formulario: la principal a ancho completo, la secundaria debajo. Antes el
+     botón y el enlace iban sueltos en el flujo y quedaban pegados en la misma línea. */
+  .aia-auth__acciones {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--ds-space-4);
+    margin-block-start: var(--ds-space-2);
+  }
+
+  .aia-auth__acciones > .aia-btn {
+    inline-size: 100%;
+    justify-content: center;
+  }
+
+  /* El enlace de recuperación se centra bajo el botón en vez de alinearse al borde: en una
+     tarjeta estrecha, pegado a la izquierda parecía descolgado del bloque de acciones. */
+  .aia-auth__acciones > a {
+    justify-content: center;
+  }
+
+  /* Campo de contraseña y su alternador. Reemplaza al `input-group` de Bootstrap, que no
+     llegaba a colocar el botón junto al campo: caía debajo y a ancho casi completo, con
+     aspecto de acción principal. El alternador es ahora texto discreto a la derecha,
+     conservando su alto de objetivo táctil. */
+  .aia-auth__clave {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--ds-space-1);
+  }
+
+  .aia-auth__clave > .aia-input {
+    inline-size: 100%;
+  }
+
+  .aia-auth__clave-toggle {
+    min-block-size: var(--ds-target-min);
+    display: inline-flex;
+    align-items: center;
+    padding-inline: var(--ds-space-2);
+    border: 0;
+    background: none;
+    color: var(--ds-active-action-primary);
+    text-decoration: underline;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .aia-auth__clave-toggle:disabled {
+    cursor: not-allowed;
+    opacity: var(--ds-opacity-disabled, 0.6);
   }
 
   /* Objetivos táctiles de la superficie de acceso: el core ya los aplica a
@@ -67,17 +148,32 @@
     }
   }
 
+  /* Desktop (1180px, viewport canónico) y wide (1440px).
+     Tarea 14: estos dos bloques reservaban una segunda columna para un "panel de apoyo"
+     (`1.1fr / 0.9fr` y `1.2fr / 0.8fr`) que **no existe** — ningún componente la llena, así
+     que en los dos anchos grandes la mitad derecha de la pantalla quedaba en blanco. Se ve
+     en los candidatos de la Tarea 14. Reservar espacio para contenido que no está no es una
+     disposición de dos paneles: es un hueco. Los breakpoints se quedan (el contrato los
+     exige, y siguen haciendo falta) pero ahora hacen algo real: centrar la tarjeta y darle
+     algo más de ancho y aire a medida que crece la pantalla.
+     Si algún día llega el panel de apoyo, aquí vuelve la rejilla de dos columnas. */
   @media (min-width: 73.75rem) {
     .aia-auth__layout {
-      grid-template-columns: minmax(0, 1.1fr) minmax(20rem, 0.9fr);
-      align-items: center;
       min-block-size: calc(100dvh - 2 * var(--ds-page-padding));
+    }
+
+    .aia-auth__layout > .aia-card {
+      max-inline-size: 28rem;
     }
   }
 
   @media (min-width: 90rem) {
     .aia-auth__layout {
-      grid-template-columns: minmax(0, 1.2fr) minmax(24rem, 0.8fr);
+      gap: var(--ds-space-18);
+    }
+
+    .aia-auth__layout > .aia-card {
+      max-inline-size: 30rem;
     }
   }
 

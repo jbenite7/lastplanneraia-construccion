@@ -1,12 +1,63 @@
 @layer module {
   .aia-auth {
     min-block-size: 100dvh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
   }
   .aia-auth__layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--ds-space-8);
-    align-items: start;
+    justify-items: center;
+    align-content: center;
+  }
+  .aia-auth__layout > .aia-card {
+    inline-size: 100%;
+    max-inline-size: 26rem;
+  }
+  .aia-auth :where(form) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-4);
+  }
+  .aia-auth__acciones {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--ds-space-4);
+    margin-block-start: var(--ds-space-2);
+  }
+  .aia-auth__acciones > .aia-btn {
+    inline-size: 100%;
+    justify-content: center;
+  }
+  .aia-auth__acciones > a {
+    justify-content: center;
+  }
+  .aia-auth__clave {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--ds-space-1);
+  }
+  .aia-auth__clave > .aia-input {
+    inline-size: 100%;
+  }
+  .aia-auth__clave-toggle {
+    min-block-size: var(--ds-target-min);
+    display: inline-flex;
+    align-items: center;
+    padding-inline: var(--ds-space-2);
+    border: 0;
+    background: none;
+    color: var(--ds-active-action-primary);
+    text-decoration: underline;
+    cursor: pointer;
+    font: inherit;
+  }
+  .aia-auth__clave-toggle:disabled {
+    cursor: not-allowed;
+    opacity: var(--ds-opacity-disabled, 0.6);
   }
   .aia-auth :where(a) {
     min-block-size: var(--ds-target-min);
@@ -22,14 +73,18 @@
   }
   @media (min-width: 73.75rem) {
     .aia-auth__layout {
-      grid-template-columns: minmax(0, 1.1fr) minmax(20rem, 0.9fr);
-      align-items: center;
       min-block-size: calc(100dvh - 2 * var(--ds-page-padding));
+    }
+    .aia-auth__layout > .aia-card {
+      max-inline-size: 28rem;
     }
   }
   @media (min-width: 90rem) {
     .aia-auth__layout {
-      grid-template-columns: minmax(0, 1.2fr) minmax(24rem, 0.8fr);
+      gap: var(--ds-space-18);
+    }
+    .aia-auth__layout > .aia-card {
+      max-inline-size: 30rem;
     }
   }
   @media (max-width: 24.375rem) {

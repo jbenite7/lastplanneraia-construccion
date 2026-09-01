@@ -39,7 +39,13 @@ export function CampoClave({
         {label}
       </label>
 
-      <div className="input-group">
+      {/* `aia-auth__clave` reemplaza al `input-group` de Bootstrap (Tarea 14): esa clase del
+          vendor no llegaba a colocar el botón junto al campo —caía debajo, a ancho casi
+          completo— y con `aia-btn--secondary` competía visualmente con el botón de envío.
+          Ahora el alternador es una acción textual discreta alineada a la derecha; conserva
+          `aria-pressed`, su alto de objetivo táctil y el contraste, que es lo que lo hace
+          accesible. Lo que cambia es la presentación, no la semántica. */}
+      <div className="aia-auth__clave">
         <input
           id={id}
           name={name}
@@ -56,7 +62,7 @@ export function CampoClave({
 
         <button
           type="button"
-          className="aia-btn aia-btn--secondary"
+          className="aia-auth__clave-toggle"
           aria-pressed={visible}
           disabled={disabled}
           onClick={() => setVisible((valor) => !valor)}
