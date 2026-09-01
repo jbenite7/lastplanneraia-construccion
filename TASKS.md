@@ -478,6 +478,17 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] 2026-08-31 — **El login tarda distinto según si la cuenta existe, y eso se puede medir desde
+  fuera.** `AuthenticationService::verifyCredentials()` devuelve `null` de inmediato cuando el usuario
+  no existe, saltándose `password_verify()`; con un usuario que sí existe siempre paga el costo de
+  bcrypt. El cuerpo de la respuesta es idéntico en ambos casos —eso está bien cubierto y verificado—
+  pero **el tiempo no**, así que alguien con paciencia puede averiguar qué cuentas existen sin
+  adivinar una sola contraseña. **Preexistente:** lo destapó la revisión de la Tarea 5 de
+  `docs/superpowers/plans/2026-08-30-s01-login-react.md`, que trazó los tres caminos de fallo; el
+  archivo no lo tocó ese frente. El arreglo estándar es hacer un `password_verify()` contra un hash
+  señuelo cuando el usuario no existe, para que ambos caminos cuesten lo mismo. Merece tarea propia:
+  toca autenticación y hay que medir tiempos antes y después para saber si de verdad se cerró.
+
 - [ ] 2026-08-31 — **La longitud mínima de contraseña se mide distinto en el navegador y en el
   servidor cuando hay caracteres multibyte.** El JS del modal usa `password.length`
   (`views/auth/login.view.php:170`, unidades UTF-16) y el PHP usa `strlen()`
