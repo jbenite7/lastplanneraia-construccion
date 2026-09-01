@@ -433,6 +433,8 @@ goals/ci-en-verde/*
 !tests/browser/programacion-movil-sin-grilla.mjs
 !tests/browser/programacion-movil-tarjeta.mjs
 !tests/browser/ct-intermedia.spec.mjs
+!tests/browser/login-react.spec.mjs
+!tests/browser/login-react.visual.mjs
 
 # Los goals entran en git — decision del usuario, 2026-08-18, misma razon que
 # `decisiones/` (D-COORD-1): sin versionar, dos sesiones escribiendo el mismo goal se
