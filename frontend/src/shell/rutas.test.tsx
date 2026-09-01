@@ -133,6 +133,35 @@ test('un contrato roto (JSON malformado) cae en el mismo estado recuperable que 
   expect(await screen.findByRole('alert')).toHaveTextContent(/no pudimos conectar/i);
 });
 
+test('un 5xx en el bootstrap cae en el estado recuperable, nunca en el login por descarte', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
+    new Response(JSON.stringify({ error: { codigo: 'INTERNAL', mensaje: 'falla interna' } }), { status: 500 }),
+  ));
+
+  render(<Rutas />);
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(/no pudimos conectar/i);
+  expect(screen.queryByRole('heading', { name: /entrar/i })).not.toBeInTheDocument();
+});
+
+test('mientras el bootstrap está en vuelo se ve "Cargando…", nunca el login por descarte', async () => {
+  let resolverSesion: (respuesta: Response) => void = () => {};
+  vi.stubGlobal('fetch', vi.fn().mockReturnValue(
+    new Promise<Response>((resolve) => {
+      resolverSesion = resolve;
+    }),
+  ));
+
+  render(<Rutas />);
+
+  expect(screen.getByRole('status')).toHaveTextContent(/cargando/i);
+  expect(screen.queryByRole('heading', { name: /entrar/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+  resolverSesion(new Response(JSON.stringify(ANONIMA_MISSING_SESSION), { status: 200 }));
+  await waitFor(() => expect(screen.getByRole('heading', { name: /entrar/i })).toBeInTheDocument());
+});
+
 // --- avisos consumibles una vez (ronda de arreglos 1) --------------------------
 
 const ANONIMA_MISSING_SESSION = {
@@ -220,4 +249,56 @@ test('tras un ciclo de logout en el mismo montaje, el aviso de reset ya consumid
   // 4) de vuelta al login: el aviso de reset, ya consumido en el paso 1, no reaparece.
   await waitFor(() => expect(screen.getByRole('heading', { name: /entrar/i })).toBeInTheDocument());
   expect(screen.queryByRole('status')).not.toBeInTheDocument();
+});
+
+// --- riesgo capital: login exitoso + fallo de arranque posterior --------------
+
+test('login exitoso seguido de un fallo de arranque muestra el error recuperable, sin reenviar credenciales', async () => {
+  let intentosSesion = 0;
+  const loginFalso = vi.fn(async () =>
+    new Response(JSON.stringify({ success: true, next: 'projects', message: null }), { status: 200 }),
+  );
+
+  const fetchFalso = vi.fn(async (entrada: RequestInfo | URL, opciones?: RequestInit) => {
+    const ruta = typeof entrada === 'string' ? entrada : entrada.toString();
+    const metodo = opciones?.method ?? 'GET';
+
+    if (ruta === '/api/session') {
+      intentosSesion += 1;
+      if (intentosSesion === 1) {
+        return new Response(JSON.stringify(ANONIMA_MISSING_SESSION), { status: 200 });
+      }
+      // El bootstrap posterior al login (Tarea 9: `alResolver` llama `recargar()`) falla —
+      // simula una caída técnica de `/api/session` justo después de un login exitoso.
+      return new Response(
+        JSON.stringify({ error: { codigo: 'INTERNAL', mensaje: 'falla interna' } }),
+        { status: 500 },
+      );
+    }
+    if (ruta === '/api/auth/login' && metodo === 'POST') {
+      return loginFalso();
+    }
+
+    return new Response(JSON.stringify({}), { status: 200 });
+  });
+  vi.stubGlobal('fetch', fetchFalso);
+
+  const usuario = userEvent.setup();
+  render(<Rutas />);
+
+  await screen.findByRole('heading', { name: /entrar/i });
+
+  await usuario.type(screen.getByLabelText('Usuario'), 'test.A');
+  await usuario.type(screen.getByLabelText('Contraseña'), 'clave-valida');
+  await usuario.click(screen.getByRole('button', { name: 'Entrar' }));
+
+  // El fallo del bootstrap posterior al login se ve como error recuperable, nunca como el
+  // formulario de login "por descarte" — el riesgo capital de esta tarea.
+  expect(await screen.findByRole('alert')).toHaveTextContent(/no pudimos conectar/i);
+  expect(screen.queryByRole('heading', { name: /entrar/i })).not.toBeInTheDocument();
+
+  // Ni la propia recuperación (botón "Reintentar") ni ningún otro camino reenvía credenciales:
+  // `alResolver`/`recargar` solo hablan con `GET /api/session`.
+  expect(loginFalso).toHaveBeenCalledOnce();
+  expect(fetchFalso).toHaveBeenCalledWith('/api/auth/login', expect.objectContaining({ method: 'POST' }));
 });
