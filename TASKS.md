@@ -61,18 +61,30 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
   un estado artificial que en producción no ocurriría, o (b) existe un camino real que la pierde.
   En cualquiera de los dos casos, la pantalla no debe responder 500 nunca: en el único caso legítimo
   (proyecto nuevo sin cronograma) debe guiar a cargar el primero.
-- [ ] **La rama "sin sesión" de `NotificationController::getUnread()`/`::markAsRead()` es código
-  muerto por esta puerta.** Ambos métodos comprueban `$_SESSION['usuario']` y, si falta, responden
-  `403 {"error":"No autorizado"}` — pero `SessionMiddleware::check()` corre antes en el pipeline
-  (`public/index.php:55-57`, antes de que exista el router) y ya intercepta esa misma petición sin
-  sesión con `401 {"success":false,"sessionExpired":true,"reason":"missing_session","redirect":"/login"}`.
-  El bloque `if (!$userId)` de ambos métodos nunca se alcanza hoy por esta ruta. Descubierto
-  caracterizando T02 (`docs/superpowers/plans/2026-08-30-t02-contexto-lps-react.md`, Tarea 1) al
-  escribir `tests/test_lps_api_contract.php`: la primera versión del test esperaba el 403 del
-  controlador y falló en vivo con 401 — verificado con `curl -i` contra el contenedor. No se corrige
-  aquí (Tarea 1 es censo/caracterización, no cambia comportamiento); anotado para que Task 9 de T02
-  (que sí modifica `NotificationController`) decida si retira la rama muerta o la deja como defensa
-  en profundidad.
+- [x] **La rama "sin sesión" de `NotificationController::getUnread()`/`::markAsRead()` era código
+  muerto por esta puerta — retirada en T02 Tarea 9 (2026-08-31).** Ambos métodos comprobaban
+  `$_SESSION['usuario']` y, si faltaba, respondían `403 {"error":"No autorizado"}` — pero
+  `SessionMiddleware::check()` corre antes en el pipeline (`public/index.php:55-57`, antes de que
+  exista el router) y ya intercepta esa misma petición sin sesión con
+  `401 {"success":false,"sessionExpired":true,"reason":"missing_session","redirect":"/login"}`.
+  Descubierto caracterizando T02 (`docs/superpowers/plans/2026-08-30-t02-contexto-lps-react.md`,
+  Tarea 1) al escribir `tests/test_lps_api_contract.php`. Anotado ahí para que Task 9 (que sí
+  modifica `NotificationController`) decidiera: se optó por **retirar** la rama, no conservarla
+  como defensa en profundidad — una rama que ninguna prueba puede alcanzar documenta un contrato
+  falso. Verificado con `tests/test_lps_api_contract.php` y `tests/test_notifications_api_contract.php`
+  tras el retiro (ambos en verde).
+
+- [ ] **`public/js/components/notifications.js::markAsRead()` manda su POST sin CSRF y hoy es
+  inofensivo por accidente, no por diseño (T02 Tarea 9, 2026-08-31).** Desde esta tarea,
+  `NotificationController::markAsRead()` exige el header `X-CSRF-Token` (form-key `shell_api`).
+  El `fetch` de `notifications.js` nunca lo manda — hoy no importa porque `initNotifications()`
+  corta antes (`#notificationBadge`/`#notificationList` ya no existen en ninguna vista del sidebar
+  rollout), pero el día que alguien vuelva a renderizar esos IDs, ese POST empezará a fallar con
+  403 `CSRF_INVALID` de inmediato, sin aviso previo. Dejé un comentario-trampa al inicio del
+  archivo explicando el porqué y el arreglo (emitir el token `shell_api` a esa vista, p. ej. vía
+  `<meta>` como `lps-drawer-csrf-token`). No lo arreglé aquí porque el brief de Tarea 9 autoriza
+  explícitamente omitir el camino legado si no requiere cambio funcional hoy — pero alguien debe
+  decidir si esto merece spec propio antes de que el sidebar rollout se revierta o el badge vuelva.
 
 - [ ] **`LpsService::getActivityComments()` y `addActivityComment()` quedaron sin llamador desde el
   controlador.** Al normalizar el hilo en la Tarea 5 de T02 (`8e83a705`), `LpsApiController` pasó a

@@ -251,10 +251,11 @@ if (isset($csrfToken)) {
 
 // Medido en vivo: SessionMiddleware::check() intercepta ANTES de que la petición
 // llegue a NotificationController, así que el sobre real de "sin sesión" es el del
-// middleware (401 sessionExpired/missing_session), no el 403 "No autorizado" que
-// NotificationController::getUnread()/markAsRead() emitirían si el middleware los
-// dejara pasar sin $_SESSION['usuario']. Esa rama del controlador queda inalcanzable
-// hoy por esta puerta — se documenta como hallazgo en el reporte, no se corrige aquí.
+// middleware (401 sessionExpired/missing_session). Hallazgo de T02 Tarea 1: la rama
+// `!$userId` → 403 "No autorizado" que traía NotificationController::getUnread()/
+// markAsRead() nunca podía dispararse por esta puerta — T02 Tarea 9 la retiró en vez
+// de conservarla (ver `NotificationController.php`); el resto de esta sección sigue
+// caracterizando exactamente el mismo sobre 401 de middleware.
 $jarVacio = tempnam(sys_get_temp_dir(), 'cookies_vacio_');
 [$code, $data] = jsonReq(BASE . '/api/notifications/unread', null, $jarVacio, ['X-AIA-Expect-Json: 1']);
 afirmar($code === 401, "GET /api/notifications/unread sin sesión debería responder HTTP 401 (fue $code)");

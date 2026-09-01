@@ -5,9 +5,11 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-// --- obtenerNoLeidas: forma real de NotificationController::getUnread() ---
-// (medida en vivo contra el contenedor: {"success":true,"data":[{id,type,title,message,
-// item_count,created_at,project_id}]} — sin "ok", con project_id todavía snake_case).
+// --- obtenerNoLeidas: forma real de NotificationController::getUnread() tras T02 Tarea 9 ---
+// ({"success":true,"ok":true,"data":[{id,type,title,message,item_count,created_at}]} — ya sin
+// project_id, ver NotificationService::getUnreadByUser()).
+
+const CSRF_TOKEN = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 
 function itemCrudo(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
@@ -17,14 +19,13 @@ function itemCrudo(overrides: Record<string, unknown> = {}): Record<string, unkn
     message: '1 actividad(es) pasaron a CNP genérica.',
     item_count: 19,
     created_at: '2026-08-26 22:54:06',
-    project_id: 'pdc_sandbox_e2e',
     ...overrides,
   };
 }
 
 test('obtenerNoLeidas transforma item_count/created_at snake_case a camelCase', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(
-    JSON.stringify({ success: true, data: [itemCrudo()] }),
+    JSON.stringify({ success: true, ok: true, data: [itemCrudo()] }),
     { status: 200 },
   )));
 
@@ -42,9 +43,11 @@ test('obtenerNoLeidas transforma item_count/created_at snake_case a camelCase', 
   ]);
 });
 
-test('obtenerNoLeidas nunca expone project_id a React — se descarta en la transformación', async () => {
+test('obtenerNoLeidas nunca expone project_id a React aunque un despliegue intermedio lo envíe', async () => {
+  // El servidor ya no lo manda (T02-AC-142) — este caso cubre compatibilidad hacia atrás, no el
+  // contrato vigente.
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(
-    JSON.stringify({ success: true, data: [itemCrudo({ project_id: 'otro_proyecto' })] }),
+    JSON.stringify({ success: true, ok: true, data: [itemCrudo({ project_id: 'otro_proyecto' })] }),
     { status: 200 },
   )));
 
@@ -54,20 +57,20 @@ test('obtenerNoLeidas nunca expone project_id a React — se descarta en la tran
   expect(resultado.data[0]).not.toHaveProperty('projectId');
 });
 
-test('obtenerNoLeidas con lista vacía resuelve success:true y data:[]', async () => {
+test('obtenerNoLeidas con lista vacía resuelve success:true, ok:true y data:[]', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(
-    JSON.stringify({ success: true, data: [] }),
+    JSON.stringify({ success: true, ok: true, data: [] }),
     { status: 200 },
   )));
 
   const resultado = await obtenerNoLeidas();
 
-  expect(resultado).toEqual({ success: true, data: [] });
+  expect(resultado).toEqual({ success: true, ok: true, data: [] });
 });
 
 test('un "type" no catalogado en NotificationType::$registry no rompe el parseo — el catálogo crece sin tocar el transporte', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(
-    JSON.stringify({ success: true, data: [itemCrudo({ type: 'un_tipo_que_no_existe_todavia' })] }),
+    JSON.stringify({ success: true, ok: true, data: [itemCrudo({ type: 'un_tipo_que_no_existe_todavia' })] }),
     { status: 200 },
   )));
 
@@ -78,7 +81,19 @@ test('un "type" no catalogado en NotificationType::$registry no rompe el parseo 
 
 test('un id no numérico falla como ApiError de forma inválida', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(
-    JSON.stringify({ success: true, data: [itemCrudo({ id: '154' })] }),
+    JSON.stringify({ success: true, ok: true, data: [itemCrudo({ id: '154' })] }),
+    { status: 200 },
+  )));
+
+  const error = await obtenerNoLeidas().catch((causa: unknown) => causa);
+
+  expect(error).toBeInstanceOf(ApiError);
+  expect((error as ApiError).tipo).toBe('forma_invalida');
+});
+
+test('una respuesta sin el aditivo ok falla como ApiError de forma inválida', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(
+    JSON.stringify({ success: true, data: [] }),
     { status: 200 },
   )));
 
@@ -90,7 +105,7 @@ test('un id no numérico falla como ApiError de forma inválida', async () => {
 
 // --- sesión ausente (SessionMiddleware intercepta antes que el controlador) ---
 
-test('sin sesión (401 sessionExpired) propaga como ApiError con redirect — caracterizado en test_lps_api_contract.php', async () => {
+test('sin sesión (401 sessionExpired) propaga como ApiError con redirect — caracterizado en test_notifications_api_contract.php', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(
     JSON.stringify({ success: false, sessionExpired: true, reason: 'missing_session', redirect: '/login' }),
     { status: 401 },
@@ -104,34 +119,61 @@ test('sin sesión (401 sessionExpired) propaga como ApiError con redirect — ca
   expect((error as ApiError).razon).toBe('missing_session');
 });
 
-// --- marcarLeida: forma real de NotificationController::markAsRead() ------
-// (medida en vivo: {"success":true} — sin CSRF, el controlador actual no lo exige; sin "ok",
-// sin eco del id).
+// --- marcarLeida: forma real de NotificationController::markAsRead() tras T02 Tarea 9 -------
+// ({"success":true,"ok":true} — ahora exige CSRF vía header X-CSRF-Token, T02-AC-139).
 
-test('marcarLeida envía JSON {id} por POST', async () => {
-  const fetchFalso = vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true }), { status: 200 }));
+test('marcarLeida envía JSON {id} por POST con el header X-CSRF-Token', async () => {
+  const fetchFalso = vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true, ok: true }), { status: 200 }));
   vi.stubGlobal('fetch', fetchFalso);
 
-  const resultado = await marcarLeida(31);
+  const resultado = await marcarLeida(31, CSRF_TOKEN);
 
-  expect(resultado).toEqual({ success: true });
+  expect(resultado).toEqual({ success: true, ok: true });
   const [ruta, opciones] = fetchFalso.mock.calls[0];
   expect(String(ruta)).toBe('/api/notifications/read');
   expect(opciones.method).toBe('POST');
   expect(opciones.body).toBe(JSON.stringify({ id: 31 }));
+  expect((opciones.headers as Headers).get('X-CSRF-Token')).toBe(CSRF_TOKEN);
 });
 
-test('marcarLeida con id inexistente sigue devolviendo success:true (idempotente, no revela pertenencia)', async () => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true }), { status: 200 })));
+test('marcarLeida con id inexistente sigue devolviendo success/ok:true (idempotente, no revela pertenencia)', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true, ok: true }), { status: 200 })));
 
-  await expect(marcarLeida(999999999)).resolves.toEqual({ success: true });
+  await expect(marcarLeida(999999999, CSRF_TOKEN)).resolves.toEqual({ success: true, ok: true });
+});
+
+test('marcarLeida sin CSRF válido rechaza con ApiError http/403/CSRF_INVALID', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(
+    JSON.stringify({ success: false, ok: false, error: { code: 'CSRF_INVALID', message: 'Token inválido.' } }),
+    { status: 403 },
+  )));
+
+  const error = await marcarLeida(31, 'token-invalido').catch((causa: unknown) => causa);
+
+  expect(error).toBeInstanceOf(ApiError);
+  expect((error as ApiError).tipo).toBe('http');
+  expect((error as ApiError).status).toBe(403);
+  expect((error as ApiError).codigo).toBe('CSRF_INVALID');
+});
+
+test('un id no positivo rechaza con ApiError http/400/VALIDATION_FAILED', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(
+    JSON.stringify({ success: false, ok: false, error: { code: 'VALIDATION_FAILED', message: 'ID de notificación requerido.' } }),
+    { status: 400 },
+  )));
+
+  const error = await marcarLeida(0, CSRF_TOKEN).catch((causa: unknown) => causa);
+
+  expect(error).toBeInstanceOf(ApiError);
+  expect((error as ApiError).status).toBe(400);
+  expect((error as ApiError).codigo).toBe('VALIDATION_FAILED');
 });
 
 test('un abort en marcarLeida rechaza con ApiError tipo abortado, sin reintento', async () => {
   const fetchFalso = vi.fn().mockRejectedValue(new DOMException('The operation was aborted.', 'AbortError'));
   vi.stubGlobal('fetch', fetchFalso);
 
-  const error = await marcarLeida(31, { signal: new AbortController().signal }).catch((causa: unknown) => causa);
+  const error = await marcarLeida(31, CSRF_TOKEN, { signal: new AbortController().signal }).catch((causa: unknown) => causa);
 
   expect(error).toBeInstanceOf(ApiError);
   expect((error as ApiError).tipo).toBe('abortado');
