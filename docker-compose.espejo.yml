@@ -1,0 +1,86 @@
+# Stack del espejo de producción — segundo entorno local, aislado del compartido.
+#
+# POR QUÉ EXISTE. El repositorio tiene un solo stack (`docker-compose.yml`, proyecto
+# `last-planner-aia`) y varias sesiones trabajando a la vez. Ese stack sirve `main`, con todas sus
+# migraciones aplicadas. Este frente trabaja sobre el commit DESPLEGADO EN PRODUCCIÓN, que va 457
+# commits por detrás y no conoce ninguna de esas migraciones: probarlo contra la base compartida da
+# verdes y rojos que no significan nada.
+#
+# Restaurar producción encima de la base compartida tampoco sirve: le cambiaría el esquema a la otra
+# sesión a mitad de su trabajo, sin que se entere hasta que algo falle raro.
+#
+# Por eso este stack es COMPLETO y SEPARADO: su propio proyecto compose, su propio contenedor de
+# base, su propio volumen y sus propios puertos. Levantarlo y tumbarlo no toca al otro.
+#
+#   Compartido (main)   → app 8081 · db 3307 · proyecto last-planner-aia
+#   Espejo (producción) → app 8083 · db 3308 · proyecto lps-espejo-prod
+#
+# USO. Desde este worktree, con `--env-file` porque las credenciales no se versionan:
+#
+#   docker compose -f docker-compose.espejo.yml --env-file .env.espejo up -d
+#   docker compose -f docker-compose.espejo.yml --env-file .env.espejo down
+#
+# El montaje del código es ESTE worktree por ruta absoluta, igual que hace
+# `docker-compose.override.yml` con la raíz. Así el espejo sirve siempre el código del frente y no
+# hay forma de verificar contra el árbol equivocado — que es el fallo medido el 2026-08-18.
+#
+# La base que este stack levanta contiene DATOS REALES DE OBRA restaurados desde producción. No se
+# publica, no sale del disco y su volumen se borra con `down -v` al cerrar el frente.
+
+name: lps-espejo-prod
+
+services:
+  app:
+    # La misma imagen que ya construyó el stack compartido. Si no existe:
+    #   docker compose build app     (desde la raíz del repo)
+    image: lps-aia-app-ci:local
+    ports:
+      - "${ESPEJO_APP_PORT:-8083}:80"
+    environment:
+      TZ: America/Bogota
+      APP_ENV: development
+      DB_HOST: db
+      DB_PORT: 3306
+      # Estas tres van aquí y no solo en el .env por la misma razón que en el stack compartido:
+      # `public/index.php` carga Dotenv, pero los `tests/test_*.php` NO, así que el PHP de línea de
+      # comandos depende de este bloque y de ningún otro. Además, `Dotenv::createImmutable()` no
+      # sobrescribe lo que ya está en el entorno, así que el `.env` enlazado del worktree —que
+      # apunta a la base COMPARTIDA— no puede secuestrar a este contenedor.
+      DB_NAME: ${ESPEJO_DB_NAME}
+      DB_USER: ${ESPEJO_DB_USER}
+      DB_PASS: ${ESPEJO_DB_PASS}
+      USE_GLOBAL_TABLES: "true"
+      # La puerta de servicio, para entrar sin teclear credenciales. Solo desarrollo.
+      DEV_DOOR: "1"
+      DEV_DOOR_USERS: ${ESPEJO_DEV_DOOR_USERS:-test.A,test.R,test.V}
+    volumes:
+      - /Users/felipebenitez/Developer/lps-aia/.claude/worktrees/produccion:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0.40
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "${ESPEJO_DB_PORT:-3308}:3306"
+    environment:
+      TZ: America/Bogota
+      MYSQL_DATABASE: ${ESPEJO_DB_NAME}
+      MYSQL_USER: ${ESPEJO_DB_USER}
+      MYSQL_PASSWORD: ${ESPEJO_DB_PASS}
+      MYSQL_ROOT_PASSWORD: ${ESPEJO_DB_ROOT_PASS}
+    volumes:
+      # Volumen propio. El nombre lo prefija el proyecto compose, así que no puede colisionar con
+      # el `db_data` del stack compartido por mucho que se llamen igual.
+      - espejo_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+volumes:
+  espejo_db_data:
