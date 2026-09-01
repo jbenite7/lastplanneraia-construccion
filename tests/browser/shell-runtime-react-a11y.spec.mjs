@@ -62,6 +62,13 @@ test('axe serio/crítico en cero con el drawer móvil abierto (390×844, oscuro)
 
   await page.getByRole('button', { name: /abrir menú de navegación/i }).click();
   await expect(page.getByRole('navigation').locator('xpath=ancestor::aside')).toHaveAttribute('data-shell-drawer-open', 'true');
+  // El atributo se fija de inmediato, pero el cajón desliza con `transition: transform
+  // var(--ds-motion-standard)` (220ms, tokens.css). Sin esperar a que asiente, axe puede
+  // escanear a mitad del deslizamiento: el toggle de colapsar, en su posición final ya lejos
+  // del disparador fijo (`.shell-menu-trigger`, esquina superior izquierda), pasa cerca de esa
+  // esquina mientras el `translateX` todavía se anima — hallazgo "target-size" intermitente
+  // medido 2026-08-31 (fix-sidebar-header), no una superposición real en el estado final.
+  await page.waitForTimeout(300);
 
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
   const hallazgos = bloqueantes(results);

@@ -260,6 +260,16 @@
 
   .aia-sidebar__context {
     display: grid;
+    /* Explícito, no implícito: con solo `.aia-sidebar__brand` (col 1, fijo) y
+       `.aia-sidebar__toggle` (col 2, fijo) en el header, este era el único hijo
+       auto-colocado y el algoritmo de grid lo dejaba en la col 1 "por suerte"
+       (única celda libre en la fila). En cuanto aparece un segundo hijo
+       auto-colocado (p. ej. `.aia-sidebar__week`, shell React, Tarea 5 T01), el
+       algoritmo rellena la fila por columnas antes de abrir fila nueva y el
+       segundo ítem le roba la col 2 al toggle, colapsando la col 1 a 0px —
+       bug medido 2026-08-30 (fix-sidebar-header). Fijar la columna hace el
+       layout robusto al número de hijos del header. */
+    grid-column: 1;
     gap: var(--ds-space-1);
     min-width: 0;
     color: var(--ds-active-nav-text-muted);
@@ -592,6 +602,7 @@
      se retiran del flujo: el contexto vive en la context-bar visible y los
      aria-labelledby siguen computando el nombre desde elementos display:none. */
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__context,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__week,
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__group h3 {
     display: none;
   }

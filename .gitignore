@@ -307,6 +307,7 @@ tests/browser/*
 !tests/browser/shell-runtime-react-errores.spec.mjs
 !tests/browser/shell-runtime-react-accesibilidad.spec.mjs
 !tests/browser/shell-runtime-react-a11y.spec.mjs
+!tests/browser/shell-runtime-react-layout.spec.mjs
 !tests/browser/shell-control-actividad.spec.mjs
 !tests/browser/shell-coexistence-navigation.spec.mjs
 !tests/browser/shell-sidebar-rollout.mjs

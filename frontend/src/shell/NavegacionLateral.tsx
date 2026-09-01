@@ -62,7 +62,14 @@ export function NavegacionLateral({
       data-shell-drawer-open={abiertoEnMovil ? 'true' : undefined}
     >
       <header className="aia-sidebar__header">
-        <strong className="aia-sidebar__brand-name">Last Planner AIA</strong>
+        {/* `.aia-sidebar__brand` es la clase que `shell-sidebar.css`/`navigation.css`
+            fijan a `grid-column: 1` (contrato compartido con el shell PHP, que la
+            emite en un `<a>`). Sin este contenedor, `.aia-sidebar__brand-name`
+            quedaba huérfano de esa regla y auto-colocado por el grid — la causa
+            raíz del bug de encabezado medido 2026-08-30 (ver navigation.css). */}
+        <div className="aia-sidebar__brand">
+          <strong className="aia-sidebar__brand-name">Last Planner AIA</strong>
+        </div>
         <div className="aia-sidebar__context">
           <span>{projectName}</span>
           <small>{displayName}</small>
