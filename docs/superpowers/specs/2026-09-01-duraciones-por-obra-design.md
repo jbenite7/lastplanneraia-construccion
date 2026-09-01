@@ -166,7 +166,7 @@ escritura de `pdc_plan_paso`. La excepción cambia una entrada del cálculo, no 
 |---|---|---|
 | `GET /plan-compras/api/plan/duraciones` | `.reglas` (sin cambio) | **No cambia.** Sigue sirviendo el editor del catálogo de la empresa, tal como está |
 | `POST /plan-compras/api/plan/duraciones/obra` | **`.editar`** | `{duracionRef, dias:{columna: dias}}` — guarda la excepción y recalcula esta obra |
-| `DELETE /plan-compras/api/plan/duraciones/obra` | **`.editar`** | `{duracionRef, columnas:[…]}` — borra la excepción, vuelve el estándar y recalcula |
+| `POST /plan-compras/api/plan/duraciones/obra/borrar` | **`.editar`** | `{duracionRef, columnas:[…]}` — borra la excepción, vuelve el estándar y recalcula. Es POST y no DELETE porque el `Router` del repo solo declara `get()` y `post()`, y el cliente del PDC solo `apiGet`/`apiPost`/`apiUpload`; añadir el verbo tocaría dos capas compartidas para una sola ruta |
 
 Validaciones obligatorias, todas con prueba:
 
