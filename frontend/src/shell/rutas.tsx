@@ -1,23 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AppShell } from './AppShell';
+import { CambioClaveObligatorio } from './auth/CambioClaveObligatorio';
 import { limpiarParametrosAviso, resolverAvisoAcceso } from './auth/avisos';
 import { PantallaLogin } from './auth/PantallaLogin';
 import { SelectorProyecto } from './SelectorProyecto';
 import { SesionProvider, useSesion } from './SesionProvider';
-
-/**
- * El cambio de clave obligatorio sigue siendo una pantalla PHP (S01 no la ha
- * migrado). En vez de renderizar un shell vacío mientras tanto, sale de la
- * SPA de inmediato — nunca deja a la vista un estado operativo que no aplica.
- */
-function RedireccionCambioClave() {
-  useEffect(() => {
-    window.location.href = '/login';
-  }, []);
-
-  return <p role="status">Redirigiendo…</p>;
-}
 
 /**
  * Punto de entrada de la SPA (spec T01 §6: `SesionProvider` envuelve
@@ -61,6 +49,19 @@ function RutasSegunSesion() {
   const [searchAviso, setSearchAviso] = useState(() => window.location.search);
   const enPantallaAcceso = estado === 'anonimo' || estado === 'expirado';
   const estabaEnPantallaAccesoRef = useRef(false);
+  const veniaDeCambioClaveRef = useRef(false);
+
+  // Tras una cancelación confirmada (Tarea 9), `recargar()` deja `estado` en `anonimo` con la
+  // sesión pendiente ya destruida por el servidor — el foco vuelve al campo de usuario del login,
+  // nunca al propio botón que disparó la cancelación (ya no existe). Va en un efecto, no en el
+  // `.then()` de `alSalir`, porque el `<input id="usuario">` de `PantallaLogin` todavía no existe
+  // en el DOM en el instante en que esa promesa resuelve — el commit de React llega después.
+  useEffect(() => {
+    if (veniaDeCambioClaveRef.current && estado === 'anonimo') {
+      document.getElementById('usuario')?.focus();
+    }
+    veniaDeCambioClaveRef.current = estado === 'cambio_clave_requerido';
+  }, [estado]);
 
   // Los avisos consumibles por query (`reset=1`, legacy `timeout=1|inactive=1`) sobreviven un
   // recargo o un "atrás" del navegador porque viven en la URL, a diferencia de los que trae la
@@ -105,7 +106,13 @@ function RutasSegunSesion() {
       );
 
     case 'cambio_clave_requerido':
-      return <RedireccionCambioClave />;
+      return (
+        <CambioClaveObligatorio
+          csrfToken={arranque?.state === 'password_change_required' ? arranque.csrfToken : ''}
+          alCompletar={recargar}
+          alSalir={recargar}
+        />
+      );
 
     // `anonimo` y `expirado` comparten pantalla: la Tarea 1 de S01 es la que
     // distingue el aviso de "sesión vencida" del login limpio; aquí ambas
@@ -121,12 +128,10 @@ function RutasSegunSesion() {
           )}
           modo={{ tipo: 'normal' }}
           alRevalidar={recargar}
-          alResolver={async (next) => {
-            // El cambio obligatorio sigue en PHP junto con el flujo de recuperación.
-            if (next === 'password_change') {
-              window.location.href = '/login';
-              return;
-            }
+          alResolver={async () => {
+            // `next` no cambia la acción: en los dos casos ('projects' y 'password_change')
+            // el siguiente bootstrap ya trae el `state` correcto — `RutasSegunSesion` deriva
+            // la pantalla (Tarea 9: cambio de clave obligatorio) de ese `state`, no de `next`.
             await recargar();
           }}
         />

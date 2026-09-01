@@ -52,6 +52,28 @@ test('una sesión expirada (timeout) también vuelve al login, no a una pantalla
   await waitFor(() => expect(screen.getByRole('heading', { name: /entrar/i })).toBeInTheDocument());
 });
 
+test('un bootstrap con cambio de clave pendiente muestra el panel, sin login, selector, sidebar ni identidad', async () => {
+  responderSesion({
+    state: 'password_change_required',
+    authenticated: false,
+    reason: null,
+    user: null,
+    project: null,
+    capabilities: {},
+    navigation: { bi: null, groups: [] },
+    week: null,
+    csrfToken,
+  });
+
+  render(<Rutas />);
+
+  expect(await screen.findByRole('button', { name: 'Actualizar y continuar' })).toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /entrar/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /proyecto/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+  expect(screen.queryByLabelText('Usuario')).not.toBeInTheDocument();
+});
+
 test('con sesión pero sin proyecto muestra el selector', async () => {
   responderSesion({
     state: 'authenticated',

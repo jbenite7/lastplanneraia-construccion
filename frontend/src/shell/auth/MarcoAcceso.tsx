@@ -5,6 +5,14 @@ const ID_CONTENIDO_ACCESO = 'contenido-acceso';
 
 type PropiedadesMarcoAcceso = {
   titulo: string;
+  /**
+   * Id opcional para el `h1`. Lo usa `CambioClaveObligatorio` (Tarea 9) para que el
+   * `<dialog>` que envuelve enlace `aria-labelledby` al mismo título de la página en
+   * vez de duplicar un segundo `h1` — la regla de "un único `h1` por pantalla" (spec
+   * T01 §14) sigue intacta porque el título del diálogo y el de la página son el
+   * mismo nodo.
+   */
+  idTitulo?: string;
   children: ReactNode;
 };
 
@@ -15,7 +23,7 @@ type PropiedadesMarcoAcceso = {
  * la marca, el `ConmutadorTema` y el pie — nunca más de un `<main>` ni de un `<h1>`
  * por pantalla.
  */
-export function MarcoAcceso({ titulo, children }: PropiedadesMarcoAcceso) {
+export function MarcoAcceso({ titulo, idTitulo, children }: PropiedadesMarcoAcceso) {
   const contenidoRef = useRef<HTMLElement>(null);
 
   const alSaltarAlContenido = useCallback((evento: MouseEvent<HTMLAnchorElement>) => {
@@ -36,7 +44,7 @@ export function MarcoAcceso({ titulo, children }: PropiedadesMarcoAcceso) {
 
       <main id={ID_CONTENIDO_ACCESO} ref={contenidoRef} className="aia-page" tabIndex={-1}>
         <section className="aia-card">
-          <h1>{titulo}</h1>
+          <h1 id={idTitulo}>{titulo}</h1>
           {children}
         </section>
       </main>
