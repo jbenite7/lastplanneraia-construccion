@@ -117,3 +117,27 @@ export const EsquemaComentarioRaiz = EsquemaComentarioHijo.extend({
   respuestas: z.array(EsquemaComentarioHijo),
 });
 export type ComentarioRaiz = z.infer<typeof EsquemaComentarioRaiz>;
+
+/**
+ * Los dos únicos targets server-authoritative que acepta `LpsTargetResolver` (D-T02-02). Vivía
+ * duplicado literal en `hilo.ts` y `crisis.ts` (mismo cuerpo, mismo nombre de función); se extrae
+ * aquí — encargo del controlador de la Tarea 8 — antes de que un tercer llamador lo triplicara.
+ */
+export type TargetHiloParams = { consecutivo: number; modulo: Modulo } | { alertaId: number };
+
+/**
+ * Serializa un target a los mismos `URLSearchParams` que espera tanto `GET /api/lps/comments`
+ * (query string) como los POST de hilo/crisis (cuerpo `application/x-www-form-urlencoded`, donde
+ * el llamador añade sus propios campos sobre este mismo `URLSearchParams`). Puerto 1:1 del
+ * `queryDeTarget` que antes vivía por separado en cada pasarela.
+ */
+export function queryDeTarget(target: TargetHiloParams): URLSearchParams {
+  const query = new URLSearchParams();
+  if ('alertaId' in target) {
+    query.set('alerta_id', String(target.alertaId));
+  } else {
+    query.set('consecutivo', String(target.consecutivo));
+    query.set('modulo', EsquemaModulo.parse(target.modulo));
+  }
+  return query;
+}

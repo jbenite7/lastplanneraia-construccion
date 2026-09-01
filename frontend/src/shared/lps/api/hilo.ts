@@ -6,10 +6,12 @@ import {
   EsquemaCrisisAlert,
   EsquemaMenciones,
   EsquemaMeta,
-  EsquemaModulo,
   EsquemaTarget,
-  type Modulo,
+  queryDeTarget,
+  type TargetHiloParams,
 } from './esquemas';
+
+export type { TargetHiloParams } from './esquemas';
 
 /**
  * Pasarela de `GET /api/lps/comments` y `POST /api/lps/comments/add` (T02-AC-075..104). Es el
@@ -45,20 +47,6 @@ const EsquemaRespuestaAgregarComentario = z.object({
   meta: EsquemaMeta,
 });
 export type RespuestaAgregarComentario = z.infer<typeof EsquemaRespuestaAgregarComentario>;
-
-/** Los dos únicos targets server-authoritative que acepta `LpsTargetResolver` (D-T02-02). */
-export type TargetHiloParams = { consecutivo: number; modulo: Modulo } | { alertaId: number };
-
-function queryDeTarget(target: TargetHiloParams): URLSearchParams {
-  const query = new URLSearchParams();
-  if ('alertaId' in target) {
-    query.set('alerta_id', String(target.alertaId));
-  } else {
-    query.set('consecutivo', String(target.consecutivo));
-    query.set('modulo', EsquemaModulo.parse(target.modulo));
-  }
-  return query;
-}
 
 export function obtenerHilo(target: TargetHiloParams, opciones: RequestInit = {}): Promise<RespuestaHilo> {
   const query = queryDeTarget(target);

@@ -40,7 +40,7 @@ export function Rutas() {
  * proyecto: cada estado se pinta desde cero.
  */
 function RutasSegunSesion() {
-  const { estado, arranque, autenticado, recargar, cerrarSesion, logoutSinConfirmar } = useSesion();
+  const { estado, arranque, autenticado, recargar, cerrarSesion, logoutSinConfirmar, generacion } = useSesion();
 
   switch (estado) {
     case 'cargando':
@@ -84,7 +84,10 @@ function RutasSegunSesion() {
       return (
         <BrowserRouter>
           <Routes>
-            <Route element={<AppShell cerrarSesion={cerrarSesion} recargar={recargar} sesion={autenticado} />} path="*" />
+            <Route
+              element={<AppShell cerrarSesion={cerrarSesion} generacionSesion={generacion} recargar={recargar} sesion={autenticado} />}
+              path="*"
+            />
           </Routes>
         </BrowserRouter>
       );

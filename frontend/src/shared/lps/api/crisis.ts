@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { pedir } from '../../../lib/api/cliente';
-import { EsquemaMeta, EsquemaTarget } from './esquemas';
+import { EsquemaMeta, EsquemaTarget, queryDeTarget } from './esquemas';
 import type { TargetHiloParams } from './hilo';
 
 /**
@@ -31,17 +31,6 @@ const EsquemaRespuestaCerrarCrisis = z.object({
   meta: EsquemaMeta,
 });
 export type RespuestaCerrarCrisis = z.infer<typeof EsquemaRespuestaCerrarCrisis>;
-
-function queryDeTarget(target: TargetHiloParams): URLSearchParams {
-  const query = new URLSearchParams();
-  if ('alertaId' in target) {
-    query.set('alerta_id', String(target.alertaId));
-  } else {
-    query.set('consecutivo', String(target.consecutivo));
-    query.set('modulo', target.modulo);
-  }
-  return query;
-}
 
 export interface RegistrarCrisisParams {
   trigger: Trigger;

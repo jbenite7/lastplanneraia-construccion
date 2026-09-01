@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import type { ArranqueAutenticado } from '../lib/api/esquemas/arranque';
+import { CajonContextualLps } from '../shared/lps/componentes/CajonContextualLps';
+import { LpsDrawerProvider } from '../shared/lps/estado/LpsDrawerProvider';
+import { useLpsDrawer } from '../shared/lps/estado/useLpsDrawer';
 import { ContextoSemana } from './ContextoSemana';
 import { LimiteErrorRuta } from './errores/LimiteErrorRuta';
 import { MenuCuenta } from './MenuCuenta';
@@ -18,7 +21,44 @@ type PropiedadesAppShell = {
   recargar: () => Promise<void>;
   /** Cierre de sesión centralizado en `ControlActividad` (Tarea 6) — ver `MenuCuenta`. */
   cerrarSesion: () => Promise<unknown>;
+  /**
+   * `generacion` de `SesionProvider` (Tarea 8, T02): se pasa tal cual al único
+   * `LpsDrawerProvider` compuesto aquí, para que un cambio de sesión/proyecto cierre el cajón
+   * contextual LPS (T02-AC-021) sin que este componente conozca su lógica interna. Opcional con
+   * default `0` a propósito: las pruebas de T01 (`AppShell.*.test.tsx`) no conocen T02 y no deben
+   * tocarse sólo para satisfacer esta prop nueva — sin cambio real de generación en esas pruebas,
+   * el cajón simplemente nunca ve invalidarse por sesión, que es el comportamiento correcto ahí.
+   */
+  generacionSesion?: number;
 };
+
+/**
+ * Cierra el cajón contextual LPS al cambiar de ruta (Tarea 8, T02, ronda de arreglos 1). Vive
+ * dentro de `LpsDrawerProvider` (necesita `useLpsDrawer()`), como hermano de `<main>` — el mismo
+ * evento que ya limpia el drawer de navegación dos líneas más abajo en `AppShell`, pero replicado
+ * aquí porque ese efecto vive fuera del provider y no puede llamar `useLpsDrawer()`. `cerrar()`
+ * sobre un cajón ya cerrado es una operación sin efecto (el reductor descarta cualquier acción
+ * mientras `status === 'closed'`), así que este componente no necesita comprobar nada antes de
+ * llamarlo en cada cambio de `pathname` — incluido el montaje inicial.
+ *
+ * Motivo del fix: sin esto, la entrada de historial sintética que empuja el provider al abrir
+ * (AC-027, back cierra primero el cajón) puede desincronizarse de la del enrutador si el usuario
+ * sigue un enlace interno con el cajón todavía abierto — el siguiente "atrás" del navegador
+ * quedaría gobernado por una entrada que ya no corresponde a la ruta real.
+ */
+function CerrarCajonLpsAlNavegar() {
+  const { cerrar } = useLpsDrawer();
+  const location = useLocation();
+
+  useEffect(() => {
+    cerrar();
+    // Sólo debe disparar por cambio de ruta — `cerrar` es estable (useCallback en el provider)
+    // pero listarla igual no cambia el comportamiento; se omite para dejar la intención explícita.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
+  return null;
+}
 
 /**
  * Contenedor reutilizable del shell (Tarea 4, T01): un único `nav`/`main`, skip link, menú de
@@ -28,7 +68,7 @@ type PropiedadesAppShell = {
  * el `<nav>` en sí lo sigue renderizando `NavegacionLateral` — un solo landmark de navegación en
  * todo el árbol.
  */
-export function AppShell({ sesion, recargar, cerrarSesion }: PropiedadesAppShell) {
+export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 }: PropiedadesAppShell) {
   const [flotante, setFlotante] = useState(() =>
     esBarraLateralFlotante(typeof window === 'undefined' ? Infinity : window.innerWidth),
   );
@@ -207,11 +247,32 @@ export function AppShell({ sesion, recargar, cerrarSesion }: PropiedadesAppShell
         {tituloVigente}
       </div>
 
-      <main id={ID_PANEL_CONTENIDO} ref={contenidoRef} tabIndex={-1}>
-        <LimiteErrorRuta>
-          <Outlet />
-        </LimiteErrorRuta>
-      </main>
+      {/* Único `LpsDrawerProvider` autenticado del árbol (T02-AC-004): compone aquí, junto al
+          `Outlet`, para que cualquier módulo (S05/S07/S08/S25) consuma `useLpsDrawer()` sin volver
+          a montar su propio provider/estado/CSS del cajón (T02-AC-005). El cajón en sí
+          (`CajonContextualLps`) se monta una sola vez fuera del `<main>`, como hermano del
+          contenido — nunca dos instancias, nunca anidado dentro de una ruta hija.
+
+          `.lps-layout-cajon` es la rejilla que prescribe la spec (AC-168, diseño línea 562-563):
+          bajo 1180px es un contenedor de bloque normal (el cajón flota por posición fija, como ya
+          define `lps-contexto.css`); en 1180+ pasa a `grid` con `minmax(0,1fr)` para `<main>` y
+          una columna para el panel — ronda de arreglos 1: antes `<main>` y `<CajonContextualLps />`
+          eran hermanos sueltos sin ancestro `grid`/`flex`, así que en escritorio el cajón no
+          refluía el contenido, quedaba apilado debajo y su `height:100%` colapsaba a `auto` por
+          falta de una altura de fila resuelta. Sin `body.padding-right` en ningún punto — la spec
+          lo prohíbe explícitamente y es el patrón que usaba el drawer LPS legado
+          (`handsontable-module.css`), no el que reemplaza esta tarea. */}
+      <LpsDrawerProvider csrfToken={sesion.csrfToken} generacionSesion={generacionSesion} semana={sesion.week?.current ?? null}>
+        <CerrarCajonLpsAlNavegar />
+        <div className="lps-layout-cajon">
+          <main id={ID_PANEL_CONTENIDO} ref={contenidoRef} tabIndex={-1}>
+            <LimiteErrorRuta>
+              <Outlet />
+            </LimiteErrorRuta>
+          </main>
+          <CajonContextualLps />
+        </div>
+      </LpsDrawerProvider>
     </>
   );
 }

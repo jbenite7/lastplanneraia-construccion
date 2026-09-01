@@ -1,0 +1,266 @@
+/*
+ * Cajón contextual LPS (T02-AC-155..177). Sólo clases semánticas y tokens de
+ * `public/css/tokens.css` — cero color literal, atributo de estilo inline, CSS-in-JS ni la
+ * declaración de prioridad forzada de CSS (guardado por `rg` en el paso 4 del brief). Dark es el
+ * tema inicial; claro usa las mismas
+ * variables `--ds-active-*`, que ya resuelven por tema.
+ */
+
+/*
+ * `.lps-layout-cajon` — la rejilla de escritorio que prescribe la spec (AC-168, diseño línea
+ * 562-563: "1180+: AppShell cambia a grid minmax(0,1fr) + panel; el módulo refluye. No hay
+ * body.padding-right"). La monta `AppShell.tsx` envolviendo `<main>` y `<CajonContextualLps />`.
+ *
+ * Ronda de arreglos 1 (revisión del controlador): antes esos dos elementos eran hermanos sueltos
+ * sin ancestro grid/flex, así que en escritorio el cajón no reflejaba el contenido — quedaba
+ * apilado debajo de `<main>`, dentro de un ancestro sin altura resuelta, y su `height: 100%`
+ * (más abajo en este archivo) colapsaba a `auto`. `min-height: 100dvh` en el contenedor le da a la
+ * fila de la rejilla una altura real de la que `align-items: stretch` (default de `grid`) puede
+ * repartir a `<main>` y al panel por igual.
+ *
+ * `:has(.lps-cajon)` evita reservar la columna del panel cuando el cajón está cerrado —
+ * `CajonContextualLps` devuelve `null` en ese caso, así que sin este selector una columna de
+ * ancho fijo quedaría hueca permanentemente en vez de aparecer sólo cuando hay algo que mostrar.
+ */
+@media (min-width: 73.75rem) {
+  .lps-layout-cajon {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    min-height: 100dvh;
+  }
+
+  .lps-layout-cajon:has(.lps-cajon) {
+    grid-template-columns: minmax(0, 1fr) 28rem;
+  }
+
+  .lps-layout-cajon > main {
+    min-width: 0;
+  }
+}
+
+.lps-cajon-velo {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal-backdrop);
+  background: color-mix(in srgb, var(--ds-color-text-primary) 55%, transparent);
+}
+
+/* Desktop 1180+: el AppShell reserva columna de panel (AC-168) — el cajón no flota ni tiene velo. */
+@media (min-width: 73.75rem) {
+  .lps-cajon-velo {
+    display: none;
+  }
+}
+
+.lps-cajon {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-end: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  width: min(28rem, 100%);
+  max-width: 100%;
+  background: var(--ds-active-surface-raised);
+  color: var(--ds-active-text-primary);
+  border-inline-start: var(--ds-border-width) solid var(--ds-active-border);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Tablet: side-sheet superpuesto de ancho acotado (AC-169). */
+@media (min-width: 48rem) and (max-width: 73.74rem) {
+  .lps-cajon {
+    width: min(24rem, 90vw);
+  }
+}
+
+/* Móvil: bottom/full sheet con dvh y safe-area (AC-170). */
+@media (max-width: 47.99rem) {
+  .lps-cajon {
+    inset-block-start: auto;
+    inset-inline: 0;
+    width: 100%;
+    max-height: 92dvh;
+    border-start-start-radius: var(--ds-radius-panel);
+    border-start-end-radius: var(--ds-radius-panel);
+    border-inline-start: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+}
+
+/* Desktop 1180+: columna de panel embebida en el grid del AppShell, no flotante (AC-168). */
+@media (min-width: 73.75rem) {
+  .lps-cajon {
+    position: static;
+    inset: auto;
+    width: 100%;
+    height: 100%;
+    box-shadow: none;
+    border-radius: var(--ds-radius-panel);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+  }
+}
+
+.lps-cajon__encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  border-block-end: var(--ds-border-width) solid var(--ds-active-border);
+  position: sticky;
+  inset-block-start: 0;
+  background: inherit;
+  z-index: var(--z-sticky);
+}
+
+.lps-cajon__titulo-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.lps-cajon__cerrar {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+}
+
+.lps-cajon__cuerpo {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--ds-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-6);
+}
+
+.lps-cajon__pie {
+  padding: var(--ds-space-4);
+  border-block-start: var(--ds-border-width) solid var(--ds-active-border);
+  position: sticky;
+  inset-block-end: 0;
+  background: inherit;
+}
+
+/* AC-172: reduced motion elimina deslizamientos/pulsos sin ocultar estados. */
+@media (prefers-reduced-motion: no-preference) {
+  .lps-cajon {
+    transition: transform var(--transition-normal);
+  }
+}
+
+.lps-severidad {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-weight: 600;
+}
+
+.lps-severidad__punto {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-active-text-secondary);
+}
+
+.lps-severidad--critical .lps-severidad__punto {
+  background: var(--ds-color-state-critical-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lps-severidad--critical .lps-severidad__punto {
+    animation: lps-pulso 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes lps-pulso {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+.lps-diagnostico,
+.lps-restricciones,
+.lps-hilo,
+.lps-formulario-comentario,
+.lps-digest {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.lps-restricciones__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.lps-restricciones__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-control);
+  background: var(--ds-active-surface);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  min-height: 2.75rem;
+}
+
+.lps-hilo__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.lps-hilo__comentario {
+  padding: var(--ds-space-3);
+  border-radius: var(--ds-radius-control);
+  background: var(--ds-active-surface);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+}
+
+.lps-hilo__respuestas {
+  list-style: none;
+  margin: var(--ds-space-2) 0 0;
+  padding-inline-start: var(--ds-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  border-inline-start: var(--ds-border-width) solid var(--ds-active-border);
+}
+
+.lps-formulario-comentario textarea {
+  min-height: 2.75rem;
+  width: 100%;
+}
+
+.lps-formulario-comentario button,
+.lps-acciones-sos button,
+.lps-cierre-crisis button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+}
+
+.lps-digest__texto {
+  white-space: pre-wrap;
+  font-family: var(--ds-font-mono, monospace);
+  font-size: 0.875rem;
+  background: var(--ds-active-surface);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-control);
+  padding: var(--ds-space-3);
+}
+
+/* AC-167: 320px/zoom 200% sin overflow horizontal. */
+@media (max-width: 20rem) {
+  .lps-cajon {
+    width: 100%;
+  }
+}
