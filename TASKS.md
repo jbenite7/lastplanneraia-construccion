@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-20
+updated: 2026-09-01
 ---
 
 # Tareas
@@ -31,13 +31,28 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 
 ## Bloqueantes
 
-Ninguno. El único que había —«abrir una coordinadora nueva»— quedó resuelto el 2026-08-19 cuando
+**Uno, abierto el 2026-09-01: replicar a `main` las duraciones por obra del PDC.** El frente
+`fix/pdc-duraciones-pasos` sale del commit **desplegado en producción** `6fa3cff1` (2026-08-20),
+que va **457 commits y 870 archivos** detrás de `main`. Lo que se construya ahí **no existe en
+`main`**, así que el próximo deploy desde `main` retiraría la funcionalidad del servidor sin que
+nadie lo note. No es cherry-pick mecánico: `main` trae el shell React y otro estado del PDC.
+Bloquea el próximo deploy desde `main`, no el cierre de este frente.
+Spec: `docs/superpowers/specs/2026-09-01-duraciones-por-obra-design.md` §11.
+
+El anterior —«abrir una coordinadora nueva»— quedó resuelto el 2026-08-19 cuando
 Felipe declaró el reparto y consolidó el repo en una sola sesión. **Y estaba mal planteado desde el
 principio:** `docs/coordinacion-sesiones.md:18` dice que «el reparto lo declara el usuario, no lo
 reclama nadie», así que no tener coordinadora no es una carencia que haya que subsanar — es el
 estado por defecto mientras Felipe no reparta.
 
 ## Ahora
+
+- **Gobierno del catálogo de duraciones desde `/admin/`.** Decisión de Felipe del 2026-09-01 (D2):
+  va en frente propio, después del eje obra. Hoy `general_dias_procesos_contratacion` solo se edita
+  desde el PDC de una obra, con `lps.paquetes_contratacion.reglas`, y ese es el estándar de toda la
+  empresa. `admin/` es mini-aplicación aparte —router, seguridad y vistas propias— así que necesita
+  su propio diseño de permisos.
+  Contexto: `docs/superpowers/specs/2026-09-01-duraciones-por-obra-design.md` §3.2.
 
 - [ ] **Auditoría de specs 2026-08-20 — pendientes nuevos que no estaban en esta lista.** Las 61
   specs vigentes se verificaron contra el código; el informe completo, con evidencia y cada
