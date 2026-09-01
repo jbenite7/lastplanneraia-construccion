@@ -49,10 +49,20 @@
   }
 
   /* Ancho de lectura de la tarjeta. Sin esto se estiraba a todo el ancho disponible y los
-     campos quedaban desproporcionados en pantallas grandes. */
+     campos quedaban desproporcionados en pantallas grandes.
+
+     `box-shadow` (Tarea 14): la tarjeta no se despegaba del fondo. Medido en tema claro, su
+     superficie es blanco puro sobre un lienzo blanco roto — **un 2% de diferencia de
+     luminancia**, con el borde al 10% de opacidad y la sombra más tenue de la escala. A efectos
+     prácticos, una tarjeta invisible: el formulario parecía flotar suelto sobre la página.
+     La distancia entre esos dos colores la fijan los tokens globales y no se toca desde aquí,
+     así que la separación la da la elevación, que es justo para lo que existe la escala de
+     sombras. `--ds-shadow-lg` funciona en los dos temas (en claro es la escala «de tinta para
+     papel» que documenta theme-claro.css; en oscuro, la de penumbra). */
   .aia-auth__layout > .aia-card {
     inline-size: 100%;
     max-inline-size: 26rem;
+    box-shadow: var(--ds-shadow-lg);
   }
 
   /* Los campos no llevan margen propio (`.aia-field` sale con `margin-bottom: 0`), así que
