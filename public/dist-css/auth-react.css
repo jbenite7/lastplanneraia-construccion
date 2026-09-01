@@ -73,9 +73,6 @@
     }
   }
   @media (min-width: 73.75rem) {
-    .aia-auth__layout {
-      min-block-size: calc(100dvh - 2 * var(--ds-page-padding));
-    }
     .aia-auth__layout > .aia-card {
       max-inline-size: 28rem;
     }

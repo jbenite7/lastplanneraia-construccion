@@ -168,10 +168,15 @@
      algo más de ancho y aire a medida que crece la pantalla.
      Si algún día llega el panel de apoyo, aquí vuelve la rejilla de dos columnas. */
   @media (min-width: 73.75rem) {
-    .aia-auth__layout {
-      min-block-size: calc(100dvh - 2 * var(--ds-page-padding));
-    }
-
+    /* Aquí vivía `min-block-size: calc(100dvh - 2 * var(--ds-page-padding))`, de la Tarea 11,
+       cuando `.aia-auth` no distribuía nada y el layout tenía que estirarse solo. Con las tres
+       filas de arriba se volvió redundante **y dañino**: la fila del contenido ya no puede bajar
+       de esa altura, así que cabecera + contenido + pie sumaban más de `100dvh` y, como el
+       documento va con `overflow: hidden`, el pie quedaba recortado sin scroll con el que
+       alcanzarlo. Medido a 1180×820, el viewport canónico: pie en 889–976 con ventana de 820,
+       `scrollY` clavado en 0 y **0 px visibles**. Lo fija ahora el escenario «el pie es
+       alcanzable» de `login-react.spec.mjs`. La fila `1fr` ya ocupa el sobrante y `align-content`
+       centra la tarjeta dentro, que era todo lo que este `min-block-size` aportaba. */
     .aia-auth__layout > .aia-card {
       max-inline-size: 28rem;
     }
