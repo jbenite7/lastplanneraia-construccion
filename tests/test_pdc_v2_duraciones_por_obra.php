@@ -78,9 +78,9 @@ $assert($refl->getParameters()[5]->getName() === 'excepciones',
     'El sexto parámetro de proyectar() se llama $excepciones.');
 
 $fuentePlan = file_get_contents(__DIR__ . '/../src/Services/Pdc/PlanFechasService.php');
-$assert(substr_count($fuentePlan, 'DuracionesObraService($this->db))->deProyecto($projectId)') === 2,
-    'calcular() y simularReprogramacion() cargan las excepciones. Si solo una lo hace, la '
-    . 'simulación promete fechas distintas de las que el cálculo escribe.');
+$assert(substr_count($fuentePlan, 'DuracionesObraService($this->db))->deProyecto($projectId)') === 3,
+    'calcular(), simularReprogramacion() y plan() cargan las excepciones. Si solo unas lo hacen, la '
+    . 'pantalla promete fechas u orígenes distintos de los que el cálculo escribe.');
 
 // La resolución en sí es aritmética sobre dos arrays y se prueba sin base.
 $catalogo = ['diasFabricacion' => 180, 'diasLegalizacionContrato' => 30];
@@ -150,6 +150,38 @@ try {
 } finally {
     $db->query('DELETE FROM general_paquetes_contratacion WHERE creado_por = ?', ['test-dur-obra']);
     $db->query("DELETE FROM general_dias_procesos_contratacion WHERE paqueteContratacion = 'ZZTEST OBRA DUR'");
+}
+
+echo "=== el plan expone lo que la pantalla necesita para corregir ===\n";
+$fuente = file_get_contents(__DIR__ . '/../src/Services/Pdc/PlanFechasService.php');
+$assert(str_contains($fuente, 'pp.duracion_ref'),
+    'La consulta del plan selecciona pp.duracion_ref.');
+$assert(str_contains($fuente, "'duracionRef' => \$r['duracion_ref']"),
+    'La fila del plan expone duracionRef al cliente.');
+$assert(str_contains($fuente, "'origen' =>") && str_contains($fuente, "'colLegacy' =>"),
+    'Cada paso del plan dice su columna legacy y si su duración es de la empresa o de la obra.');
+
+echo "=== dos obras, la corrección de una no aparece en la otra ===\n";
+$OBRA_A = 999906;
+$OBRA_B = 999907;
+$svcDos = new DuracionesObraService($db);
+$limpiarDos = static function () use ($db, $OBRA_A, $OBRA_B): void {
+    $db->query('DELETE FROM pdc_proyecto_duraciones WHERE project_id IN (?, ?)', [$OBRA_A, $OBRA_B]);
+};
+$limpiarDos();
+try {
+    $svcDos->guardar($OBRA_A, 1, ['diasFabricacion' => 120], null);
+    $assert($svcDos->deProyecto($OBRA_B) === [],
+        'La corrección de la obra A no aparece en la obra B.');
+    $assert(($svcDos->deProyecto($OBRA_A)[1]['diasFabricacion'] ?? null) === 120,
+        'Y la obra A sí la conserva.');
+    $svcDos->guardar($OBRA_B, 1, ['diasFabricacion' => 45], null);
+    $assert(($svcDos->deProyecto($OBRA_A)[1]['diasFabricacion'] ?? null) === 120,
+        'Corregir la misma fila en la obra B no toca el número de la obra A.');
+    $assert(($svcDos->deProyecto($OBRA_B)[1]['diasFabricacion'] ?? null) === 45,
+        'Cada obra guarda el suyo.');
+} finally {
+    $limpiarDos();
 }
 
 echo $failures === [] ? "\nOK\n" : "\n" . count($failures) . " fallo(s)\n";
