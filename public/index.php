@@ -231,6 +231,8 @@ $router->post('/plan-compras/api/plan/pasos/copiar', [\App\Controllers\Api\PlanC
 // A4.1 · diferido nº 4 — las duraciones del catalogo, editables sin entrar a la base.
 $router->get('/plan-compras/api/plan/duraciones', [\App\Controllers\Api\PlanComprasPlanController::class, 'duraciones']);
 $router->post('/plan-compras/api/plan/duraciones', [\App\Controllers\Api\PlanComprasPlanController::class, 'guardarDuracion']);
+$router->post('/plan-compras/api/plan/duraciones/obra', [\App\Controllers\Api\PlanComprasPlanController::class, 'guardarDuracionObra']);
+$router->post('/plan-compras/api/plan/duraciones/obra/borrar', [\App\Controllers\Api\PlanComprasPlanController::class, 'borrarDuracionObra']);
 $router->post('/plan-compras/api/plan/pasos', [\App\Controllers\Api\PlanComprasPlanController::class, 'guardarPasos']);
 // PDC v2 · Fase B1 — Seguimiento. Las rutas con segmento van antes que la desnuda, igual que en el
 // bloque del plan, para no depender de como resuelva el router los prefijos.
