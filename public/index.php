@@ -52,7 +52,8 @@ if ($devDoorIsOpen) {
     $publicRoutes[] = '/dev/entrar';
 }
 
-$routeRequiresAuthentication = !\App\Core\SpaRouter::sirveLaSpa($requestUri)
+$requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$routeRequiresAuthentication = !\App\Core\SpaRouter::sirveLaSpa($requestUri, $requestMethod)
     && !in_array($requestUri, $publicRoutes, true);
 $reason = \App\Core\SessionMiddleware::beginRequest($routeRequiresAuthentication);
 register_shutdown_function(static function (): void {
@@ -89,9 +90,14 @@ if (\App\Core\AppEnvironment::allowsInternalTools()) {
 
 // Root / Entry Points
 $router->get('/', [\App\Controllers\Auth\LoginController::class, 'index']);
+// HEAD junto a GET: son las dos rutas exactas migradas de SpaRouter (RUTAS_EXACTAS_MIGRADAS),
+// y su rollback (quitarlas de ese array) tiene que devolver ambos métodos al legado, no solo
+// GET — ver App\Core\Router::head().
+$router->head('/', [\App\Controllers\Auth\LoginController::class, 'index']);
 
 // Auth
 $router->get('/login', [\App\Controllers\Auth\LoginController::class, 'index']);
+$router->head('/login', [\App\Controllers\Auth\LoginController::class, 'index']);
 $router->post('/login', [\App\Controllers\Auth\LoginController::class, 'login']);
 $router->get('/password/forgot', [\App\Controllers\Auth\PasswordResetController::class, 'forgot']);
 $router->post('/password/forgot', [\App\Controllers\Auth\PasswordResetController::class, 'sendLink']);
@@ -386,9 +392,10 @@ $router->get('/bi/curva-s', [\App\Controllers\Bi\BiViewController::class, 'curva
 
 // 6. Despachar
 // La SPA maneja su propio enrutado en el navegador: cada ruta migrada devuelve
-// el mismo HTML y React decide qué pantalla mostrar.
-if (\App\Core\SpaRouter::sirveLaSpa($requestUri)) {
-    require PROJECT_ROOT . '/public/app/index.html';
+// el mismo HTML y React decide qué pantalla mostrar. Solo GET/HEAD cruzan aquí —
+// ver App\Core\SpaRouter::coincideConMapa().
+if (\App\Core\SpaRouter::sirveLaSpa($requestUri, $requestMethod)) {
+    \App\Core\SpaHostRenderer::render([], 200, $requestMethod);
     exit;
 }
 

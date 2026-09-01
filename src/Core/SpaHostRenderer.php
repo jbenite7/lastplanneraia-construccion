@@ -13,6 +13,11 @@ namespace App\Core;
  * encontraría, para siempre. El reparto es: el bundle solo conoce la FORMA del dato
  * (`frontend/src/lib/runtime/configuracion.ts`), y el servidor decide el VALOR en cada
  * request y lo entrega ya resuelto, en HTML, nunca en el JavaScript versionado.
+ *
+ * Desde la Tarea 13 (corte de `/` y `/login`), `public/index.php` también llama a `render()`
+ * para las rutas canónicas del shell (sin config de arranque propia — el bootstrap de sesión
+ * lo resuelve el cliente contra `/api/session`). Antes de esta tarea esas rutas se servían con
+ * un `require` crudo de `public/app/index.html`, que no llevaba el `Cache-Control` de abajo.
  */
 class SpaHostRenderer
 {
@@ -35,18 +40,6 @@ class SpaHostRenderer
             $html = str_replace(self::MARCADOR, $bootstrap . self::MARCADOR, $html);
         }
 
-        // Esta respuesta puede llevar un token CSRF vivo (`$config['csrfToken']`). Producción es
-        // hosting compartido detrás de una capa de caché — sin este encabezado, una copia
-        // cacheada de esta página dejaría ese token al alcance de quien pida después la misma
-        // URL. Mismo encabezado que ya usa el resto del repo para respuestas con CSRF/sesión
-        // (`AuthApiController`, `SessionApiController`, `SessionController`, …).
-        // Esta respuesta puede llevar un token CSRF vivo (`$config['csrfToken']`). Producción es
-        // hosting compartido detrás de una capa de caché — sin este encabezado, una copia
-        // cacheada de esta página dejaría ese token al alcance de quien pida después la misma
-        // URL. Mismo encabezado que ya usa el resto del repo para respuestas con CSRF/sesión
-        // (`AuthApiController`, `SessionApiController`, `SessionController`, …). Explícito a
-        // propósito, sin fiarse de que `session.cache_limiter` (que ya manda uno equivalente por
-        // defecto en este proceso) siga configurado igual en cualquier entorno futuro.
         // Esta respuesta puede llevar un token CSRF vivo (`$config['csrfToken']`). Producción es
         // hosting compartido detrás de una capa de caché — sin este encabezado, una copia
         // cacheada de esta página dejaría ese token al alcance de quien pida después la misma
