@@ -521,9 +521,11 @@ class PlanComprasPlanController
             return;
         }
         $body = $this->body();
-        $ref = filter_var($body['duracionRef'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($ref === false) {
-            $this->fail('DURACION_INVALIDA', 'Falta la fila del catálogo que se quiere cambiar.', 422);
+        // Misma regla de pertenencia que los verbos de obra, en una sola copia: `refDeEstaObra()`
+        // responde el 422 o el 403 y devuelve null. Dos copias de la misma comprobación es una que
+        // se puede quedar atrás.
+        $ref = $this->refDeEstaObra($projectId, $body['duracionRef'] ?? null);
+        if ($ref === null) {
             return;
         }
         $dias = is_array($body['dias'] ?? null) ? $body['dias'] : null;
@@ -531,14 +533,7 @@ class PlanComprasPlanController
             $this->fail('DIAS_INVALIDOS', 'Falta el detalle de días.', 422);
             return;
         }
-        // La fila tiene que ser una de las que esta obra usa: `duracionRef` llega del cliente, y sin
-        // esta comprobación la pantalla de una obra podría reescribir duraciones que no le tocan.
-        $svc = new DuracionesCatalogoService($this->db);
-        if (!in_array($ref, array_column($svc->deProyecto($projectId), 'duracionRef'), true)) {
-            $this->fail('DURACION_NO_DISPONIBLE', 'Esa duración no la usa ningún paquete de esta obra.', 403);
-            return;
-        }
-        $r = $svc->actualizar($ref, $dias, $this->usuario());
+        $r = (new DuracionesCatalogoService($this->db))->actualizar($ref, $dias, $this->usuario());
         if (!$r['ok']) {
             $this->fail($r['code'] ?? 'DIAS_INVALIDOS', $r['mensaje'] ?? 'No se pudo guardar.', 422);
             return;
@@ -599,6 +594,15 @@ class PlanComprasPlanController
         if ($columnas === null) {
             $this->fail('COLUMNAS_INVALIDAS', 'Falta la lista de pasos que se quieren restablecer.', 422);
             return;
+        }
+        // El cuerpo llega del cliente: un número o un objeto donde se espera un string llegaría al
+        // in_array() estricto del servicio como «no está en la lista» y saldría con otro código. El
+        // tipo se comprueba aquí, donde se sabe que el dato es externo.
+        foreach ($columnas as $col) {
+            if (!is_string($col)) {
+                $this->fail('COLUMNAS_INVALIDAS', 'Cada paso que se restablece se identifica por su nombre.', 422);
+                return;
+            }
         }
         $r = (new DuracionesObraService($this->db))->borrar($projectId, $ref, $columnas);
         if (!$r['ok']) {

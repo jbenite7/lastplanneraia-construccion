@@ -10,9 +10,11 @@ namespace App\Services\Pdc;
  * del plan la antepone al catálogo. Cero filas para una obra = manda el catálogo, igual que antes
  * de que esto existiera.
  *
- * El nombre de columna se interpola en el SQL porque es un nombre de columna y no puede ir como
- * parámetro. Por eso se valida antes contra `PasosContratacionService::columnasLegacy()`, que se
- * deriva de `PlanFechasService::PASOS` y no de la base: sin ese filtro esto sería una inyección.
+ * Aquí el nombre de columna viaja como VALOR parametrizado —es un dato de la tabla, no un nombre de
+ * columna del SQL—, así que la lista blanca no lo salva de una inyección: lo salva de escribir
+ * basura. Se valida igual contra `PasosContratacionService::columnasLegacy()` porque es el mismo
+ * vocabulario que `$selectCols` sí interpola al leer en `PlanFechasService`: una fila con una
+ * columna que no esté en esa lista sería un dato que la lectura nunca podría usar.
  */
 class DuracionesObraService
 {
