@@ -1,6 +1,16 @@
 <?php
 
 declare(strict_types=1);
+// @requiere: puro
+
+// Este test solo carga scripts/lib/php-test-lane-manifest.php y comprueba su tabla de niveles en
+// memoria: no abre base de datos, no hace HTTP y no lee datos de proyecto. Su nivel es 'puro'.
+//
+// La etiqueta faltaba desde que el archivo nacio, y el efecto no era que el test se saltara: el
+// runner ABORTA la ejecucion entera con RC=2 en cuanto encuentra un test sin declarar, asi que un
+// solo archivo sin etiqueta dejaba el CI en rojo sin correr ni una prueba. Falla cerrado a
+// proposito -un test sin nivel es exactamente como nacian fuera del CI-, pero eso convierte la
+// omision en un apagon de la suite completa, no en un hueco de cobertura.
 
 require_once __DIR__ . '/../scripts/lib/php-test-lane-manifest.php';
 
@@ -32,4 +42,4 @@ if ($failures !== []) {
     exit(1);
 }
 
-echo "Lane manifest: {$checks} checks\n";
+echo "PASA: manifiesto de lanes, {$checks} comprobaciones\n";
