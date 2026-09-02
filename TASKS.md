@@ -43,13 +43,38 @@ vivas en `main`**, medidas con petición HTTP real contra el stack local:
   `App\Services\EstadoSemanalService`, que es ahora el único sitio donde tocarla: estaba copiada en
   los dos archivos, y `BaseController::getWeekStatusVars()` mantenía una tercera copia parcial cuyo
   comentario ya advertía que no podía divergir.
-- [ ] **Barrer los hermanos del mismo defecto.** El alias ambiguo no era exclusivo de
-  `semanas_activas`; quedan verificados y sin tocar, todos con dos referencias a la misma tabla sin
-  alias distinto: `src/Services/Bi/ForecastService.php:425` y `:442` (`cic` y `cip`),
-  `src/Services/ReportProcessor.php:211` (`{$tProgCons}`), `:985` y `:1063` (`cic`/`cip` vía
-  `$this->t()`) y `:1040` (`programacion_semanal`). Cada uno revienta igual en cuanto se ejecute con
-  alcance enlazado. Falta medir cuáles son alcanzables hoy y por qué ruta antes de tocarlos:
-  `ReportProcessor` corre en la generación de informes, no en una pantalla.
+- [x] **Medidos los seis hermanos del alias ambiguo (2026-09-02).** El resultado parte la lista en dos
+  mitades que no se parecen, y por eso solo se arregló una:
+  - **`ForecastService::getContractorPac4W()` y `getResponsiblePac4W()` — arreglados.** No los dispara
+    nada: son código muerto, sin un solo llamador en el repositorio (las claves
+    `contractor_pac_4w`/`responsible_pac_4w` que parecen invocarlos llegan a `predict()` ya
+    calculadas, desde fuera). Se arreglaron igual porque son dos líneas y quedan correctos para quien
+    los cablee; verificado con datos reales (proyecto 62, «CONSTRUALMANZA»: devuelve 0.3166 donde
+    antes lanzaba `ProjectScopeViolation`).
+  - **Los cuatro de `ReportProcessor` — NO arreglados, y no por pereza.** Sí hay disparador: el botón
+    «Consolidar informes» del panel de administración (`admin/async/consolidate.php`,
+    `DashboardController`) y la ruta `/reportes/{tipo}` de `ReportController`. Pero **ese código nunca
+    llega hasta las consultas del alias**, porque muere antes, dos veces. Ver la tarea de abajo.
+- [ ] **La consolidación de informes está muerta entera, y el alias es su tercer problema, no el
+  primero.** Medido el 2026-09-02 ejecutando `generateCurvaS()` y `generateReporteGeneral()` bajo
+  `SystemScopeRunner`, que es como corren de verdad: las dos abortan con `DomainException: Las tablas
+  calificadas por schema no están soportadas por el gate`. En orden de aparición:
+  1. **`information_schema` a través de `Database::query()`.** Mata el informe en
+     `ReportProcessor::reportTableHasProjectId()` (`:137`), antes de tocar dato ninguno. La
+     comprobación del guard ocurre al analizar la consulta, **antes** de mirar el alcance, así que
+     `SystemScope` no salva. `Database` ya resuelve esto bien y en privado con PDO crudo y caché
+     (`rawTableExists`, `rawColumnExists`), y la migración `20260828_project_scope_contract.php` fija
+     el patrón. Hay al menos **tres** sitios así dentro de `ReportProcessor` y otros tres fuera que
+     también pasan por el guard: `ProfesionalesApiController:519`, `SubcontratistasApiController:456`
+     y `ProgramChangeDetector:476`.
+  2. **`FROM DUAL`.** Tres consultas de `ReportProcessor` cuelgan sus subconsultas de `DUAL`, que no
+     está en el catálogo de esquema, así que el guard lanza `Tabla no clasificada en el schema: dual`
+     con cualquier alcance. Comprobado aparte.
+  3. **Y solo detrás de esas dos**, el alias ambiguo de `:211`, `:985`, `:1040` y `:1063`.
+
+  Arreglar (3) sin (1) y (2) no cambia nada observable y no se puede verificar, que es la razón de
+  dejarlo. Esto ya no es «un barrido de alias»: es **restaurar una funcionalidad caída**, con
+  escritura sobre `general_curvas`, `general_informe_consolidado` y hermanas. Merece frente propio.
 - [ ] **Los INSERT por lote del PDC revientan con «INSERT de múltiples filas no tiene una prueba de
   scope soportada».** El guard rechaza de plano el INSERT multifila; los servicios del PDC los usan a
   propósito, por rendimiento (`array_fill(0, count($lote), '(?, ?, …)')` aparece en
