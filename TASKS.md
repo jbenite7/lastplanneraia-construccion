@@ -35,10 +35,18 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 la suite quedó arreglado en el frente `fix/suite-main-scope`; **estas dos son de producción y siguen
 vivas en `main`**, medidas con petición HTTP real contra el stack local:
 
-- [ ] **`/programacion-semanal` revienta con «Alias de tabla de proyecto ambiguo: semanas_activas».**
-  Sale de `src/Legacy/datosGeneralesPagina.php`, que resuelve la tabla por `TableResolver` y acaba
-  con dos referencias al mismo alias en una consulta. Es un módulo central de Last Planner, no un
-  rincón: se ve en el log del contenedor en cada carga de la página.
+- [x] **Arreglado el 2026-09-02: el alias ambiguo de `semanas_activas`.** La misma consulta estaba
+  copiada en dos sitios —`src/Legacy/datosGeneralesPagina.php` y `ProgramaGeneralController`— y
+  nombraba la tabla dos veces sin alias, así que `/programacion-semanal` y `/programa-general`
+  reventaban al cargar. Cada referencia lleva ahora su alias y su `project_id` calificado; cubierto
+  por `ProjectSqlGuardTest`, con la pareja rechaza/acepta.
+- [ ] **Barrer los hermanos del mismo defecto.** El alias ambiguo no era exclusivo de
+  `semanas_activas`; quedan verificados y sin tocar, todos con dos referencias a la misma tabla sin
+  alias distinto: `src/Services/Bi/ForecastService.php:425` y `:442` (`cic` y `cip`),
+  `src/Services/ReportProcessor.php:211` (`{$tProgCons}`), `:985` y `:1063` (`cic`/`cip` vía
+  `$this->t()`) y `:1040` (`programacion_semanal`). Cada uno revienta igual en cuanto se ejecute con
+  alcance enlazado. Falta medir cuáles son alcanzables hoy y por qué ruta antes de tocarlos:
+  `ReportProcessor` corre en la generación de informes, no en una pantalla.
 - [ ] **Los INSERT por lote del PDC revientan con «INSERT de múltiples filas no tiene una prueba de
   scope soportada».** El guard rechaza de plano el INSERT multifila; los servicios del PDC los usan a
   propósito, por rendimiento (`array_fill(0, count($lote), '(?, ?, …)')` aparece en

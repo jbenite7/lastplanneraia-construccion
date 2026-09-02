@@ -59,9 +59,14 @@ class ProgramaGeneralController extends BaseController
                     $fechaDatepicker = date("Y, n - 1, d, H, i, s", strtotime($dataUltima["Fecha_Fin_Sem"]));
                 }
 
-                $sqlDetalles = "SELECT Semanal_Confirmada, fechaCierreCompromisos, fechaCreacionSemana,
-                               (SELECT SUM(reprogramacion) FROM {$tSa} WHERE Semana <= ? AND project_id = ?) AS versionCronograma
-                               FROM {$tSa} WHERE Semana = ? AND project_id = ?";
+                // Alias distinto por referencia y `project_id` calificado: es la misma consulta que
+                // src/Legacy/datosGeneralesPagina.php, y compartia su fallo. Con las dos referencias
+                // llamandose igual, ProjectSqlGuard (2026-08-29) aborta con «Alias de tabla de
+                // proyecto ambiguo» porque no puede decidir a cual raiz pertenece cada
+                // `project_id = ?`. El orden de los marcadores no cambia, asi que $params sigue igual.
+                $sqlDetalles = "SELECT s.Semanal_Confirmada, s.fechaCierreCompromisos, s.fechaCreacionSemana,
+                               (SELECT SUM(r.reprogramacion) FROM {$tSa} r WHERE r.Semana <= ? AND r.project_id = ?) AS versionCronograma
+                               FROM {$tSa} s WHERE s.Semana = ? AND s.project_id = ?";
                 $stmtDetalles = $this->db->queryWithProject($sqlDetalles, [$semana, $projectId, $semana, $projectId]);
                 $dataDetalles = $stmtDetalles->fetch();
 
