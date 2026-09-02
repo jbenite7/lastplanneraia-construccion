@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 
+use App\Security\DataScope\ProjectScope;
 use App\Services\Pdc\PlanFechasService;
 
 $failures = [];
@@ -22,11 +23,45 @@ $P = 999903;
 // paquetes no llevan project_id, así que el mismo paqueteId puede amarrarse en los dos proyectos).
 $P2 = 999904;
 
-$limpiar = static function () use ($db, $P, $P2): void {
-    $db->query('DELETE FROM pdc_plan_paso WHERE project_id IN (?, ?)', [$P, $P2]);
-    $db->query('DELETE FROM pdc_plan_paquete WHERE project_id IN (?, ?)', [$P, $P2]);
-    $db->query('DELETE FROM pdc_paquete_frente WHERE project_id IN (?, ?)', [$P, $P2]);
-    $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id IN (?, ?)', [$P, $P2]);
+// ProjectSqlGuard (feat(security): endurecer schema y usuario runtime, 2026-08-29) vive dentro de
+// Database::query() y exige un ProjectScope activo para tocar cualquier tabla con project_id. En un
+// request real lo bindea SessionMiddleware antes del controlador; este test llama al servicio y a la
+// base directo, por la linea de comandos, asi que lo bindea el. Mismo patron que
+// tests/test_pdc_v2_torre_control.php y que el frente de duraciones por obra (577c136f).
+//
+// Es un reenganche, no un bind suelto: DataScopeContext::bind() lanza LogicException si ya habia uno
+// enlazado, y este archivo alterna entre dos obras. `$enObra($P2)` … `$enObra($P)` marca en el codigo
+// donde cambia la obra, que es justo lo que los bloques del hueco 4 estan comprobando.
+$enObra = static function (int $projectId) use ($db): void {
+    $db->dataScope()->clear();
+    $db->dataScope()->bind(new ProjectScope($projectId, 'test-a4', 'A'));
+};
+
+$limpiar = static function () use ($db, $P, $P2, $enObra): void {
+    // Un DELETE por obra, no uno con `IN (?, ?)`: el gate de escritura no acepta MultiProjectScope
+    // (es para lectura agregada), y bajo un ProjectScope el guard INYECTA su project_id en el WHERE,
+    // asi que el `IN` de dos obras se estrecharia a una sola en silencio y la otra quedaria sucia.
+    // Partirlo deja el borrado explicito y verificable.
+    //
+    // Las tablas de este bloque llevan project_id, luego son de alcance Project y exigen scope.
+    // Las de mas abajo no: project_members y general_usuarios son Identity, y
+    // general_paquetes_contratacion y general_dias_procesos_contratacion son System
+    // (src/Security/DataScope/TableScopeDefinitions.php). Por eso se borran sin alcance enlazado.
+    foreach ([$P, $P2] as $obra) {
+        $enObra($obra);
+        $db->query('DELETE FROM pdc_plan_paso WHERE project_id = ?', [$obra]);
+        $db->query('DELETE FROM pdc_plan_paquete WHERE project_id = ?', [$obra]);
+        $db->query('DELETE FROM pdc_paquete_frente WHERE project_id = ?', [$obra]);
+        $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id = ?', [$obra]);
+        $db->query('DELETE FROM pdc_presupuesto_apu_insumos WHERE project_id = ?', [$obra]);
+        $db->query('DELETE FROM pdc_presupuesto_items WHERE project_id = ?', [$obra]);
+        $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$obra]);
+        $db->query('DELETE FROM programa_consolidado WHERE project_id = ?', [$obra]);
+        $db->query('DELETE FROM programa WHERE project_id = ?', [$obra]);
+        $db->query('DELETE FROM semanas_activas WHERE project_id = ?', [$obra]);
+    }
+    $db->dataScope()->clear();
+
     $db->query('DELETE FROM project_members WHERE project_id IN (?, ?)', [$P, $P2]);
     // Usuarios sintéticos del bloque «responsable»: se borran DESPUÉS de project_members y de
     // pdc_plan_paquete (la FK fk_ppp_responsable es ON DELETE SET NULL, así que el orden no rompe,
@@ -38,19 +73,22 @@ $limpiar = static function () use ($db, $P, $P2): void {
     // el prefijo «TEST A4»; con un DELETE por valor exacto por cada una, olvidar añadir la nueva aquí
     // deja residuo entre corridas sin que ningún assert lo note.
     $db->query("DELETE FROM general_dias_procesos_contratacion WHERE paqueteContratacion LIKE 'TEST A4%'");
-    $db->query('DELETE FROM pdc_presupuesto_apu_insumos WHERE project_id IN (?, ?)', [$P, $P2]);
-    $db->query('DELETE FROM pdc_presupuesto_items WHERE project_id IN (?, ?)', [$P, $P2]);
-    $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id IN (?, ?)', [$P, $P2]);
-    $db->query('DELETE FROM programa_consolidado WHERE project_id IN (?, ?)', [$P, $P2]);
-    $db->query('DELETE FROM programa WHERE project_id IN (?, ?)', [$P, $P2]);
-    $db->query('DELETE FROM semanas_activas WHERE project_id IN (?, ?)', [$P, $P2]);
 };
 $limpiar();
 
+// A partir de aqui el archivo trabaja en $P salvo donde diga lo contrario.
+$enObra($P);
+
 // Fixture: dos semanas consolidadas; la activa es la 2. Encabezados (Titulo=1) y una hoja (Titulo=0).
+// Una fila por INSERT: ProjectSqlGuard rechaza el INSERT multifila («no tiene una prueba de scope
+// soportada»), porque no puede demostrar que TODAS las filas caen dentro del alcance enlazado.
 $db->query(
-    'INSERT INTO semanas_activas (project_id, Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem) VALUES (?, 1, 1, ?, ?), (?, 2, 2, ?, ?)',
-    [$P, '2026-07-27', '2026-08-02', $P, '2026-08-03', '2026-08-09'],
+    'INSERT INTO semanas_activas (project_id, Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem) VALUES (?, 1, 1, ?, ?)',
+    [$P, '2026-07-27', '2026-08-02'],
+);
+$db->query(
+    'INSERT INTO semanas_activas (project_id, Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem) VALUES (?, 2, 2, ?, ?)',
+    [$P, '2026-08-03', '2026-08-09'],
 );
 
 // `programa` es la versión viva (no versionada por semana): una fila por unique_id, con el
@@ -157,7 +195,13 @@ $assert(!in_array(9003, $uids, true), 'La actividad hoja (Titulo=0) no es un fre
 $assert($f[0]['uniqueId'] === 9002 && $f[0]['fechaInicio'] === '2026-05-25', 'Ordena por fecha ascendente: primero PRELIMINARES.');
 $assert($f[1]['fechaInicio'] === '2026-08-18', 'Toma la fecha de la semana ACTIVA (2), no de la 1.');
 $assert($f[2]['uniqueId'] === 9004 && $f[2]['nombre'] === 'MOVIMIENTO DE TIERRA', 'El tercer frente es MOVIMIENTO DE TIERRA.');
+// Una obra sin cronograma sigue siendo una obra: el guard compara el project_id de la consulta
+// contra el alcance enlazado, asi que preguntar por la 999999 desde el alcance de $P es una
+// violacion de scope, no un caso de «lista vacia». Se entra en su alcance para preguntarle, y se
+// vuelve al de $P al terminar — que es exactamente lo que haria SessionMiddleware en esa obra.
+$enObra(999999);
 $assert($svc->frentesDisponibles(999999) === [], 'Proyecto sin cronograma → lista vacía.');
+$enObra($P);
 
 // --- sugerirFrentes: por nombre ---
 // Database::query() siempre devuelve un PDOStatement (nunca null; lanza excepción si falla), así
@@ -340,6 +384,7 @@ $assert($semOrigen === 2, 'Hueco 3: semana_origen guarda la semana activa (2), n
 // Cronograma mínimo de $P2: una sola semana activa (1) y un solo frente (uid 9101). Se reusa
 // $paqEstructura (el catálogo global no lleva project_id) para demostrar que el aislamiento lo da
 // `project_id` en `pdc_paquete_frente`, no el paqueteId.
+$enObra($P2);
 $db->query('INSERT INTO semanas_activas (project_id, Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem) VALUES (?, 1, 1, ?, ?)',
     [$P2, '2026-07-27', '2026-08-02']);
 $db->query(
@@ -362,6 +407,7 @@ $aP2 = $svc->amarres($P2);
 $assert(count($aP2) === 1 && isset($aP2[$paqEstructura]) && $aP2[$paqEstructura]['uniqueId'] === 9101,
     'Hueco 4: amarres($P2) solo trae el amarre de $P2.');
 
+$enObra($P);
 $aP1 = $svc->amarres($P);
 $assert($aP1[$paqEstructura]['uniqueId'] === 9002,
     'Hueco 4: amarres($P) no se contamina con el amarre de $P2 al mismo paqueteId: ' . $aP1[$paqEstructura]['uniqueId']);
@@ -541,23 +587,30 @@ $assert(($porId3[$paqSinDuracionSuministro]['diasTotales'] ?? -1) === $medianaEs
 // Dos frentes con fechas deliberadamente lejanas (año 2000 y año 2099): uno queda vencido y el
 // otro no sin importar qué día real corra este test, a diferencia de las fechas de 2026 del resto
 // del fixture (cuya relación con "hoy" sí depende del reloj de la máquina que ejecute la prueba).
+// Una fila por INSERT: el guard rechaza el multifila (ver el INSERT de semanas_activas de arriba).
 $db->query(
     "INSERT INTO programa (project_id, Consecutivo, unique_id, Actividad, Titulo, Fecha_Inicio)
-     VALUES (?, 11, 9005, '<b>TEST A4 VENCIDO, </b> <small>[Capítulo: TORRE 1]</small>', 1, '2000-01-01'),
-            (?, 12, 9006, '<b>TEST A4 LEJOS, </b> <small>[Capítulo: TORRE 1]</small>', 1, '2099-01-01')",
-    [$P, $P],
+     VALUES (?, 11, 9005, '<b>TEST A4 VENCIDO, </b> <small>[Capítulo: TORRE 1]</small>', 1, '2000-01-01')",
+    [$P],
 );
 $db->query(
-    'INSERT INTO programa_consolidado (project_id, Consecutivo, Semana, unique_id, Consecutivo_en_Programa,
-         Actividad, Titulo, Fecha_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos,
-         Predecesora, Pdto_Cons, Modelo, Activa, alerta_crisis, reprogramaciones_acumuladas)
-     VALUES (?, 301, 2, 9005, 11, ?, 1, ?, 0, "", "", "", "", "", "", "", 1, 0, 0),
-            (?, 302, 2, 9006, 12, ?, 1, ?, 0, "", "", "", "", "", "", "", 1, 0, 0)',
-    [
-        $P, '<b>TEST A4 VENCIDO, </b> <small>[Capítulo: TORRE 1]</small>', '2000-01-01',
-        $P, '<b>TEST A4 LEJOS, </b> <small>[Capítulo: TORRE 1]</small>', '2099-01-01',
-    ],
+    "INSERT INTO programa (project_id, Consecutivo, unique_id, Actividad, Titulo, Fecha_Inicio)
+     VALUES (?, 12, 9006, '<b>TEST A4 LEJOS, </b> <small>[Capítulo: TORRE 1]</small>', 1, '2099-01-01')",
+    [$P],
 );
+$consolidadoLejano = [
+    [301, 9005, 11, '<b>TEST A4 VENCIDO, </b> <small>[Capítulo: TORRE 1]</small>', '2000-01-01'],
+    [302, 9006, 12, '<b>TEST A4 LEJOS, </b> <small>[Capítulo: TORRE 1]</small>', '2099-01-01'],
+];
+foreach ($consolidadoLejano as [$cons, $uid9, $consProg, $actividad, $fecha]) {
+    $db->query(
+        'INSERT INTO programa_consolidado (project_id, Consecutivo, Semana, unique_id, Consecutivo_en_Programa,
+             Actividad, Titulo, Fecha_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos,
+             Predecesora, Pdto_Cons, Modelo, Activa, alerta_crisis, reprogramaciones_acumuladas)
+         VALUES (?, ?, 2, ?, ?, ?, 1, ?, 0, "", "", "", "", "", "", "", 1, 0, 0)',
+        [$P, $cons, $uid9, $consProg, $actividad, $fecha],
+    );
+}
 
 // Duración corta y determinista (7 días) para no acercar el arranque calculado a "hoy" por accidente.
 $db->query(
@@ -898,6 +951,7 @@ $assert($dEfimero !== null && $dEfimero['fechaGuardada'] === '2026-10-01', 'La f
 // y $paqEstructura amarrado a CIMENTACIÓN (uid 9101, ancla 2026-08-05)— y se mueve SU frente, para
 // que los dos proyectos tengan un desfase vivo al mismo tiempo sobre el MISMO paqueteId: así el
 // aislamiento no puede confundirse con «cada proyecto tiene paquetes distintos».
+$enObra($P2);
 $db->query('UPDATE programa_consolidado SET Fecha_Inicio = "2026-09-14" WHERE project_id = ? AND unique_id = 9101 AND Semana = 1', [$P2]);
 
 $dP2 = $svc->desfases($P2);
@@ -908,6 +962,7 @@ $assert(count($dP2) === 1 && $dP2[0]['fechaGuardada'] === '2026-08-05' && $dP2[0
     && $dP2[0]['diasMovidos'] === 40,
     'Hueco 4 bis: el desfase de $P2 se mide contra el cronograma de $P2 (2026-08-05 → 2026-09-14, 40 días).');
 
+$enObra($P);
 $dP1 = $svc->desfases($P);
 $frentesEnP1 = array_column($dP1, 'frenteNombre');
 $assert(!in_array('CIMENTACIÓN', $frentesEnP1, true),
@@ -1202,12 +1257,16 @@ $assert(isset($rNoop['ok']), 'Desamarrar algo sin amarre responde sin reventar. 
 
 // Un desamarre en un proyecto no toca el amarre del mismo paquete en otro (los paquetes son
 // globales: el mismo paqueteId vive en los dos proyectos con amarres distintos).
+$enObra($P2);
 $svc->amarrar($P2, $paqEstructura, 9101, 'test-a4');
+$enObra($P);
 $svc->desamarrar($P, $paqEstructura);
+$enObra($P2);
 $sigueP2 = (int) $db->query('SELECT COUNT(*) FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?',
     [$P2, $paqEstructura])->fetchColumn();
 $assert($sigueP2 === 1, 'Desamarrar respeta el project_id: el otro proyecto conserva su amarre. Dio ' . $sigueP2);
 $svc->desamarrar($P2, $paqEstructura);
+$enObra($P);
 
 // --- Reamarrar a otro frente conserva el responsable (f11, f14) ---
 // Esto NO es una función nueva: es un fallo que ya existía. Cambiar de frente invalida el plan
