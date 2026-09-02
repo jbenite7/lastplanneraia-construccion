@@ -29,6 +29,33 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 > **Es el modo de fallo a vigilar aquí:** este archivo se escribe desde lo que una sesión ve, y una
 > sesión ve su worktree.
 
+## Gate de datos: lo que el guard destapó y sigue roto (2026-09-02)
+
+`ProjectSqlGuard` (2026-08-29, `48e06072`) rompió más que la herramienta de línea de comandos. Lo de
+la suite quedó arreglado en el frente `fix/suite-main-scope`; **estas dos son de producción y siguen
+vivas en `main`**, medidas con petición HTTP real contra el stack local:
+
+- [ ] **`/programacion-semanal` revienta con «Alias de tabla de proyecto ambiguo: semanas_activas».**
+  Sale de `src/Legacy/datosGeneralesPagina.php`, que resuelve la tabla por `TableResolver` y acaba
+  con dos referencias al mismo alias en una consulta. Es un módulo central de Last Planner, no un
+  rincón: se ve en el log del contenedor en cada carga de la página.
+- [ ] **Los INSERT por lote del PDC revientan con «INSERT de múltiples filas no tiene una prueba de
+  scope soportada».** El guard rechaza de plano el INSERT multifila; los servicios del PDC los usan a
+  propósito, por rendimiento (`array_fill(0, count($lote), '(?, ?, …)')` aparece en
+  `MaestroInsumosService`, `PaquetesService`, `SubpaquetesService`, `SeguimientoService`,
+  `PlanFechasService`). **Hay decisión de arquitectura de por medio, no es un parche:** o se le enseña
+  al guard a validar el INSERT multifila —que es donde está el hueco— o se reescriben los lotes fila a
+  fila y se pierde el rendimiento que motivó escribirlos así. No se auditaron los 46 sitios que usan
+  ese patrón en `src/`; solo se confirmó que al menos uno del PDC revienta en caliente.
+- [ ] **Siete errores de PHPStan en `src`**, uno de ellos por una entrada obsoleta del propio
+  `phpstan-baseline.neon` (`ignore.unmatched`). Preexistentes, sin relación de causa con lo anterior.
+
+También quedó anotada una trampa de documentación: `CLAUDE.md` manda enlazar el `.env` en un worktree
+con `ln -s` a ruta absoluta del host. Sirve para que `docker compose` sustituya variables, pero
+**dentro del contenedor ese enlace apunta a la nada**, así que Dotenv no lee nada, `DEV_DOOR` queda
+apagado y los e2e fallan en el login con un mensaje que culpa al `.env` (que está bien). Con el
+contenedor montado sobre un worktree hace falta copia, no enlace.
+
 ## Migración React — shell mínimo
 
 - [x] **Shell mínimo React cerrado (2026-08-28):** `/app` cubre login, selección de proyecto,

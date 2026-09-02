@@ -28,6 +28,33 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Arreglado: la suite de `main` bajo el gate de datos (2026-09-02)
+
+`ProjectSqlGuard` entró en `Database::query()` con el endurecimiento del 2026-08-29 (`48e06072`),
+pero la herramienta que corre por línea de comandos —semillas y pruebas autoejecutables— no pasa por
+`SessionMiddleware` y nunca enlazaba un alcance. Tres efectos, con causa común y arreglo distinto:
+
+- **El CI estaba en rojo sin correr ni una prueba.** `tests/test_php_test_lane_manifest.php` nacía sin
+  su etiqueta `// @requiere:`, y el runner aborta la corrida entera con RC=2 en cuanto encuentra un
+  test sin declarar. Falla cerrado a propósito, pero convierte una omisión en un apagón de la suite.
+  Se le pone `puro`, que es su nivel real.
+- **Dos pruebas salían «sospechosas» detrás de ese apagón**, con 7 y 63 aserciones cada una: cerraban
+  con «checks» en inglés y el detector de señales del runner solo entiende el idioma del repo. Es la
+  misma trampa medida el 2026-08-24 con `pasa:`. Se corrige el mensaje, no el detector.
+- **Las pruebas del PDC y la semilla del sandbox e2e enlazan ahora su alcance.** `ProjectScope` por
+  obra donde hay una obra, `SystemScopeRunner` en la semilla —cuya limpieza de catálogos globales une
+  una tabla System contra tablas de proyecto, forma que ningún alcance de obra puede expresar—, y los
+  `DELETE`/`INSERT` que abarcaban dos obras o varias filas, partidos: el gate de escritura no acepta
+  `MultiProjectScope` ni sabe probar un INSERT multifila.
+
+También se corrige un fallo de **producción** que el gate destapaba: el `DELETE` de
+`PlanFechasService::limpiarPlanCalculado()` llevaba `project_id` sin calificar, y con dos tablas de
+proyecto en la consulta el guard exige `<raíz>.project_id = ?`. Sin eso, `amarrar()` reventaba con
+`ProjectScopeViolation` en cualquier petición real.
+
+Quedan dos roturas de producción bajo el mismo gate, anotadas en [[TASKS]] y **no** arregladas aquí:
+el alias ambiguo de `semanas_activas` en `/programacion-semanal` y los INSERT por lote del PDC.
+
 ### Añadido: shell mínimo React (2026-08-28)
 
 - Nueva entrada `/app` con login, selector de proyecto, navegación lateral con restricciones por
