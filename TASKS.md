@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-28
+updated: 2026-09-02
 ---
 
 # Tareas
@@ -207,6 +207,53 @@ decidido de antemano), y se revirtió por decisión de Felipe. Detalle completo 
   el rollback para experimentos contra la base de dev: volver a sembrar desde el dump.
 
 ## Bloqueantes
+
+**2026-09-02 — El laboratorio de diseño responde 403 al administrador, y eso deja el carril visual
+del CI inservible. → Frente de seguridad / RBAC.** Con sesión de `test.A` abierta por la puerta de
+servicio, `GET /internal/design-system` devuelve **403**. La causa medida:
+`RbacService::resolveRoleForUser('test.A')` devuelve **`'C'`** (Subcontratista) en vez de `'A'`, y con
+ese rol `RbacManager::hasCapability($role, PERM_INTERNAL_DESIGN_SYSTEM_VIEW)` es falso, así que
+`DesignSystemLabAccessPolicy::status()` responde 403 correctamente **para el rol que recibe**. Lo que
+está mal es el rol, no la política.
+
+Reproducido en local contra `main` (`58d11137`), con el contenedor montando la raíz:
+
+```
+/dev/entrar?u=test.A          -> 302 http://localhost:8081/proyectos   (la puerta sí funciona)
+/internal/design-system       -> 403
+RbacService::resolveRoleForUser('test.A') -> 'C'
+```
+
+**Atribución medida:** `git log --since=2026-08-27 -- src/Security/RbacService.php
+src/Security/DesignSystemLabAccessPolicy.php` está **vacío**. El código no cambió desde el 28 de
+agosto, cuando el laboratorio corría; la diferencia está en los **datos de membresías** que
+`resolveRoleFromProjectMembers()` recorre cuando no hay proyecto seleccionado — el laboratorio es
+global y resuelve el rol sin proyecto a propósito.
+
+**Cómo se destapó, y por qué importa:** el job `design-system-runtime` llevaba `skipped` desde el
+2026-08-29 (contradicción del contrato del compose, que arregla este PR). Al volver a ejecutarse,
+el paso «Run laboratory gates» tardó 35 min donde el 28 de agosto tardó 3. **No estaba colgado:**
+el registro de la corrida `33682821336`, cancelada con autorización de Felipe para leerlo, muestra
+**24 pruebas fallando en fila**, cada una agotando su límite de 2,1 min. Fallan todas las que
+necesitan sesión de administrador; **pasa** la única que espera denegación (`resident receives a
+forbidden response`). Ese contraste es la firma del problema.
+
+**Lo que NO está medido:** que la causa en CI sea exactamente esta. Allí el fixture es otro y el
+reporter no alcanzó a imprimir los mensajes de error antes de la cancelación. El patrón coincide;
+coincidir no es serlo.
+
+**No se toca desde el frente de UI:** arreglar esto es RBAC y membresías. Dos caminos que el dueño
+debe discriminar antes de escribir nada: (a) el fixture/semilla de `project_members` dejó a `test.A`
+con una membresía `C` que gana al resolver sin proyecto, o (b) `resolveRoleFromProjectMembers()`
+elige mal cuando hay varias membresías y ninguna se prioriza. **No relajar
+`DesignSystemLabAccessPolicy`** para que el admin entre: hoy deniega correctamente según el rol que
+recibe.
+
+**Anotado de paso, no es la causa hoy:** `DesignSystemLabAccessPolicy::resolveRole()` envuelve la
+resolución en `catch (\Throwable) { return DEFAULT_ROLE; }`. Cualquier excepción ahí se convierte en
+un 403 mudo, indistinguible de una denegación legítima — un tragador de excepciones en un camino de
+autorización. Hoy el método devuelve `'C'` sin lanzar, así que no es lo que falla, pero merece su
+propia mirada.
 
 **2026-08-28 — `theme.js` deshace el claro de entrada (D12) en 7 páginas reales; bloquea el
 arranque del plan de Programa General, no la fase cero actual.** Destapado ejecutando el goal
