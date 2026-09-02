@@ -1790,6 +1790,7 @@ class PlanFechasService
       *     fechaArranque: string,
       *     diasTotales: int,
       *     duracionProvisional: bool,
+      *     paquetesConMismaDuracion: int,
       *     responsableUserId: int|null,
       *     responsableNombre: string,
       *     responsableCargo: string,
@@ -1850,10 +1851,20 @@ class PlanFechasService
         // la corrección de la obra existe pero NO se está usando. Marcarlo 'obra' pondría tres
         // señales a contar historias distintas —el número escrito, los días mostrados y la etiqueta.
         $provisionalPorDestino = [];
+        // Cuántos DESTINOS de esta obra cuelgan de cada fila del catálogo. Una corrección no es del
+        // paquete que se está mirando: es de la fila, así que mueve a todos los destinos de la obra
+        // que la usen —lotes incluidos—. El aviso de la pantalla lo dice con este número; sin él
+        // prometía un alcance más pequeño del real. Se cuenta sobre las filas ya traídas: ninguna
+        // consulta nueva.
+        $destinosPorRef = [];
         foreach ($rows as $r) {
             $clave = (int) $r['paquete_id'] . ':' . (int) $r['subpaquete_id'];
             $refPorDestino[$clave] = $r['duracion_ref'] === null ? null : (int) $r['duracion_ref'];
             $provisionalPorDestino[$clave] = (int) $r['duracion_provisional'] === 1;
+            if ($r['duracion_ref'] !== null) {
+                $ref = (int) $r['duracion_ref'];
+                $destinosPorRef[$ref] = ($destinosPorRef[$ref] ?? 0) + 1;
+            }
         }
         // clave del paso → columna legacy. Se casa por CLAVE y no por nombre porque la obra puede
         // haber renombrado el paso con su alias.
@@ -1932,6 +1943,11 @@ class PlanFechasService
                 'fechaArranque' => (string) $r['fecha_arranque'],
                 'diasTotales' => (int) $r['dias_totales'],
                 'duracionRef' => $r['duracion_ref'] === null ? null : (int) $r['duracion_ref'],
+                // Cuántos destinos de ESTA obra se mueven si se corrige la duración de esta fila.
+                // Sin fila del catálogo no hay corrección posible, así que la respuesta es «solo yo».
+                'paquetesConMismaDuracion' => $r['duracion_ref'] === null
+                    ? 1
+                    : ($destinosPorRef[(int) $r['duracion_ref']] ?? 1),
                 'duracionProvisional' => (int) $r['duracion_provisional'] === 1,
                 'responsableUserId' => $r['responsable_user_id'] === null ? null : (int) $r['responsable_user_id'],
                 'responsableNombre' => (string) ($r['responsable_nombre'] ?? ''),

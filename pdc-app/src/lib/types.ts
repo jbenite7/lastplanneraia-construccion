@@ -491,6 +491,12 @@ export type FilaPlan = {
    * respaldo en el catálogo, así que no hay a qué colgarle una corrección de la obra.
    */
   duracionRef: number | null
+  /**
+   * Cuántos destinos de ESTA obra cuelgan de la misma `duracionRef` —lotes incluidos—. Corregir la
+   * duración los mueve a todos, porque la corrección es de la fila del catálogo y no del paquete
+   * que se está mirando. El aviso del panel lo dice con este número.
+   */
+  paquetesConMismaDuracion: number
   pasos: PasoPlan[]
 }
 
