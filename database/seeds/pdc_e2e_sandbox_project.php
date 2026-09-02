@@ -70,6 +70,10 @@ function pdcSandboxLimpiarDatos(Database $db, int $projectId): void
         // Y su historial: es de solo anexar, así que sin esto cada corrida hereda las entradas de
         // todas las anteriores y la pantalla nunca vuelve al estado inicial que los tests asumen.
         'pdc_proyecto_pasos_historial',
+        // Las correcciones de duración por obra. Sin esto, el spec de duraciones deja su excepción
+        // puesta y el siguiente test lee 15 días donde el catálogo dice 10: el plan del sandbox
+        // arranca movido y ningún test lo explica.
+        'pdc_proyecto_duraciones',
     ] as $tabla) {
         $db->query("DELETE FROM {$tabla} WHERE project_id = ?", [$projectId]);
     }
@@ -98,6 +102,17 @@ function pdcSandboxLimpiarGlobales(Database $db): void
          LEFT JOIN pdc_plan_paso ps ON ps.paquete_id = p.id
          WHERE (p.nombre_norm LIKE 'E2E %' OR p.nombre_norm LIKE ?)
            AND ip.id IS NULL AND pf.id IS NULL AND pp.id IS NULL AND ps.id IS NULL",
+        [PDC_SANDBOX_MARCA . '%'],
+    );
+
+    // Las filas del catálogo de duraciones que siembran los specs. Va DESPUÉS del borrado de
+    // paquetes: `general_paquetes_contratacion.duracion_ref` apunta aquí, y borrar primero dejaría
+    // paquetes ZZTEST colgando de una fila que ya no existe (o la FK lo impediría). Se limita a las
+    // marcadas: el catálogo real es dato de la empresa y no se toca.
+    $db->query(
+        "DELETE d FROM general_dias_procesos_contratacion d
+         LEFT JOIN general_paquetes_contratacion p ON p.duracion_ref = d.id
+         WHERE d.paqueteContratacion LIKE ? AND p.id IS NULL",
         [PDC_SANDBOX_MARCA . '%'],
     );
 
