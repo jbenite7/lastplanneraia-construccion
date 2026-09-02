@@ -37,7 +37,29 @@ final class ProjectScopeResolverTest extends TestCase
             default => null,
         };
 
-        return new ProjectScopeResolver($lookup, new RbacService());
+        // `new RbacService()` sin argumento cae a `Database::getInstance()` en su constructor
+        // (`src/Security/RbacService.php:15`), así que esta clase —declarada `#[Group('puro')]`—
+        // abría una conexión real aunque su `$lookup` sea un doble y ninguna aserción toque datos.
+        // En una máquina con la base levantada eso no se nota; el lane `puro` del CI corre con
+        // `--no-deps`, sin servicio de base, y ahí el proceso muere entero:
+        //
+        //   Error: No se pudo conectar a la base de datos.
+        //   Fatal error: Premature end of PHP process when running
+        //   Tests\Unit\ProjectScopeResolverTest::testResuelveExactamenteLaMembresiaDeclarada
+        //
+        // El doble se pasa por el parámetro que el propio servicio ya ofrece. No es un `null`
+        // silencioso a propósito: si algún día esta ruta empieza a consultar la base, el test
+        // debe romperse con un mensaje que lo diga, no volver a conectarse por su cuenta.
+        return new ProjectScopeResolver($lookup, new RbacService(new class {
+            public function __call(string $metodo, array $argumentos): never
+            {
+                throw new \LogicException(
+                    "ProjectScopeResolverTest es de nivel `puro` y no debe consultar la base de "
+                    . "datos: se llamó a Database::{$metodo}(). Si esta ruta ahora la necesita, "
+                    . 'mueve la clase al grupo que corresponda en vez de restaurar la conexión.'
+                );
+            }
+        }));
     }
 
     public function testResuelveExactamenteLaMembresiaDeclarada(): void
