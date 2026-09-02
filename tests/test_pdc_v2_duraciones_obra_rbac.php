@@ -32,6 +32,7 @@ require_once __DIR__ . '/../src/Core/Database.php';
 
 use App\Controllers\Api\PlanComprasPlanController;
 use App\Security\CsrfTokenManager;
+use App\Security\DataScope\ProjectScope;
 
 $failures = [];
 $assert = static function (bool $c, string $m) use (&$failures): void {
@@ -69,35 +70,42 @@ $limpiar = static function () use ($db, $P): void {
     $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'test-dur-obra-rbac'");
     $db->query("DELETE FROM general_dias_procesos_contratacion WHERE paqueteContratacion = 'ZZTEST DUR OBRA RBAC'");
 };
-$limpiar();
+// La limpieza y el fixture inicial tocan tablas de proyecto (pdc_*) antes de que exista
+// cualquier sesión simulada, así que llevan su propio ProjectScope de montaje.
+$db->dataScope()->bind(new ProjectScope($P, 'fixture-duraciones-por-obra-rbac', 'R'));
+try {
+    $limpiar();
 
-// Fixture mínimo: una fila del catálogo y un paquete que la usa, amarrado a la obra P vía
-// pdc_paquete_frente. Es lo mínimo que DuracionesCatalogoService::deProyecto() necesita para decir
-// que esta obra usa $refSint (mismo patrón que tests/test_pdc_v2_pasos_configurables.php).
-$db->query(
-    "INSERT INTO general_dias_procesos_contratacion (paqueteContratacion, tipoPaquete,
-        diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos,
-        diasLegalizacionContrato, diasFabricacion, diasInsumosObra)
-     VALUES ('ZZTEST DUR OBRA RBAC', 'a_todo_costo', 3, 2, 7, 4, 5, 10, 2)",
-);
-$refSint = (int) $db->lastInsertId();
-$db->query(
-    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion,
-        modalidad_contratacion, duracion_ref, activo, creado_por, created_at)
-     VALUES ('ZZTEST DUR OBRA RBAC', 'zztest dur obra rbac', 'a_todo_costo', 'contrato', ?, 1, 'test-dur-obra-rbac', NOW())",
-    [$refSint],
-);
-$paqSint = (int) $db->lastInsertId();
-$db->query(
-    "INSERT INTO pdc_paquete_frente (project_id, paquete_id, unique_id, frente_nombre, fecha_ancla,
-        semana_origen, origen, evidencia, confirmado_humano, asignado_por, updated_at)
-     VALUES (?, ?, 9101, 'ZZTEST DUR OBRA RBAC FRENTE', '2027-01-01', 1, 'humano', '', 1, 'test-dur-obra-rbac', NOW())",
-    [$P, $paqSint],
-);
+    // Fixture mínimo: una fila del catálogo y un paquete que la usa, amarrado a la obra P vía
+    // pdc_paquete_frente. Es lo mínimo que DuracionesCatalogoService::deProyecto() necesita para
+    // decir que esta obra usa $refSint (mismo patrón que tests/test_pdc_v2_pasos_configurables.php).
+    $db->query(
+        "INSERT INTO general_dias_procesos_contratacion (paqueteContratacion, tipoPaquete,
+            diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos,
+            diasLegalizacionContrato, diasFabricacion, diasInsumosObra)
+         VALUES ('ZZTEST DUR OBRA RBAC', 'a_todo_costo', 3, 2, 7, 4, 5, 10, 2)",
+    );
+    $refSint = (int) $db->lastInsertId();
+    $db->query(
+        "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion,
+            modalidad_contratacion, duracion_ref, activo, creado_por, created_at)
+         VALUES ('ZZTEST DUR OBRA RBAC', 'zztest dur obra rbac', 'a_todo_costo', 'contrato', ?, 1, 'test-dur-obra-rbac', NOW())",
+        [$refSint],
+    );
+    $paqSint = (int) $db->lastInsertId();
+    $db->query(
+        "INSERT INTO pdc_paquete_frente (project_id, paquete_id, unique_id, frente_nombre, fecha_ancla,
+            semana_origen, origen, evidencia, confirmado_humano, asignado_por, updated_at)
+         VALUES (?, ?, 9101, 'ZZTEST DUR OBRA RBAC FRENTE', '2027-01-01', 1, 'humano', '', 1, 'test-dur-obra-rbac', NOW())",
+        [$P, $paqSint],
+    );
+} finally {
+    $db->dataScope()->clear();
+}
 
 $refInexistente = $refSint + 999000; // no la usa ningún paquete de esta obra
 
-$sesion = static function (string $rol, ?int $projectId) use ($csrfValido): void {
+$sesion = static function (string $rol, ?int $projectId) use ($csrfValido, $db): void {
     $_SESSION = [
         // Login que no existe en general_usuarios: SesionUsuario::resolverId() debe volver null sin
         // romper, y de hecho es el caso normal — el usuario de prueba no está sembrado.
@@ -109,6 +117,19 @@ $sesion = static function (string $rol, ?int $projectId) use ($csrfValido): void
         'proyecto' => 'ZZTEST DUR OBRA RBAC',
         '_csrf_tokens' => ['plan_compras_v2' => $csrfValido],
     ];
+
+    // ProjectSqlGuard (2026-08-29) exige un ProjectScope activo para tocar tablas de proyecto. En
+    // un request real lo bindea SessionMiddleware al resolver la sesión, antes de que el controlador
+    // corra; este test llama al controlador directo, así que lo hace aquí, en el mismo sitio que
+    // arma la sesión. Sin project_id no hay scope que bindear —igual que SessionMiddleware no
+    // bindea nada cuando no hay proyecto declarado—, y el caso «sin project_id» de este archivo
+    // depende de que el 409 lo dé el guard del controlador, no el gate de la base.
+    if ($db->dataScope()->current() !== null) {
+        $db->dataScope()->clear();
+    }
+    if ($projectId !== null) {
+        $db->dataScope()->bind(new ProjectScope($projectId, 'test-dur-obra-rbac-usuario', $rol));
+    }
 };
 
 try {
@@ -263,7 +284,15 @@ try {
     $assert(($out['data']['puedeCorregirDuraciones'] ?? null) === true,
         'Un Director de Obra recibe puedeCorregirDuraciones = true. Dio ' . var_export($out['data']['puedeCorregirDuraciones'] ?? null, true));
 } finally {
-    $limpiar();
+    if ($db->dataScope()->current() !== null) {
+        $db->dataScope()->clear();
+    }
+    $db->dataScope()->bind(new ProjectScope($P, 'fixture-duraciones-por-obra-rbac', 'R'));
+    try {
+        $limpiar();
+    } finally {
+        $db->dataScope()->clear();
+    }
     unset($_SERVER['HTTP_X_CSRF_TOKEN'], $GLOBALS['__TEST_HTTP_BODY__']);
 }
 

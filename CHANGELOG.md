@@ -28,6 +28,38 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Duraciones de contratación por obra (2026-09-01)
+
+> **Exige aplicar la migración `database/migrations/20260901_pdc_v2_duraciones_por_obra.php`
+> ANTES de publicar el código.** Con el código arriba y la tabla sin crear, `PlanFechasService::plan()`
+> llama a `DuracionesObraService::deProyecto()` lo primero y toda la pestaña Plan responde 500.
+> Es el mismo fallo que dejó `20260728_pdc_v2_responsable_usuario.sql`.
+>
+> Se construyó sobre el commit desplegado en producción (`6fa3cff1`) en la rama
+> `fix/pdc-duraciones-pasos`, se desplegó a producción el 2026-09-02, y se integró a `main` por
+> cherry-pick ese mismo día. Producción corre esa rama hasta el próximo deploy de `main`.
+
+#### Added
+- Una obra puede corregir los días de cualquier paso de contratación de sus paquetes desde el mismo
+  panel «Pasos de …» de la pestaña Plan, sin mover las fechas de las demás obras. El catálogo de la
+  empresa pasa a ser el valor por defecto: sin corrección, manda él.
+- Cada número dice de dónde sale —de la empresa o de esta obra— y los corregidos ofrecen «Volver al
+  de la empresa», que devuelve el estándar y recalcula el plan.
+- El aviso del panel dice cuántos paquetes de la obra mueve la corrección, porque se guarda contra
+  la fila del catálogo y no contra el paquete abierto.
+- Tabla `pdc_proyecto_duraciones` (una fila por número corregido) y los verbos
+  `POST /plan-compras/api/plan/duraciones/obra` y `…/obra/borrar`, con permiso
+  `lps.paquetes_contratacion.editar` y CSRF del ámbito `plan_compras_v2`.
+- Una obra puede dar un número donde el catálogo de la empresa no lo tiene, y el paquete deja de
+  contar como «duración provisional».
+
+#### Changed
+- Quien no tiene permiso para corregir ve el campo y el botón deshabilitados con la razón a la
+  vista, en vez de enterarse con un 403 al salir del campo.
+- El catálogo de la empresa y su editor de `#/ensamble/plan/pasos` **no cambian**: son dos alcances
+  distintos y sus avisos dicen lo contrario a propósito.
+  Spec: [[docs/superpowers/specs/2026-09-01-duraciones-por-obra-design]].
+
 ### Añadido: shell mínimo React (2026-08-28)
 
 - Nueva entrada `/app` con login, selector de proyecto, navegación lateral con restricciones por

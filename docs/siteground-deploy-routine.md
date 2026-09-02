@@ -262,6 +262,15 @@ verifica sin arreglarlo: un desfase tiene que bloquear, no repararse en silencio
 > `SELECT` de `plan()` pide la columna nueva — no se degrada solo el responsable.
 
 > [!CAUTION]
+> **`20260901_pdc_v2_duraciones_por_obra.php` va ANTES del codigo, por la misma razon.**
+> Crea `pdc_proyecto_duraciones` y no escribe ni una fila de datos, asi que aplicarla sola no cambia
+> el comportamiento de nada: sin excepciones, cada obra sigue leyendo el catalogo de la empresa. Lo
+> que no se puede es el orden inverso — `PlanFechasService::plan()` llama a
+> `DuracionesObraService::deProyecto($projectId)` antes de armar las filas, y `Database` corre con
+> `PDO::ERRMODE_EXCEPTION`, asi que con la tabla sin crear **toda la pestana Plan responde 500**, no
+> solo la correccion de duraciones. Es idempotente y convergente: correrla dos veces no hace dano.
+
+> [!CAUTION]
 > **NO ejecutes `20260712_remap_consolidado_unique_id.php` en produccion sin decision previa.**
 > Anula el `unique_id` de los encabezados del cronograma **a proposito** —su propia cabecera lo dice:
 > «Los Titulo=1 quedan NULL (sin FK)»— y el Plan de Compras exige `unique_id IS NOT NULL` para

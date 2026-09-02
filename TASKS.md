@@ -207,6 +207,19 @@ estado por defecto mientras Felipe no reparta.
 
 ## Ahora
 
+- **Producción corre `fix/pdc-duraciones-pasos` en `6db7d790`, no `main`** (deploy del
+  2026-09-02, con la tabla `pdc_proyecto_duraciones` ya creada allí y en pruebas). Este `main` ya
+  integra ese frente por cherry-pick, así que volver el servidor a `main` no pierde la
+  funcionalidad — pero es un deploy completo de `main` (shell React, cortes de `/login`, dos
+  migraciones más) y se decide aparte, con la rutina de `docs/siteground-deploy-routine.md`.
+  Hasta entonces, `git pull --ff-only origin main` en el servidor va a fallar por diseño.
+- **Gobierno del catálogo de duraciones desde `/admin/`** (decisión de Felipe, 2026-09-01):
+  frente propio. Contexto: `docs/superpowers/specs/2026-09-01-duraciones-por-obra-design.md` §3.2.
+- **Diferidos del triaje final de duraciones por obra**, ninguno bloqueante: e2e con paso
+  provisional + excepción; `?? 1` en `paquetesConMismaDuracion`; conteo solo de destinos visibles;
+  `colLegacy` desde constante vs base; `duracion_ref` como foto del último cálculo; cosméticos de
+  mensajes y aserciones. Detalle en la rama `fix/pdc-duraciones-pasos`, `TASKS.md`.
+
 - [ ] **CI · regenerar el presupuesto de runtime a la generación 0.5.0 — decisión de Felipe del
   2026-08-28, con su método ya fijado.** El gate `runtime-budgets` está en rojo en el PR #18 por
   `cssGzipBytes`: **131.451 B medidos contra 128.266 + 2.048 de tolerancia** (+3.185 B, ~2,5 %). No

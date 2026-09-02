@@ -10,7 +10,7 @@ resumen: "Catálogo del trabajo fechado: cada spec de diseño con el plan que la
 project: lps-aia
 type: plan-inventory
 status: activo
-updated: 2026-08-31
+updated: 2026-09-02
 ---
 # Registro de trabajo
 
@@ -39,9 +39,22 @@ node scripts/wiki-registro.mjs              # comprueba si la zona quedó desfas
 node scripts/wiki-registro.mjs --escribir   # la actualiza
 ```
 
+**Estado fuera del catálogo.** La tabla de abajo la genera un script y solo sabe qué documentos
+existen, no en qué punto está cada trabajo. Lo que no se deduce del disco se anota aquí:
+
+| Plan | Estado | Nota |
+|---|---|---|
+| [[docs/superpowers/plans/2026-09-01-duraciones-por-obra\|Duraciones de contratación por obra]] | **ejecutado** | Ejecutado en `fix/pdc-duraciones-pasos` (sale del commit desplegado en producción), desplegado a producción el 2026-09-02 e integrado a `main` por cherry-pick. Exige aplicar `database/migrations/20260901_pdc_v2_duraciones_por_obra.php` antes de publicar el código. |
+
 <!-- generado:inicio -->
 
-_177 trabajos · 83 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_178 trabajos · 84 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+
+### septiembre de 2026
+
+| Trabajo | Documentos | Archivado |
+|---|---|---|
+| Duraciones de contratación por obra — diseño v1.0 | [[docs/superpowers/specs/2026-09-01-duraciones-por-obra-design|spec]] · [[docs/superpowers/plans/2026-09-01-duraciones-por-obra|plan]] | — |
 
 ### agosto de 2026
 

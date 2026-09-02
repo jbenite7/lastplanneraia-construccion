@@ -6,6 +6,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 
+use App\Security\DataScope\ProjectScope;
 use App\Services\Pdc\DuracionesObraService;
 use App\Services\Pdc\PasosContratacionService;
 use App\Services\Pdc\PlanFechasService;
@@ -18,19 +19,34 @@ $assert = static function (bool $c, string $m) use (&$failures): void {
 
 $db = Database::getInstance();
 
+// PDO crudo, no Database::query(): ProjectSqlGuard (2026-08-29) no entiende tablas calificadas
+// por schema como information_schema.TABLES, sea cual sea el ProjectScope activo. Es el mismo
+// motivo por el que la migración de este frente se conecta igual, y el patrón ya lo fija
+// database/migrations/20260828_project_scope_contract.php: una conexión propia, sin tocar los
+// internos privados de Database.
+$pdoEnvVal = static fn (string $n): string => (string) ($_ENV[$n] ?? $_SERVER[$n] ?? getenv($n));
+$pdoCrudo = new PDO(
+    sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $pdoEnvVal('DB_HOST') ?: 'localhost', $pdoEnvVal('DB_PORT') ?: '3306', $pdoEnvVal('DB_NAME')),
+    $pdoEnvVal('DB_USER'),
+    $pdoEnvVal('DB_PASS'),
+    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_EMULATE_PREPARES => false],
+);
+
 echo "=== la tabla existe con su clave única ===\n";
-$tabla = (int) $db->query(
+$tablaStmt = $pdoCrudo->prepare(
     'SELECT COUNT(*) FROM information_schema.TABLES
      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
-    ['pdc_proyecto_duraciones'],
-)->fetchColumn();
+);
+$tablaStmt->execute(['pdc_proyecto_duraciones']);
+$tabla = (int) $tablaStmt->fetchColumn();
 $assert($tabla === 1, 'Existe la tabla pdc_proyecto_duraciones.');
 
-$unica = (int) $db->query(
+$unicaStmt = $pdoCrudo->prepare(
     'SELECT COUNT(*) FROM information_schema.STATISTICS
      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ? AND NON_UNIQUE = 0',
-    ['pdc_proyecto_duraciones', 'uq_ppd_obra_ref_col'],
-)->fetchColumn();
+);
+$unicaStmt->execute(['pdc_proyecto_duraciones', 'uq_ppd_obra_ref_col']);
+$unica = (int) $unicaStmt->fetchColumn();
 $assert($unica === 3, 'La clave única cubre las tres columnas (project_id, duracion_ref, columna). Dio ' . $unica);
 
 echo "=== el servicio guarda, lee y borra ===\n";
@@ -40,42 +56,51 @@ $svcObra = new DuracionesObraService($db);
 $limpiar = static function () use ($db, $P): void {
     $db->query('DELETE FROM pdc_proyecto_duraciones WHERE project_id = ?', [$P]);
 };
-$limpiar();
 
-$assert($svcObra->deProyecto($P) === [], 'Una obra sin correcciones devuelve un mapa vacío.');
+// ProjectSqlGuard (2026-08-29) exige un ProjectScope activo para tocar pdc_proyecto_duraciones,
+// que tiene project_id. Un único bind para todo el bloque: todas las operaciones son sobre la
+// misma obra, igual que haría SessionMiddleware en una sesión real de esa obra.
+$db->dataScope()->bind(new ProjectScope($P, 'fixture-duraciones-por-obra', 'R'));
+try {
+    $limpiar();
 
-$r = $svcObra->guardar($P, $REF, ['diasFabricacion' => 120], null);
-$assert($r['ok'] === true, 'Guardar una corrección válida responde ok.');
-$assert($svcObra->deProyecto($P) === [$REF => ['diasFabricacion' => 120]],
-    'La corrección se lee indexada por duracionRef y columna.');
+    $assert($svcObra->deProyecto($P) === [], 'Una obra sin correcciones devuelve un mapa vacío.');
 
-$r = $svcObra->guardar($P, $REF, ['diasFabricacion' => 90], null);
-$assert($r['ok'] === true && $svcObra->deProyecto($P)[$REF]['diasFabricacion'] === 90,
-    'Guardar dos veces la misma columna actualiza en vez de duplicar.');
+    $r = $svcObra->guardar($P, $REF, ['diasFabricacion' => 120], null);
+    $assert($r['ok'] === true, 'Guardar una corrección válida responde ok.');
+    $assert($svcObra->deProyecto($P) === [$REF => ['diasFabricacion' => 120]],
+        'La corrección se lee indexada por duracionRef y columna.');
 
-$r = $svcObra->guardar($P, $REF, ['columnaInventada' => 5], null);
-$assert($r['ok'] === false && $r['code'] === 'COLUMNA_INVALIDA',
-    'Una columna fuera de la lista blanca se rechaza.');
+    $r = $svcObra->guardar($P, $REF, ['diasFabricacion' => 90], null);
+    $assert($r['ok'] === true && $svcObra->deProyecto($P)[$REF]['diasFabricacion'] === 90,
+        'Guardar dos veces la misma columna actualiza en vez de duplicar.');
 
-$r = $svcObra->guardar($P, $REF, ['diasFabricacion' => -1], null);
-$assert($r['ok'] === false && $r['code'] === 'DIAS_INVALIDOS',
-    'Un número de días negativo se rechaza.');
+    $r = $svcObra->guardar($P, $REF, ['columnaInventada' => 5], null);
+    $assert($r['ok'] === false && $r['code'] === 'COLUMNA_INVALIDA',
+        'Una columna fuera de la lista blanca se rechaza.');
 
-$assert($svcObra->deProyecto($P)[$REF]['diasFabricacion'] === 90,
-    'Un rechazo no deja el dato a medias: sigue valiendo 90.');
+    $r = $svcObra->guardar($P, $REF, ['diasFabricacion' => -1], null);
+    $assert($r['ok'] === false && $r['code'] === 'DIAS_INVALIDOS',
+        'Un número de días negativo se rechaza.');
 
-$r = $svcObra->borrar($P, $REF, ['columnaInventada']);
-$assert($r['ok'] === false && $r['code'] === 'COLUMNA_INVALIDA',
-    'Borrar una columna fuera de la lista blanca se rechaza igual que guardarla: el vocabulario es '
-    . 'el mismo en los dos sentidos.');
-$assert(($svcObra->deProyecto($P)[$REF]['diasFabricacion'] ?? null) === 90,
-    'Y el rechazo del borrado no tocó nada.');
+    $assert($svcObra->deProyecto($P)[$REF]['diasFabricacion'] === 90,
+        'Un rechazo no deja el dato a medias: sigue valiendo 90.');
 
-$r = $svcObra->borrar($P, $REF, ['diasFabricacion']);
-$assert($r['ok'] === true && $svcObra->deProyecto($P) === [],
-    'Borrar la corrección devuelve la obra al catálogo de la empresa.');
+    $r = $svcObra->borrar($P, $REF, ['columnaInventada']);
+    $assert($r['ok'] === false && $r['code'] === 'COLUMNA_INVALIDA',
+        'Borrar una columna fuera de la lista blanca se rechaza igual que guardarla: el vocabulario es '
+        . 'el mismo en los dos sentidos.');
+    $assert(($svcObra->deProyecto($P)[$REF]['diasFabricacion'] ?? null) === 90,
+        'Y el rechazo del borrado no tocó nada.');
 
-$limpiar();
+    $r = $svcObra->borrar($P, $REF, ['diasFabricacion']);
+    $assert($r['ok'] === true && $svcObra->deProyecto($P) === [],
+        'Borrar la corrección devuelve la obra al catálogo de la empresa.');
+
+    $limpiar();
+} finally {
+    $db->dataScope()->clear();
+}
 
 echo "=== la obra manda sobre la empresa ===\n";
 $refl = new \ReflectionMethod(PlanFechasService::class, 'proyectar');
@@ -238,21 +263,71 @@ echo "=== dos obras, la corrección de una no aparece en la otra ===\n";
 $OBRA_A = 999906;
 $OBRA_B = 999907;
 $svcDos = new DuracionesObraService($db);
-$limpiarDos = static function () use ($db, $OBRA_A, $OBRA_B): void {
-    $db->query('DELETE FROM pdc_proyecto_duraciones WHERE project_id IN (?, ?)', [$OBRA_A, $OBRA_B]);
+// El gate de escritura no acepta MultiProjectScope —es de lectura agregada, no de mutación—,
+// así que el DELETE que abarca las dos obras se parte en dos, uno por obra.
+$limpiarUna = static function (int $p) use ($db): void {
+    $db->dataScope()->bind(new ProjectScope($p, 'fixture-duraciones-por-obra', 'R'));
+    try {
+        $db->query('DELETE FROM pdc_proyecto_duraciones WHERE project_id = ?', [$p]);
+    } finally {
+        $db->dataScope()->clear();
+    }
 };
+$limpiarDos = static function () use ($limpiarUna, $OBRA_A, $OBRA_B): void {
+    $limpiarUna($OBRA_A);
+    $limpiarUna($OBRA_B);
+};
+// Cada lectura/escritura de UNA obra rebindea a esa sola obra: el guardia no deja consultar la
+// fila de B mientras el scope activo sea A, que es justo la garantía que este test defiende.
+$bind = static fn (int $p) => new ProjectScope($p, 'fixture-duraciones-por-obra', 'R');
+
 $limpiarDos();
 try {
-    $svcDos->guardar($OBRA_A, 1, ['diasFabricacion' => 120], null);
-    $assert($svcDos->deProyecto($OBRA_B) === [],
-        'La corrección de la obra A no aparece en la obra B.');
-    $assert(($svcDos->deProyecto($OBRA_A)[1]['diasFabricacion'] ?? null) === 120,
-        'Y la obra A sí la conserva.');
-    $svcDos->guardar($OBRA_B, 1, ['diasFabricacion' => 45], null);
-    $assert(($svcDos->deProyecto($OBRA_A)[1]['diasFabricacion'] ?? null) === 120,
-        'Corregir la misma fila en la obra B no toca el número de la obra A.');
-    $assert(($svcDos->deProyecto($OBRA_B)[1]['diasFabricacion'] ?? null) === 45,
-        'Cada obra guarda el suyo.');
+    $db->dataScope()->bind($bind($OBRA_A));
+    try {
+        $svcDos->guardar($OBRA_A, 1, ['diasFabricacion' => 120], null);
+    } finally {
+        $db->dataScope()->clear();
+    }
+
+    $db->dataScope()->bind($bind($OBRA_B));
+    try {
+        $assert($svcDos->deProyecto($OBRA_B) === [],
+            'La corrección de la obra A no aparece en la obra B.');
+    } finally {
+        $db->dataScope()->clear();
+    }
+
+    $db->dataScope()->bind($bind($OBRA_A));
+    try {
+        $assert(($svcDos->deProyecto($OBRA_A)[1]['diasFabricacion'] ?? null) === 120,
+            'Y la obra A sí la conserva.');
+    } finally {
+        $db->dataScope()->clear();
+    }
+
+    $db->dataScope()->bind($bind($OBRA_B));
+    try {
+        $svcDos->guardar($OBRA_B, 1, ['diasFabricacion' => 45], null);
+    } finally {
+        $db->dataScope()->clear();
+    }
+
+    $db->dataScope()->bind($bind($OBRA_A));
+    try {
+        $assert(($svcDos->deProyecto($OBRA_A)[1]['diasFabricacion'] ?? null) === 120,
+            'Corregir la misma fila en la obra B no toca el número de la obra A.');
+    } finally {
+        $db->dataScope()->clear();
+    }
+
+    $db->dataScope()->bind($bind($OBRA_B));
+    try {
+        $assert(($svcDos->deProyecto($OBRA_B)[1]['diasFabricacion'] ?? null) === 45,
+            'Cada obra guarda el suyo.');
+    } finally {
+        $db->dataScope()->clear();
+    }
 } finally {
     $limpiarDos();
 }
