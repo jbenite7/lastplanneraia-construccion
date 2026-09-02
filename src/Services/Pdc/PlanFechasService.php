@@ -1845,9 +1845,15 @@ class PlanFechasService
         $excepciones = (new DuracionesObraService($this->db))->deProyecto($projectId);
         // paquete_id:subpaquete_id → duracion_ref, para saber qué excepción mira cada paso.
         $refPorDestino = [];
+        // Y si ese destino quedó PROVISIONAL en el último cálculo. Hace falta para el origen: un
+        // paquete provisional saca sus días del reparto de la mediana, no de las columnas, así que
+        // la corrección de la obra existe pero NO se está usando. Marcarlo 'obra' pondría tres
+        // señales a contar historias distintas —el número escrito, los días mostrados y la etiqueta.
+        $provisionalPorDestino = [];
         foreach ($rows as $r) {
-            $refPorDestino[(int) $r['paquete_id'] . ':' . (int) $r['subpaquete_id']]
-                = $r['duracion_ref'] === null ? null : (int) $r['duracion_ref'];
+            $clave = (int) $r['paquete_id'] . ':' . (int) $r['subpaquete_id'];
+            $refPorDestino[$clave] = $r['duracion_ref'] === null ? null : (int) $r['duracion_ref'];
+            $provisionalPorDestino[$clave] = (int) $r['duracion_provisional'] === 1;
         }
         // clave del paso → columna legacy. Se casa por CLAVE y no por nombre porque la obra puede
         // haber renombrado el paso con su alias.
@@ -1877,9 +1883,15 @@ class PlanFechasService
                 'colLegacy' => $colPorClave[(string) ($p['clave'] ?? '')] ?? null,
                 // De dónde sale el número. La pantalla lo muestra para que nadie corrija el estándar
                 // de la empresa creyendo que corrige solo su obra, ni al revés.
-                'origen' => (function () use ($p, $colPorClave, $refPorDestino, $excepciones): string {
+                'origen' => (function () use ($p, $colPorClave, $refPorDestino, $provisionalPorDestino, $excepciones): string {
                     $col = $colPorClave[(string) ($p['clave'] ?? '')] ?? null;
-                    $ref = $refPorDestino[(int) $p['paquete_id'] . ':' . (int) $p['subpaquete_id']] ?? null;
+                    $clave = (int) $p['paquete_id'] . ':' . (int) $p['subpaquete_id'];
+                    $ref = $refPorDestino[$clave] ?? null;
+                    // La existencia de la excepción no basta: si el destino quedó provisional, sus
+                    // días vienen del reparto de la mediana y el número de la obra no se usó.
+                    if (($provisionalPorDestino[$clave] ?? false) === true) {
+                        return 'empresa';
+                    }
                     return $col !== null && $ref !== null && isset($excepciones[$ref][$col]) ? 'obra' : 'empresa';
                 })(),
                 'fechaReal' => $fechaReal,
