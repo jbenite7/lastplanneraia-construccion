@@ -311,12 +311,21 @@ inocuo y significa que **desde el 29 de agosto no se ha ejecutado ni una comprob
 repo**. Al arreglar el estático (PR #20 lo tiene en verde), el de runtime arrancó por primera vez y
 chocó con esto. Quinta capa destapada en el mismo frente: un fallo tapaba al siguiente.
 
-**Qué hay que decidir, y de quién es:** o el contrato acepta el usuario endurecido, o el runtime de
-CI necesita de verdad `root` para lo que hace (semillas, DDL de fixtures). Eso lo sabe quien
-endureció los permisos; toca usuarios y grants, así que no se resuelve desde un frente de UI. **Lo que
-no se hace:** relajar `compose-contract.mjs` para desbloquear un PR — es un guardarraíl de seguridad y
-aflojarlo sin entender por qué exige `root` lo deja de proteger. Bloquea el merge del PR #20 (S01 +
-T01 + T02) y del PR #21, y con ellos el arranque de S02.
+**Resuelto el 2026-09-02 en el PR #22** (`fix/ci-compose-contract-usuario-runtime`). Cedió el
+contrato, no la seguridad: exigía `root` porque nadie lo actualizó tras el endurecimiento, mientras
+tres piezas del repo ya decían lo contrario —la doc `docs/security/runtime-db-user.md`, el test
+`visual-ci-contract.test.mjs` y el config `runtime_db_least_privilege`, que rehúsa inicializar si
+`MYSQL_USER` es root—. Ahora exige la cuenta runtime, comprueba que `db` cree esa misma cuenta,
+rechaza `root` explícitamente y rechaza contraseñas compartidas. Verificado con el paso exacto que
+fallaba (`design-system-ci-preflight.mjs` → PASS) y con el contrato viejo restaurado a propósito
+(cae con el mismo mensaje del CI).
+
+**Pero el CI sigue sin poder ponerse verde, ahora por otra causa que estaba debajo:** al ejecutarse
+el job por primera vez en cinco días, apareció que **el laboratorio de diseño responde 403 al
+administrador** (`resolveRoleForUser('test.A')` → `'C'`). Enrutado al frente de seguridad/RBAC: la
+tarjeta con toda la evidencia vive en `TASKS.md` de la rama del PR #22 (commit `c1056b03`), con
+correo en el buzón y chip abierto. Sigue bloqueando el merge del PR #20 (S01 + T01 + T02) y del
+PR #21, y con ellos el arranque de S02.
 
 **2026-08-28 — `theme.js` deshace el claro de entrada (D12) en 7 páginas reales; bloquea el
 arranque del plan de Programa General, no la fase cero actual.** Destapado ejecutando el goal
