@@ -1551,3 +1551,88 @@ S01 queda `CODE_COMPLETE` solo cuando Tasks 1–13 y el gate funcional/visual de
 verde sobre el mismo SHA. Queda `MIGRATION_COMPLETE` únicamente después del gate post-rollout que
 autoriza retirar VIEW-01. Ninguno de esos estados autoriza deploy a producción, cambios RLS,
 schema, grants, usuarios persistentes o credenciales.
+
+## Cierre
+
+**S01 quedó `CODE_COMPLETE` el 2026-09-01. No es `MIGRATION_COMPLETE`.** Tareas 1–13 y la primera
+mitad de la Tarea 14 ejecutadas en la rama `shell-minimo-react`, cada una con revisión independiente
+antes de commitear (ledger de sesión: `.superpowers/sdd/2026-08-30-s01-login-react/progress.md`, no
+versionado). La segunda mitad de la Tarea 14 —retirar VIEW-01, pasar `POST /login` a 405, crear
+`SpaHostController`— **no se ejecutó, y es a propósito**: la ventana de reversión sigue abierta y el
+corte no ha recibido todavía una sola visita real. Mientras `LoginController::index` siga registrado y
+`POST /login` no se haya movido, el rollback son tres líneas (quitar `/login` de
+`SpaRouter::RUTAS_EXACTAS_MIGRADAS`, comprobar `coincideConMapa()` con arrays vacíos, publicar).
+
+### Rulings que cambiaron el plan al ejecutarlo
+
+- **Task 1 no se ejecutó**: pedía crear `ErrorApi` cuando T01 ya tenía `ApiError` con otro vocabulario.
+  Dos clases de error compitiendo es peor que ninguna; las tareas siguientes usaron el mapeo
+  `ErrorApi/kind/fieldErrors → ApiError/tipo/camposInvalidos`.
+- **Tasks 6 y 7 ya estaban cumplidas** por T01 (`3df83880`, `374d2775`) y se saltaron.
+- **El fixture DML de la Task 5 no se creó**: la instrucción del usuario prohíbe tocar usuarios para toda
+  la Entrega 0. Los dos casos que solo existen con `force_password_change=1` se cubren a nivel
+  unitario con dobles. Las pruebas de navegador de la Task 14 tampoco tocan base: todo `/api/session`
+  y `/api/auth/*` va por `page.route()`.
+- **El servidor emite el error en dos formas** (plana para consumidores legados, anidada `error:{…}`
+  para `cliente.ts`): puente de coexistencia, se retira con el último consumidor de la forma plana.
+- **1180px literal en vez de `--ds-breakpoint-desktop`**: el token vale 1200 y el viewport canónico
+  1180; cinco módulos ya resolvían el desajuste igual. Decisión de diseño enrutada a `TASKS.md`.
+
+### Commits por tarea
+
+| Tarea | Commits |
+|---|---|
+| 3 | `ce7ee550` |
+| 4 | `a530ae5c` · `4443ce42` (defecto del agregador destapado de paso) |
+| 5 | `218b2b3c` |
+| 8 | `bb6d3a22` |
+| 9 | `cde5e8df` |
+| 10 | `b444f282` |
+| 11 | `26ac496b` |
+| 12 | `4b3c891c` |
+| 13 | `36b7df22` — el corte |
+| 14 | `85b542bb` · `0491ccad` · `a9b878a6` · `7387f123` · `231ca709` · `f06839fa` · `30d00078` |
+
+### Defectos encontrados por la verificación en navegador, todos de este frente
+
+Medidos contra el árbol base `385e1242`, no declarados «ajenos» de palabra: enlace de recuperación a
+3,97:1 en tema claro (heredaba de Bootstrap: el sistema de diseño no tiene primitiva de enlace de
+texto); foco que nunca volvía al usuario tras cancelar (un commit intermedio de `cargando` borraba la
+señal); cuatro defectos de presentación aprobados por Felipe para arreglar; tarjeta indistinguible del
+fondo (2 % de luminancia); y el pie **fuera de pantalla y sin scroll** en 1180×820 y 1440×900,
+introducido por el propio arreglo anterior y destapado solo al capturar el viewport en vez de la
+página completa. Cada uno quedó fijado por una prueba vista en rojo antes y en verde después.
+
+### Goldens
+
+Ocho baselines aprobadas por Felipe el 2026-09-01, ancladas por `sha256` en
+`docs/design-system/manifests/auth.json` y vigiladas por `design-system-contracts.mjs` (comprobado con
+señuelo). El contrato ejecutable fijó tres reglas que la primera versión incumplía —nombre
+`-<theme>-<w>x<h>.png`, PNG del tamaño exacto del viewport, `density: compact` desde 1200px— y se
+corrigió el trabajo, no el contrato.
+
+### Publicación y estado del gate
+
+- **PR #20** contra `main` (51 commits al abrirlo; hoy `46d06e59`, con `main` integrado hasta
+  `58d11137`). **PR #21**: arreglo aislado de `ProjectScopeResolverTest`, que abría conexión a base
+  en el lane `puro`.
+- **CI al 2026-09-02:** `design-system-static` **pasa** en el PR #20. `design-system-runtime` **falla
+  antes de mirar una pantalla**: `docker-compose.ci.yml` fija `DB_USER=lps_runtime_ci` (`48e06072`,
+  frente de seguridad, ya en `main`) y `scripts/design-system-ci-compose-contract.mjs:112` exige
+  `root`. Ese job aparece `skipped` en todos los runs de `main` desde el 29 de agosto: **los gates
+  visuales del repo no se han ejecutado desde entonces**. No es de este frente y no se toca desde él:
+  decidir qué pieza cede es del dueño del endurecimiento y toca usuarios y grants.
+
+### Queda pendiente para `MIGRATION_COMPLETE`
+
+1. Que la contradicción del CI se resuelva y el PR #20 quede verde y se integre.
+2. Uso real del corte durante una ventana que **nadie ha fijado todavía** (ni días ni criterio).
+3. Solo entonces, la segunda mitad de la Tarea 14: retirar `views/auth/login.view.php`, quitar
+   `GET/HEAD/POST /login`, `/password/update` y `/login/cancelar` del router, reducir
+   `LoginController` a `logout()`, crear `SpaHostController`, y retirar del manifiesto el escenario
+   `auth-login-dark-1180x820` (golden del login PHP).
+4. Decisión de producto pendiente: `auth.json` declara «claro por defecto sin flash» y el código
+   arranca en oscuro (`tema.ts`); `AGENTS.md` dice que claro es el tema de entrada. Uno de los dos
+   está mal y no es técnico decidir cuál.
+5. Técnico, anotado: `auth.json` no declara `consumerContract: "v1"`, así que
+   `design-system-consumer-contract.mjs` se lo salta e informa `PASS` igual.

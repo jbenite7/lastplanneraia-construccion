@@ -10,7 +10,7 @@ resumen: Todos los cambios notables en este proyecto serán documentados en este
 project: lps-aia
 type: changelog
 status: activo
-updated: 2026-08-27
+updated: 2026-09-02
 ---
 
 # Registro de Cambios (Changelog)
@@ -27,6 +27,28 @@ archivo registra solo cambios de producto liberados o por liberar. Ver [[IMPLEME
 para el estado de los planes en curso.
 
 ## [Sin publicar]
+
+### Añadido: el acceso a la aplicación lo sirve React (S01, 2026-09-01)
+
+`/` y `/login` muestran ahora la pantalla de acceso construida en React: login, avisos de sesión
+vencida, cuenta inactiva y clave restablecida (consumidos una sola vez), errores por campo, cambio
+obligatorio de contraseña con confirmación antes de cancelar, y la entrada oculta de mantenimiento
+servida por el mismo shell sin publicar su ruta en el bundle. Funciona en claro y oscuro y en los
+cuatro tamaños de referencia (390, 768, 1180 y 1440 de ancho), con un solo título por pantalla, foco
+visible, objetivos de 44 px y sin desbordes.
+
+La pantalla PHP **no se retiró**: sigue registrada detrás de un desvío en el router, y el envío del
+formulario (`POST /login`) sigue yendo a ella a propósito. Volver atrás es quitar `/login` de una
+lista. El retiro llegará tras una ventana de uso real, como segunda mitad del mismo plan.
+
+De la verificación en navegador salieron y se corrigieron cinco defectos de la pantalla nueva —contraste
+insuficiente del enlace de recuperación en tema claro, foco perdido al cancelar el cambio de clave,
+presentación (acciones pegadas, campos sin separar, tarjeta indistinguible del fondo) y el pie de
+página fuera de pantalla en escritorio— más un defecto del repositorio que la sacaba de verde en el
+CI: `ProjectScopeResolverTest` abría conexión a base de datos siendo una prueba de nivel `puro`.
+
+Plan: [[docs/superpowers/plans/2026-08-30-s01-login-react]] › `## Cierre`. Pendiente de integrar a
+`main` (PR #20): lo bloquea una contradicción de configuración del CI anotada en [[TASKS]].
 
 ### Arreglado: la programación semanal y el programa general volvían a cargar (2026-09-02)
 

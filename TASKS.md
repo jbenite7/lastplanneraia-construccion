@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-31
+updated: 2026-09-02
 ---
 
 # Tareas
@@ -130,8 +130,43 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
 - [x] **Shell mínimo React cerrado (2026-08-28):** `/app` cubre login, selección de proyecto,
   navegación por rol y tema claro/oscuro; la frontera conserva en PHP los módulos que aún no han
   migrado.
-- [ ] **Migrar recuperación de clave:** `password-forgot` y `password-reset` siguen en PHP por
-  decisión R12; requieren un frente propio que cubra correo, tokens y expiración.
+- [x] **S01 — el acceso lo sirve React, `CODE_COMPLETE` (2026-09-01).** `GET/HEAD` de `/` y `/login`
+  cruzan al shell React por un desvío en `SpaRouter` delante del router; la pantalla PHP sigue
+  registrada e intacta y `POST /login` no se movió, así que el rollback son tres líneas. Ocho goldens
+  aprobados por Felipe. Cierre completo en `docs/superpowers/plans/2026-08-30-s01-login-react.md` ›
+  `## Cierre`. **PR #20** abierto contra `main`, bloqueado por el CI (ver Bloqueantes).
+- [ ] **S01 — segunda mitad: retirar el login PHP (`MIGRATION_COMPLETE`).** Solo después de que el
+  PR #20 entre a `main` y el corte haya recibido uso real durante una ventana que **nadie ha fijado
+  todavía** (ni días ni criterio de «ya no hace falta volver» — fijarlo es lo primero). Entonces:
+  borrar `views/auth/login.view.php`; quitar del router `GET/HEAD/POST /login`, `/password/update` y
+  `/login/cancelar`; reducir `LoginController` a `logout()`; crear `SpaHostController::show()` para
+  `GET /` y `GET /login` (FastRoute responde 405 al POST retirado); retirar del manifiesto `auth.json`
+  el escenario `auth-login-dark-1180x820`, que es el golden del login PHP y ya no representa lo que
+  sirve `/login`; y quitar `login.view.php` de `auth.json.sources` sin tocar las de S02/S03. Pasos 6–7
+  de §12 y tabla de §13 de la spec.
+- [ ] **S01 — decisión de producto: ¿el acceso abre en claro o en oscuro?** Tres fuentes, dos
+  respuestas: la spec S01 §10.1 y el código (`frontend/src/shell/tema.ts`, `TEMA_FALLBACK='oscuro'`)
+  dicen oscuro; `docs/design-system/manifests/auth.json` («claro por defecto sin flash») y
+  `AGENTS.md` («claro es la cara del producto y el tema de entrada») dicen claro. No se tocó ninguna.
+  Si cede la spec, cambia el código y los ocho goldens; si cede la documentación, se corrigen dos
+  archivos. Es de Felipe. Anotado también en la spec, §16.
+- [ ] **S01 — `auth.json` no declara `consumerContract: "v1"`, y el validador de consumo lo omite en
+  silencio.** `scripts/design-system-consumer-contract.mjs:19` devuelve sin comprobar nada cuando
+  falta esa clave, y en modo explícito informa `PASS (1 manifiesto/s v1)` contando el archivo que
+  recibe, no los que valida. Los hashes de los goldens **sí** están vigilados por
+  `design-system-contracts.mjs` (comprobado saboteando un `sha256`), así que no hay agujero en las
+  baselines; lo que no corre para `auth` son las demás comprobaciones de consumo. Activar la clave
+  dispara reglas pensadas para vistas PHP (primitivas en la vista, assets canónicos) contra un módulo
+  React, y eso pide su propio ajuste. Dos arreglos posibles: adaptar el validador a manifiestos con
+  fuentes `.tsx`, o al menos que su mensaje no diga `PASS` cuando saltó. Solo `project-selector.json`
+  declara hoy la clave.
+- [ ] **Migrar recuperación de clave — es lo siguiente en Entrega 0:** `password-forgot` y
+  `password-reset` siguen en PHP por decisión R12. Sus planes ya existen y son decision-complete:
+  `docs/superpowers/plans/2026-08-30-s02-recuperar-clave-react.md` (precondición: S01 completo —
+  cumplida) y `…-s03-restablecer-clave-react.md`. S02 activa el incremento mínimo de `BrowserRouter`
+  y consume `MarcoAcceso`, `auth.ts`, `auth-react.css` y `SpaRouter::coincideConMapa()`, todos ya
+  construidos. **No arranca hasta que el PR #20 esté en `main`**: el gate de cierre de frente es
+  bloqueante y S02 se apoyaría en commits sin publicar.
 - [ ] **Resolver el menú contextual de Semanas:** definir su comportamiento y su lugar en la
   navegación React antes de migrar los módulos de programación.
 - [ ] **Definir QA y goldens durante la convivencia:** decidir por cada módulo si su golden PHP se
@@ -259,6 +294,29 @@ decidido de antemano), y se revirtió por decisión de Felipe. Detalle completo 
   el rollback para experimentos contra la base de dev: volver a sembrar desde el dump.
 
 ## Bloqueantes
+
+**2026-09-02 — El CI no puede ponerse verde para ningún PR, y los gates visuales no se ejecutan en
+`main` desde el 2026-08-29.** Dos piezas del repositorio se contradicen: `docker-compose.ci.yml:25`
+fija `DB_USER: ${CI_DB_RUNTIME_USER:-lps_runtime_ci}` —lo introdujo `48e06072`, «endurecer schema y
+usuario runtime», del frente de seguridad, ya en `main`— y `scripts/design-system-ci-compose-contract.mjs:112`
+sigue exigiendo `requireEqual(app.environment?.DB_USER, 'root', 'DB_USER')`. El paso «Verify isolated
+runtime target» del job `design-system-runtime` aborta con `Unsafe design-system CI target: DB_USER
+must be root; received lps_runtime_ci` **antes de mirar una sola pantalla**.
+
+Por qué nadie lo vio: ese job depende de `design-system-static`, que llevaba rojo por otras dos
+causas (la etiqueta de `test_php_test_lane_manifest.php`, arreglada por Felipe en `5c9b3c62`, y
+`ProjectScopeResolverTest` abriendo conexión en el lane `puro`, arreglado en el PR #21). Mientras
+el estático fallaba, el de runtime salía `skipped` en todos los runs de `main` — que se lee como
+inocuo y significa que **desde el 29 de agosto no se ha ejecutado ni una comprobación visual del
+repo**. Al arreglar el estático (PR #20 lo tiene en verde), el de runtime arrancó por primera vez y
+chocó con esto. Quinta capa destapada en el mismo frente: un fallo tapaba al siguiente.
+
+**Qué hay que decidir, y de quién es:** o el contrato acepta el usuario endurecido, o el runtime de
+CI necesita de verdad `root` para lo que hace (semillas, DDL de fixtures). Eso lo sabe quien
+endureció los permisos; toca usuarios y grants, así que no se resuelve desde un frente de UI. **Lo que
+no se hace:** relajar `compose-contract.mjs` para desbloquear un PR — es un guardarraíl de seguridad y
+aflojarlo sin entender por qué exige `root` lo deja de proteger. Bloquea el merge del PR #20 (S01 +
+T01 + T02) y del PR #21, y con ellos el arranque de S02.
 
 **2026-08-28 — `theme.js` deshace el claro de entrada (D12) en 7 páginas reales; bloquea el
 arranque del plan de Programa General, no la fase cero actual.** Destapado ejecutando el goal
