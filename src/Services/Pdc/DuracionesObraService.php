@@ -92,7 +92,7 @@ class DuracionesObraService
         $this->db->query(
             "DELETE FROM pdc_proyecto_duraciones
              WHERE project_id = ? AND duracion_ref = ? AND columna IN ({$marcas})",
-            array_merge([$projectId, $duracionRef], array_values($columnas)),
+            array_merge([$projectId, $duracionRef], $columnas),
         );
         return ['ok' => true];
     }
