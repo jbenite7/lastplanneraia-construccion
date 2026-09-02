@@ -10,7 +10,7 @@ resumen: "Catálogo del trabajo fechado: cada spec de diseño con el plan que la
 project: lps-aia
 type: plan-inventory
 status: activo
-updated: 2026-08-20
+updated: 2026-09-02
 ---
 # Registro de trabajo
 
@@ -29,6 +29,13 @@ archivar puede estar igual de cerrado y seguir donde estaba porque alguien lo no
 una sola mitad es normal: no todo lo que se diseña se ejecuta, y algunos planes son anteriores a la
 costumbre de escribir la spec.
 
+**Estado fuera del catálogo.** La tabla de abajo la genera un script y solo sabe qué documentos
+existen, no en qué punto está cada trabajo. Lo que no se deduce del disco se anota aquí:
+
+| Plan | Estado | Nota |
+|---|---|---|
+| [[docs/superpowers/plans/2026-09-01-duraciones-por-obra\|Duraciones de contratación por obra]] | **ejecutado** | Ejecutado en la rama `fix/pdc-duraciones-pasos`, que sale del commit desplegado en producción y **no** de `main`. Exige aplicar `database/migrations/20260901_pdc_v2_duraciones_por_obra.php` antes de publicar el código. Replicarlo a `main` sigue pendiente y bloquea el próximo deploy desde `main` (ver [[TASKS]]). |
+
 ## Catálogo
 
 Lo de abajo lo genera `scripts/wiki-registro.mjs` emparejando spec y plan por su slug. **No lo
@@ -41,12 +48,22 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_113 trabajos · 47 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_118 trabajos · 49 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+
+### septiembre de 2026
+
+| Trabajo | Documentos | Archivado |
+|---|---|---|
+| Duraciones de contratación por obra — diseño v1.0 | [[docs/superpowers/specs/2026-09-01-duraciones-por-obra-design|spec]] · [[docs/superpowers/plans/2026-09-01-duraciones-por-obra|plan]] | — |
 
 ### agosto de 2026
 
 | Trabajo | Documentos | Archivado |
 |---|---|---|
+| Deuda del CI — diseño de eliminación | [[docs/superpowers/specs/2026-08-20-deuda-ci-design|spec]] | — |
+| Deuda del CI · Frente 1 (G1+G3+G5) | [[docs/superpowers/plans/2026-08-20-deuda-ci-frente-1|plan]] | — |
+| Deuda del CI · Frente 2 (G2 mínimo, cache de capa base) | [[docs/superpowers/plans/2026-08-20-deuda-ci-frente-2|plan]] | — |
+| Interruptor del Control Tower desde /admin | [[docs/superpowers/specs/2026-08-20-interruptor-control-tower-admin-design|spec]] · [[docs/superpowers/plans/2026-08-20-interruptor-control-tower-admin|plan]] | — |
 | Apply del recálculo de estados — plan de ejecución | [[docs/superpowers/plans/2026-08-19-apply-recalculo-estados|plan]] | — |
 | El coloreado en cascada por severidad — diseño del diagnóstico | [[docs/superpowers/specs/2026-08-19-bug-coloreado-severidad-design|spec]] · [[docs/superpowers/plans/2026-08-19-bug-coloreado-severidad|plan]] | — |
 | DS-F0 · Auditoría total del design system — diseño | [[docs/superpowers/specs/2026-08-19-ds-f0-auditoria-total-design|spec]] · [[docs/superpowers/plans/2026-08-19-ds-f0-auditoria-total|plan]] | — |
