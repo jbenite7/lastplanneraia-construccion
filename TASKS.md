@@ -75,6 +75,39 @@ vivas en `main`**, medidas con petición HTTP real contra el stack local:
   Arreglar (3) sin (1) y (2) no cambia nada observable y no se puede verificar, que es la razón de
   dejarlo. Esto ya no es «un barrido de alias»: es **restaurar una funcionalidad caída**, con
   escritura sobre `general_curvas`, `general_informe_consolidado` y hermanas. Merece frente propio.
+
+- [ ] **El problema (1) no es de informes: son 16 sitios del runtime servido.** Medido el 2026-09-02
+  pasando los 966 literales SQL del árbol por el `ProjectSqlGuard` real (no por una regex) y
+  clasificando cada uno por quién lo ejecuta. 77 consultas nombran una tabla calificada por esquema;
+  el guard las rechaza **todas**, y no solo `information_schema`: la regla salta ante cualquier
+  `esquema.tabla` después de `FROM`/`JOIN`. Reparto:
+
+  **Runtime servido — 16 rompen.** Trece detectados y tres resueltos a mano:
+  `admin/src/Controllers/FamilyCatalogController.php:577`, `admin/src/Models/Project.php:983`, `:1007`,
+  `:1193`, `:1205`, `src/Controllers/Api/ProfesionalesApiController.php:519`,
+  `src/Controllers/Api/SubcontratistasApiController.php:456`, `src/Core/Lps/LpsService.php:349`,
+  `src/Legacy/productividad_temporal.php:51`, `src/Services/ProgramChangeDetector.php:476`,
+  `src/Services/ReportProcessor.php:112`, `:123`, `:137`, más
+  `admin/src/Controllers/DashboardController.php:576`, `src/Security/EventService.php:109` y
+  `src/Security/RbacService.php:258`. A salvo, con conexión propia: `Database.php:796` y `:816`
+  (`rawTableExists`/`rawColumnExists`, que son el patrón a copiar) y `TableScopeCatalog.php:22`.
+
+  **Tres de esos dieciséis no revientan: fallan en silencio, que es peor.** `EventService`,
+  `RbacService` y `DashboardController` envuelven la consulta en un `catch` que devuelve un valor por
+  defecto, así que la excepción del guard se traga y el código sigue con una respuesta falsa.
+  Comprobado: `RbacService::tableExists('rbac_roles')` devuelve **false** con la tabla existiendo. El
+  efecto es que el rol deja de re-resolverse desde `project_members` y se cae al valor de sesión o a
+  `RbacCatalog::DEFAULT_ROLE`. **Degrada hacia abajo —`DEFAULT_ROLE` es `C`, subcontratista— así que
+  no hay escalada de privilegios**, pero sí permisos y diccionario de eventos resolviéndose mal sin
+  que nadie se entere. Empezar por estos tres.
+
+  **Herramienta (migraciones y scripts) — 25 rompen, 18 a salvo, 12 sin resolver.** Prioridad mucho
+  menor: casi todas son migraciones fechadas que ya se ejecutaron y no vuelven a correr. Conviene
+  mirarlas solo antes de replantar una base desde cero.
+
+  El detector que produjo estos números fue temporal y no quedó en el repo. Convertirlo en prueba con
+  una línea base congelada es una opción, pero hoy saldría en rojo con estos 16 y hay que arreglarlos
+  antes de fijar la línea.
 - [ ] **Los INSERT por lote del PDC revientan con «INSERT de múltiples filas no tiene una prueba de
   scope soportada».** El guard rechaza de plano el INSERT multifila; los servicios del PDC los usan a
   propósito, por rendimiento (`array_fill(0, count($lote), '(?, ?, …)')` aparece en
