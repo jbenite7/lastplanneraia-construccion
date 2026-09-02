@@ -71,13 +71,28 @@ export function phpEnApp(argumentos) {
   });
 }
 
-/** SQL directo contra la BD del stack, reusando la conexión configurada de Database.php. */
-export function sqlEnApp(codigoPhp) {
+/**
+ * SQL directo contra la BD del stack, reusando la conexión configurada de Database.php.
+ *
+ * Enlaza un ProjectScope antes de ejecutar nada. ProjectSqlGuard (2026-08-29) vive dentro de
+ * `Database::query()` y exige alcance activo para cualquier tabla con `project_id`; en un request lo
+ * pone SessionMiddleware, pero esto es `php -r` por línea de comandos y no pasa por ahí. Sin el bind,
+ * toda consulta de los specs a tablas del PDC muere con MissingProjectScope.
+ *
+ * El alcance por defecto es el proyecto sandbox, que es contra quien trabajan todos los specs que
+ * usan este helper. Es además una red: una consulta que se olvide el `WHERE project_id` recibe el
+ * filtro inyectado por el guard en vez de barrer todas las obras de la base de desarrollo.
+ *
+ * La clase va con su nombre completo y no con `use`: `php -r` no admite un `use` después de la
+ * primera sentencia.
+ */
+export function sqlEnApp(codigoPhp, projectId = PDC_SANDBOX_PROJECT.projectId) {
   return phpEnApp([
     '-r',
     `require '/var/www/html/vendor/autoload.php';`
     + `require '/var/www/html/src/Core/Database.php';`
     + `$db = Database::getInstance();`
+    + `$db->dataScope()->bind(new \\App\\Security\\DataScope\\ProjectScope(${projectId}, 'e2e-pdc-sandbox', 'A'));`
     + codigoPhp,
   ]).trim();
 }

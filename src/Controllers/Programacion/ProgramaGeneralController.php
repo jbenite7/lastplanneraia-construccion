@@ -59,11 +59,10 @@ class ProgramaGeneralController extends BaseController
                     $fechaDatepicker = date("Y, n - 1, d, H, i, s", strtotime($dataUltima["Fecha_Fin_Sem"]));
                 }
 
-                $sqlDetalles = "SELECT Semanal_Confirmada, fechaCierreCompromisos, fechaCreacionSemana,
-                               (SELECT SUM(reprogramacion) FROM {$tSa} WHERE Semana <= ? AND project_id = ?) AS versionCronograma
-                               FROM {$tSa} WHERE Semana = ? AND project_id = ?";
-                $stmtDetalles = $this->db->queryWithProject($sqlDetalles, [$semana, $projectId, $semana, $projectId]);
-                $dataDetalles = $stmtDetalles->fetch();
+                // La consulta vive en EstadoSemanalService: estaba copiada aqui y en
+                // src/Legacy/datosGeneralesPagina.php, que sirve estos mismos campos por AJAX.
+                $dataDetalles = (new \App\Services\EstadoSemanalService($this->db))
+                    ->detallesDeLaSemana($dbName, (int) $projectId, (int) $semana);
 
                 if ($dataDetalles) {
                     $semanalConfirmada = $dataDetalles["Semanal_Confirmada"];

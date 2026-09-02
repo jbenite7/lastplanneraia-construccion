@@ -422,11 +422,17 @@ class ForecastService
     public function getContractorPac4W(int $projectId, string $subcontratista): ?float
     {
         $stmt = $this->db->prepare(
-            "SELECT AVG(CAST(REPLACE(PAC, ',', '.') AS DECIMAL(10,4))) as avg_pac
-             FROM cic
-             WHERE project_id = ? AND subcontratista = ?
-             AND Semana >= (SELECT MAX(Semana) - 4 FROM cic WHERE project_id = ?)
-             AND PAC != 'NA'",
+            // Alias distinto por referencia: `cic` se nombra dos veces —la externa y la de la
+            // subconsulta— y sin alias las dos se llaman igual. ProjectSqlGuard aborta ahi con
+            // «Alias de tabla de proyecto ambiguo», porque con dos raices homonimas no puede decidir
+            // a cual pertenece cada `project_id = ?`. `prepare()` no lo salva: cuando la consulta
+            // toca una tabla de proyecto devuelve una sentencia diferida que pasa por el guard en el
+            // execute(), asi que el fallo aparece al ejecutar y no al preparar.
+            "SELECT AVG(CAST(REPLACE(c.PAC, ',', '.') AS DECIMAL(10,4))) as avg_pac
+             FROM cic c
+             WHERE c.project_id = ? AND c.subcontratista = ?
+             AND c.Semana >= (SELECT MAX(v.Semana) - 4 FROM cic v WHERE v.project_id = ?)
+             AND c.PAC != 'NA'",
         );
         $stmt->execute([$projectId, $subcontratista, $projectId]);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -439,11 +445,12 @@ class ForecastService
     public function getResponsiblePac4W(int $projectId, string $responsable): ?float
     {
         $stmt = $this->db->prepare(
-            "SELECT AVG(CAST(REPLACE(PAC_Consolidado, ',', '.') AS DECIMAL(10,4))) as avg_pac
-             FROM cip
-             WHERE project_id = ? AND profesional = ?
-             AND Semana >= (SELECT MAX(Semana) - 4 FROM cip WHERE project_id = ?)
-             AND PAC_Consolidado != 'NA'",
+            // Mismo caso que getContractorPac4W: dos referencias a `cip`, una por alias.
+            "SELECT AVG(CAST(REPLACE(c.PAC_Consolidado, ',', '.') AS DECIMAL(10,4))) as avg_pac
+             FROM cip c
+             WHERE c.project_id = ? AND c.profesional = ?
+             AND c.Semana >= (SELECT MAX(v.Semana) - 4 FROM cip v WHERE v.project_id = ?)
+             AND c.PAC_Consolidado != 'NA'",
         );
         $stmt->execute([$projectId, $responsable, $projectId]);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);

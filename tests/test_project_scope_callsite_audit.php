@@ -376,6 +376,12 @@ function auditSystemRunnerCallerAllowed(string $relative): bool
         'admin/src/Controllers/DashboardController.php',
         'admin/async/consolidate.php',
         'scripts/higiene/reparar-mojibake-causas.php',
+        // Seed del sandbox e2e del PDC. Herramienta de desarrollo, no servida: la invocan los specs
+        // de tests/browser/pdc-v2-*.spec.mjs por linea de comandos, fuera de SessionMiddleware.
+        // Necesita SystemScope y no ProjectScope porque su limpieza de catalogos globales borra en
+        // general_paquetes_contratacion (tabla System) uniendo contra tablas de proyecto, forma que
+        // ningun alcance de obra puede expresar.
+        'database/seeds/pdc_e2e_sandbox_project.php',
     ], true);
 }
 
