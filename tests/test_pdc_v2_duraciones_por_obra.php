@@ -152,6 +152,65 @@ try {
     $db->query("DELETE FROM general_dias_procesos_contratacion WHERE paqueteContratacion = 'ZZTEST OBRA DUR'");
 }
 
+echo "=== una excepción donde el catálogo tiene NULL evita la duración provisional (§9) ===\n";
+// El caso que la spec §6 llama «uno de los casos útiles»: la empresa no tiene número para ese paso
+// y la obra sí. Si la resolución corriera después de decidir `$provisional`, el paquete quedaría
+// provisional y el número de la obra no se usaría para nada.
+$db->query(
+    "INSERT INTO general_dias_procesos_contratacion (paqueteContratacion, tipoPaquete,
+        diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos,
+        diasLegalizacionContrato, diasFabricacion, diasInsumosObra)
+     VALUES ('ZZTEST OBRA DUR NULL', 'a_todo_costo', 3, 2, 7, 4, 5, NULL, 2)",
+);
+$refNull = (int) $db->lastInsertId();
+$db->query(
+    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion,
+        modalidad_contratacion, duracion_ref, activo, creado_por, created_at)
+     VALUES ('ZZTEST OBRA DUR NULL', 'zztest obra dur null', 'a_todo_costo', 'contrato', ?, 1, 'test-dur-obra-null', NOW())",
+    [$refNull],
+);
+$paqNull = (int) $db->lastInsertId();
+
+// Dos columnas en NULL: corregir solo una deja el paquete provisional igual.
+$db->query(
+    "INSERT INTO general_dias_procesos_contratacion (paqueteContratacion, tipoPaquete,
+        diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos,
+        diasLegalizacionContrato, diasFabricacion, diasInsumosObra)
+     VALUES ('ZZTEST OBRA DUR NULL2', 'a_todo_costo', 3, 2, 7, 4, 5, NULL, NULL)",
+);
+$refNull2 = (int) $db->lastInsertId();
+$db->query(
+    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion,
+        modalidad_contratacion, duracion_ref, activo, creado_por, created_at)
+     VALUES ('ZZTEST OBRA DUR NULL2', 'zztest obra dur null2', 'a_todo_costo', 'contrato', ?, 1, 'test-dur-obra-null', NOW())",
+    [$refNull2],
+);
+$paqNull2 = (int) $db->lastInsertId();
+
+$proyectarDe = static fn (int $paq, array $exc): array => $proyectar->invoke(
+    $plan, $paq, '2026-12-31', $pasosSint, [], $selectCols, $exc,
+);
+
+try {
+    $sinCorregir = $proyectarDe($paqNull, []);
+    $assert($sinCorregir['provisional'] === true,
+        'Con una columna del catálogo en NULL y sin corrección, el paquete es provisional.');
+
+    $corregido = $proyectarDe($paqNull, [$refNull => ['diasFabricacion' => 15]]);
+    $assert($corregido['provisional'] === false,
+        'La obra da el número que la empresa no tiene y el paquete DEJA de ser provisional.');
+    $assert($corregido['total'] === 38,
+        'Y el total usa el número de la obra: 3+2+7+4+5+15+2 = 38. Dio ' . $corregido['total']);
+
+    $parcial = $proyectarDe($paqNull2, [$refNull2 => ['diasFabricacion' => 15]]);
+    $assert($parcial['provisional'] === true,
+        'Con DOS columnas en NULL y una sola corregida el paquete sigue provisional: el número de la '
+        . 'obra no alcanza a gobernar el cálculo, y la pantalla no debe decir que sí.');
+} finally {
+    $db->query('DELETE FROM general_paquetes_contratacion WHERE creado_por = ?', ['test-dur-obra-null']);
+    $db->query("DELETE FROM general_dias_procesos_contratacion WHERE paqueteContratacion LIKE 'ZZTEST OBRA DUR NULL%'");
+}
+
 echo "=== el plan expone lo que la pantalla necesita para corregir ===\n";
 $fuente = file_get_contents(__DIR__ . '/../src/Services/Pdc/PlanFechasService.php');
 $assert(str_contains($fuente, 'pp.duracion_ref'),
@@ -160,6 +219,10 @@ $assert(str_contains($fuente, "'duracionRef' => \$r['duracion_ref']"),
     'La fila del plan expone duracionRef al cliente.');
 $assert(str_contains($fuente, "'origen' =>") && str_contains($fuente, "'colLegacy' =>"),
     'Cada paso del plan dice su columna legacy y si su duración es de la empresa o de la obra.');
+$assert(str_contains($fuente, '$provisionalPorDestino'),
+    'El origen «obra» exige además que la excepción se haya APLICADO de verdad: un paquete que sigue '
+    . 'provisional saca sus días del reparto de la mediana, no del número que la obra escribió, y '
+    . 'marcarlo «obra» sería una tercera señal contando otra historia.');
 
 echo "=== dos obras, la corrección de una no aparece en la otra ===\n";
 $OBRA_A = 999906;
