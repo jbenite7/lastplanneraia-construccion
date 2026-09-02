@@ -57,6 +57,10 @@ test('la obra corrige un paso, la fecha se mueve, y vuelve al número de la empr
     // El aviso dice lo CONTRARIO que el del catálogo. Es la diferencia que evita corregir el
     // estándar de la empresa creyendo que se corrige solo esta obra.
     await expect(page.getByTestId('pdc-plan-pasos-alcance')).toContainText('son de esta obra');
+    // Y dice el alcance REAL: la corrección es de la fila del catálogo, no del paquete abierto.
+    // Este paquete es el único de la obra que usa su fila, así que el aviso va en singular.
+    await expect(page.getByTestId('pdc-plan-pasos-alcance'))
+      .toContainText('del paquete de esta obra que usa estas duraciones');
 
     // Fabricación es el sexto paso del proceso por defecto, y `orden` arranca en 0: orden 5.
     // (El brief decía 6; la corrida lo desmintió — ese testid es «Insumos en obra», de 2 días.)

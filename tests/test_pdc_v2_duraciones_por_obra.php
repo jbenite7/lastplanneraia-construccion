@@ -219,6 +219,9 @@ $assert(str_contains($fuente, "'duracionRef' => \$r['duracion_ref']"),
     'La fila del plan expone duracionRef al cliente.');
 $assert(str_contains($fuente, "'origen' =>") && str_contains($fuente, "'colLegacy' =>"),
     'Cada paso del plan dice su columna legacy y si su duración es de la empresa o de la obra.');
+$assert(str_contains($fuente, "'paquetesConMismaDuracion' =>"),
+    'La fila del plan dice cuántos destinos de esta obra comparten su duracionRef: el aviso del '
+    . 'panel promete el alcance real de la corrección, que es la fila del catálogo y no el paquete.');
 $assert(str_contains($fuente, '$provisionalPorDestino'),
     'El origen «obra» exige además que la excepción se haya APLICADO de verdad: un paquete que sigue '
     . 'provisional saca sus días del reparto de la mediana, no del número que la obra escribió, y '

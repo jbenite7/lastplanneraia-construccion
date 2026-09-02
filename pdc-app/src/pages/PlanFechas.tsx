@@ -896,9 +896,13 @@ export default function PlanFechas() {
           <h3>Pasos de «{filaExpandida.nombre}»</h3>
           {/* Dice lo CONTRARIO que el aviso del catálogo de pasos, y a propósito: allá se cambia el
               estándar de la empresa, aquí solo esta obra. */}
+          {/* El número no es decorativo: la corrección es de la FILA del catálogo, así que mueve
+              todos los destinos de esta obra que la usen, no solo el paquete abierto. Decir «este
+              paquete» prometía un alcance más pequeño del real. */}
           <p className="pdc-sub" data-testid="pdc-plan-pasos-alcance">
-            Estos días son de esta obra: cambiarlos mueve las fechas de este paquete aquí, y no
-            toca a las demás obras.
+            {filaExpandida.paquetesConMismaDuracion === 1
+              ? 'Estos días son de esta obra: cambiarlos mueve las fechas del paquete de esta obra que usa estas duraciones, y no toca a las demás obras.'
+              : `Estos días son de esta obra: cambiarlos mueve las fechas de los ${filaExpandida.paquetesConMismaDuracion} paquetes de esta obra que usan estas duraciones, y no toca a las demás obras.`}
           </p>
           <table className="pdc-plan-pasos">
             <thead>
