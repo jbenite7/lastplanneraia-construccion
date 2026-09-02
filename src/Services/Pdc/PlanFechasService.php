@@ -1143,8 +1143,12 @@ class PlanFechasService
         // no falla — deja el avance escrito y fuera del alcance de las dos pantallas, porque el
         // resumen une por cabecera y el detalle necesita su `fecha_arranque`.
         $this->db->query(
+            // `pdc_plan_paquete.project_id` va calificado, no `project_id` a secas: cuando la consulta
+            // toca dos tablas de proyecto (aqui la raiz y la `pdc_plan_paso s` del NOT EXISTS),
+            // ProjectSqlGuard exige que la raiz lleve su `<raiz>.project_id = ?` canonico y rechaza
+            // la forma desnuda. Sin calificar, `amarrar()` revienta con ProjectScopeViolation.
             'DELETE FROM pdc_plan_paquete
-              WHERE project_id = ? AND paquete_id = ? AND subpaquete_id = ?
+              WHERE pdc_plan_paquete.project_id = ? AND paquete_id = ? AND subpaquete_id = ?
                 AND responsable_user_id IS NULL
                 AND NOT EXISTS (
                     SELECT 1 FROM pdc_plan_paso s

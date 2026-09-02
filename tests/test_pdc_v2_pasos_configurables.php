@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 
+use App\Security\DataScope\ProjectScope;
 use App\Services\Pdc\PasosContratacionService;
 use App\Services\Pdc\PlanFechasService;
 
@@ -20,7 +21,18 @@ $db = Database::getInstance();
 $P = 999905; // proyecto de pruebas propio de A4.1
 $svc = new PasosContratacionService($db);
 
-$limpiar = static function () use ($db, $P): void {
+// ProjectSqlGuard (2026-08-29) exige un ProjectScope activo para tocar tablas con project_id. En un
+// request lo bindea SessionMiddleware; este test llama al servicio directo por linea de comandos, asi
+// que lo bindea el. Este archivo alterna entre la obra sintetica $P y Da Porto (73), y bind() lanza
+// LogicException si ya habia alcance enlazado, de ahi el reenganche. Mismo patron que
+// tests/test_pdc_v2_torre_control.php.
+$enObra = static function (int $projectId) use ($db): void {
+    $db->dataScope()->clear();
+    $db->dataScope()->bind(new ProjectScope($projectId, 'test-a41', 'A'));
+};
+
+$limpiar = static function () use ($db, $P, $enObra): void {
+    $enObra($P);
     $db->query('DELETE FROM pdc_proyecto_pasos WHERE project_id = ?', [$P]);
 };
 $limpiar();
@@ -100,6 +112,8 @@ $assert(!$svc->configurado($P) && count($svc->deProyecto($P)) === 7,
 // escribiendo en esta base, y una foto vieja probaría el estado de ayer, no la invariancia.
 echo "=== cero regresión (Da Porto, proyecto 73) ===\n";
 $DAPORTO = 73;
+// Da Porto es otra obra: se le pregunta desde SU alcance, no desde el de $P.
+$enObra($DAPORTO);
 $fotoPaquetes = static fn (): array => Database::getInstance()->query(
     'SELECT paquete_id, fecha_ancla, fecha_arranque, dias_totales, duracion_provisional
      FROM pdc_plan_paquete WHERE project_id = ? ORDER BY paquete_id', [73],
@@ -123,12 +137,15 @@ $assert($antesPasos === $fotoPasos(),
 $assert((int) $db->query('SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paso_id IS NULL', [$DAPORTO])->fetchColumn() === 0,
     'Todas las filas de Da Porto conservan su identidad de paso.');
 
+$enObra($P);
+
 // ── Fixture mínimo para la aritmética ───────────────────────────────────────
 // `calcular()` solo necesita un amarre y un paquete activo con duración: ni presupuesto ni
 // cronograma. Montar solo eso deja el bloque legible y sin depender del fixture grande de
 // tests/test_pdc_v2_plan_fechas.php.
 echo "=== aritmética con pasos configurados ===\n";
-$limpiarFixture = static function () use ($db, $P): void {
+$limpiarFixture = static function () use ($db, $P, $enObra): void {
+    $enObra($P);
     $db->query('DELETE FROM pdc_plan_paso WHERE project_id = ?', [$P]);
     $db->query('DELETE FROM pdc_plan_paquete WHERE project_id = ?', [$P]);
     $db->query('DELETE FROM pdc_paquete_frente WHERE project_id = ?', [$P]);

@@ -88,9 +88,11 @@ abstract class BaseController
      * Estado semanal del proyecto resuelto en servidor: la última semana creada
      * (`Max_Semana`) y si la semana en curso está confirmada (`Semanal_Confirmada`).
      *
-     * Reproduce a propósito la misma consulta que `src/Legacy/datosGeneralesPagina.php`,
-     * para que el valor que emite el PHP en el bloque `.encabezado` y el que llega
-     * después por AJAX sean el mismo dato y no puedan divergir (C-46).
+     * `Semanal_Confirmada` sale de `App\Services\EstadoSemanalService`, el mismo sitio del que lo
+     * saca `src/Legacy/datosGeneralesPagina.php`, para que el valor que emite el PHP en el bloque
+     * `.encabezado` y el que llega después por AJAX sean el mismo dato y no puedan divergir (C-46).
+     * Hasta el 2026-09-02 esa garantía se sostenía copiando la consulta a mano y confiando en que
+     * nadie tocara una sola de las copias — que es exactamente lo que acabó pasando.
      *
      * @return array{maxSemana: int, semanalConfirmada: int}
      */
@@ -111,11 +113,9 @@ abstract class BaseController
             );
             $estado['maxSemana'] = (int) ($stmtMax->fetchColumn() ?: 0);
 
-            $stmtSc = $this->db->queryWithProject(
-                "SELECT Semanal_Confirmada FROM {$tSa} WHERE project_id = ? AND Semana = ? LIMIT 1",
-                [$projectId, $semana]
-            );
-            $estado['semanalConfirmada'] = (int) ($stmtSc->fetchColumn() ?: 0);
+            $detalles = (new \App\Services\EstadoSemanalService($this->db))
+                ->detallesDeLaSemana($dbName, (int) $projectId, $semana);
+            $estado['semanalConfirmada'] = (int) ($detalles['Semanal_Confirmada'] ?? 0);
         } catch (\Throwable $e) {
             error_log('Error resolviendo el estado semanal en servidor (C-46): ' . $e->getMessage());
         }

@@ -112,4 +112,4 @@ if ($failures !== []) {
     exit(1);
 }
 
-echo "Runtime boundary CI contract: {$checks} checks\n";
+echo "PASA: frontera runtime en el CI, {$checks} comprobaciones\n";

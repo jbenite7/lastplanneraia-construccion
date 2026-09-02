@@ -29,6 +29,102 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 > **Es el modo de fallo a vigilar aquí:** este archivo se escribe desde lo que una sesión ve, y una
 > sesión ve su worktree.
 
+## Gate de datos: lo que el guard destapó y sigue roto (2026-09-02)
+
+`ProjectSqlGuard` (2026-08-29, `48e06072`) rompió más que la herramienta de línea de comandos. Lo de
+la suite quedó arreglado en el frente `fix/suite-main-scope`; **estas dos son de producción y siguen
+vivas en `main`**, medidas con petición HTTP real contra el stack local:
+
+- [x] **Arreglado el 2026-09-02: el alias ambiguo de `semanas_activas`.** La misma consulta estaba
+  copiada en dos sitios —`src/Legacy/datosGeneralesPagina.php` y `ProgramaGeneralController`— y
+  nombraba la tabla dos veces sin alias, así que `/programacion-semanal` y `/programa-general`
+  reventaban al cargar. Cada referencia lleva ahora su alias y su `project_id` calificado; cubierto
+  por `ProjectSqlGuardTest`, con la pareja rechaza/acepta. La consulta se sacó a
+  `App\Services\EstadoSemanalService`, que es ahora el único sitio donde tocarla: estaba copiada en
+  los dos archivos, y `BaseController::getWeekStatusVars()` mantenía una tercera copia parcial cuyo
+  comentario ya advertía que no podía divergir.
+- [x] **Medidos los seis hermanos del alias ambiguo (2026-09-02).** El resultado parte la lista en dos
+  mitades que no se parecen, y por eso solo se arregló una:
+  - **`ForecastService::getContractorPac4W()` y `getResponsiblePac4W()` — arreglados.** No los dispara
+    nada: son código muerto, sin un solo llamador en el repositorio (las claves
+    `contractor_pac_4w`/`responsible_pac_4w` que parecen invocarlos llegan a `predict()` ya
+    calculadas, desde fuera). Se arreglaron igual porque son dos líneas y quedan correctos para quien
+    los cablee; verificado con datos reales (proyecto 62, «CONSTRUALMANZA»: devuelve 0.3166 donde
+    antes lanzaba `ProjectScopeViolation`).
+  - **Los cuatro de `ReportProcessor` — NO arreglados, y no por pereza.** Sí hay disparador: el botón
+    «Consolidar informes» del panel de administración (`admin/async/consolidate.php`,
+    `DashboardController`) y la ruta `/reportes/{tipo}` de `ReportController`. Pero **ese código nunca
+    llega hasta las consultas del alias**, porque muere antes, dos veces. Ver la tarea de abajo.
+- [ ] **La consolidación de informes está muerta entera, y el alias es su tercer problema, no el
+  primero.** Medido el 2026-09-02 ejecutando `generateCurvaS()` y `generateReporteGeneral()` bajo
+  `SystemScopeRunner`, que es como corren de verdad: las dos abortan con `DomainException: Las tablas
+  calificadas por schema no están soportadas por el gate`. En orden de aparición:
+  1. **`information_schema` a través de `Database::query()`.** Mata el informe en
+     `ReportProcessor::reportTableHasProjectId()` (`:137`), antes de tocar dato ninguno. La
+     comprobación del guard ocurre al analizar la consulta, **antes** de mirar el alcance, así que
+     `SystemScope` no salva. `Database` ya resuelve esto bien y en privado con PDO crudo y caché
+     (`rawTableExists`, `rawColumnExists`), y la migración `20260828_project_scope_contract.php` fija
+     el patrón. Hay al menos **tres** sitios así dentro de `ReportProcessor` y otros tres fuera que
+     también pasan por el guard: `ProfesionalesApiController:519`, `SubcontratistasApiController:456`
+     y `ProgramChangeDetector:476`.
+  2. **`FROM DUAL`.** Tres consultas de `ReportProcessor` cuelgan sus subconsultas de `DUAL`, que no
+     está en el catálogo de esquema, así que el guard lanza `Tabla no clasificada en el schema: dual`
+     con cualquier alcance. Comprobado aparte.
+  3. **Y solo detrás de esas dos**, el alias ambiguo de `:211`, `:985`, `:1040` y `:1063`.
+
+  Arreglar (3) sin (1) y (2) no cambia nada observable y no se puede verificar, que es la razón de
+  dejarlo. Esto ya no es «un barrido de alias»: es **restaurar una funcionalidad caída**, con
+  escritura sobre `general_curvas`, `general_informe_consolidado` y hermanas. Merece frente propio.
+
+- [ ] **El problema (1) no es de informes: son 16 sitios del runtime servido.** Medido el 2026-09-02
+  pasando los 966 literales SQL del árbol por el `ProjectSqlGuard` real (no por una regex) y
+  clasificando cada uno por quién lo ejecuta. 77 consultas nombran una tabla calificada por esquema;
+  el guard las rechaza **todas**, y no solo `information_schema`: la regla salta ante cualquier
+  `esquema.tabla` después de `FROM`/`JOIN`. Reparto:
+
+  **Runtime servido — 16 rompen.** Trece detectados y tres resueltos a mano:
+  `admin/src/Controllers/FamilyCatalogController.php:577`, `admin/src/Models/Project.php:983`, `:1007`,
+  `:1193`, `:1205`, `src/Controllers/Api/ProfesionalesApiController.php:519`,
+  `src/Controllers/Api/SubcontratistasApiController.php:456`, `src/Core/Lps/LpsService.php:349`,
+  `src/Legacy/productividad_temporal.php:51`, `src/Services/ProgramChangeDetector.php:476`,
+  `src/Services/ReportProcessor.php:112`, `:123`, `:137`, más
+  `admin/src/Controllers/DashboardController.php:576`, `src/Security/EventService.php:109` y
+  `src/Security/RbacService.php:258`. A salvo, con conexión propia: `Database.php:796` y `:816`
+  (`rawTableExists`/`rawColumnExists`, que son el patrón a copiar) y `TableScopeCatalog.php:22`.
+
+  **Tres de esos dieciséis no revientan: fallan en silencio, que es peor.** `EventService`,
+  `RbacService` y `DashboardController` envuelven la consulta en un `catch` que devuelve un valor por
+  defecto, así que la excepción del guard se traga y el código sigue con una respuesta falsa.
+  Comprobado: `RbacService::tableExists('rbac_roles')` devuelve **false** con la tabla existiendo. El
+  efecto es que el rol deja de re-resolverse desde `project_members` y se cae al valor de sesión o a
+  `RbacCatalog::DEFAULT_ROLE`. **Degrada hacia abajo —`DEFAULT_ROLE` es `C`, subcontratista— así que
+  no hay escalada de privilegios**, pero sí permisos y diccionario de eventos resolviéndose mal sin
+  que nadie se entere. Empezar por estos tres.
+
+  **Herramienta (migraciones y scripts) — 25 rompen, 18 a salvo, 12 sin resolver.** Prioridad mucho
+  menor: casi todas son migraciones fechadas que ya se ejecutaron y no vuelven a correr. Conviene
+  mirarlas solo antes de replantar una base desde cero.
+
+  El detector que produjo estos números fue temporal y no quedó en el repo. Convertirlo en prueba con
+  una línea base congelada es una opción, pero hoy saldría en rojo con estos 16 y hay que arreglarlos
+  antes de fijar la línea.
+- [ ] **Los INSERT por lote del PDC revientan con «INSERT de múltiples filas no tiene una prueba de
+  scope soportada».** El guard rechaza de plano el INSERT multifila; los servicios del PDC los usan a
+  propósito, por rendimiento (`array_fill(0, count($lote), '(?, ?, …)')` aparece en
+  `MaestroInsumosService`, `PaquetesService`, `SubpaquetesService`, `SeguimientoService`,
+  `PlanFechasService`). **Hay decisión de arquitectura de por medio, no es un parche:** o se le enseña
+  al guard a validar el INSERT multifila —que es donde está el hueco— o se reescriben los lotes fila a
+  fila y se pierde el rendimiento que motivó escribirlos así. No se auditaron los 46 sitios que usan
+  ese patrón en `src/`; solo se confirmó que al menos uno del PDC revienta en caliente.
+- [ ] **Siete errores de PHPStan en `src`**, uno de ellos por una entrada obsoleta del propio
+  `phpstan-baseline.neon` (`ignore.unmatched`). Preexistentes, sin relación de causa con lo anterior.
+
+También quedó anotada una trampa de documentación: `CLAUDE.md` manda enlazar el `.env` en un worktree
+con `ln -s` a ruta absoluta del host. Sirve para que `docker compose` sustituya variables, pero
+**dentro del contenedor ese enlace apunta a la nada**, así que Dotenv no lee nada, `DEV_DOOR` queda
+apagado y los e2e fallan en el login con un mensaje que culpa al `.env` (que está bien). Con el
+contenedor montado sobre un worktree hace falta copia, no enlace.
+
 ## Migración React — shell mínimo
 
 - [x] **Shell mínimo React cerrado (2026-08-28):** `/app` cubre login, selección de proyecto,
