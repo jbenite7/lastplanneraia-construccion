@@ -355,16 +355,23 @@ export default function PlanFechas() {
    * Recarga entera y no solo la fila: el servidor recalcula TODO el plan de la obra, así que las
    * fechas de otros paquetes que compartan esa fila del catálogo también se movieron. Refrescar
    * solo la fila dejaría el resto de la pantalla mostrando fechas que ya no son.
+   *
+   * Devuelve si se guardó. Quien llama necesita saberlo: si el envío falla, el servidor NO cambió
+   * `p.dias`, así que ni `cargar()` ni la `key` del campo lo devuelven a su valor —el campo es no
+   * controlado y React reutiliza el mismo nodo—. Sin este booleano la pantalla se queda enseñando
+   * 15 mientras la base dice 10 y las fechas de la tabla son las de 10.
    */
-  const onGuardarDuracionObra = async (duracionRef: number, columna: string, dias: number) => {
+  const onGuardarDuracionObra = async (duracionRef: number, columna: string, dias: number): Promise<boolean> => {
     dispatch({ type: 'OCUPADO' })
     try {
       await apiPost('/plan-compras/api/plan/duraciones/obra', { duracionRef, dias: { [columna]: dias } })
       dispatch({ type: 'LISTO', mensaje: 'Duración guardada para esta obra.' })
       cargar()
+      return true
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: mensajeError(e) })
-      cargar()   // el campo vuelve a mostrar lo que el servidor tiene, no lo que se tecleó
+      cargar()   // el resto de la pantalla vuelve a lo que el servidor tiene; el campo lo restaura quien llama
+      return false
     }
   }
 
@@ -918,14 +925,18 @@ export default function PlanFechas() {
                       disabled={filaExpandida.duracionRef === null || p.colLegacy === null}
                       aria-label={`Días de «${p.paso}»${esCorregido(p.origen) ? ', corregido por esta obra' : ', valor de la empresa'}`}
                       onBlur={(e) => {
-                        const v = validarDias(e.target.value)
+                        // `campo` se captura ANTES del await: en el camino de fallo hay que devolverle
+                        // su valor a mano, y para entonces `e` ya está reciclado por React.
+                        const campo = e.target
+                        const v = validarDias(campo.value)
                         if (!v.ok) {
                           dispatch({ type: 'FALLO', mensaje: v.motivo })
-                          e.target.value = String(p.dias)
+                          campo.value = String(p.dias)
                           return
                         }
                         if (v.dias === p.dias) return
                         void onGuardarDuracionObra(filaExpandida.duracionRef as number, p.colLegacy as string, v.dias)
+                          .then((guardado) => { if (!guardado) campo.value = String(p.dias) })
                       }}
                     />
                     {esCorregido(p.origen) && (

@@ -10,10 +10,12 @@ const project = PDC_SANDBOX_PROJECT;
 
 usarSandboxPdc();
 
-/** La celda «Paquete» de la fila del paquete de prueba, dentro de la grilla del plan. */
-const filaDelPaquete = (page) => page.getByTestId('pdc-plan-grid')
-  .locator('.ag-row').filter({ hasText: 'ZZTEST DUROBRA' }).first()
+/** La celda «Paquete» de la fila de un paquete, dentro de la grilla del plan. */
+const filaDelPaqueteLlamado = (page, nombre) => page.getByTestId('pdc-plan-grid')
+  .locator('.ag-row').filter({ hasText: nombre }).first()
   .locator('[col-id="nombre"]');
+
+const filaDelPaquete = (page) => filaDelPaqueteLlamado(page, 'ZZTEST DUROBRA');
 
 test('la obra corrige un paso, la fecha se mueve, y vuelve al número de la empresa', async ({ page }) => {
   // Un paquete con su fila de catálogo propia: 3+2+7+4+5+10+2 = 33 días.
@@ -67,6 +69,10 @@ test('la obra corrige un paso, la fecha se mueve, y vuelve al número de la empr
 
     await dias.fill('15');
     await dias.blur();
+    // Esperar el acuse ANTES de recargar. `blur()` dispara un POST asíncrono y `page.reload()` lo
+    // abortaría: la prueba no daría verde falso —el `toHaveValue('15')` de abajo fallaría— pero sí
+    // sería intermitente, y este es el único punto donde se mide la persistencia.
+    await expect(page.getByText('Duración guardada para esta obra.')).toBeVisible({ timeout: 15000 });
 
     // Escribir, RECARGAR y recuperar: sin la recarga esto solo probaría que React repintó.
     await page.reload();
@@ -81,6 +87,9 @@ test('la obra corrige un paso, la fecha se mueve, y vuelve al número de la empr
 
     // Y la vuelta atrás, que es lo que hace segura la corrección.
     await page.getByTestId('pdc-plan-paso-restablecer-5').click();
+    // Lo simétrico del acuse de arriba: `total()` lee la base de forma síncrona, así que sin esperar
+    // el mensaje se leería antes de que el servidor haya recalculado.
+    await expect(page.getByText('Este paso vuelve a la duración de la empresa.')).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('pdc-plan-paso-dias-5')).toHaveValue('10', { timeout: 15000 });
     expect(total(), 'restablecer devuelve el número de la empresa').toBe(33);
 
@@ -92,7 +101,79 @@ test('la obra corrige un paso, la fecha se mueve, y vuelve al número de la empr
       + `$db->query("DELETE FROM pdc_plan_paquete WHERE project_id = ${project.projectId}"); `
       + `$db->query("DELETE FROM pdc_paquete_frente WHERE project_id = ${project.projectId}"); `
       + `$db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'e2e-durobra'"); `
-      + `$db->query("DELETE FROM general_dias_procesos_contratacion WHERE paqueteContratacion = 'ZZTEST DUROBRA'"); echo 'ok';`,
+      + `$db->query("DELETE FROM general_dias_procesos_contratacion WHERE paqueteContratacion LIKE 'ZZTEST DUROBRA%'"); echo 'ok';`,
+    );
+    await logout(page).catch(() => {});
+  }
+});
+
+// Hallazgo «Importante» nº 1 de la revisión de la Tarea 6: si el envío falla, el campo tiene que
+// volver al número guardado. Dejarlo con lo tecleado es peor que no dejar editar: la pantalla dice
+// 15, la base dice 10, y las fechas de la tabla —que sí se recargan— son las de 10. Tres cifras
+// contando dos historias distintas, y ninguna señal de cuál manda.
+test('si el envío falla, el campo vuelve al número guardado', async ({ page }) => {
+  const montaje = JSON.parse(sqlEnApp(
+    `$db->query("INSERT INTO general_dias_procesos_contratacion (paqueteContratacion, tipoPaquete, `
+    + `diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos, `
+    + `diasLegalizacionContrato, diasFabricacion, diasInsumosObra) `
+    + `VALUES ('ZZTEST DUROBRA FALLO', 'a_todo_costo', 3, 2, 7, 4, 5, 10, 2)"); `
+    + `$ref = (int) $db->lastInsertId(); `
+    + `$db->query("INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, `
+    + `modalidad_contratacion, duracion_ref, activo, creado_por, created_at) `
+    + `VALUES ('ZZTEST DUROBRA FALLO', 'zztest durobra fallo', 'a_todo_costo', 'contrato', ?, 1, 'e2e-durobra', NOW())", [$ref]); `
+    + `$paq = (int) $db->lastInsertId(); `
+    + `$uid = (int) $db->query('SELECT unique_id FROM programa WHERE project_id = ? AND Titulo = 1 ORDER BY Consecutivo LIMIT 1', `
+    + `[${project.projectId}])->fetchColumn(); `
+    + `$s = new App\\Services\\Pdc\\PlanFechasService($db); `
+    + `$s->amarrar(${project.projectId}, $paq, $uid, 'e2e-durobra'); `
+    + `$s->calcular(${project.projectId}, 'e2e-durobra'); `
+    + `echo json_encode(['paquete' => $paq, 'ref' => $ref]);`,
+  ));
+
+  const total = () => Number(sqlEnApp(
+    `echo (int) $db->query('SELECT dias_totales FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?', `
+    + `[${project.projectId}, ${montaje.paquete}])->fetchColumn();`,
+  ));
+
+  try {
+    await loginAndSelectProject(page, project);
+
+    // El servidor se cae solo para el verbo de guardar: el resto de la pantalla —incluida la recarga
+    // del plan que dispara el catch— sigue respondiendo de verdad.
+    await page.route('**/plan-compras/api/plan/duraciones/obra', (route) => route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      // La forma exacta que espera `request()` en `lib/api.ts`: sin `error.code`/`error.message`
+      // el cliente lanzaría BAD_RESPONSE y estaríamos probando otra falla, no esta.
+      body: JSON.stringify({ ok: false, error: { code: 'ZZTEST_CAIDA', message: 'Caída simulada del servidor.' } }),
+    }));
+
+    await page.goto('/plan-compras#/ensamble/plan');
+    await filaDelPaqueteLlamado(page, 'ZZTEST DUROBRA FALLO').click();
+    await expect(page.getByTestId('pdc-plan-detalle')).toBeVisible({ timeout: 15000 });
+
+    const dias = page.getByTestId('pdc-plan-paso-dias-5');
+    await expect(dias).toHaveValue('10', { timeout: 15000 });
+
+    await dias.fill('15');
+    await dias.blur();
+
+    // El fallo se dice, no se traga.
+    await expect(page.getByText('Caída simulada del servidor.')).toBeVisible({ timeout: 15000 });
+    // Y lo que defiende esta prueba: el campo NO se queda con el 15 que se tecleó.
+    await expect(dias).toHaveValue('10', { timeout: 15000 });
+    expect(total(), 'y la base nunca cambió').toBe(33);
+
+    expect(await page.locator('body').innerText()).not.toContain('Fatal error');
+  } finally {
+    await page.unroute('**/plan-compras/api/plan/duraciones/obra').catch(() => {});
+    sqlEnApp(
+      `$db->query("DELETE FROM pdc_proyecto_duraciones WHERE project_id = ${project.projectId}"); `
+      + `$db->query("DELETE FROM pdc_plan_paso WHERE project_id = ${project.projectId}"); `
+      + `$db->query("DELETE FROM pdc_plan_paquete WHERE project_id = ${project.projectId}"); `
+      + `$db->query("DELETE FROM pdc_paquete_frente WHERE project_id = ${project.projectId}"); `
+      + `$db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'e2e-durobra'"); `
+      + `$db->query("DELETE FROM general_dias_procesos_contratacion WHERE paqueteContratacion LIKE 'ZZTEST DUROBRA%'"); echo 'ok';`,
     );
     await logout(page).catch(() => {});
   }
