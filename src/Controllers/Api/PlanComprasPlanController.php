@@ -147,6 +147,11 @@ class PlanComprasPlanController
             'amarres' => $this->service->amarres($projectId),
             'destinos' => $subpaquetes->destinos($projectId),
             'amarresDestino' => $amarresDestino,
+            // Spec §8: el campo de días se muestra DESHABILITADO con su razón cuando el usuario no
+            // puede corregir, no oculto y no editable-hasta-que-el-403-lo-diga. Se resuelve aquí y
+            // no en PlanFechasService porque el servicio no depende de la sesión, y es la misma
+            // capacidad que exige `guardEditarObra()`: una sola definición de quién puede.
+            'puedeCorregirDuraciones' => (new RbacService($this->db))->can('lps.paquetes_contratacion.editar'),
         ]);
     }
 

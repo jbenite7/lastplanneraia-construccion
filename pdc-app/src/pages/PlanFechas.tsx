@@ -78,6 +78,9 @@ ModuleRegistry.registerModules([
 
 const mensajeError = (e: unknown) => (e instanceof Error ? e.message : String(e))
 
+/** Razón accesible del campo apagado (spec §8): se muestra, no se esconde. */
+const SIN_PERMISO_DURACIONES = 'No tienes permiso para corregir duraciones en esta obra'
+
 export default function PlanFechas() {
   const [ui, dispatch] = useReducer(planUiReducer, estadoInicialPlanUi)
   const [plan, setPlan] = useState<FilaPlan[]>([])
@@ -130,6 +133,10 @@ export default function PlanFechas() {
   // Las cuatro secciones de esta pantalla vivían apiladas: «Sin frente» y sus 40 sugerencias solo
   // aparecían al bajar rodando por debajo de la grilla.
   const [seccion, setSeccion] = useState('plan')
+  // Spec §8: sin permiso el campo se ve DESHABILITADO con su razón, no oculto. Arranca en false: si
+  // el servidor no manda el dato (bundle viejo, respuesta a medias), se muestra el estado seguro y
+  // el servidor sigue siendo quien decide de verdad.
+  const [puedeCorregirDuraciones, setPuedeCorregirDuraciones] = useState(false)
 
   const cargar = useCallback(() => {
     apiGet<PlanResultado>('/plan-compras/api/plan')
@@ -138,12 +145,14 @@ export default function PlanFechas() {
         setAmarres(d.amarres)
         setDestinosContratables(d.destinos ?? [])
         setAmarresDestino(d.amarresDestino ?? [])
+        setPuedeCorregirDuraciones(d.puedeCorregirDuraciones === true)
         // Cuando se recargan los datos del servidor (la verdad), limpiar el overlay de correcciones
         // pendientes: si un guardado falló y dejó un responsable revertido, este nuevo dato lo supera.
         setResponsableOverride({})
       })
       .catch((e) => {
         setPlan([]); setAmarres({}); setDestinosContratables([]); setAmarresDestino([])
+        setPuedeCorregirDuraciones(false)
         dispatch({ type: 'FALLO', mensaje: mensajeError(e) })
       })
     // `sinAncla` es opcional en el tipo a propósito: un bundle servido desde una caché vieja puede
@@ -897,6 +906,9 @@ export default function PlanFechas() {
               ? 'Estos días son de esta obra: cambiarlos mueve las fechas del paquete de esta obra que usa estas duraciones, y no toca a las demás obras.'
               : `Estos días son de esta obra: cambiarlos mueve las fechas de los ${filaExpandida.paquetesConMismaDuracion} paquetes de esta obra que usan estas duraciones, y no toca a las demás obras.`}
           </p>
+          {!puedeCorregirDuraciones && (
+            <p className="pdc-sub" data-testid="pdc-plan-pasos-sin-permiso">{SIN_PERMISO_DURACIONES}</p>
+          )}
           <table className="pdc-plan-pasos">
             <thead>
               {/* «Hasta», no «Fin»: el intervalo de cada paso es medio abierto —esa fecha es la
@@ -919,8 +931,13 @@ export default function PlanFechas() {
                       className="pdc-dias-input"
                       data-testid={`pdc-plan-paso-dias-${p.orden}`}
                       defaultValue={p.dias}
-                      disabled={filaExpandida.duracionRef === null || p.colLegacy === null}
-                      aria-label={`Días de «${p.paso}»${esCorregido(p.origen) ? ', corregido por esta obra' : ', valor de la empresa'}`}
+                      disabled={ui.ocupado || !puedeCorregirDuraciones
+                        || filaExpandida.duracionRef === null || p.colLegacy === null}
+                      // La razón, no solo el candado: un campo apagado sin explicación se lee como
+                      // avería. `title` la da al pasar el ratón y `aria-label` al lector de pantalla.
+                      title={puedeCorregirDuraciones ? undefined : SIN_PERMISO_DURACIONES}
+                      aria-label={`Días de «${p.paso}»${esCorregido(p.origen) ? ', corregido por esta obra' : ', valor de la empresa'}`
+                        + (puedeCorregirDuraciones ? '' : `. ${SIN_PERMISO_DURACIONES}`)}
                       onBlur={(e) => {
                         // `campo` se captura ANTES del await: en el camino de fallo hay que devolverle
                         // su valor a mano, y para entonces `e` ya está reciclado por React.
@@ -941,6 +958,11 @@ export default function PlanFechas() {
                         type="button"
                         className="pdc-paq-secundario"
                         data-testid={`pdc-plan-paso-restablecer-${p.orden}`}
+                        disabled={ui.ocupado || !puedeCorregirDuraciones}
+                        title={puedeCorregirDuraciones ? undefined : SIN_PERMISO_DURACIONES}
+                        // Siete botones con el mismo texto visible: sin esto, un lector de pantalla
+                        // anuncia «Volver al de la empresa» siete veces y ninguna dice de qué paso.
+                        aria-label={`Volver al de la empresa en «${p.paso}»`}
                         onClick={() => void onRestablecerDuracionObra(filaExpandida.duracionRef as number, p.colLegacy as string)}
                       >
                         Volver al de la empresa
