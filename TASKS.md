@@ -31,7 +31,11 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 
 ## Bloqueantes
 
-**Uno, abierto el 2026-09-01: replicar a `main` las duraciones por obra del PDC.** El frente
+**Uno, abierto el 2026-09-01 y VIGENTE desde el deploy del 2026-09-02: replicar a `main` las
+duraciones por obra del PDC.** Producción corre `fix/pdc-duraciones-pasos` en `6db7d790`, con la
+tabla `pdc_proyecto_duraciones` creada. **Un `git pull --ff-only origin main` en el servidor va a
+fallar** (la rama divergió de `main`) y un deploy forzado desde `main` borraría la funcionalidad y
+dejaría la tabla llena de correcciones que nadie leería. El frente
 `fix/pdc-duraciones-pasos` sale del commit **desplegado en producción** `6fa3cff1` (2026-08-20),
 que va **457 commits y 870 archivos** detrás de `main`. Lo que se construya ahí **no existe en
 `main`**, así que el próximo deploy desde `main` retiraría la funcionalidad del servidor sin que
