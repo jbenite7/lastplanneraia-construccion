@@ -635,6 +635,13 @@ export type PlanResultado = {
   destinos: DestinoContratable[]
   /** Qué destinos ya tienen frente, por paquete Y lote. */
   amarresDestino: { paqueteId: number; subpaqueteId: number }[]
+  /**
+   * Si este usuario puede corregir la duración de un paso para esta obra
+   * (`lps.paquetes_contratacion.editar`). Opcional a propósito: un bundle servido desde una caché
+   * vieja puede hablar con un servidor que aún no lo manda, y sin dato se asume que NO puede —
+   * el campo se ve deshabilitado y el servidor sigue siendo quien decide de verdad.
+   */
+  puedeCorregirDuraciones?: boolean
 }
 
 /**

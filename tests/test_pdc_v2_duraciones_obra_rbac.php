@@ -201,6 +201,20 @@ try {
         [$P, $refSint],
     )->fetchColumn();
     $assert($sinFilas === 0, 'Ninguna validación fallida dejó una fila a medias.');
+
+    fwrite(STDERR, "=== 7. la respuesta del plan dice si este usuario puede corregir duraciones ===\n");
+    // Spec §8: el estado «sin permiso» se muestra deshabilitado con razón accesible, no oculto. Para
+    // eso la pantalla necesita saberlo ANTES de que el usuario escriba, no por el 403 al salir del
+    // campo. Se resuelve en el controlador y no en el servicio: el servicio no depende de la sesión.
+    $sesion('V', $P);
+    $out = $capture(static fn () => (new PlanComprasPlanController())->plan());
+    $assert(($out['data']['puedeCorregirDuraciones'] ?? null) === false,
+        'Un Visualizador recibe puedeCorregirDuraciones = false. Dio ' . var_export($out['data']['puedeCorregirDuraciones'] ?? null, true));
+
+    $sesion('D', $P);
+    $out = $capture(static fn () => (new PlanComprasPlanController())->plan());
+    $assert(($out['data']['puedeCorregirDuraciones'] ?? null) === true,
+        'Un Director de Obra recibe puedeCorregirDuraciones = true. Dio ' . var_export($out['data']['puedeCorregirDuraciones'] ?? null, true));
 } finally {
     $limpiar();
     unset($_SERVER['HTTP_X_CSRF_TOKEN'], $GLOBALS['__TEST_HTTP_BODY__']);
