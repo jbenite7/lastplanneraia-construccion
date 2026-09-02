@@ -39,7 +39,10 @@ vivas en `main`**, medidas con petición HTTP real contra el stack local:
   copiada en dos sitios —`src/Legacy/datosGeneralesPagina.php` y `ProgramaGeneralController`— y
   nombraba la tabla dos veces sin alias, así que `/programacion-semanal` y `/programa-general`
   reventaban al cargar. Cada referencia lleva ahora su alias y su `project_id` calificado; cubierto
-  por `ProjectSqlGuardTest`, con la pareja rechaza/acepta.
+  por `ProjectSqlGuardTest`, con la pareja rechaza/acepta. La consulta se sacó a
+  `App\Services\EstadoSemanalService`, que es ahora el único sitio donde tocarla: estaba copiada en
+  los dos archivos, y `BaseController::getWeekStatusVars()` mantenía una tercera copia parcial cuyo
+  comentario ya advertía que no podía divergir.
 - [ ] **Barrer los hermanos del mismo defecto.** El alias ambiguo no era exclusivo de
   `semanas_activas`; quedan verificados y sin tocar, todos con dos referencias a la misma tabla sin
   alias distinto: `src/Services/Bi/ForecastService.php:425` y `:442` (`cic` y `cip`),

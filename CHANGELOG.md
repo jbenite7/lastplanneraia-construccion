@@ -28,6 +28,24 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Arreglado: la programación semanal y el programa general volvían a cargar (2026-09-02)
+
+Las dos pantallas reventaban al abrirse desde el endurecimiento del 2026-08-29. La consulta que trae
+el estado de la semana —si está confirmada, sus fechas y la versión del cronograma— nombraba
+`semanas_activas` dos veces sin alias, y `ProjectSqlGuard` aborta ahí con «Alias de tabla de proyecto
+ambiguo»: con dos raíces homónimas no puede decidir a cuál pertenece cada `project_id = ?`, así que
+falla cerrado en vez de adivinar.
+
+La consulta estaba **copiada** en `src/Legacy/datosGeneralesPagina.php` y en
+`ProgramaGeneralController`, con las mismas cuatro interrogaciones en el mismo orden, de modo que
+hubo que arreglar el mismo fallo dos veces. Ahora vive una sola vez en
+`App\Services\EstadoSemanalService`, y `BaseController::getWeekStatusVars()` lee de ahí también: su
+propio comentario ya declaraba que no podía divergir del valor que sirve el AJAX (C-46), garantía que
+hasta ahora se sostenía copiando la consulta a mano.
+
+El alias ambiguo no era exclusivo de `semanas_activas`; quedan seis sitios hermanos verificados y
+anotados en [[TASKS]].
+
 ### Arreglado: la suite de `main` bajo el gate de datos (2026-09-02)
 
 `ProjectSqlGuard` entró en `Database::query()` con el endurecimiento del 2026-08-29 (`48e06072`),

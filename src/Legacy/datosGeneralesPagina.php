@@ -97,21 +97,11 @@ try {
         $arreglo["Max_Semana"] = $dataUltima["Semana"];
         $_SESSION["Max_Semana"] = $dataUltima["Semana"];
 
-        // Las dos referencias a la MISMA tabla van con alias distinto y con su `project_id`
-        // calificado. Sin alias, las dos se llamaban `semanas_activas` y ProjectSqlGuard (2026-08-29)
-        // aborta la consulta con «Alias de tabla de proyecto ambiguo»: con dos raices homonimas no
-        // puede decidir a cual pertenece cada `project_id = ?`, asi que falla cerrado en vez de
-        // adivinar. El efecto era que /programacion-semanal reventaba al cargar.
-        //
-        // El orden de los marcadores no cambia -subconsulta primero, consulta externa despues- y
-        // por eso $params sigue igual: el guard comprueba que cada `project_id = ?` reciba el
-        // project_id del alcance, y los compara por posicion.
-        $sqlDetalles = "SELECT s.Semanal_Confirmada, s.fechaCierreCompromisos, s.fechaCreacionSemana,
-                       (SELECT SUM(r.reprogramacion) FROM {$tSemanasActivas} r WHERE r.Semana <= ? AND r.project_id = ?) AS versionCronograma
-                       FROM {$tSemanasActivas} s WHERE s.Semana = ? AND s.project_id = ?";
-
-        $stmtDetalles = $dbInstance->queryWithProject($sqlDetalles, [$semana, $projectId, $semana, $projectId]);
-        $dataDetalles = $stmtDetalles->fetch();
+        // La consulta vive en App\Services\EstadoSemanalService: estaba copiada aqui y en
+        // ProgramaGeneralController, y el 2026-09-02 hubo que arreglarle el mismo fallo de alias a
+        // las dos por separado. Ahora hay un solo sitio donde tocarla.
+        $dataDetalles = (new \App\Services\EstadoSemanalService($dbInstance))
+            ->detallesDeLaSemana($dbName, $projectId, $semana);
 
         if ($dataDetalles) {
             $arreglo["Semanal_Confirmada"] = $dataDetalles["Semanal_Confirmada"];
