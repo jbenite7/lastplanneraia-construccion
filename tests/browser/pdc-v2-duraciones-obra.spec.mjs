@@ -19,7 +19,11 @@ const filaDelPaquete = (page) => filaDelPaqueteLlamado(page, 'ZZTEST DUROBRA');
 
 test('la obra corrige un paso, la fecha se mueve, y vuelve al número de la empresa', async ({ page }) => {
   // Un paquete con su fila de catálogo propia: 3+2+7+4+5+10+2 = 33 días.
-  const montaje = JSON.parse(sqlEnApp(
+  // El montaje va DENTRO del `try` para que el `finally` lo cubra: si la siembra falla a
+  // mitad (por ejemplo tras insertar la fila del catálogo), sin esto queda un residuo
+  // ZZTEST en un catálogo global que nadie limpia.
+  let montaje;
+  const sembrar = () => JSON.parse(sqlEnApp(
     `$db->query("INSERT INTO general_dias_procesos_contratacion (paqueteContratacion, tipoPaquete, `
     + `diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos, `
     + `diasLegalizacionContrato, diasFabricacion, diasInsumosObra) `
@@ -43,6 +47,7 @@ test('la obra corrige un paso, la fecha se mueve, y vuelve al número de la empr
   ));
 
   try {
+    montaje = sembrar();
     expect(total(), 'punto de partida: lo que dice el catálogo').toBe(33);
 
     await loginAndSelectProject(page, project);
@@ -116,7 +121,11 @@ test('la obra corrige un paso, la fecha se mueve, y vuelve al número de la empr
 // 15, la base dice 10, y las fechas de la tabla —que sí se recargan— son las de 10. Tres cifras
 // contando dos historias distintas, y ninguna señal de cuál manda.
 test('si el envío falla, el campo vuelve al número guardado', async ({ page }) => {
-  const montaje = JSON.parse(sqlEnApp(
+  // El montaje va DENTRO del `try` para que el `finally` lo cubra: si la siembra falla a
+  // mitad (por ejemplo tras insertar la fila del catálogo), sin esto queda un residuo
+  // ZZTEST en un catálogo global que nadie limpia.
+  let montaje;
+  const sembrar = () => JSON.parse(sqlEnApp(
     `$db->query("INSERT INTO general_dias_procesos_contratacion (paqueteContratacion, tipoPaquete, `
     + `diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos, `
     + `diasLegalizacionContrato, diasFabricacion, diasInsumosObra) `
@@ -140,6 +149,7 @@ test('si el envío falla, el campo vuelve al número guardado', async ({ page })
   ));
 
   try {
+    montaje = sembrar();
     await loginAndSelectProject(page, project);
 
     // El servidor se cae solo para el verbo de guardar: el resto de la pantalla —incluida la recarga
