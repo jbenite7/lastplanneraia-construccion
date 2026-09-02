@@ -1312,7 +1312,10 @@ class PlanFechasService
         array $pasos,
         array $medianas,
         string $selectCols,
-        array $excepciones = [],
+        // Sin valor por defecto A PROPÓSITO: un tercer llamador que lo omitiera no fallaría, solo
+        // produciría un plan que ignora en silencio todas las correcciones de la obra. Que rompa en
+        // compilación es la única señal que nadie puede pasar por alto.
+        array $excepciones,
         ?string $modalidadDestino = null,
     ): ?array {
         // Cuando el destino es un LOTE, la modalidad que decide si hay proceso es la suya y no la del

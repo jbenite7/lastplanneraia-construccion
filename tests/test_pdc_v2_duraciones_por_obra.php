@@ -64,6 +64,13 @@ $assert($r['ok'] === false && $r['code'] === 'DIAS_INVALIDOS',
 $assert($svcObra->deProyecto($P)[$REF]['diasFabricacion'] === 90,
     'Un rechazo no deja el dato a medias: sigue valiendo 90.');
 
+$r = $svcObra->borrar($P, $REF, ['columnaInventada']);
+$assert($r['ok'] === false && $r['code'] === 'COLUMNA_INVALIDA',
+    'Borrar una columna fuera de la lista blanca se rechaza igual que guardarla: el vocabulario es '
+    . 'el mismo en los dos sentidos.');
+$assert(($svcObra->deProyecto($P)[$REF]['diasFabricacion'] ?? null) === 90,
+    'Y el rechazo del borrado no tocó nada.');
+
 $r = $svcObra->borrar($P, $REF, ['diasFabricacion']);
 $assert($r['ok'] === true && $svcObra->deProyecto($P) === [],
     'Borrar la corrección devuelve la obra al catálogo de la empresa.');

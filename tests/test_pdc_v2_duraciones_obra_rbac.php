@@ -124,6 +124,17 @@ try {
     )->fetchColumn();
     $assert((int) $fila === 21, 'La corrección quedó escrita en pdc_proyecto_duraciones. Dio ' . var_export($fila, true));
 
+    // §12.4: la corrección de una obra NO puede tocar el estándar de la empresa. Es la afirmación
+    // que separa este frente de «cambiar el catálogo», y sin ella la prueba de arriba pasaría igual
+    // aunque el servicio escribiera en los dos sitios.
+    $catalogo = $db->query(
+        'SELECT diasFabricacion FROM general_dias_procesos_contratacion WHERE id = ?',
+        [$refSint],
+    )->fetchColumn();
+    $assert((int) $catalogo === 10,
+        'El catálogo de la empresa sigue diciendo 10: la obra corrigió su excepción, no el estándar. '
+        . 'Dio ' . var_export($catalogo, true));
+
     $GLOBALS['__TEST_HTTP_BODY__'] = json_encode(['duracionRef' => $refSint, 'columnas' => ['diasFabricacion']]);
     $out = $capture(static fn () => (new PlanComprasPlanController())->borrarDuracionObra());
     $assert(($out['ok'] ?? null) === true, 'borrarDuracionObra() responde ok:true. Dio ' . json_encode($out));
@@ -180,6 +191,7 @@ try {
     $out = $capture(static fn () => (new PlanComprasPlanController())->borrarDuracionObra());
     $assert(($out['ok'] ?? null) === false && ($out['error']['code'] ?? '') === 'DURACION_NO_DISPONIBLE',
         'borrarDuracionObra() aplica el mismo guard de pertenencia. Dio ' . json_encode($out));
+    $assert(http_response_code() === 403, 'Y también con el status 403. Dio ' . http_response_code());
 
     fwrite(STDERR, "=== 6. validaciones de datos: días negativos y columna fuera de lista blanca ===\n");
     $sesion('D', $P);
@@ -201,6 +213,41 @@ try {
         [$P, $refSint],
     )->fetchColumn();
     $assert($sinFilas === 0, 'Ninguna validación fallida dejó una fila a medias.');
+
+    fwrite(STDERR, "=== 6b. restablecer tiene las MISMAS puertas que guardar ===\n");
+    // El verbo de borrar también escribe: sin estas dos, un Visualizador o una petición sin CSRF
+    // podrían quitarle a la obra una corrección que sí le importa.
+    $sesion('V', $P);
+    $_SERVER['HTTP_X_CSRF_TOKEN'] = $csrfValido;
+    $GLOBALS['__TEST_HTTP_BODY__'] = json_encode(['duracionRef' => $refSint, 'columnas' => ['diasFabricacion']]);
+    $out = $capture(static fn () => (new PlanComprasPlanController())->borrarDuracionObra());
+    $assert(($out['ok'] ?? null) === false && ($out['error']['code'] ?? '') === 'FORBIDDEN',
+        'V sin .editar tampoco puede restablecer. Dio ' . json_encode($out));
+    $assert(http_response_code() === 403, 'Y el status HTTP es 403. Dio ' . http_response_code());
+
+    $sesion('D', $P);
+    unset($_SERVER['HTTP_X_CSRF_TOKEN']);
+    $out = $capture(static fn () => (new PlanComprasPlanController())->borrarDuracionObra());
+    $assert(($out['ok'] ?? null) === false && ($out['error']['code'] ?? '') === 'CSRF_INVALID',
+        'Restablecer sin token CSRF responde CSRF_INVALID. Dio ' . json_encode($out));
+    $assert(http_response_code() === 403, 'Y el status HTTP es 403. Dio ' . http_response_code());
+
+    $intacta = (int) $db->query(
+        'SELECT COUNT(*) FROM pdc_proyecto_duraciones WHERE project_id = ?',
+        [$P],
+    )->fetchColumn();
+    $assert($intacta === 0, 'Y ningún rechazo borró nada: la tabla quedó como estaba. Dio ' . $intacta);
+
+    // El cuerpo llega del cliente y `columnas` puede traer cualquier cosa. Un número donde va un
+    // nombre de paso se rechaza por lo que es —una lista mal formada— y no como «columna que no
+    // existe», que contaría otra historia al que depure el fallo.
+    $sesion('D', $P);
+    $_SERVER['HTTP_X_CSRF_TOKEN'] = $csrfValido;
+    $GLOBALS['__TEST_HTTP_BODY__'] = json_encode(['duracionRef' => $refSint, 'columnas' => [7]]);
+    $out = $capture(static fn () => (new PlanComprasPlanController())->borrarDuracionObra());
+    $assert(($out['ok'] ?? null) === false && ($out['error']['code'] ?? '') === 'COLUMNAS_INVALIDAS',
+        'Una columna que no es texto responde COLUMNAS_INVALIDAS. Dio ' . json_encode($out));
+    $assert(http_response_code() === 422, 'Y el status HTTP es 422. Dio ' . http_response_code());
 
     fwrite(STDERR, "=== 7. la respuesta del plan dice si este usuario puede corregir duraciones ===\n");
     // Spec §8: el estado «sin permiso» se muestra deshabilitado con razón accesible, no oculto. Para
