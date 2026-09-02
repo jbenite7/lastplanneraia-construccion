@@ -47,6 +47,25 @@ estado por defecto mientras Felipe no reparta.
 
 ## Ahora
 
+- **Duraciones por obra (PDC): diferidos del triaje de la revisión final, 2026-09-01.** El
+  frente `fix/pdc-duraciones-pasos` cerró con revisión de rama limpia; estos quedaron anotados con
+  su fallo y ninguno bloquea. Contexto y rulings: ledger del ciclo y
+  `docs/superpowers/specs/2026-09-01-duraciones-por-obra-design.md` §10.
+  - E2E con paso **provisional** + excepción encima en el sandbox: hoy la traducción
+    provisional→origen en `plan()` se cubre con aserción de fuente, no de comportamiento.
+  - `pdc-app/src/lib/types.ts`: `paquetesConMismaDuracion` requerido vs `puedeCorregirDuraciones`
+    opcional; un `?? 1` en el aviso cierra la contradicción.
+  - `paquetesConMismaDuracion` cuenta solo destinos visibles del plan (conservador, nunca inflado).
+  - `colLegacy` se deriva de `PlanFechasService::PASOS` en `plan()` y de la base en `calcular()`;
+    `test_pdc_v2_pasos_configurables` falla si divergen.
+  - `pdc_plan_paquete.duracion_ref` es foto del último cálculo; una excepción huérfana queda inerte.
+  - La base **compartida** (stack 8081) quedó con `pdc_proyecto_duraciones` vacía, creada antes de
+    decidir el espejo. Inerte; no se borra sin decisión porque esa base la usa otra sesión.
+  - Cosméticos: comillas «» en mensajes del servicio; tres aserciones tautológicas del `$resolver` y
+    una por `substr_count` en `test_pdc_v2_duraciones_por_obra.php`; `COLUMNA_INVALIDA` refleja el
+    texto del cliente (JSON, React escapa); rama «no es un número» de `validarDias` inalcanzable con
+    `type=number`.
+
 - **Gobierno del catálogo de duraciones desde `/admin/`.** Decisión de Felipe del 2026-09-01 (D2):
   va en frente propio, después del eje obra. Hoy `general_dias_procesos_contratacion` solo se edita
   desde el PDC de una obra, con `lps.paquetes_contratacion.reglas`, y ese es el estándar de toda la
