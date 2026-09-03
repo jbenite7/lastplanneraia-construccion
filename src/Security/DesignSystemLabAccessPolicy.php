@@ -30,13 +30,14 @@ final class DesignSystemLabAccessPolicy
         ));
 
         if ($username !== '') {
-            try {
-                // The laboratory is global, so its capability must not depend on
-                // the project that a user happened to select most recently.
-                return (new RbacService())->resolveRoleForUser($username);
-            } catch (\Throwable) {
-                return RbacCatalog::DEFAULT_ROLE;
-            }
+            // The laboratory is global, so its capability must not depend on
+            // the project that a user happened to select most recently.
+            //
+            // No catch here on purpose. Until 2026-09-02 a \Throwable became DEFAULT_ROLE, which
+            // turns any resolution failure into a silent 403 — indistinguishable from a genuine
+            // denial. That is exactly how the ProjectSqlGuard regression stayed hidden for four
+            // days while it took the CI visual lane down. A broken role lookup must fail loudly.
+            return (new RbacService())->resolveRoleForUser($username);
         }
 
         return strtoupper(trim((string) (
