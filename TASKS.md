@@ -208,6 +208,36 @@ decidido de antemano), y se revirtió por decisión de Felipe. Detalle completo 
 
 ## Bloqueantes
 
+**2026-09-02 — El gate de scope rompe la lectura de metadatos en `admin/` y en 20+ pruebas; el
+403 del laboratorio ya se arregló, esta es su cola.** `ProjectSqlGuard` rechaza cualquier tabla
+calificada por schema desde el 2026-08-29, e `information_schema` lo está. La rama
+`fix/gate-metadatos-rol-admin` cerró los siete llamadores de `src/` pasándolos por
+`Database::tableExists()/columnExists()/tablesWithColumn()`, pero quedan dos frentes sin tocar,
+ambos **ya rojos en `main` antes de ese arreglo** (medido: 24 pruebas fallan en `--nivel=http` y 23
+en `--nivel=db` sobre `main` 58d11137, con el mismo conjunto exacto antes y después de la rama):
+
+- **`admin/src/`** arma la consulta a mano en seis puntos (`Models/Project.php:983,1007,1193,1205`,
+  `Controllers/DashboardController.php:579`, `Controllers/FamilyCatalogController.php:578`). El
+  panel de Admin comparte el `Database` de `src/`, así que sí pasa por el gate: `Project.php`
+  aparece en el stack de `test_admin_global_project_model.php`.
+- **Las pruebas mismas**, que consultan por `Database::query()` con SQL propio
+  (`test_cip_poblado.php`, `test_pdc_v2_*`, `test_preconstruction_import_global_ids.php`,
+  `test_schedule_update_draft_import.php`, …). Aquí hay dos causas mezcladas: metadatos calificados
+  por schema, y consultas a tablas de proyecto sin `ProjectScope` activo. **No son el mismo
+  problema y conviene separarlas antes de tocar nada** — la segunda puede ser el gate funcionando
+  como debe, con pruebas que no declaran su scope.
+
+Merece frente propio: es más grande que el 403 y no lo bloquea.
+
+**2026-09-02 — Trampa medida: el nivel `http` de la suite no se puede correr desde un worktree con
+el `.env` enlazado.** `CLAUDE.md` manda `ln -s` y para `docker compose` está bien (lo lee desde el
+host), pero el enlace apunta a una ruta del host que **dentro del contenedor no existe**, así que
+el PHP servido lee un `.env` ilegible: `DEV_DOOR` aparece cerrado y fallan
+`test_admin_dev_door_guard`, `test_dev_door_http`, `test_admin_modulos` y
+`test_semanal_sanear_csrf`. Parecen regresión y no lo son — con una copia real del `.env` las
+cuatro vuelven a verde. Costó una vuelta el 2026-09-02. Pendiente decidir si se documenta en
+`CLAUDE.md` o si `scripts/` monta el `.env` de otra forma para el caso http.
+
 **2026-08-28 — `theme.js` deshace el claro de entrada (D12) en 7 páginas reales; bloquea el
 arranque del plan de Programa General, no la fase cero actual.** Destapado ejecutando el goal
 [[goals/temas-y-forma-fase-cero/goal]] (Task 6): `public/js/modules/aia_ui/theme.js` es un
