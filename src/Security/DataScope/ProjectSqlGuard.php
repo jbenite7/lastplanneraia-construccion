@@ -478,31 +478,81 @@ final class ProjectSqlGuard
         int $valuesKeyword,
         int|false $projectColumn,
     ): array {
-        $openValues = $this->nextSignificantIndex($tokens, $valuesKeyword + 1);
-        if ($openValues === null || $tokens[$openValues]['raw'] !== '(') {
-            throw new ProjectScopeViolation('VALUES de proyecto exige una tupla explícita.');
-        }
-        $closeValues = $this->matchingClose($tokens, $openValues);
-        $expressions = $this->splitListTokenRanges($tokens, $openValues, $closeValues);
-        $afterTuple = $this->nextSignificantIndex($tokens, $closeValues + 1);
-        if ($afterTuple !== null && $tokens[$afterTuple]['raw'] === ',') {
-            throw new ProjectScopeViolation('INSERT de múltiples filas no tiene una prueba de scope soportada.');
-        }
+        $rows = $this->collectInsertValueRows($tokens, $valuesKeyword);
 
+        // `$scope` es siempre un ProjectScope de UN solo project_id — guardInsert() nunca recibe
+        // MultiProjectScope (el guard de escritura no lo acepta; ese tipo es para lectura agregada).
+        // Por eso validar cada fila del lote contra $scope->projectId() ya basta: no hace falta una
+        // comprobación aparte de "todas las filas comparten obra", la garantiza el tipo de $scope.
         if ($projectColumn === false) {
-            $paramIndex = $this->positionalPlaceholderCountBefore($tokens, $tokens[$openValues]['end']);
-            $sql = substr($sql, 0, $tokens[$openValues]['end']) . '?, ' . substr($sql, $tokens[$openValues]['end']);
-            $sql = substr($sql, 0, $tokens[$openColumns]['end']) . 'project_id, ' . substr($sql, $tokens[$openColumns]['end']);
-            $params = $this->insertScopeParam($params, $paramIndex, $scope->projectId());
+            $replacements = [[
+                'start' => $tokens[$openColumns]['end'],
+                'end' => $tokens[$openColumns]['end'],
+                'text' => 'project_id, ',
+            ]];
+            $paramIndexes = [];
+            foreach ($rows as [$rowOpen]) {
+                $replacements[] = [
+                    'start' => $tokens[$rowOpen]['end'],
+                    'end' => $tokens[$rowOpen]['end'],
+                    'text' => '?, ',
+                ];
+                // Contado sobre los tokens ORIGINALES (sin mutar), igual que `$replacements`
+                // referencia offsets originales — `replaceRanges()` aplica de mayor a menor
+                // offset, así que un offset menor nunca se invalida por una edición posterior.
+                $paramIndexes[] = $this->positionalPlaceholderCountBefore($tokens, $tokens[$rowOpen]['end']);
+            }
+            $sql = $this->replaceRanges($sql, $replacements);
+            // Misma lógica para $params: insertar de mayor a menor índice para que un índice
+            // menor, calculado sobre el $params original, siga siendo válido en su turno.
+            rsort($paramIndexes, SORT_NUMERIC);
+            foreach ($paramIndexes as $paramIndex) {
+                $params = $this->insertScopeParam($params, $paramIndex, $scope->projectId());
+            }
             return [$sql, $params];
         }
 
-        if (!isset($expressions[$projectColumn])) {
-            throw new ProjectScopeViolation('project_id no tiene valor homólogo en VALUES.');
+        foreach ($rows as [$rowOpen, $rowClose]) {
+            $expressions = $this->splitListTokenRanges($tokens, $rowOpen, $rowClose);
+            if (!isset($expressions[$projectColumn])) {
+                throw new ProjectScopeViolation('project_id no tiene valor homólogo en VALUES.');
+            }
+            $placeholder = $this->singlePlaceholder($tokens, $expressions[$projectColumn]);
+            $this->assertScopePlaceholder($placeholder, $tokens, $params, $scope->projectId());
         }
-        $placeholder = $this->singlePlaceholder($tokens, $expressions[$projectColumn]);
-        $this->assertScopePlaceholder($placeholder, $tokens, $params, $scope->projectId());
         return [$sql, $params];
+    }
+
+    /**
+     * Recolecta todas las tuplas de nivel superior de un `VALUES (...), (...), ...`. Una sola
+     * tupla es el caso de un lote de una fila.
+     *
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @return list<array{0: int, 1: int}>
+     */
+    private function collectInsertValueRows(array $tokens, int $valuesKeyword): array
+    {
+        $open = $this->nextSignificantIndex($tokens, $valuesKeyword + 1);
+        if ($open === null || $tokens[$open]['raw'] !== '(') {
+            throw new ProjectScopeViolation('VALUES de proyecto exige una tupla explícita.');
+        }
+
+        $rows = [];
+        while (true) {
+            $close = $this->matchingClose($tokens, $open);
+            $rows[] = [$open, $close];
+
+            $afterTuple = $this->nextSignificantIndex($tokens, $close + 1);
+            if ($afterTuple === null || $tokens[$afterTuple]['raw'] !== ',') {
+                break;
+            }
+            $open = $this->nextSignificantIndex($tokens, $afterTuple + 1);
+            if ($open === null || $tokens[$open]['raw'] !== '(') {
+                throw new ProjectScopeViolation('VALUES de proyecto exige una tupla explícita.');
+            }
+        }
+
+        return $rows;
     }
 
     /**

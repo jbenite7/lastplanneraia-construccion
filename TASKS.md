@@ -108,14 +108,31 @@ vivas en `main`**, medidas con petición HTTP real contra el stack local:
   El detector que produjo estos números fue temporal y no quedó en el repo. Convertirlo en prueba con
   una línea base congelada es una opción, pero hoy saldría en rojo con estos 16 y hay que arreglarlos
   antes de fijar la línea.
-- [ ] **Los INSERT por lote del PDC revientan con «INSERT de múltiples filas no tiene una prueba de
-  scope soportada».** El guard rechaza de plano el INSERT multifila; los servicios del PDC los usan a
-  propósito, por rendimiento (`array_fill(0, count($lote), '(?, ?, …)')` aparece en
-  `MaestroInsumosService`, `PaquetesService`, `SubpaquetesService`, `SeguimientoService`,
-  `PlanFechasService`). **Hay decisión de arquitectura de por medio, no es un parche:** o se le enseña
-  al guard a validar el INSERT multifila —que es donde está el hueco— o se reescriben los lotes fila a
-  fila y se pierde el rendimiento que motivó escribirlos así. No se auditaron los 46 sitios que usan
-  ese patrón en `src/`; solo se confirmó que al menos uno del PDC revienta en caliente.
+- [x] **Arreglado el 2026-09-03: el guard ya valida el INSERT multifila del PDC.** Decisión de
+  Felipe: enseñarle al guard, acotado a que todas las filas del lote compartan el `project_id` del
+  `ProjectScope` activo — no reescribir los lotes fila a fila. La restricción resultó gratis: `
+  guardInsert()` nunca recibe `MultiProjectScope` (el guard de escritura no lo acepta), así que
+  "todas las filas de la misma obra" ya lo garantizaba el tipo de `$scope`, no hubo que agregar una
+  comprobación aparte.
+  `ProjectSqlGuard::guardInsertValues()` (`src/Security/DataScope/ProjectSqlGuard.php`) parseaba una
+  sola tupla de `VALUES` y rechazaba en cuanto veía una coma después. Ahora `collectInsertValueRows()`
+  recolecta todas las tuplas de nivel superior y aplica, por cada una, la misma validación que antes
+  corría una vez: inyecta o verifica el placeholder de `project_id`. La única parte delicada era el
+  caso de inyección (columna `project_id` implícita): tanto los cortes del SQL como los
+  `array_splice` de `$params` se aplican en orden inverso (última fila primero) para que los offsets
+  e índices calculados sobre los tokens/params originales sigan siendo válidos — reutiliza
+  `replaceRanges()`, que ya hacía ese mismo patrón para otro caso del archivo.
+  TDD: tres pruebas nuevas en `tests/unit/ProjectSqlGuardTest.php` (inyección en 3 filas, validación
+  explícita en 2 filas, rechazo si cualquier fila trae otra obra) más una que replica la forma real de
+  `MaestroInsumosService::generarVinculos()` (`project_id` explícito mezclado con un literal fijo en
+  la misma tupla — el caso concreto que esta entrada tenía confirmado reventando). Verificado:
+  `phpunit --group db tests/unit/ProjectSqlGuardTest.php` → 59/59; `phpunit tests/unit/` completo →
+  164 pruebas, mismos 11 errores + 1 fallo preexistentes (fixture del proyecto 27 ausente en el
+  runtime aislado, confirmado idéntico revirtiendo el cambio) — ninguna regresión nueva; `phpstan
+  analyse src admin/src` → `[OK] No errors`.
+  **No se auditaron los otros 45 sitios** que usan el patrón `array_fill()` en `src/` — solo se cerró
+  el caso del PDC que esta entrada tenía confirmado. Cualquiera de esos 45 que hoy dependa del INSERT
+  multifila queda cubierto por el mismo arreglo (es el mismo guard), pero no se verificó uno por uno.
 - [ ] **Siete errores de PHPStan en `src`**, uno de ellos por una entrada obsoleta del propio
   `phpstan-baseline.neon` (`ignore.unmatched`). Preexistentes, sin relación de causa con lo anterior.
 
