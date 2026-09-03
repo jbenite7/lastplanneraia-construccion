@@ -860,6 +860,54 @@ class Database
         return $this->rawTableExists($tableName);
     }
 
+    /**
+     * Verifica de forma segura si una columna existe en la base de datos actual.
+     *
+     * Es el compañero de tableExists() y existe por la misma razón: `information_schema` es una
+     * tabla calificada por schema, y ProjectSqlGuard las rechaza desde el 2026-08-29. Preguntar
+     * por metadatos con prepare()/query() lanza DomainException, así que quien necesite saber si
+     * una columna existe pasa por aquí y no arma la consulta por su cuenta.
+     *
+     * @param string $tableName Nombre de la tabla que contiene la columna.
+     * @param string $columnName Nombre de la columna a verificar.
+     * @return bool
+     */
+    public function columnExists(string $tableName, string $columnName): bool
+    {
+        return $this->rawColumnExists($tableName, $columnName);
+    }
+
+    /**
+     * Devuelve las tablas del esquema actual que tienen la columna indicada.
+     *
+     * Tercera y última puerta de metadatos, para quien necesita descubrir tablas en vez de
+     * comprobar una concreta. El filtrado fino (por prefijo, por sufijo) lo hace el llamador
+     * sobre el resultado: aquí no entran patrones, para que la consulta siga siendo una sola,
+     * fija y sin datos de usuario.
+     *
+     * @param list<string> $tableNames Candidatas a considerar; vacío significa todas.
+     * @return list<string>
+     */
+    public function tablesWithColumn(string $columnName, array $tableNames = []): array
+    {
+        if (preg_match('/^[A-Za-z0-9_]+$/', $columnName) !== 1) {
+            return [];
+        }
+
+        $stmt = $this->pdo->prepare(
+            'SELECT TABLE_NAME FROM information_schema.columns WHERE table_schema = DATABASE() AND column_name = ?'
+        );
+        $stmt->execute([$columnName]);
+        $found = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        $found = array_values(array_map('strval', $found));
+        if ($tableNames === []) {
+            return $found;
+        }
+
+        return array_values(array_intersect($found, $tableNames));
+    }
+
     // Evitar clonación del objeto
     private function __clone() {}
 
