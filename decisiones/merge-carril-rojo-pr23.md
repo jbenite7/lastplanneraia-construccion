@@ -3,8 +3,8 @@ capa: fuente
 tipo: reporte
 estado: vigente
 fecha: 2026-09-03
-areas: [proceso, seguridad]
-tags: [autorizacion]
+areas: [proceso, rbac]
+tags: []
 fuente: decisiones/merge-carril-rojo-pr23.md
 resumen: Autorización de Felipe para mergear el PR #23 con design-system-runtime en rojo, y por qué los seis gates rojos no son suyos
 ---

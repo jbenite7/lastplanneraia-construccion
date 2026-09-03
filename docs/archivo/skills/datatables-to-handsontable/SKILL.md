@@ -1,4 +1,12 @@
 ---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-09-03
+areas: [design-system, proceso]
+tags: [archivo]
+fuente: docs/archivo/skills/datatables-to-handsontable/SKILL.md
+resumen: Treat this as a behavior and data-contract migration, not a library swap. Confirm the Handsontable version and license terms from current project sources…
 name: datatables-to-handsontable
 description: Use when migrating an existing DataTables grid to Handsontable, especially with PHP, MySQL, cPanel, or shared-hosting constraints.
 ---
