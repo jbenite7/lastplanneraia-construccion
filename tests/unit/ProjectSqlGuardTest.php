@@ -265,6 +265,95 @@ final class ProjectSqlGuardTest extends TestCase
         self::assertSame([73, 8, 1, 'uno', 73, 8, 2, 'dos', 73, 8, 3, 'tres'], $guarded->params);
     }
 
+    public function testInjectsProjectIntoRowsWithUnevenPlaceholderCountsIncludingAZeroPlaceholderRow(): void
+    {
+        // Caso adversarial de la revisión de seguridad (2026-09-03): las filas 1 y 3
+        // terminan con el MISMO índice de inserción, porque la fila 2 no aporta ningún
+        // placeholder propio (su `semana` es un literal) y el conteo de placeholders no
+        // avanza entre la 1 y la 3. Es el caso que expondría un error de uno-por-uno si
+        // la construcción del nuevo array de parámetros dependiera del orden entre
+        // índices duplicados en vez de fijarlo por la posición de cada fila.
+        $guarded = $this->guard->guard(
+            "INSERT INTO auto_program_log (semana, detalle) VALUES (?, 'uno'), (8, 'dos'), (?, 'tres')",
+            [8, 9],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+
+        self::assertSame(
+            "INSERT INTO auto_program_log (project_id, semana, detalle) "
+            . "VALUES (?, ?, 'uno'), (?, 8, 'dos'), (?, ?, 'tres')",
+            $guarded->sql,
+        );
+        self::assertSame([73, 8, 73, 73, 9], $guarded->params);
+    }
+
+    public function testRejectsMultiRowInsertWhenOnlyTheLastRowOfThreeDiffersFromScope(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        // Filas 1 y 2 correctas (73); solo la ÚLTIMA trae otra obra (27). Un bucle que
+        // se detuviera antes de tiempo, o que solo revisara la primera o segunda fila,
+        // dejaría pasar esta.
+        $this->guard->guard(
+            'INSERT INTO auto_program_log (project_id, semana, detalle) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?)',
+            [73, 8, 'uno', 73, 9, 'dos', 27, 10, 'tres'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
+    public function testRejectsNonPlaceholderProjectIdInASecondaryRow(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        // La primera fila usa un placeholder homólogo válido; la segunda trae un
+        // literal fijo en la posición de project_id -intento de colar un valor que no
+        // es un placeholder en una fila que no es la primera.
+        $this->guard->guard(
+            'INSERT INTO auto_program_log (project_id, semana, detalle) VALUES (?, ?, ?), (27, ?, ?)',
+            [73, 8, 'uno', 9, 'dos'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
+    public function testRejectsNonPlaceholderProjectIdInTheLastRowOfThree(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guard(
+            'INSERT INTO auto_program_log (project_id, semana, detalle) VALUES (?, ?, ?), (?, ?, ?), (27, ?, ?)',
+            [73, 8, 'uno', 73, 9, 'dos', 10, 'tres'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
+    public function testRejectsMultiRowInsertWithNonTupleAfterComma(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guard(
+            'INSERT INTO auto_program_log (project_id, semana, detalle) VALUES (?, ?, ?), x',
+            [73, 8, 'uno'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
+    public function testRejectsMultiRowInsertWithTrailingComma(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guard(
+            'INSERT INTO auto_program_log (project_id, semana, detalle) VALUES (?, ?, ?),',
+            [73, 8, 'uno'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
     public function testRejectsTwoProjectTablesWithoutProjectRelation(): void
     {
         $this->expectException(ProjectScopeViolation::class);

@@ -485,31 +485,75 @@ final class ProjectSqlGuard
         // Por eso validar cada fila del lote contra $scope->projectId() ya basta: no hace falta una
         // comprobación aparte de "todas las filas comparten obra", la garantiza el tipo de $scope.
         if ($projectColumn === false) {
+            if (!$this->isSequentialArray($params)) {
+                throw new ProjectScopeViolation('La inyección automática solo soporta parámetros posicionales secuenciales.');
+            }
+
+            // Un solo recorrido de los tokens, no uno por fila: cuenta cuántos placeholders
+            // posicionales preceden a cada token. `positionalPlaceholderCountBefore()` llamada
+            // una vez por fila era O(filas × tokens) — cuadrático en un lote de cientos de filas.
+            // Hallazgo de revisión de seguridad (2026-09-03), medido: 800→3200 filas escalaba
+            // 3.7× en vez de lineal.
+            $placeholdersBefore = [];
+            $placeholderCount = 0;
+            foreach ($tokens as $tokenIndex => $token) {
+                $placeholdersBefore[$tokenIndex] = $placeholderCount;
+                if ($token['type'] === 'placeholder' && $token['raw'] === '?') {
+                    $placeholderCount++;
+                }
+            }
+
             $replacements = [[
                 'start' => $tokens[$openColumns]['end'],
                 'end' => $tokens[$openColumns]['end'],
                 'text' => 'project_id, ',
             ]];
-            $paramIndexes = [];
             foreach ($rows as [$rowOpen]) {
                 $replacements[] = [
                     'start' => $tokens[$rowOpen]['end'],
                     'end' => $tokens[$rowOpen]['end'],
                     'text' => '?, ',
                 ];
-                // Contado sobre los tokens ORIGINALES (sin mutar), igual que `$replacements`
-                // referencia offsets originales — `replaceRanges()` aplica de mayor a menor
-                // offset, así que un offset menor nunca se invalida por una edición posterior.
-                $paramIndexes[] = $this->positionalPlaceholderCountBefore($tokens, $tokens[$rowOpen]['end']);
             }
             $sql = $this->replaceRanges($sql, $replacements);
-            // Misma lógica para $params: insertar de mayor a menor índice para que un índice
-            // menor, calculado sobre el $params original, siga siendo válido en su turno.
-            rsort($paramIndexes, SORT_NUMERIC);
-            foreach ($paramIndexes as $paramIndex) {
-                $params = $this->insertScopeParam($params, $paramIndex, $scope->projectId());
+
+            // Construido en UN solo recorrido hacia adelante, en el mismo orden en que
+            // aparecen las filas — nunca por índice descendente ni por `array_splice`
+            // repetido. Hallazgo de revisión de seguridad (2026-09-03): el enfoque anterior
+            // (ordenar los índices de mayor a menor e insertar uno por uno) solo daba un
+            // resultado correcto porque el valor inyectado es siempre el mismo
+            // ($scope->projectId()) en cada fila — dos filas sin placeholders antes de la
+            // primera producen el mismo índice de inserción, y el orden entre inserciones
+            // "duplicadas" dejaba de importar únicamente porque eran indistinguibles. Este
+            // recorrido no depende de esa coincidencia: el orden de las filas queda fijado
+            // por construcción.
+            $newParams = [];
+            $cursor = 0;
+            foreach ($rows as [$rowOpen]) {
+                $paramIndex = $placeholdersBefore[$rowOpen];
+                for (; $cursor < $paramIndex; $cursor++) {
+                    $newParams[] = $params[$cursor];
+                }
+                $newParams[] = $scope->projectId();
             }
-            return [$sql, $params];
+            for ($paramCount = count($params); $cursor < $paramCount; $cursor++) {
+                $newParams[] = $params[$cursor];
+            }
+
+            return [$sql, $newParams];
+        }
+
+        // Mismo recorrido único que en la rama de inyección, y por el mismo motivo: sin él,
+        // assertScopePlaceholder() recontaría los placeholders posicionales desde el principio
+        // de $tokens en CADA fila -O(filas × tokens)-, y esta es la rama que de verdad usan los
+        // cinco servicios del PDC (todos declaran project_id explícito en la lista de columnas).
+        $placeholdersBefore = [];
+        $placeholderCount = 0;
+        foreach ($tokens as $tokenIndex => $token) {
+            $placeholdersBefore[$tokenIndex] = $placeholderCount;
+            if ($token['type'] === 'placeholder' && $token['raw'] === '?') {
+                $placeholderCount++;
+            }
         }
 
         foreach ($rows as [$rowOpen, $rowClose]) {
@@ -518,7 +562,13 @@ final class ProjectSqlGuard
                 throw new ProjectScopeViolation('project_id no tiene valor homólogo en VALUES.');
             }
             $placeholder = $this->singlePlaceholder($tokens, $expressions[$projectColumn]);
-            $this->assertScopePlaceholder($placeholder, $tokens, $params, $scope->projectId());
+            $this->assertScopePlaceholder(
+                $placeholder,
+                $tokens,
+                $params,
+                $scope->projectId(),
+                $placeholdersBefore[$placeholder],
+            );
         }
         return [$sql, $params];
     }
@@ -1582,20 +1632,37 @@ final class ProjectSqlGuard
     }
 
     /** @param array<mixed> $params */
-    private function assertScopePlaceholder(int $placeholder, array $tokens, array $params, int $projectId): void
-    {
+    /**
+     * @param int|null $precomputedPositionalIndex Índice posicional del placeholder ya
+     *   calculado por el llamador (p. ej. un solo recorrido de $tokens compartido entre
+     *   varias filas de un INSERT multifila). Con `null` se recorre $tokens desde el
+     *   principio, igual que siempre — comportamiento sin cambios para el resto de
+     *   llamadores. Precomputarlo evita un recorrido O(tokens) por CADA fila cuando se
+     *   valida un lote: hallazgo de revisión de seguridad (2026-09-03), medido con un
+     *   lote de miles de filas escalando cuadrático en vez de lineal.
+     */
+    private function assertScopePlaceholder(
+        int $placeholder,
+        array $tokens,
+        array $params,
+        int $projectId,
+        ?int $precomputedPositionalIndex = null,
+    ): void {
         $raw = $tokens[$placeholder]['raw'];
         if ($raw === '?') {
             if (!$this->isSequentialArray($params)) {
                 throw new ProjectScopeViolation('Placeholders posicionales exigen parámetros secuenciales.');
             }
-            $index = 0;
-            foreach ($tokens as $tokenIndex => $token) {
-                if ($tokenIndex >= $placeholder) {
-                    break;
-                }
-                if ($token['type'] === 'placeholder' && $token['raw'] === '?') {
-                    $index++;
+            $index = $precomputedPositionalIndex;
+            if ($index === null) {
+                $index = 0;
+                foreach ($tokens as $tokenIndex => $token) {
+                    if ($tokenIndex >= $placeholder) {
+                        break;
+                    }
+                    if ($token['type'] === 'placeholder' && $token['raw'] === '?') {
+                        $index++;
+                    }
                 }
             }
             if (!array_key_exists($index, $params) || !$this->sameProjectId($params[$index], $projectId)) {
