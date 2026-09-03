@@ -108,14 +108,81 @@ vivas en `main`**, medidas con petición HTTP real contra el stack local:
   El detector que produjo estos números fue temporal y no quedó en el repo. Convertirlo en prueba con
   una línea base congelada es una opción, pero hoy saldría en rojo con estos 16 y hay que arreglarlos
   antes de fijar la línea.
-- [ ] **Los INSERT por lote del PDC revientan con «INSERT de múltiples filas no tiene una prueba de
-  scope soportada».** El guard rechaza de plano el INSERT multifila; los servicios del PDC los usan a
-  propósito, por rendimiento (`array_fill(0, count($lote), '(?, ?, …)')` aparece en
-  `MaestroInsumosService`, `PaquetesService`, `SubpaquetesService`, `SeguimientoService`,
-  `PlanFechasService`). **Hay decisión de arquitectura de por medio, no es un parche:** o se le enseña
-  al guard a validar el INSERT multifila —que es donde está el hueco— o se reescriben los lotes fila a
-  fila y se pierde el rendimiento que motivó escribirlos así. No se auditaron los 46 sitios que usan
-  ese patrón en `src/`; solo se confirmó que al menos uno del PDC revienta en caliente.
+- [x] **Arreglado el 2026-09-03: el guard ya valida el INSERT multifila del PDC.** Decisión de
+  Felipe: enseñarle al guard, acotado a que todas las filas del lote compartan el `project_id` del
+  `ProjectScope` activo — no reescribir los lotes fila a fila. La restricción resultó gratis: `
+  guardInsert()` nunca recibe `MultiProjectScope` (el guard de escritura no lo acepta), así que
+  "todas las filas de la misma obra" ya lo garantizaba el tipo de `$scope`, no hubo que agregar una
+  comprobación aparte.
+  `ProjectSqlGuard::guardInsertValues()` (`src/Security/DataScope/ProjectSqlGuard.php`) parseaba una
+  sola tupla de `VALUES` y rechazaba en cuanto veía una coma después. Ahora `collectInsertValueRows()`
+  recolecta todas las tuplas de nivel superior y aplica, por cada una, la misma validación que antes
+  corría una vez: inyecta o verifica el placeholder de `project_id`.
+
+  **Dos rondas: implementación, luego revisión (general + seguridad) en paralelo, luego una segunda
+  ronda que arregló lo que la revisión encontró.** Verdicto de las dos: aprobado, sin críticos ni
+  altos — ninguna vía de fuga probada tras un ataque adversarial de la revisora de seguridad (~40
+  INSERT multifila a mano + un corpus diferencial de 8.414 casos de una fila, comparando byte a byte
+  contra el commit anterior). Tres hallazgos MEDIUM, los tres arreglados aquí antes de cerrar:
+  - **El recorrido de parámetros era O(filas × tokens), no O(tokens).** `positionalPlaceholderCountBefore()`
+    y `assertScopePlaceholder()` recontaban `$tokens` desde cero en CADA fila. Medido por la
+    revisora: 800→3200 filas escalaba 3,7× en vez de lineal. Arreglado con un solo recorrido de
+    `$tokens` que precomputa cuántos placeholders preceden a cada token, compartido entre todas las
+    filas — en las dos ramas del método (la explícita, que es la que de verdad usan los cinco
+    servicios del PDC, no solo la de inyección). Medido después: la rama de inyección pasó a casi
+    lineal (800→3200: 4,1×); la rama explícita mejoró de una curva peor a ~3,4× en el mismo tramo —
+    sigue habiendo un residuo por debajo de lineal perfecto (probablemente el costo constante de
+    pasar arrays de decenas de miles de elementos por PHP, no un segundo bug algorítmico), pero a la
+    escala real (lotes de 200 filas) el costo es trivial en cualquiera de los dos casos y perseguir
+    ese residuo era exceder el alcance acotado que decidió Felipe.
+  - **El `array_splice` en orden inverso solo era correcto porque el valor inyectado es siempre el
+    mismo.** Dos filas sin placeholders entre sí producían el mismo índice de inserción; el
+    `rsort()` + `array_splice()` repetido daba el resultado correcto únicamente porque ambas
+    inserciones escriben el mismo `$scope->projectId()`, no porque el algoritmo lo garantizara. La
+    revisora lo calificó de "cheap insurance on a row-level-security boundary": si algún día una
+    fila necesitara un valor distinto, el fallo sería escribir en la obra equivocada en silencio, no
+    un error visible. Reemplazado por un solo recorrido hacia adelante que construye el nuevo array
+    de parámetros en el mismo orden en que aparecen las filas — el orden queda fijado por
+    construcción, ya no por la coincidencia de que los valores sean iguales.
+  - **Cobertura de pruebas insuficiente para los casos adversariales.** Sumadas seis pruebas más:
+    rechazo cuando solo la fila 3 de 3 trae otra obra (no solo la 2 de 2); un literal o expresión en
+    la posición de `project_id` en una fila que no es la primera (dos variantes, fila 2 y fila 3);
+    inyección con conteo de placeholders desparejo entre filas, incluida una fila sin ningún
+    placeholder propio (el caso que expondría un error de uno-por-uno en el recorrido hacia
+    adelante); y dos casos de "falla cerrado" ante separadores malformados (`VALUES (?,?), x` y coma
+    final sin tupla).
+
+  TDD en las dos rondas: tests primero. Primera ronda — tres pruebas (inyección en 3 filas, validación
+  explícita en 2 filas, rechazo si cualquier fila trae otra obra) más una que replica la forma real de
+  `MaestroInsumosService::generarVinculos()` (`project_id` explícito mezclado con un literal fijo en
+  la misma tupla — el caso concreto que esta entrada tenía confirmado reventando). Segunda ronda — las
+  seis de arriba. Total: 10 pruebas nuevas.
+
+  Verificado (segunda ronda, estado final): `phpunit --group db tests/unit/ProjectSqlGuardTest.php` →
+  65/65; `phpunit tests/unit/` completo → 171 pruebas, mismos 11 errores + 1 fallo preexistentes
+  (fixture del proyecto 27 ausente en el runtime aislado, confirmado idéntico revirtiendo el cambio)
+  — ninguna regresión nueva; `phpstan analyse src admin/src` → `[OK] No errors`; microbenchmark propio
+  confirmando la mejora de complejidad en las dos ramas.
+
+  **No se auditaron los otros 45 sitios** que usan el patrón `array_fill()` en `src/` — solo se cerró
+  el caso del PDC que esta entrada tenía confirmado. Cualquiera de esos 45 que hoy dependa del INSERT
+  multifila queda cubierto por el mismo arreglo (es el mismo guard), pero no se verificó uno por uno.
+
+  **Cuatro huecos preexistentes que la auditoría de seguridad encontró y confirmó idénticos en el
+  commit anterior — no introducidos aquí, no arreglados aquí, quedan para frente propio:**
+  - `ON DUPLICATE KEY UPDATE` no se valida en absoluto: `INSERT INTO t (project_id, a) VALUES (?, ?)
+    ON DUPLICATE KEY UPDATE project_id = ?` con otra obra pasa el guard. Hoy es inofensivo porque
+    `MaestroInsumosService.php:99` usa exactamente ese patrón pero solo con `VALUES(col)` sobre
+    columnas que no son la clave — nada lo obliga a seguir siendo así.
+  - Una subconsulta dentro de `VALUES` que lea tablas de proyecto no queda acotada: `VALUES (?,
+    (SELECT MAX(id) FROM programa))` pasa sin filtro de proyecto, a diferencia de `INSERT ... SELECT`
+    que sí inyecta el `WHERE`. Sin uso conocido en `src/` ni `admin/src/` hoy.
+  - Comentarios versionados de MySQL (`/*!40000 ... */`) esconden una fila del tokenizador aunque
+    MySQL sí la ejecute. Solo explotable por quien ya controle el string SQL — es decir, ya tendría
+    inyección.
+  - `project_id` listado dos veces en la lista de columnas usa la primera aparición
+    (`array_search()`) e ignora la segunda — no explotable porque MySQL rechaza columnas duplicadas
+    con error 1110.
 - [ ] **Siete errores de PHPStan en `src`**, uno de ellos por una entrada obsoleta del propio
   `phpstan-baseline.neon` (`ignore.unmatched`). Preexistentes, sin relación de causa con lo anterior.
 

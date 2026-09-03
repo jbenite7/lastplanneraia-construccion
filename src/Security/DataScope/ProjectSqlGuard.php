@@ -478,31 +478,131 @@ final class ProjectSqlGuard
         int $valuesKeyword,
         int|false $projectColumn,
     ): array {
-        $openValues = $this->nextSignificantIndex($tokens, $valuesKeyword + 1);
-        if ($openValues === null || $tokens[$openValues]['raw'] !== '(') {
+        $rows = $this->collectInsertValueRows($tokens, $valuesKeyword);
+
+        // `$scope` es siempre un ProjectScope de UN solo project_id — guardInsert() nunca recibe
+        // MultiProjectScope (el guard de escritura no lo acepta; ese tipo es para lectura agregada).
+        // Por eso validar cada fila del lote contra $scope->projectId() ya basta: no hace falta una
+        // comprobación aparte de "todas las filas comparten obra", la garantiza el tipo de $scope.
+        if ($projectColumn === false) {
+            if (!$this->isSequentialArray($params)) {
+                throw new ProjectScopeViolation('La inyección automática solo soporta parámetros posicionales secuenciales.');
+            }
+
+            // Un solo recorrido de los tokens, no uno por fila: cuenta cuántos placeholders
+            // posicionales preceden a cada token. `positionalPlaceholderCountBefore()` llamada
+            // una vez por fila era O(filas × tokens) — cuadrático en un lote de cientos de filas.
+            // Hallazgo de revisión de seguridad (2026-09-03), medido: 800→3200 filas escalaba
+            // 3.7× en vez de lineal.
+            $placeholdersBefore = [];
+            $placeholderCount = 0;
+            foreach ($tokens as $tokenIndex => $token) {
+                $placeholdersBefore[$tokenIndex] = $placeholderCount;
+                if ($token['type'] === 'placeholder' && $token['raw'] === '?') {
+                    $placeholderCount++;
+                }
+            }
+
+            $replacements = [[
+                'start' => $tokens[$openColumns]['end'],
+                'end' => $tokens[$openColumns]['end'],
+                'text' => 'project_id, ',
+            ]];
+            foreach ($rows as [$rowOpen]) {
+                $replacements[] = [
+                    'start' => $tokens[$rowOpen]['end'],
+                    'end' => $tokens[$rowOpen]['end'],
+                    'text' => '?, ',
+                ];
+            }
+            $sql = $this->replaceRanges($sql, $replacements);
+
+            // Construido en UN solo recorrido hacia adelante, en el mismo orden en que
+            // aparecen las filas — nunca por índice descendente ni por `array_splice`
+            // repetido. Hallazgo de revisión de seguridad (2026-09-03): el enfoque anterior
+            // (ordenar los índices de mayor a menor e insertar uno por uno) solo daba un
+            // resultado correcto porque el valor inyectado es siempre el mismo
+            // ($scope->projectId()) en cada fila — dos filas sin placeholders antes de la
+            // primera producen el mismo índice de inserción, y el orden entre inserciones
+            // "duplicadas" dejaba de importar únicamente porque eran indistinguibles. Este
+            // recorrido no depende de esa coincidencia: el orden de las filas queda fijado
+            // por construcción.
+            $newParams = [];
+            $cursor = 0;
+            foreach ($rows as [$rowOpen]) {
+                $paramIndex = $placeholdersBefore[$rowOpen];
+                for (; $cursor < $paramIndex; $cursor++) {
+                    $newParams[] = $params[$cursor];
+                }
+                $newParams[] = $scope->projectId();
+            }
+            for ($paramCount = count($params); $cursor < $paramCount; $cursor++) {
+                $newParams[] = $params[$cursor];
+            }
+
+            return [$sql, $newParams];
+        }
+
+        // Mismo recorrido único que en la rama de inyección, y por el mismo motivo: sin él,
+        // assertScopePlaceholder() recontaría los placeholders posicionales desde el principio
+        // de $tokens en CADA fila -O(filas × tokens)-, y esta es la rama que de verdad usan los
+        // cinco servicios del PDC (todos declaran project_id explícito en la lista de columnas).
+        $placeholdersBefore = [];
+        $placeholderCount = 0;
+        foreach ($tokens as $tokenIndex => $token) {
+            $placeholdersBefore[$tokenIndex] = $placeholderCount;
+            if ($token['type'] === 'placeholder' && $token['raw'] === '?') {
+                $placeholderCount++;
+            }
+        }
+
+        foreach ($rows as [$rowOpen, $rowClose]) {
+            $expressions = $this->splitListTokenRanges($tokens, $rowOpen, $rowClose);
+            if (!isset($expressions[$projectColumn])) {
+                throw new ProjectScopeViolation('project_id no tiene valor homólogo en VALUES.');
+            }
+            $placeholder = $this->singlePlaceholder($tokens, $expressions[$projectColumn]);
+            $this->assertScopePlaceholder(
+                $placeholder,
+                $tokens,
+                $params,
+                $scope->projectId(),
+                $placeholdersBefore[$placeholder],
+            );
+        }
+        return [$sql, $params];
+    }
+
+    /**
+     * Recolecta todas las tuplas de nivel superior de un `VALUES (...), (...), ...`. Una sola
+     * tupla es el caso de un lote de una fila.
+     *
+     * @param list<array{type: string, raw: string, value: string, start: int, end: int, depth: int}> $tokens
+     * @return list<array{0: int, 1: int}>
+     */
+    private function collectInsertValueRows(array $tokens, int $valuesKeyword): array
+    {
+        $open = $this->nextSignificantIndex($tokens, $valuesKeyword + 1);
+        if ($open === null || $tokens[$open]['raw'] !== '(') {
             throw new ProjectScopeViolation('VALUES de proyecto exige una tupla explícita.');
         }
-        $closeValues = $this->matchingClose($tokens, $openValues);
-        $expressions = $this->splitListTokenRanges($tokens, $openValues, $closeValues);
-        $afterTuple = $this->nextSignificantIndex($tokens, $closeValues + 1);
-        if ($afterTuple !== null && $tokens[$afterTuple]['raw'] === ',') {
-            throw new ProjectScopeViolation('INSERT de múltiples filas no tiene una prueba de scope soportada.');
+
+        $rows = [];
+        while (true) {
+            $close = $this->matchingClose($tokens, $open);
+            $rows[] = [$open, $close];
+
+            $afterTuple = $this->nextSignificantIndex($tokens, $close + 1);
+            if ($afterTuple === null || $tokens[$afterTuple]['raw'] !== ',') {
+                break;
+            }
+            $open = $this->nextSignificantIndex($tokens, $afterTuple + 1);
+            if ($open === null || $tokens[$open]['raw'] !== '(') {
+                throw new ProjectScopeViolation('VALUES de proyecto exige una tupla explícita.');
+            }
         }
 
-        if ($projectColumn === false) {
-            $paramIndex = $this->positionalPlaceholderCountBefore($tokens, $tokens[$openValues]['end']);
-            $sql = substr($sql, 0, $tokens[$openValues]['end']) . '?, ' . substr($sql, $tokens[$openValues]['end']);
-            $sql = substr($sql, 0, $tokens[$openColumns]['end']) . 'project_id, ' . substr($sql, $tokens[$openColumns]['end']);
-            $params = $this->insertScopeParam($params, $paramIndex, $scope->projectId());
-            return [$sql, $params];
-        }
-
-        if (!isset($expressions[$projectColumn])) {
-            throw new ProjectScopeViolation('project_id no tiene valor homólogo en VALUES.');
-        }
-        $placeholder = $this->singlePlaceholder($tokens, $expressions[$projectColumn]);
-        $this->assertScopePlaceholder($placeholder, $tokens, $params, $scope->projectId());
-        return [$sql, $params];
+        return $rows;
     }
 
     /**
@@ -1532,20 +1632,37 @@ final class ProjectSqlGuard
     }
 
     /** @param array<mixed> $params */
-    private function assertScopePlaceholder(int $placeholder, array $tokens, array $params, int $projectId): void
-    {
+    /**
+     * @param int|null $precomputedPositionalIndex Índice posicional del placeholder ya
+     *   calculado por el llamador (p. ej. un solo recorrido de $tokens compartido entre
+     *   varias filas de un INSERT multifila). Con `null` se recorre $tokens desde el
+     *   principio, igual que siempre — comportamiento sin cambios para el resto de
+     *   llamadores. Precomputarlo evita un recorrido O(tokens) por CADA fila cuando se
+     *   valida un lote: hallazgo de revisión de seguridad (2026-09-03), medido con un
+     *   lote de miles de filas escalando cuadrático en vez de lineal.
+     */
+    private function assertScopePlaceholder(
+        int $placeholder,
+        array $tokens,
+        array $params,
+        int $projectId,
+        ?int $precomputedPositionalIndex = null,
+    ): void {
         $raw = $tokens[$placeholder]['raw'];
         if ($raw === '?') {
             if (!$this->isSequentialArray($params)) {
                 throw new ProjectScopeViolation('Placeholders posicionales exigen parámetros secuenciales.');
             }
-            $index = 0;
-            foreach ($tokens as $tokenIndex => $token) {
-                if ($tokenIndex >= $placeholder) {
-                    break;
-                }
-                if ($token['type'] === 'placeholder' && $token['raw'] === '?') {
-                    $index++;
+            $index = $precomputedPositionalIndex;
+            if ($index === null) {
+                $index = 0;
+                foreach ($tokens as $tokenIndex => $token) {
+                    if ($tokenIndex >= $placeholder) {
+                        break;
+                    }
+                    if ($token['type'] === 'placeholder' && $token['raw'] === '?') {
+                        $index++;
+                    }
                 }
             }
             if (!array_key_exists($index, $params) || !$this->sameProjectId($params[$index], $projectId)) {
