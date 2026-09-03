@@ -208,6 +208,47 @@ decidido de antemano), y se revirtió por decisión de Felipe. Detalle completo 
 
 ## Bloqueantes
 
+**2026-09-03 — Seis gates del carril visual están en rojo, y ninguno es de los frentes que los
+destaparon. → Merece frente propio: «poner el carril visual en verde».** El job
+`design-system-runtime` llevaba sin correr desde el 2026-08-29 (primero por el contrato del
+compose, después por el 403 del laboratorio). Con los dos arreglados en
+`fix/gate-metadatos-rol-admin`, el job **llega hasta el final por primera vez** y deja ver la deuda
+que estaba escondida detrás. Corrida `33759660935`, tema `dark`, sha `d419072d`:
+
+| Gate | Resultado |
+|---|---|
+| `G_LABORATORY_GATES` | **success** ← las 24 pruebas del 403, arregladas |
+| `G_PILOT_LAB_GATES`, `G_PG_PERSISTENCE_RBAC`, `G_SEMANAL_ROLES_PHASES`, `G_RUNTIME_GRANTS`, `G_PHP_ADMIN_DB`, `G_RUNTIME_BUDGET_MEASURE` | success |
+| `G_PHPSTAN_BASELINE` | failure — `New PHPStan findings: 7` |
+| `G_PHPSTAN_PDC` | failure — 1 error, `Services/Pdc/SeguimientoService.php:672` |
+| `G_PHP_SUITE` | failure — los mismos fallos ya medidos en `main` |
+| `G_FULL_APP_FLOW`, `G_RUNTIME_BUDGET_CHECK`, `G_KEYBOARD_REFLOW_EVIDENCE` | failure |
+
+Atribución de cada rojo, medida y no supuesta:
+
+- **`G_PHPSTAN_BASELINE`**: `docs/design-system/phpstan-baseline.json` tiene `fingerprints: []`
+  —tolera cero— y `main` produce 7 avisos. Los 7 son idénticos en `main` y en la rama (medido con
+  `phpstan analyse src admin/src`: `Found 7 errors` en ambos, misma lista:
+  `ProgramacionIntermediaController.php:624`, `Database.php`, `MultiProjectScope.php:13,14,28`).
+  **Límite de esta afirmación:** el gate imprime el conteo, no los fingerprints, así que la
+  equivalencia se sostiene en el número más la comparación local de la lista.
+- **`G_PHPSTAN_PDC`**: `activePackageNames()` sin tipo de iterable, en un archivo que ninguno de
+  los dos frentes tocó.
+- **`G_PHP_SUITE`**: es la cola del gate de scope, ya anotada en el bloqueante siguiente.
+- **Los tres últimos**: gates visuales y de rendimiento que llevaban cinco días sin ejecutarse; su
+  línea base en CI no existe todavía, así que hay que establecerla antes de leerlos.
+
+**No se arreglan desde el frente del 403 a propósito.** El camino corto —registrar los 7
+fingerprints en el JSON para que el gate se ponga verde— es un renglón de trabajo y apaga el único
+control que iba a avisar del próximo; `AGENTS.md` lo prohíbe con nombre propio («no regeneres
+snapshots ni baselines para forzar un resultado verde»), y sería especialmente torcido hacerlo
+desde un PR cuyo hallazgo central es que tapar un error lo esconde durante días.
+
+**Trampa de lectura, medida el 2026-09-03:** en este job los pasos individuales aparecen con ✓
+aunque fallen —cada uno registra su resultado en una variable `G_*` y el rojo lo pone el paso final
+`Summarize gate results`—. Leer «✓ Enforce PHPStan baseline» y concluir que pasó es un error fácil:
+el veredicto está en el resumen, no en los pasos.
+
 **2026-09-02 — El gate de scope rompe la lectura de metadatos en `admin/` y en 20+ pruebas; el
 403 del laboratorio ya se arregló, esta es su cola.** `ProjectSqlGuard` rechaza cualquier tabla
 calificada por schema desde el 2026-08-29, e `information_schema` lo está. La rama
