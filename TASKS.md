@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-09-02
+updated: 2026-09-03
 ---
 
 # Tareas
@@ -936,6 +936,11 @@ estado por defecto mientras Felipe no reparta.
 necesita autorización propia y explícita de Felipe, siempre, y publicar en `main` no la concede.
 
 ## Hechas (últimas 10)
+
+- [x] 2026-09-03 — **Publicado `2670146b` (skill `datatables-to-handsontable` archivada) más
+  `2bc9c6d0`** con `scripts/publicar.sh` del repo: frontmatter v2 a la skill y vocabulario cerrado
+  en `decisiones/merge-carril-rojo-pr23.md`, que tenían `wiki (forma)` en rojo. Queda vivo el aviso
+  de veracidad de la wiki (131 commits desde el 2026-08-25, umbral 40): toca un pase.
 
 - [x] 2026-08-28 — **Fase cero de temas y forma, CERRADA — las 11 tareas del plan, PR abierto
   contra `main`.** Ejecutada de corrido con `subagent-driven-development` sobre el goal

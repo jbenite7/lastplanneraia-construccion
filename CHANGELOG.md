@@ -10,7 +10,7 @@ resumen: Todos los cambios notables en este proyecto serán documentados en este
 project: lps-aia
 type: changelog
 status: activo
-updated: 2026-09-02
+updated: 2026-09-03
 ---
 
 # Registro de Cambios (Changelog)
@@ -27,6 +27,15 @@ archivo registra solo cambios de producto liberados o por liberar. Ver [[IMPLEME
 para el estado de los planes en curso.
 
 ## [Sin publicar]
+
+### Documentación: skill `datatables-to-handsontable` archivada en el repo (2026-09-03)
+
+`docs/archivo/skills/datatables-to-handsontable/SKILL.md` guarda la skill de la migración puntual
+de julio 2026 como documento del proyecto (frente 1 del harness de Claude Code, `2670146b`). En el
+mismo paso salió del disco `.claude/gate.yaml`, política del motor viejo de loop, nunca rastreado.
+Publicado con `scripts/publicar.sh` en `2bc9c6d0`, que además pone el frontmatter v2 a la skill y
+saca de `decisiones/merge-carril-rojo-pr23.md` un tag y un área fuera del vocabulario cerrado que
+ya tenían el gate de la wiki en rojo en `main`.
 
 ### Arreglado: un administrador entraba al laboratorio interno con rol de subcontratista (2026-09-02)
 
