@@ -2,11 +2,11 @@
 capa: wiki
 tipo: referencia
 estado: vigente
-verificado: 2026-08-18
+verificado: 2026-09-03
 fecha: 2026-08-18
 areas: [proceso, deploy, qa]
 fuente: scripts/publicar.sh, AGENTS.md §Publicación, D-COORD-3
-resumen: publicar es invocar `bash scripts/publicar.sh` desde el 2026-08-18; verifica, lee cada código de salida en su propia línea y deniega con RC=1, y al hacerlo obligatorio se le encontraron dos defectos que lo hacían avalar con evidencia de otro árbol
+resumen: publicar es invocar `bash scripts/publicar.sh` desde el 2026-08-18; verifica cuatro comprobaciones (tres bloquean, la veracidad de la wiki solo avisa), lee cada código de salida en su propia línea, comprueba que el contenedor monte el árbol verificado y deniega con RC=1
 ---
 **Desde el 2026-08-18, publicar en `main` es invocar `bash scripts/publicar.sh`.** Decisión del
 usuario (`D-COORD-3`), declarada en `AGENTS.md` §Publicación paso 6.
@@ -30,11 +30,18 @@ sucio, y solo entonces publica con `HEAD:main`.
 |---|---|
 | `npm run test:design-system:static` | sí |
 | `node tests/test_programa_general_sprint_contract.mjs` | sí |
-| `npm run test:wiki` | **no**, avisa |
+| `npm run test:wiki:forma` (forma de la wiki: enlaces, frontmatter, vocabulario) | **sí**, desde el 2026-08-19 |
+| `npm run test:wiki` (veracidad + pruebas) | **no**, avisa |
 
-La wiki avisa a propósito: su hallazgo típico es la alarma de veracidad —un contador de commits—, que
-pide trabajo pero no dice que lo que vas a publicar esté mal. Bloquear con ella enseñaría a saltarse el
-script, y un gate que se ignora enseña a ignorar los demás.
+La wiki va en dos comprobaciones desde el 2026-08-19 (`scripts/publicar.sh:118-136`; esta página lo
+decía como una sola hasta el 2026-09-03): la **forma** es un defecto de lo que vas a publicar y
+bloquea; la **alarma de veracidad** es un contador de commits, pide trabajo pero no dice que lo que
+vas a publicar esté mal. Bloquear con ella enseñaría a saltarse el script, y un gate que se ignora
+enseña a ignorar los demás.
+
+**Y antes de verificar nada, comprueba el montaje** (`scripts/publicar.sh:41-78`): si el contenedor
+`app` compartido no monta el árbol desde el que se invoca, deniega con `RC=1` y dice cómo reapuntarlo.
+Ver [[publicar-sh-choca-con-dos-worktrees-verificando]].
 
 **Lo que NO hace, deliberadamente:** no instala nada en `.git/hooks` ni toca `core.hooksPath`. Eso
 cambiaría el entorno de quien clone el repo sin haberlo pedido, y se descartó al decidir la

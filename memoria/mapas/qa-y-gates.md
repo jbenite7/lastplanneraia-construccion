@@ -29,23 +29,30 @@ devuelve).
   **El runner es la puerta única**: comprueba el entorno, corre los scripts del nivel y además
   invoca PHPUnit con los grupos que ese nivel selecciona, agregando ambos códigos de salida. No se
   llama a `vendor/bin/phpunit` a mano salvo para depurar, porque entonces nadie comprueba el entorno
-  antes. Los cuatro niveles son los mismos para ambas suites:
+  antes. Los niveles son los mismos para ambas suites, y **son cinco, no cuatro** (corregido el
+  2026-09-03): cuatro acumulativos más `admin-db`, que **no acumula** —
+  `scripts/lib/php-test-lane-manifest.php:8-17` la define con peso 4 y `select()` exige que el nivel
+  pedido sea exactamente el declarado— y existe para los fixtures que crean y borran tablas legacy
+  con un admin efímero (`LPS_ADMIN_DB_LANE=1`; el CI la corre en su propio paso,
+  `.github/workflows/ci.yml:279-285`):
 
   | Nivel | Necesita | Cuántos | Lo corre el CI |
   |---|---|---|---|
-  | `puro` | PHP y autoload | 22 | sí, job estático |
-  | `db` | base con el esquema del fixture | 45 | sí, job runtime |
-  | `http` | además la aplicación viva | 4 | sí, job runtime |
-  | `datos-proyecto` | datos o evidencia que el CI no tiene | 30 | no |
+  | `puro` | PHP y autoload | 33 | sí, job estático |
+  | `db` | base con el esquema del fixture | 60 | sí, job runtime |
+  | `http` | además la aplicación viva | 10 | sí, job runtime |
+  | `datos-proyecto` | datos o evidencia que el CI no tiene | 36 | no |
+  | `admin-db` | admin efímero que puede crear tablas | 2 | sí, paso `php-admin-db` |
 
-**Estas cuatro cifras caducan solas y ya lo hicieron tres veces en 24 h** — el universo pasó de 126
-a 96, a 99 y a 101 según entraban pruebas. Suman **117 el 2026-08-24 sobre `a4f19884`**
-(puro 29, db 52, http 5, datos-proyecto 31), frente a los 101 del 2026-08-11. No las
-copies: re-mídelas.
+**Estas cifras caducan solas y ya lo hicieron cuatro veces** — el universo pasó de 126 a 96, a 99,
+a 101, a 117 (2026-08-24) y a **139 `tests/test_*.php` más 17 clases PHPUnit el 2026-09-03 sobre
+`093e0d44`** (el desglose por `grep` de arriba suma 141 porque el runner solo lee la primera
+`@requiere` de las 40 primeras líneas y `grep` cuenta todas). No las copies: re-mídelas.
 
 ```bash
 ls -1 tests/test_*.php | wc -l
-for n in puro db http datos-proyecto; do echo -n "$n: "; grep -l "@requiere: $n" tests/test_*.php | wc -l; done
+ls -1 tests/unit/*Test.php | wc -l
+for n in puro db http datos-proyecto admin-db; do echo -n "$n: "; grep -l "@requiere: $n" tests/test_*.php | wc -l; done
 ```
 
   ```bash

@@ -37,6 +37,10 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 ### Rutas
 | Verbo | Ruta | Destino |
 | --- | --- | --- |
+| GET | `/api/bi/control-tower/metricas/{metricKey}` | `App\Controllers\Api\BiMetricController::ejecutar` |
+| POST | `/api/bi/control-tower/restricciones/{id}/gestion` | `App\Controllers\Api\BiConstraintWriteController::gestion` |
+| GET | `/api/bi/control-tower/restricciones/pareto` | `App\Controllers\Api\BiRestrictionParetoController::pareto` |
+| GET | `/api/bi/control-tower/restricciones` | `App\Controllers\Api\BiConstraintListController::listar` |
 | GET | `/api/bi/control-tower` | `App\Controllers\Api\BiControlTowerApiController::controlTower` |
 | GET | `/api/bi/filter-options` | `App\Controllers\Api\BiControlTowerApiController::filterOptions` |
 | GET | `/api/bi/lineage` | `App\Controllers\Api\BiControlTowerApiController::lineage` |
@@ -66,13 +70,21 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 | GET | `/bi/semanal` | `App\Controllers\Bi\BiViewController::semanal` |
 
 ### Controladores
+- `App\Controllers\Api\BiConstraintListController`
+- `App\Controllers\Api\BiConstraintWriteController`
 - `App\Controllers\Api\BiControlTowerApiController`
+- `App\Controllers\Api\BiMetricController`
+- `App\Controllers\Api\BiRestrictionParetoController`
 - `App\Controllers\Bi\BiViewController`
 
 ### Servicios
 - `BiProjectScope`
 - `ControlTowerService`
 - `LineageService`
+- `MetricDictionaryService`
+- `MetricExecutor`
+- `MetricResult`
+- `MetricScope`
 - `SeguimientoService`
 
 ### Tablas
@@ -84,10 +96,14 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 - `general_proyectos_procesos`
 - `general_usuarios`
 - `pdc_insumo_paquete`
+- `pdc_insumo_vinculos`
 - `pdc_paquete_frente`
 - `pdc_plan_paquete`
 - `pdc_plan_paso`
+- `pdc_presupuesto_versiones`
 - `pdc_subpaquete`
+- `pi_shared_constraint_links`
+- `pi_shared_constraints`
 - `programa_consolidado`
 - `programacion_semanal`
 - `project_members`

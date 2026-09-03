@@ -51,8 +51,10 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 
 ### Servicios
 - `ActivityMatcherService`
+- `EstadoSemanalService`
 - `LpsService`
 - `ModuleRequestContext`
+- `PgAvanceEdicionManualService`
 - `ProgramaConsolidadoNormalizationService`
 - `ProjectLandingService`
 - `WeeklyRealProgressCarryoverService`
@@ -62,6 +64,7 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 - `general_matching_config`
 - `general_proyectos_procesos`
 - `general_usuarios`
+- `pg_avance_edicion_manual`
 - `program_unique_id_sequences`
 - `programa`
 - `programa_consolidado`

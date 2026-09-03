@@ -33,7 +33,7 @@ cuadro incompleto y convincente. El coste de no hacerlo no es solo el susto: cas
 tarea entera sobre una premisa que no existía.
 
 **Cerrado el 2026-08-13** (`c9f602e4`): se extrajo `LpsWeekEditPolicy::decide()`
-(`src/Security/LpsWeekEditPolicy.php:55`), la composición pura de las dos reglas sin sesión ni
+(`src/Security/LpsWeekEditPolicy.php:54`), la composición pura de las dos reglas sin sesión ni
 base, y `tests/test_lps_week_edit_policy.php` la prueba directamente — incluido el caso «R/DCV
 califican avance en semana histórica confirmada aunque `canEditLpsWeek()` los deniegue». Ya no
 depende solo del e2e.

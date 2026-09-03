@@ -18,7 +18,7 @@ nada, solo dejó de haber por dónde entrar.
 | Capacidad | `internal.bi.preview` (`RbacCatalog.php:13`) | Concedida a **`A`, `D` y `R`** (`RbacManager.php:33`; `D` ampliado el 2026-08-20, `R` el 2026-08-24 por el reparto de lienzos por rol). Desde ese mismo día, para los roles no-Admin manda además el interruptor `bi.control_tower.visible` de `general_flags`, editable en `/admin/modulos` — el Admin entra siempre |
 | Gate | `BiPreviewAccessPolicy::canOpen()` | Resuelve el rol **por usuario, no por proyecto** — la condición es global |
 | Vistas | `BiViewController.php:54` | **404, no 403**, para no confirmar que la pantalla existe |
-| API | `BiControlTowerApiController.php:34` | Mismo gate |
+| API | `BiControlTowerApiController.php:35` | Mismo gate |
 | Enlaces | `BiAccessComponent.php:94,113` | No pinta accesos a quien no puede abrirlos |
 
 El gate se comprueba **antes** de la lógica de alcance por proyecto, para no pintarle a un Admin
