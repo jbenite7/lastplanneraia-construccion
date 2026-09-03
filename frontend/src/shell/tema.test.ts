@@ -29,8 +29,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-test('sin preferencia guardada, el tema de entrada es oscuro (Tarea 7)', () => {
-  expect(leerTemaGuardado()).toBe('oscuro');
+test('sin preferencia guardada, el tema de entrada es claro (AGENTS.md, decisión de Felipe 2026-09-03)', () => {
+  expect(leerTemaGuardado()).toBe('claro');
 });
 
 test('con "dark" guardado válido, el tema de entrada es oscuro', () => {
@@ -63,13 +63,13 @@ test('escribe el atributo y la clase que el CSS lee', () => {
   expect(document.documentElement).not.toHaveClass('aia-theme-dark');
 });
 
-test('un valor corrupto en el almacenamiento no rompe: cae al oscuro', () => {
+test('un valor corrupto en el almacenamiento no rompe: cae al claro', () => {
   localStorage.setItem('aia-theme', 'fucsia');
 
-  expect(leerTemaGuardado()).toBe('oscuro');
+  expect(leerTemaGuardado()).toBe('claro');
 });
 
-test('tolera almacenamiento bloqueado y cae al oscuro, conservando el cambio en el documento', () => {
+test('tolera almacenamiento bloqueado y cae al claro, conservando el cambio en el documento', () => {
   const almacenamientoOriginal = localStorage;
   vi.stubGlobal('localStorage', {
     getItem: () => {
@@ -81,23 +81,23 @@ test('tolera almacenamiento bloqueado y cae al oscuro, conservando el cambio en 
   });
 
   try {
-    expect(leerTemaGuardado()).toBe('oscuro');
-    aplicarTema('claro');
-    expect(document.documentElement.getAttribute('data-aia-theme')).toBe('light');
+    expect(leerTemaGuardado()).toBe('claro');
+    aplicarTema('oscuro');
+    expect(document.documentElement.getAttribute('data-aia-theme')).toBe('dark');
   } finally {
     vi.stubGlobal('localStorage', almacenamientoOriginal);
   }
 });
 
-test('el bootstrap de tema deja oscuro como fallback y solo el override "light" lo cambia', () => {
+test('el bootstrap de tema deja claro como fallback y solo el override "dark" lo cambia', () => {
   const bootstrap = htmlIndice.match(/<script>\s*[\s\S]*?<\/script>/)?.[0] ?? '';
 
-  expect(bootstrap).toContain("document.documentElement.setAttribute('data-aia-theme', 'dark');");
-  expect(bootstrap.indexOf("document.documentElement.setAttribute('data-aia-theme', 'dark');")).toBeLessThan(
+  expect(bootstrap).toContain("document.documentElement.setAttribute('data-aia-theme', 'light');");
+  expect(bootstrap.indexOf("document.documentElement.setAttribute('data-aia-theme', 'light');")).toBeLessThan(
     bootstrap.indexOf('try {'),
   );
-  expect(bootstrap).toMatch(/if \(tema === 'light'\)\s*\{[\s\S]*setAttribute\('data-aia-theme', 'light'\)/);
-  expect(bootstrap).not.toContain("if (tema === 'dark')");
+  expect(bootstrap).toMatch(/if \(tema === 'dark'\)\s*\{[\s\S]*setAttribute\('data-aia-theme', 'dark'\)/);
+  expect(bootstrap).not.toContain("if (tema === 'light')");
 });
 
 test('el bootstrap de tema corre antes que cualquier hoja de estilos y nunca importa el theme.js legado', () => {
@@ -120,20 +120,20 @@ test('el bootstrap de tema corre antes que cualquier hoja de estilos y nunca imp
   expect(htmlIndice).not.toContain('aia_ui/theme-toggle.js');
 });
 
-test('sin preferencia guardada, el conmutador inicia en oscuro y alterna a claro', async () => {
+test('sin preferencia guardada, el conmutador inicia en claro y alterna a oscuro', async () => {
   const usuario = userEvent.setup();
 
   render(createElement(ConmutadorTema));
 
-  const boton = screen.getByRole('button', { name: /cambiar a tema claro/i });
-  expect(boton).toHaveAttribute('aria-pressed', 'true');
-  expect(boton).toHaveTextContent(/tema: oscuro/i);
+  const boton = screen.getByRole('button', { name: /cambiar a tema oscuro/i });
+  expect(boton).toHaveAttribute('aria-pressed', 'false');
+  expect(boton).toHaveTextContent(/tema: claro/i);
 
   await usuario.click(boton);
 
-  expect(screen.getByRole('button', { name: /cambiar a tema oscuro/i })).toHaveAttribute('aria-pressed', 'false');
-  expect(screen.getByText(/tema: claro/i)).toBeInTheDocument();
-  expect(document.documentElement.getAttribute('data-aia-theme')).toBe('light');
+  expect(screen.getByRole('button', { name: /cambiar a tema claro/i })).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByText(/tema: oscuro/i)).toBeInTheDocument();
+  expect(document.documentElement.getAttribute('data-aia-theme')).toBe('dark');
 });
 
 test('el conmutador inicia con la preferencia guardada', () => {

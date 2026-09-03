@@ -303,7 +303,11 @@ registran, persisten, inspeccionan ni adjuntan contraseñas.
 
 ### 10.1 Temas
 
-- Oscuro inicia cuando no hay preferencia; claro y oscuro son completos.
+**Corregido el 2026-09-03 (§16):** esta línea decía «oscuro inicia cuando no hay preferencia»,
+contradiciendo `AGENTS.md` y el manifiesto de diseño. Cedió la spec: es **claro** el que inicia sin
+preferencia guardada.
+
+- Claro inicia cuando no hay preferencia; claro y oscuro son completos.
 - El conmutador T01 está disponible antes de autenticarse.
 - Marca, inputs, avisos, modal y estados usan `public/css/tokens.css`; cero hex/rgba locales.
 - Cambiar tema no borra campos ni reinicia una petición.
@@ -439,13 +443,14 @@ Al aprobarse no quedaba ninguna decisión funcional abierta. El host oculto debe
 acceso React con un error genérico ante cualquier rechazo; la prueba HTTP debe fijar ese resultado sin
 debilitar mantenimiento para simplificar el montaje React.
 
-**Abierta desde la ejecución (2026-09-01), de producto, no técnica:** §10.1 y el plan fijan «oscuro
-inicia cuando no hay preferencia», y así está construido (`frontend/src/shell/tema.ts`,
-`TEMA_FALLBACK = 'oscuro'`; el HTML servido arranca con `data-aia-theme="dark"`). Pero
-`docs/design-system/manifests/auth.json` declara `persistence.theme` = «claro por defecto sin flash»,
-y `AGENTS.md` dice que claro es «la cara del producto y el tema de entrada». Dos de las tres fuentes
-contradicen a esta spec. Decide Felipe cuál cede: si la spec (y entonces cambia el código), o el
-manifiesto y `AGENTS.md` (y entonces se corrige la documentación). No se tocó ninguno de los tres.
+**Resuelta el 2026-09-03, de producto, no técnica.** §10.1 y el plan original fijaban «oscuro inicia
+cuando no hay preferencia», contra `docs/design-system/manifests/auth.json` («claro por defecto sin
+flash») y `AGENTS.md» («claro es la cara del producto y el tema de entrada»). Cedió esta spec, no la
+documentación: `frontend/src/shell/tema.ts` (`TEMA_FALLBACK = 'claro'`) y el script de arranque de
+`frontend/index.html` ya arrancan en claro sin preferencia guardada. Los ocho goldens de
+`login-react.visual.mjs` no cambiaron —cada captura fija su propio tema por `localStorage`, ajeno al
+fallback—, verificado byte a byte contra el build reconstruido. Detalle de la verificación en
+`TASKS.md`.
 
 ## 17. Gate siguiente
 

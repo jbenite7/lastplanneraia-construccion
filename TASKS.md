@@ -214,12 +214,24 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   el escenario `auth-login-dark-1180x820`, que es el golden del login PHP y ya no representa lo que
   sirve `/login`; y quitar `login.view.php` de `auth.json.sources` sin tocar las de S02/S03. Pasos 6–7
   de §12 y tabla de §13 de la spec.
-- [ ] **S01 — decisión de producto: ¿el acceso abre en claro o en oscuro?** Tres fuentes, dos
-  respuestas: la spec S01 §10.1 y el código (`frontend/src/shell/tema.ts`, `TEMA_FALLBACK='oscuro'`)
-  dicen oscuro; `docs/design-system/manifests/auth.json` («claro por defecto sin flash») y
-  `AGENTS.md` («claro es la cara del producto y el tema de entrada») dicen claro. No se tocó ninguna.
-  Si cede la spec, cambia el código y los ocho goldens; si cede la documentación, se corrigen dos
-  archivos. Es de Felipe. Anotado también en la spec, §16.
+- [x] **Resuelto el 2026-09-03: el acceso abre en claro.** Decisión de Felipe, siguiendo la
+  recomendación: `AGENTS.md` («claro es la cara del producto y el tema de entrada», spec de temas
+  2026-08-28) y `docs/design-system/manifests/auth.json` («claro por defecto sin flash») ceden la
+  spec S01 §10.1, no al revés. `TEMA_FALLBACK` en `frontend/src/shell/tema.ts` pasa de `'oscuro'` a
+  `'claro'`; el script de arranque en `frontend/index.html` (evita el flash antes de que React
+  hidrate) se invierte con la misma lógica.
+  **Los ocho goldens NO cambiaron, contra lo que esta entrada suponía.** Cada captura de
+  `login-react.visual.mjs` fija su propio tema explícito vía `localStorage` antes de navegar
+  (`fijarTema()` en `login-react-fixtures.mjs`) — ninguna depende del fallback sin preferencia
+  guardada. Verificado corriendo el spec real con `S01_GOLDENS_APROBADOS=1` contra el build
+  reconstruido: los 8 goldens comparan **byte a byte idénticos** a los ya aprobados. Solo cambia el
+  primer render antes de que exista cualquier preferencia guardada — un caso que ningún golden
+  ejercita.
+  Verificado además: `frontend` — 580/580 tests (con los 18 de `tema.test.ts` actualizados al nuevo
+  fallback), `tsc --noEmit` limpio; `login-react.spec.mjs` — 16/16 (funcional + accesibilidad en
+  ambos temas); `test_login_design_system_contract.mjs` → RC 0; `design-system-static-suite.mjs` →
+  8/8. Build de `public/app/` regenerado y comiteado junto con el cambio (contenido versionado,
+  llega a producción por `git pull`).
 - [ ] **S01 — `auth.json` no declara `consumerContract: "v1"`, y el validador de consumo lo omite en
   silencio.** `scripts/design-system-consumer-contract.mjs:19` devuelve sin comprobar nada cuando
   falta esa clave, y en modo explícito informa `PASS (1 manifiesto/s v1)` contando el archivo que
