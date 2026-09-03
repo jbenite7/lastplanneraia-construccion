@@ -208,6 +208,58 @@ decidido de antemano), y se revirtió por decisión de Felipe. Detalle completo 
 
 ## Bloqueantes
 
+**2026-09-03 — Dos de los gates del carril visual ya cerraron; quedan tres, y uno de ellos es una
+deuda de otros frentes, no del carril.** Frente `fix/carril-visual-verde` (rama en PR),
+continuación de la entrada de abajo. Dos correcciones a esa entrada, medidas al retomarla:
+
+- **No son seis gates bloqueantes, son cinco.** `G_KEYBOARD_REFLOW_EVIDENCE` está excluido a
+  propósito del bucle que decide el veredicto (`.github/workflows/ci.yml:548-554` no lo incluye), y
+  `visual-ci-contract.test.mjs` protege esa exclusión por contrato. Contarlo como bloqueante es
+  sobreestimar el frente.
+- **De los 7 avisos de `G_PHPSTAN_BASELINE`, tres no eran avisos de código: eran excepciones
+  caducadas del propio `phpstan-baseline.neon`.** PHPStan las reportaba como `ignore.unmatched
+  (non-ignorable)` — el patrón de dos ya no calzaba con ningún error real, y el patrón de una tercera
+  (`Database.php`) apuntaba a errores que ya no se producen. La excepción que sobraba era ella misma
+  el error que ponía el gate en rojo. Retirarlas es lo contrario de regenerar un baseline: deja de
+  tolerarse lo que ya no ocurre, no oculta nada nuevo.
+
+**Cerrado en este frente, con `fingerprints: []` intacto (commit `437ad4ea`):**
+- `G_PHPSTAN_BASELINE`: los 7 avisos, en dos clases — las tres excepciones caducadas de arriba, y
+  cuatro reales (`MultiProjectScope::$user`/`$role` sin lectura, un `is_int()` ya estrechado por su
+  propio `@param`, y un `!== false` muerto en `ProgramacionIntermediaController.php:624` sobre un
+  método que hoy lanza o devuelve statement, nunca `false`).
+- `G_PHPSTAN_PDC`: un docblock de una sola línea que juntaba `@param` y `@return` — PHPDoc no lee dos
+  etiquetas en la misma línea, así que el `@return` de `SeguimientoService::activePackageNames()` se
+  perdía entero.
+- Verificado sobre el árbol de la rama, en contenedor efímero: `phpstan analyse src admin/src` y
+  `phpstan -c phpstan-pdc.neon` → `[OK] No errors` los dos (antes 7 y 1); `run-php-tests.php
+  --nivel=puro` → 33/33 + PHPUnit 86 pruebas en verde.
+
+**Diferido, cada uno con su porqué — no entran en este PR:**
+- **`G_PHP_SUITE` sigue en rojo a propósito; solo se arregló lo que era fixture/CI, no scope.**
+  Medido con línea base real: levanté un runtime aislado de `origin/main` (sha `36b731c3`) y otro de
+  esta rama, y antes de tocar nada las listas de scripts que fallan en `--nivel=http` eran
+  **idénticas — 26 en las dos**. El frente de PHPStan no agregaba ni tapaba ningún fallo. De esos 26,
+  la mayoría es deuda preexistente ya repartida en las entradas de abajo (información_schema en 16
+  sitios del runtime servido, la consolidación de informes muerta, los INSERT por lote del PDC
+  contra el guard — esta última con decisión de arquitectura pendiente de Felipe) y **no se toca
+  aquí**: mezclarla en este PR volvería el diff irrevisable y tocaría código de producción fuera de
+  alcance. Dos de los 26 sí eran de fixture/CI, no de scope, y se arreglaron:
+  `.dockerignore` no dejaba viajar `docs/security/` a la imagen (lo audita
+  `test_project_scope_schema_contract.php`, que por eso pasaba en local y fallaba en CI) y
+  `test_bi_project_scope.php` tenía cableados dos project_id (`73, 27`) donde el 27 no es miembro de
+  `test.A` en el fixture aislado de CI — se ató a los proyectos que el propio test ya calcula. Un
+  tercer ajuste salió de arreglar el primero: `test_project_scope_schema_contract.php` nunca
+  imprimía una señal de comprobación en su rama de éxito (siempre había fallado antes, así que esa
+  rama nunca se había ejercitado en el corredor real) y `scripts/run-php-tests.php` lo marcaba
+  SOSPECHOSO. **Reverificado con línea base real tras los tres ajustes:** `--nivel=http` pasa de 76
+  a 78 aprobados, de 26 a 24 fallos y de 1 a 0 sospechosos; la lista de 24 que sigue fallando es
+  subconjunto exacto de los 26 originales — ningún caso nuevo roto (`diff` limpio salvo los dos que
+  se arreglaron).
+- **Los dos gates visuales (`G_FULL_APP_FLOW`, `G_RUNTIME_BUDGET_CHECK`) no tienen línea base en CI
+  desde hace cinco días.** Establecerla puede exigir aprobar capturas o presupuestos nuevos — decisión
+  de Felipe, no de esta sesión.
+
 **2026-09-03 — Seis gates del carril visual están en rojo, y ninguno es de los frentes que los
 destaparon. → Merece frente propio: «poner el carril visual en verde».** El job
 `design-system-runtime` llevaba sin correr desde el 2026-08-29 (primero por el contrato del

@@ -621,7 +621,12 @@ class ProgramacionIntermediaController extends BaseController
                     $nextLinkId = (int) $this->db->queryWithProject("SELECT COALESCE(MAX(Id), 0) + 1 FROM {$linkTable} WHERE project_id = ?", [$projectId], $projectId)->fetchColumn();
                     $insertLinkSql = "INSERT INTO {$linkTable} (project_id, Id, SharedConstraintId, Semana, unique_id, ConsecutivoEnPrograma, ValorAplicado) VALUES (?, ?, ?, ?, ?, ?, ?)";
                     $insertLinkStmt = $this->db->prepareWithProject($insertLinkSql);
-                    $trackSharedLinks = (!empty($sharedIdsByType) && $insertLinkStmt !== false);
+                    // El `&& $insertLinkStmt !== false` que estaba aquí era resto de cuando
+                    // prepare() devolvía false en silencio. `prepareWithProject()` hoy o lanza
+                    // (MissingProjectScope/ProjectScopeViolation, y entonces caemos al catch de
+                    // abajo) o devuelve un statement: nunca false. El caso nulo sigue cubierto
+                    // por el `&& $insertLinkStmt` de :665 y por los valores de :592-593.
+                    $trackSharedLinks = !empty($sharedIdsByType);
                 } catch (\Throwable $trackingError) {
                     $trackSharedLinks = false;
                     $sharedIdsByType = [];
