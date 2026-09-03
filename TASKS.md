@@ -236,14 +236,15 @@ continuación de la entrada de abajo. Dos correcciones a esa entrada, medidas al
   --nivel=puro` → 33/33 + PHPUnit 86 pruebas en verde.
 
 **Diferido, cada uno con su porqué — no entran en este PR:**
-- **`G_PHP_SUITE` no se toca desde este frente.** Medido con línea base real: levanté un runtime
-  aislado de `origin/main` (sha `36b731c3`) y otro de esta rama, y las listas de scripts que fallan
-  en `--nivel=http` son **idénticas — 26 en las dos**. El frente de PHPStan no agrega ni tapa ningún
-  fallo; la deuda es preexistente y ya está repartida en las entradas de abajo (información_schema
-  en 16 sitios del runtime servido, la consolidación de informes muerta, los INSERT por lote del PDC
-  contra el guard — esta última con decisión de arquitectura pendiente de Felipe). Mezclar ese
-  arreglo en este PR volvería el diff irrevisable y tocaría código de producción fuera de alcance.
-  Dos hallazgos menores sí se arreglaron en la rama porque no son de scope, sino de fixture/CI:
+- **`G_PHP_SUITE` sigue en rojo a propósito; solo se arregló lo que era fixture/CI, no scope.**
+  Medido con línea base real: levanté un runtime aislado de `origin/main` (sha `36b731c3`) y otro de
+  esta rama, y antes de tocar nada las listas de scripts que fallan en `--nivel=http` eran
+  **idénticas — 26 en las dos**. El frente de PHPStan no agregaba ni tapaba ningún fallo. De esos 26,
+  la mayoría es deuda preexistente ya repartida en las entradas de abajo (información_schema en 16
+  sitios del runtime servido, la consolidación de informes muerta, los INSERT por lote del PDC
+  contra el guard — esta última con decisión de arquitectura pendiente de Felipe) y **no se toca
+  aquí**: mezclarla en este PR volvería el diff irrevisable y tocaría código de producción fuera de
+  alcance. Dos de los 26 sí eran de fixture/CI, no de scope, y se arreglaron:
   `.dockerignore` no dejaba viajar `docs/security/` a la imagen (lo audita
   `test_project_scope_schema_contract.php`, que por eso pasaba en local y fallaba en CI) y
   `test_bi_project_scope.php` tenía cableados dos project_id (`73, 27`) donde el 27 no es miembro de
