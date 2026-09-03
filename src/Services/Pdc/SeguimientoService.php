@@ -668,7 +668,10 @@ class SeguimientoService
         ];
     }
 
-    /** @param list<int> $packageIds @return array<int, string> */
+    /**
+     * @param list<int> $packageIds
+     * @return array<int, string>
+     */
     private function activePackageNames(array $packageIds): array
     {
         $packageIds = array_values(array_unique(array_filter($packageIds, static fn(int $id): bool => $id > 0)));
