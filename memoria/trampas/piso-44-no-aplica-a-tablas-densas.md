@@ -9,7 +9,7 @@ resumen: "El piso táctil no es 44px en todas partes: en tablas densas desktop D
 ---
 # El piso de 44px no aplica plano: las tablas densas tienen 24 por excepción registrada
 
-`DESIGN.md:714` («Excepción al mínimo de 44 px») baja el suelo a **24×24px** —el mínimo real de
+`DESIGN.md:869` («Excepción al mínimo de 44 px») baja el suelo a **24×24px** —el mínimo real de
 WCAG 2.2 SC 2.5.8 (AA)— en la familia de tablas densas desktop (`/programa-general`,
 `/programacion-intermedia`, `/programacion-semanal`, `/pdc`, `/plan-compras`), porque el criterio de
 44 protege el acierto del dedo sobre un cristal y esa familia está fuera del alcance móvil por

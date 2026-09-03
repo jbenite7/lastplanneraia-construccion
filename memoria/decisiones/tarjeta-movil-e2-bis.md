@@ -4,7 +4,7 @@ tipo: decision
 estado: vigente
 fecha: 2026-08-14
 areas: [lps, design-system]
-fuente: "docs/superpowers/specs/2026-08-07-f2a-piloto-movil-programacion-design.md (adenda del 2026-08-14); verificado contra public/js/modules/programacion_semanal/hot.js:3651 y public/js/modules/programacion_intermedia/hot.js:4918"
+fuente: "docs/superpowers/specs/2026-08-07-f2a-piloto-movil-programacion-design.md (adenda del 2026-08-14); verificado contra public/js/modules/programacion_semanal/hot.js:3642 y public/js/modules/programacion_intermedia/hot.js:4917 (líneas re-medidas el 2026-09-03)"
 resumen: "Bajo 1180px, Semanal e Intermedia pintan tarjetas con la misma forma: cinco elementos en la cara visible y el resto en un desplegable nombrado por su contenido"
 ---
 # La tarjeta móvil de programación (E2-bis)
@@ -30,26 +30,29 @@ De ahí salen los cinco elementos de la cara visible, iguales en ambos módulos:
 | Responsable AIA | En obra se busca por persona antes que por actividad, y desplegar solo para saber a quién reclamar era el gesto más repetido. |
 
 Lo demás vive en un `<details>` **nombrado por su contenido**, no por «ver más»: «Ver fechas y
-presupuesto» en Semanal (`hot.js:3501`) y «Liberar restricciones» en Intermedia (`hot.js:4376`).
+presupuesto» en Semanal (`hot.js:3674`) y «Liberar restricciones» en Intermedia (`hot.js:4860`).
+*(Las líneas de esta página se re-midieron el 2026-09-03: los dos `hot.js` crecieron desde el
+2026-08-14 y todas las citas habían derivado; el contenido que describen sigue igual.)*
 
 ## La línea de foco ya estaba calculada
 
 El dato del foco **no hubo que inventarlo**: ya se computaba y hasta entonces solo se entregaba al
 lector de pantalla, mientras la tarjeta visible pintaba nada más el número. **Quien veía la pantalla
 obtenía menos que quien la escuchaba.** Hoy se pinta en las dos: `.ps-mobile-foco`
-(`programacion_semanal/hot.js:3488`, solo cuando el estado no es `ready`) y `.pi-mobile-card__foco`
-con «Faltan …» (`programacion_intermedia/hot.js:4489`).
+(`programacion_semanal/hot.js:3660`, solo cuando el estado no es `ready`) y `.pi-mobile-card__foco`
+con «Faltan …» (`programacion_intermedia/hot.js:4970`).
 
 ## En qué se diferencian los dos módulos
 
 - **Semanal edita en la cara visible**, de un toque, porque capturar el compromiso en obra no puede
   costar un despliegue. El campo editable **cambia con la fase**: en calificación es el avance real;
-  en programación, el compromiso (`hot.js:3495-3500`).
+  en programación, el compromiso (`hot.js:3663-3681`, dentro de `renderMobileCard`).
 - **Intermedia edita dentro del desplegable**, y ahí está el cambio de fondo: sus tarjetas eran de
   solo lectura y **no mostraban ninguna de las siete restricciones**, que son para lo que existe el
-  módulo. Hoy las libera desde el móvil (`construirDetalleRestricciones`, `hot.js:4370`).
+  módulo. Hoy las libera desde el móvil (`construirDetalleRestricciones`, `hot.js:4854`).
 - **El candado I4 se ve en móvil por primera vez**: sin Responsable AIA asignado, las restricciones
-  quedan bloqueadas, y el listener móvil lo comprueba por su cuenta (`hot.js:4558`) en vez de
+  quedan bloqueadas, y el listener móvil lo comprueba por su cuenta (`tieneResponsable` en
+  `hot.js:4893`, dentro de `construirDetalleRestricciones`) en vez de
   confiar en que la UI ya lo impedía. Las reglas no se replicaron: se consumen de
   `public/js/modules/aia_ui/enablement-rules.js`.
 

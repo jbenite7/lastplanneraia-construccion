@@ -72,7 +72,10 @@ que creías hacer.
   `docker-compose.yml` lo dice y explica por qué; está puesto para frenar exactamente esta idea.
 - **Enlaza el `.env` de la raíz en cada worktree nuevo** (enlace, nunca copia), como documenta
   `CLAUDE.md`. Eso es lo que hace que la interpolación resuelva bien desde cualquier sitio, y cubre
-  a la vez al servicio `db`, que necesita `${DB_PASS}` para su healthcheck.
+  a la vez al servicio `db`, que necesita `${DB_ADMIN_PASS}` (root, es la del healthcheck) y
+  `${DB_RUNTIME_USER}`/`${DB_RUNTIME_PASS}` (usuario de aplicación). Corregido el 2026-09-03: no
+  hay clave `.env` llamada `DB_PASS`; ese nombre solo existe como variable de destino en el
+  `environment:` de `app` (`DB_PASS: ${DB_RUNTIME_PASS}`, `docker-compose.yml:29`).
 - **Al tocar configuración del contenedor, verifica las DOS vías**: navegador *y*
   `docker compose exec app php tests/test_*.php`. Una sola no cubre a la otra.
 - Si algún día quiere hacerse independiente del bloque, lo que toca es que el CLI cargue Dotenv,
