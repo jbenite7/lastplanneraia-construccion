@@ -1,13 +1,23 @@
 ---
 capa: wiki
 tipo: trampa
-estado: vigente
+estado: derogada
 fecha: 2026-08-19
 areas: [proceso, docker]
 fuente: publicación de 6abe2436, 2026-08-19
-resumen: "El aislamiento de scripts/publicar.sh deja sin contenedor al proyecto compose, y foundation.test.mjs cae al camino lento hasta reventar el tope de 180 s"
+resumen: "Derogada el 2026-09-03: el aislamiento por COMPOSE_PROJECT_NAME que describe se retiró el mismo 2026-08-19; hoy publicar.sh no se aísla, comprueba qué monta el contenedor compartido y deniega si no es el árbol verificado"
 ---
 # `publicar.sh` se aísla, y en el worktree principal eso lo rompe
+
+> **Derogada el 2026-09-03 (pase de veracidad).** El mecanismo que esta página describe —exportar
+> `COMPOSE_PROJECT_NAME="lps-aia-publicar-<sha>"`— **ya no existe en el script**: se retiró el mismo
+> 2026-08-19, y `scripts/publicar.sh:28-30` lo cuenta en su propio comentario. Lo vigente es lo
+> contrario: el script **no se aísla**, comprueba qué árbol monta el contenedor `app` compartido
+> (`scripts/publicar.sh:41-78`) y deniega con `RC=1` si no coincide, con el remedio impreso. Eso lo
+> describe [[publicar-sh-choca-con-dos-worktrees-verificando]], que es la página a leer. Esta se
+> conserva porque el diagnóstico de abajo —un proyecto compose vacío hace que `foundation.test.mjs`
+> caiga al camino lento y reviente el tope— sigue siendo la razón de que el aislamiento se
+> descartara.
 
 `scripts/publicar.sh` exporta `COMPOSE_PROJECT_NAME="lps-aia-publicar-<sha>"` y
 `LPS_CODE_ROOT="$PWD"` antes de verificar. Lo hace por una razón buena y medida el 2026-08-18: sin

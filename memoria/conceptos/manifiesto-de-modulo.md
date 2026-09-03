@@ -15,17 +15,20 @@ La forma la fija `module-manifest.schema.json` — que entre otras cosas exige `
 menos una entrada y capturas `golden` con su `sha256` (ver
 [[manifiesto-ds-exige-golden]]).
 
-**No es documentación: es contrato con gate.** `scripts/design-system-contracts.mjs:240-259` y
-`:289-300` verifican que cada componente declarado exista en el catálogo, cada vendor en
-`vendors.json`, y cada test **en disco**. Declarar un consumo inexistente rompe el gate estático;
+**No es documentación: es contrato con gate.** `scripts/design-system-contracts.mjs:696-701` y
+`:896-906` verifican que cada componente declarado exista en el catálogo, cada vendor en
+`vendors.json`, y cada test **en disco** (líneas del 2026-09-03: el script pasó de ~400 a 1.244
+líneas con los frentes de tema claro y forma, así que las citas viejas `:240-259` y `:289-300`
+apuntaban a otra cosa). Declarar un consumo inexistente rompe el gate estático;
 consumir sin declarar deja al módulo fuera del censo que los scripts de partición de entrypoints
 usan para decidir qué CSS sirve cada superficie
 (`scripts/design-system-entrypoint-partition.mjs:312-336`).
 
-Dos manifiestos tienen papel especial, y el gate los lista por nombre
-(`design-system-contracts.mjs:33-34`):
+Dos manifiestos tienen papel especial, y el gate los aísla por `moduleId`
+(`design-system-contracts.mjs:683` para el piloto, `:1152-1153` para el laboratorio; ya no
+aparecen por nombre de archivo en la lista `required` de `:31`, corregido el 2026-09-03):
 
-- `programa-general.json` — el **piloto**: sus escenarios se validan uno a uno (`:340-358`).
+- `programa-general.json` — el **piloto**: sus escenarios se validan uno a uno (`:1162-1169`).
 - `laboratory.json` — el laboratorio, que declara `operational-fixtures.json` como fuente.
 
 El resto de la familia sigue la regla general, incluidos los dos que no corresponden a un módulo
@@ -37,7 +40,7 @@ primitivas BI compartidas).
 - `closeout-evidence.json` — las **nueve gates de cierre** (quince hasta el 2026-08-11, ocho hasta el 2026-08-14, nueve desde que entró `semanal-roles-phases`), cada
   una `blocking`, con fecha y evidencia. Es lo que activa la garantía 1.0.0 (ver
   [[madurez-y-api-estable]]). Ojo: el gate que las lee
-  (`tests/design-system/release-governance.test.mjs:75-76`) comprueba `gates.length === 8`,
+  (`tests/design-system/release-governance.test.mjs:79-80`) comprueba `gates.length === 8`,
   `blocking === true` y `evidence.length > 0`, **nunca el contenido** del array — corregido el
   2026-08-10 tras medir que 14 de los recibos eran stubs de dos claves. Y **ya no exige
   `status: 'passed'`**: `D-F1b-5` retiró ese acoplamiento el 2026-08-11 y hoy uno de los ocho está
@@ -46,7 +49,7 @@ primitivas BI compartidas).
 - `closeout-evidence.json` — los **nueve gates de cierre** (quince hasta el Frente 1b, ocho hasta el 2026-08-14), cada
   uno `blocking` y con evidencia. Es lo que activa la garantía 1.0.0 (ver
   [[madurez-y-api-estable]]). El gate que los cuenta
-  (`tests/design-system/release-governance.test.mjs:75-77`) exige la lista completa y bloqueante,
+  (`tests/design-system/release-governance.test.mjs:79-80`) exige la lista completa y bloqueante,
   **ya sin `passed` obligatorio** (D-F1b-5, 2026-08-11), y el contenido de cada recibo lo abre
   `tests/design-system/gate-receipt-content.test.mjs` — el hueco de los 14 stubs medido el
   2026-08-10 está cerrado; ver [[gate-solo-cuenta-elementos-no-los-lee]].

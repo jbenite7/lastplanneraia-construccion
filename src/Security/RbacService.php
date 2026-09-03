@@ -249,27 +249,24 @@ class RbacService
         return $map;
     }
 
+    /**
+     * Delega en Database::tableExists(), que lee `information_schema` por fuera del gate de scope.
+     *
+     * Antes armaba la consulta aquí y envolvía el intento en un catch que devolvía false. Desde el
+     * 2026-08-29 ProjectSqlGuard rechaza las tablas calificadas por schema, así que ese catch
+     * empezó a tragarse un DomainException en todas las llamadas: la tabla existía, pero este
+     * método respondía que no, resolveRoleFromProjectMembers() devolvía null y el rol acababa en
+     * RbacCatalog::DEFAULT_ROLE ('C'). Un administrador quedaba con permisos de subcontratista sin
+     * un solo mensaje de error. Un fallo al leer metadatos ya no se disfraza de «no existe»: se
+     * propaga, porque una decisión de autorización no puede apoyarse en una respuesta inventada.
+     */
     private function tableExists(string $tableName): bool
     {
         if (isset($this->tableExistsCache[$tableName])) {
             return $this->tableExistsCache[$tableName];
         }
 
-        $sql = "SELECT COUNT(*) AS total
-                FROM information_schema.tables
-                WHERE table_schema = DATABASE()
-                  AND table_name = ?";
-
-        $exists = false;
-        try {
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([$tableName]);
-            $row = $stmt->fetch();
-            $exists = ((int) ($row['total'] ?? 0) > 0);
-        } catch (\Throwable $e) {
-            $exists = false;
-        }
-
+        $exists = $this->db->tableExists($tableName);
         $this->tableExistsCache[$tableName] = $exists;
 
         return $exists;

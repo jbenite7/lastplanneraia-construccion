@@ -32,6 +32,9 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 | --- | --- | --- |
 | GET | `/_aia/operacion/7f3c9b` | `App\Controllers\Auth\LoginController::index` |
 | POST | `/_aia/operacion/7f3c9b` | `App\Controllers\Auth\LoginController::maintenanceLogin` |
+| POST | `/api/auth/login` | `App\Controllers\Api\AuthApiController::login` |
+| POST | `/api/auth/logout` | `App\Controllers\Api\AuthApiController::logout` |
+| GET | `/api/session` | `App\Controllers\Api\SessionApiController::show` |
 | GET | `/dev/entrar` | `App\Controllers\Core\DevDoorController::enter` |
 | GET | `/` | `App\Controllers\Auth\LoginController::index` |
 | GET | `/login/cancelar` | `App\Controllers\Auth\LoginController::cancelPasswordChange` |
@@ -45,12 +48,16 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 | POST | `/password/update` | `App\Controllers\Auth\LoginController::updatePassword` |
 
 ### Controladores
+- `App\Controllers\Api\AuthApiController`
+- `App\Controllers\Api\SessionApiController`
 - `App\Controllers\Auth\LoginController`
 - `App\Controllers\Auth\PasswordResetController`
 - `App\Controllers\Core\DevDoorController`
 
 ### Servicios
+- `AuthenticationService`
 - `PasswordResetService`
+- `ProjectAccessService`
 - `UserPasswordService`
 
 ### Tablas

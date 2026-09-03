@@ -651,7 +651,12 @@ if ($failures !== []) {
 }
 
 if ($schemaFindings === []) {
-    echo "Sin hallazgos.\n";
+    // "OK" explicito: `scripts/run-php-tests.php` marca SOSPECHOSO un rc=0 cuyo texto no
+    // contiene ninguna de sus señales de comprobación (pass/pasa:/ok/comprobación/✓/correcto).
+    // "Sin hallazgos." solo no calificaba, y antes del 2026-09-03 este test siempre fallaba
+    // (ABORT por el documento de frontera runtime ausente en la imagen de CI), así que la
+    // rama de éxito nunca se habia ejercitado en el corredor real.
+    echo "OK: sin hallazgos.\n";
 } elseif ($mode === '--audit') {
     echo 'Hallazgos auditados: ' . count($schemaFindings) . " (audit no bloquea).\n";
 } else {

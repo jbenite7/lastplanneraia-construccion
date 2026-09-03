@@ -21,20 +21,12 @@ parameters:
 			count: 1
 			path: src/Core/Database.php
 
-		# Redundancias reales, sin efecto en ejecucion, en la capa de datos. Se anotan
-		# porque el riesgo de editarlas no compensa el de dejarlas: un cambio erroneo
-		# aqui no da error, da datos de otro proyecto.
-		-
-			message: '#^Call to function in_array\(\) with arguments ''DELETE''\|''SELECT''\|''UPDATE'', array\{''SELECT'', ''UPDATE'', ''DELETE''\} and true will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: src/Core/Database.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: src/Core/Database.php
+		# Aqui vivian dos anotaciones mas de `src/Core/Database.php` —el `in_array()` ya
+		# estrechado y un `Unreachable statement`—. Se RETIRAN el 2026-09-03 porque los dos
+		# errores ya no se producen: la propia capa de datos cambio y PHPStan los reportaba
+		# como `ignore.unmatched (non-ignorable)`, es decir, la excepcion caducada era ella
+		# misma un error que ponia el gate en rojo. Retirar una excepcion que sobra no es
+		# regenerar un baseline: es lo contrario, deja de tolerarse lo que ya no ocurre.
 
 		# Legado: AGENTS.md manda corregir la causa con el cambio minimo y no
 		# modernizar el area. Anotada hasta que algo mas la obligue a cambiar.
@@ -157,12 +149,12 @@ parameters:
 			count: 1
 			path: src/Controllers/Gestion/ReportController.php
 
-		-
-			message: '#^Strict comparison using \!\=\= between PDOStatement and false will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: src/Controllers/Programacion/ProgramacionIntermediaController.php
-
+		# Retirada el 2026-09-03 junto con la comparacion que la motivaba. El patron decia
+		# `PDOStatement and false` y el mensaje real ya decia
+		# `DatabasePreparedStatement|PDOStatement and false`, asi que la excepcion no
+		# casaba y salia como `ignore.unmatched`. En vez de reescribir el patron se quito
+		# el `!== false` de :624, que era codigo muerto: `prepareWithProject()` lanza o
+		# devuelve statement, nunca false. Una causa menos, dos errores menos.
 		-
 			message: '#^Variable \$nextLinkId might not be defined\.$#'
 			identifier: variable.undefined
@@ -194,7 +186,7 @@ parameters:
 			path: src/Core/Database.php
 
 		-
-			message: '#^Cannot call method query\(\) on class\-string\|object\.$#'
+			message: '#^Cannot call method tablesWithColumn\(\) on class\-string\|object\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Core/Lps/LpsService.php
@@ -236,7 +228,7 @@ parameters:
 			path: src/Legacy/nueva_semana.php
 
 		-
-			message: '#^Cannot call method query\(\) on class\-string\|object\.$#'
+			message: '#^Cannot call method tablesWithColumn\(\) on class\-string\|object\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Legacy/productividad_temporal.php

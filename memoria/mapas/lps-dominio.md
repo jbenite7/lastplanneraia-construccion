@@ -50,7 +50,7 @@ Los módulos LPS usan Handsontable. La altura de `#hot-container` la resuelve Ja
 **La regla la aplica el servidor**, y es la que el producto quiere:
 `SemanalReabrirPolicy::allows($role, $fechaInicioSemana)` guarda dentro de
 `SemanalApiController::reabrir()` y responde 403 antes de mutar nada
-(`src/Controllers/Api/SemanalApiController.php:1004`). Reabren Admin y Director siempre; el
+(`src/Controllers/Api/SemanalApiController.php:1003-1004`). Reabren Admin y Director siempre; el
 Residente solo hasta el fin del día de inicio de la semana; cualquier otro rol, nunca.
 
 **Corregido el 2026-08-18.** Aquí decía en presente que cliente y servidor no aplicaban la misma

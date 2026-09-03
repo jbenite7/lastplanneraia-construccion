@@ -14,19 +14,22 @@ export const MODULOS = [
     titulo: 'Autenticación',
     areas: ['rbac', 'arquitectura'],
     flujo: null,
-    rutas: ['/', '/login', '/logout', '/password', '/dev/entrar', '/_aia/operacion/7f3c9b'],
+    rutas: ['/', '/login', '/logout', '/password', '/dev/entrar', '/_aia/operacion/7f3c9b',
+      '/api/session', '/api/auth'],
     capacidades: [],
     nota: 'La puerta de servicio /dev/entrar solo se registra en desarrollo. '
       + '/_aia/operacion/7f3c9b es la ruta secreta de acceso en mantenimiento '
       + '(MaintenanceMode::SECRET_PATH, ver src/Core/MaintenanceMode.php); '
-      + 'sirve el mismo LoginController.',
+      + 'sirve el mismo LoginController. '
+      + '/api/session y /api/auth/* son la sesión JSON del shell React (2026-08-28): '
+      + 'SessionApiController y AuthApiController.',
   },
   {
     slug: 'selector-de-proyectos',
     titulo: 'Selector de proyectos',
     areas: ['rbac', 'arquitectura'],
     flujo: null,
-    rutas: ['/proyectos', '/proyecto'],
+    rutas: ['/proyectos', '/proyecto', '/api/proyectos'],
     capacidades: [],
     nota: '',
   },

@@ -2,20 +2,22 @@
 capa: wiki
 tipo: goal
 estado: vigente
-fecha: 2026-08-25
+fecha: 2026-09-03
 areas: [proceso]
 tags: [dashboard]
-fuente: los 63 `goals/<slug>/goal.md` recontados el 2026-08-25 en el pase de veracidad, más `git ls-files` y el lint de la wiki
-resumen: "Estado de los 63 goals del repo, leído de la sección `## Cierre` de cada goal.md: 58 cerrados y 5 abiertos"
+fuente: los 65 `goals/<slug>/goal.md` recontados el 2026-09-03 en el pase de veracidad, más `git ls-files` y el lint de la wiki
+resumen: "Estado de los 65 goals del repo, leído de la sección `## Cierre` de cada goal.md: 59 cerrados y 6 abiertos"
 ---
 # Estado de los goals
 
-**Corte del 2026-08-25**, recontado goal por goal en el pase de veracidad. El del 2026-08-19 daba
-42 cerrados y 13 abiertos sobre 56 carpetas; hoy son **58 y 5 sobre 63**. Y el del 2026-08-10
-describía 26 carpetas cuando ya había 56 — nueve días y treinta goals de desfase, en la página que
-existe justo para responder «¿dónde quedó X?». **Es la tercera vez que esta página envejece por el
-mismo motivo**, así que conviene decirlo aquí: su cifra caduca en días, no en semanas, y el pase de
-veracidad es lo único que la mantiene honesta.
+**Corte del 2026-09-03**, recontado goal por goal en el pase de veracidad. El del 2026-08-25 daba
+58 cerrados y 5 abiertos sobre 63 carpetas; hoy son **59 y 6 sobre 65**: entraron
+`temas-y-forma-fase-cero` (2026-08-28, ya cerrado) y `paridad-shell-react-rls` (2026-08-29, abierto).
+El del 2026-08-19 daba 42 y 13 sobre 56, y el del 2026-08-10 describía 26 carpetas cuando ya había
+56 — nueve días y treinta goals de desfase, en la página que existe justo para responder «¿dónde
+quedó X?». **Es la cuarta vez que esta página envejece por el mismo motivo**, así que conviene
+decirlo aquí: su cifra caduca en días, no en semanas, y el pase de veracidad es lo único que la
+mantiene honesta.
 
 La fuente sigue siendo `goals/<slug>/`; esta página solo lo resume. **La regla de lectura es una:
 un goal está cerrado si su `goal.md` tiene una sección `## Cierre` con contenido** —salida de
@@ -29,14 +31,14 @@ Para las **fases de los cuatro programas y los pendientes vivos**, [[TASKS]], qu
 
 | | Cuántos | Qué significa |
 |---|---|---|
-| **Cerrados** | 58 | `## Cierre` con evidencia. Incluye 1 retirado y 1 descartado |
-| **Abiertos** | 5 | objetivo redactado, sin cierre |
+| **Cerrados** | 59 | `## Cierre` con evidencia. Incluye 1 retirado y 1 descartado |
+| **Abiertos** | 6 | objetivo redactado, sin cierre |
 | **Plantilla** | 0 | ya no queda ninguna |
 
-*(Recuento del **2026-08-25**, pase de veracidad, con
-`for d in goals/*/; do grep -q '^## Cierre' $d/goal.md; done`: **63 carpetas, 58 con cierre, 5 sin
-él, 0 sin `goal.md`**. La tabla anterior decía 42/13/1, cifras del corte del 2026-08-19 que
-envejecieron seis días — y sumaban 56, no 63.)*
+*(Recuento del **2026-09-03**, pase de veracidad, con
+`for d in goals/*/; do grep -q '^## Cierre' $d/goal.md; done`: **65 carpetas, 59 con cierre, 6 sin
+él, 0 sin `goal.md`**. La tabla anterior decía 58/5 sobre 63, corte del 2026-08-25 que envejeció
+nueve días; la de antes, 42/13/1 del 2026-08-19, sumaba 56.)*
 
 **Eran 56 goals y 10 plantillas hasta el 2026-08-19.** Ocho de esas plantillas recibieron su
 objetivo y su cierre con evidencia re-medida ese día, y una carpeta —`a187ccda`— se borró por no ser
@@ -55,7 +57,11 @@ un frente. **La última que quedaba, `apply-recalculo-estados`, ya tiene su `## 
 > **Segundo recorte, 2026-08-25 (pase de veracidad): ahora son 58 de 63.** Salieron
 > `runtime-budgets-al-ci` y `gates-al-ci`, que cerraron el 2026-08-24 vía Plan P2 y esta tabla
 > seguía dando por abiertos — uno como «activo» y el otro como «pausado». **Ninguno de los cinco que
-> quedan está esperando trabajo ajeno: a tres les falta solo escribir su cierre.**
+> quedaban está esperando trabajo ajeno: a tres les falta solo escribir su cierre.**
+>
+> **Tercer recorte, 2026-09-03 (pase de veracidad): 59 de 65.** No salió ninguno; entraron dos:
+> `temas-y-forma-fase-cero` ya con cierre, y `paridad-shell-react-rls`, abierto y **en curso**, que
+> esta página no mencionaba. Es el único de los seis con trabajo activo de verdad.
 
 
 | Goal | Estado |
@@ -65,6 +71,7 @@ un frente. **La última que quedaba, `apply-recalculo-estados`, ya tiene su `## 
 | [[goals/reapertura-movil-y-tema-claro/goal\|reapertura-movil-y-tema-claro]] | **Abierto**, 4 de 7 fases cerradas (MO-F1, F2a-1, F2a-2a, F2a-2b). Quedan F2b —los 13 módulos restantes— y F3 —tema claro—; F4 se absorbió en DS-F3. **Su spec se derogó el 2026-08-25** a favor de P4, que ejecuta la decisión D-9 de Felipe: el trabajo vive ahí, no aquí |
 | [[goals/vocabulario-estados-cascada/goal\|vocabulario-estados-cascada]] | **Ya no está «en replanteo»: sus cuatro decisiones se resolvieron el 2026-08-11** (D-VOC-1 a D-VOC-4, `docs/decisiones-pendientes.md`), y su trabajo mecánico —35→29 términos en Intermedia— está en el código. Lo que decía «en replanteo» era una copia de la cola sin sincronizar. Falta **escribir su cierre**, y ejecutar D-VOC-4 (separar `Capítulo`) en frente propio, porque toca datos persistidos. Su aclaración clave sigue valiendo: [[programa-general-actualizar-es-otra-herramienta]] |
 | [[goals/organizar-la-casa/goal\|organizar-la-casa]] | **Ejecutado y sin cierre escrito** (2026-08-20): las siete reglas viven en [[docs/coordinacion-sesiones]] y `AGENTS.md` las referencia. Por la regla de lectura cuenta como abierto |
+| [[goals/paridad-shell-react-rls/goal\|paridad-shell-react-rls]] | **Abierto y en curso desde el 2026-08-29**: paridad funcional del shell React y aislamiento fail-closed por proyecto (RLS). Spec: `docs/superpowers/specs/2026-08-28-paridad-shell-react-rls-design.md`. Es el único de los seis con trabajo activo; entró sin que esta página lo registrara hasta el 2026-09-03 |
 
 ## Cerrados
 

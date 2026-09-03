@@ -28,14 +28,17 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 ### Rutas
 | Verbo | Ruta | Destino |
 | --- | --- | --- |
+| POST | `/api/proyectos/seleccionar` | `App\Controllers\Api\ProjectApiController::select` |
+| GET | `/api/proyectos` | `App\Controllers\Api\ProjectApiController::index` |
 | POST | `/proyecto/seleccionar` | `App\Controllers\Core\ProjectSelectorController::select` |
 | GET | `/proyectos` | `App\Controllers\Core\ProjectSelectorController::index` |
 
 ### Controladores
+- `App\Controllers\Api\ProjectApiController`
 - `App\Controllers\Core\ProjectSelectorController`
 
 ### Servicios
-- `ProjectLandingService`
+- `ProjectAccessService`
 
 ### Tablas
 - `general_proyectos_procesos`

@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-09-02
+updated: 2026-09-03
 ---
 
 # Tareas
@@ -108,16 +108,86 @@ vivas en `main`**, medidas con petición HTTP real contra el stack local:
   El detector que produjo estos números fue temporal y no quedó en el repo. Convertirlo en prueba con
   una línea base congelada es una opción, pero hoy saldría en rojo con estos 16 y hay que arreglarlos
   antes de fijar la línea.
-- [ ] **Los INSERT por lote del PDC revientan con «INSERT de múltiples filas no tiene una prueba de
-  scope soportada».** El guard rechaza de plano el INSERT multifila; los servicios del PDC los usan a
-  propósito, por rendimiento (`array_fill(0, count($lote), '(?, ?, …)')` aparece en
-  `MaestroInsumosService`, `PaquetesService`, `SubpaquetesService`, `SeguimientoService`,
-  `PlanFechasService`). **Hay decisión de arquitectura de por medio, no es un parche:** o se le enseña
-  al guard a validar el INSERT multifila —que es donde está el hueco— o se reescriben los lotes fila a
-  fila y se pierde el rendimiento que motivó escribirlos así. No se auditaron los 46 sitios que usan
-  ese patrón en `src/`; solo se confirmó que al menos uno del PDC revienta en caliente.
-- [ ] **Siete errores de PHPStan en `src`**, uno de ellos por una entrada obsoleta del propio
-  `phpstan-baseline.neon` (`ignore.unmatched`). Preexistentes, sin relación de causa con lo anterior.
+- [x] **Arreglado el 2026-09-03: el guard ya valida el INSERT multifila del PDC.** Decisión de
+  Felipe: enseñarle al guard, acotado a que todas las filas del lote compartan el `project_id` del
+  `ProjectScope` activo — no reescribir los lotes fila a fila. La restricción resultó gratis: `
+  guardInsert()` nunca recibe `MultiProjectScope` (el guard de escritura no lo acepta), así que
+  "todas las filas de la misma obra" ya lo garantizaba el tipo de `$scope`, no hubo que agregar una
+  comprobación aparte.
+  `ProjectSqlGuard::guardInsertValues()` (`src/Security/DataScope/ProjectSqlGuard.php`) parseaba una
+  sola tupla de `VALUES` y rechazaba en cuanto veía una coma después. Ahora `collectInsertValueRows()`
+  recolecta todas las tuplas de nivel superior y aplica, por cada una, la misma validación que antes
+  corría una vez: inyecta o verifica el placeholder de `project_id`.
+
+  **Dos rondas: implementación, luego revisión (general + seguridad) en paralelo, luego una segunda
+  ronda que arregló lo que la revisión encontró.** Verdicto de las dos: aprobado, sin críticos ni
+  altos — ninguna vía de fuga probada tras un ataque adversarial de la revisora de seguridad (~40
+  INSERT multifila a mano + un corpus diferencial de 8.414 casos de una fila, comparando byte a byte
+  contra el commit anterior). Tres hallazgos MEDIUM, los tres arreglados aquí antes de cerrar:
+  - **El recorrido de parámetros era O(filas × tokens), no O(tokens).** `positionalPlaceholderCountBefore()`
+    y `assertScopePlaceholder()` recontaban `$tokens` desde cero en CADA fila. Medido por la
+    revisora: 800→3200 filas escalaba 3,7× en vez de lineal. Arreglado con un solo recorrido de
+    `$tokens` que precomputa cuántos placeholders preceden a cada token, compartido entre todas las
+    filas — en las dos ramas del método (la explícita, que es la que de verdad usan los cinco
+    servicios del PDC, no solo la de inyección). Medido después: la rama de inyección pasó a casi
+    lineal (800→3200: 4,1×); la rama explícita mejoró de una curva peor a ~3,4× en el mismo tramo —
+    sigue habiendo un residuo por debajo de lineal perfecto (probablemente el costo constante de
+    pasar arrays de decenas de miles de elementos por PHP, no un segundo bug algorítmico), pero a la
+    escala real (lotes de 200 filas) el costo es trivial en cualquiera de los dos casos y perseguir
+    ese residuo era exceder el alcance acotado que decidió Felipe.
+  - **El `array_splice` en orden inverso solo era correcto porque el valor inyectado es siempre el
+    mismo.** Dos filas sin placeholders entre sí producían el mismo índice de inserción; el
+    `rsort()` + `array_splice()` repetido daba el resultado correcto únicamente porque ambas
+    inserciones escriben el mismo `$scope->projectId()`, no porque el algoritmo lo garantizara. La
+    revisora lo calificó de "cheap insurance on a row-level-security boundary": si algún día una
+    fila necesitara un valor distinto, el fallo sería escribir en la obra equivocada en silencio, no
+    un error visible. Reemplazado por un solo recorrido hacia adelante que construye el nuevo array
+    de parámetros en el mismo orden en que aparecen las filas — el orden queda fijado por
+    construcción, ya no por la coincidencia de que los valores sean iguales.
+  - **Cobertura de pruebas insuficiente para los casos adversariales.** Sumadas seis pruebas más:
+    rechazo cuando solo la fila 3 de 3 trae otra obra (no solo la 2 de 2); un literal o expresión en
+    la posición de `project_id` en una fila que no es la primera (dos variantes, fila 2 y fila 3);
+    inyección con conteo de placeholders desparejo entre filas, incluida una fila sin ningún
+    placeholder propio (el caso que expondría un error de uno-por-uno en el recorrido hacia
+    adelante); y dos casos de "falla cerrado" ante separadores malformados (`VALUES (?,?), x` y coma
+    final sin tupla).
+
+  TDD en las dos rondas: tests primero. Primera ronda — tres pruebas (inyección en 3 filas, validación
+  explícita en 2 filas, rechazo si cualquier fila trae otra obra) más una que replica la forma real de
+  `MaestroInsumosService::generarVinculos()` (`project_id` explícito mezclado con un literal fijo en
+  la misma tupla — el caso concreto que esta entrada tenía confirmado reventando). Segunda ronda — las
+  seis de arriba. Total: 10 pruebas nuevas.
+
+  Verificado (segunda ronda, estado final): `phpunit --group db tests/unit/ProjectSqlGuardTest.php` →
+  65/65; `phpunit tests/unit/` completo → 171 pruebas, mismos 11 errores + 1 fallo preexistentes
+  (fixture del proyecto 27 ausente en el runtime aislado, confirmado idéntico revirtiendo el cambio)
+  — ninguna regresión nueva; `phpstan analyse src admin/src` → `[OK] No errors`; microbenchmark propio
+  confirmando la mejora de complejidad en las dos ramas.
+
+  **No se auditaron los otros 45 sitios** que usan el patrón `array_fill()` en `src/` — solo se cerró
+  el caso del PDC que esta entrada tenía confirmado. Cualquiera de esos 45 que hoy dependa del INSERT
+  multifila queda cubierto por el mismo arreglo (es el mismo guard), pero no se verificó uno por uno.
+
+  **Cuatro huecos preexistentes que la auditoría de seguridad encontró y confirmó idénticos en el
+  commit anterior — no introducidos aquí, no arreglados aquí, quedan para frente propio:**
+  - `ON DUPLICATE KEY UPDATE` no se valida en absoluto: `INSERT INTO t (project_id, a) VALUES (?, ?)
+    ON DUPLICATE KEY UPDATE project_id = ?` con otra obra pasa el guard. Hoy es inofensivo porque
+    `MaestroInsumosService.php:99` usa exactamente ese patrón pero solo con `VALUES(col)` sobre
+    columnas que no son la clave — nada lo obliga a seguir siendo así.
+  - Una subconsulta dentro de `VALUES` que lea tablas de proyecto no queda acotada: `VALUES (?,
+    (SELECT MAX(id) FROM programa))` pasa sin filtro de proyecto, a diferencia de `INSERT ... SELECT`
+    que sí inyecta el `WHERE`. Sin uso conocido en `src/` ni `admin/src/` hoy.
+  - Comentarios versionados de MySQL (`/*!40000 ... */`) esconden una fila del tokenizador aunque
+    MySQL sí la ejecute. Solo explotable por quien ya controle el string SQL — es decir, ya tendría
+    inyección.
+  - `project_id` listado dos veces en la lista de columnas usa la primera aparición
+    (`array_search()`) e ignora la segunda — no explotable porque MySQL rechaza columnas duplicadas
+    con error 1110.
+- [x] **Arreglado el 2026-09-03 en el PR [#24](https://github.com/jbenite7/lastplanneraia-construccion/pull/24): los siete errores de PHPStan en `src`.** Esta entrada quedó desactualizada tras ese
+  cierre — seguía marcada `[ ]` señalando un estado que ya no existe. Verificado de nuevo aquí antes
+  de corregirla: `phpstan analyse src admin/src --memory-limit=1G` → `[OK] No errors` sobre `main`
+  (`d413b92e`). Detalle de la causa y el arreglo en la entrada del 2026-09-03 más arriba
+  («Cerrado en este frente, con `fingerprints: []` intacto»).
 
 También quedó anotada una trampa de documentación: `CLAUDE.md` manda enlazar el `.env` en un worktree
 con `ln -s` a ruta absoluta del host. Sirve para que `docker compose` sustituya variables, pero
@@ -295,37 +365,147 @@ decidido de antemano), y se revirtió por decisión de Felipe. Detalle completo 
 
 ## Bloqueantes
 
-**2026-09-02 — El CI no puede ponerse verde para ningún PR, y los gates visuales no se ejecutan en
-`main` desde el 2026-08-29.** Dos piezas del repositorio se contradicen: `docker-compose.ci.yml:25`
-fija `DB_USER: ${CI_DB_RUNTIME_USER:-lps_runtime_ci}` —lo introdujo `48e06072`, «endurecer schema y
-usuario runtime», del frente de seguridad, ya en `main`— y `scripts/design-system-ci-compose-contract.mjs:112`
-sigue exigiendo `requireEqual(app.environment?.DB_USER, 'root', 'DB_USER')`. El paso «Verify isolated
-runtime target» del job `design-system-runtime` aborta con `Unsafe design-system CI target: DB_USER
-must be root; received lps_runtime_ci` **antes de mirar una sola pantalla**.
+**Nota de fusión (2026-09-03, esta rama):** el bloqueante que este archivo tenía sobre el contrato
+del compose de CI y el 403 del administrador ya está resuelto — los PR #22 y `fix/gate-metadatos-rol-admin`
+lo cerraron, y las dos entradas de abajo (fechadas 2026-09-03 y 2026-09-02) son la continuación
+completa de esa misma historia, ya integrada a `main`. Lo único que ese bloqueante decía y que sigue
+vigente para esta rama: **el PR #20 (S01 + T01 + T02) y el PR #21 seguían esperando esa cadena de CI
+para poder mergear** — ahora que la cadena está resuelta y `origin/main` acaba de integrarse aquí,
+corresponde reevaluar si el PR #20 ya puede avanzar.
 
-Por qué nadie lo vio: ese job depende de `design-system-static`, que llevaba rojo por otras dos
-causas (la etiqueta de `test_php_test_lane_manifest.php`, arreglada por Felipe en `5c9b3c62`, y
-`ProjectScopeResolverTest` abriendo conexión en el lane `puro`, arreglado en el PR #21). Mientras
-el estático fallaba, el de runtime salía `skipped` en todos los runs de `main` — que se lee como
-inocuo y significa que **desde el 29 de agosto no se ha ejecutado ni una comprobación visual del
-repo**. Al arreglar el estático (PR #20 lo tiene en verde), el de runtime arrancó por primera vez y
-chocó con esto. Quinta capa destapada en el mismo frente: un fallo tapaba al siguiente.
+**2026-09-03 — Dos de los gates del carril visual ya cerraron; quedan tres, y uno de ellos es una
+deuda de otros frentes, no del carril.** Frente `fix/carril-visual-verde` (rama en PR),
+continuación de la entrada de abajo. Dos correcciones a esa entrada, medidas al retomarla:
 
-**Resuelto el 2026-09-02 en el PR #22** (`fix/ci-compose-contract-usuario-runtime`). Cedió el
-contrato, no la seguridad: exigía `root` porque nadie lo actualizó tras el endurecimiento, mientras
-tres piezas del repo ya decían lo contrario —la doc `docs/security/runtime-db-user.md`, el test
-`visual-ci-contract.test.mjs` y el config `runtime_db_least_privilege`, que rehúsa inicializar si
-`MYSQL_USER` es root—. Ahora exige la cuenta runtime, comprueba que `db` cree esa misma cuenta,
-rechaza `root` explícitamente y rechaza contraseñas compartidas. Verificado con el paso exacto que
-fallaba (`design-system-ci-preflight.mjs` → PASS) y con el contrato viejo restaurado a propósito
-(cae con el mismo mensaje del CI).
+- **No son seis gates bloqueantes, son cinco.** `G_KEYBOARD_REFLOW_EVIDENCE` está excluido a
+  propósito del bucle que decide el veredicto (`.github/workflows/ci.yml:548-554` no lo incluye), y
+  `visual-ci-contract.test.mjs` protege esa exclusión por contrato. Contarlo como bloqueante es
+  sobreestimar el frente.
+- **De los 7 avisos de `G_PHPSTAN_BASELINE`, tres no eran avisos de código: eran excepciones
+  caducadas del propio `phpstan-baseline.neon`.** PHPStan las reportaba como `ignore.unmatched
+  (non-ignorable)` — el patrón de dos ya no calzaba con ningún error real, y el patrón de una tercera
+  (`Database.php`) apuntaba a errores que ya no se producen. La excepción que sobraba era ella misma
+  el error que ponía el gate en rojo. Retirarlas es lo contrario de regenerar un baseline: deja de
+  tolerarse lo que ya no ocurre, no oculta nada nuevo.
 
-**Pero el CI sigue sin poder ponerse verde, ahora por otra causa que estaba debajo:** al ejecutarse
-el job por primera vez en cinco días, apareció que **el laboratorio de diseño responde 403 al
-administrador** (`resolveRoleForUser('test.A')` → `'C'`). Enrutado al frente de seguridad/RBAC: la
-tarjeta con toda la evidencia vive en `TASKS.md` de la rama del PR #22 (commit `c1056b03`), con
-correo en el buzón y chip abierto. Sigue bloqueando el merge del PR #20 (S01 + T01 + T02) y del
-PR #21, y con ellos el arranque de S02.
+**Cerrado en este frente, con `fingerprints: []` intacto (commit `437ad4ea`):**
+- `G_PHPSTAN_BASELINE`: los 7 avisos, en dos clases — las tres excepciones caducadas de arriba, y
+  cuatro reales (`MultiProjectScope::$user`/`$role` sin lectura, un `is_int()` ya estrechado por su
+  propio `@param`, y un `!== false` muerto en `ProgramacionIntermediaController.php:624` sobre un
+  método que hoy lanza o devuelve statement, nunca `false`).
+- `G_PHPSTAN_PDC`: un docblock de una sola línea que juntaba `@param` y `@return` — PHPDoc no lee dos
+  etiquetas en la misma línea, así que el `@return` de `SeguimientoService::activePackageNames()` se
+  perdía entero.
+- Verificado sobre el árbol de la rama, en contenedor efímero: `phpstan analyse src admin/src` y
+  `phpstan -c phpstan-pdc.neon` → `[OK] No errors` los dos (antes 7 y 1); `run-php-tests.php
+  --nivel=puro` → 33/33 + PHPUnit 86 pruebas en verde.
+
+**Diferido, cada uno con su porqué — no entran en este PR:**
+- **`G_PHP_SUITE` sigue en rojo a propósito; solo se arregló lo que era fixture/CI, no scope.**
+  Medido con línea base real: levanté un runtime aislado de `origin/main` (sha `36b731c3`) y otro de
+  esta rama, y antes de tocar nada las listas de scripts que fallan en `--nivel=http` eran
+  **idénticas — 26 en las dos**. El frente de PHPStan no agregaba ni tapaba ningún fallo. De esos 26,
+  la mayoría es deuda preexistente ya repartida en las entradas de abajo (información_schema en 16
+  sitios del runtime servido, la consolidación de informes muerta, los INSERT por lote del PDC
+  contra el guard — esta última con decisión de arquitectura pendiente de Felipe) y **no se toca
+  aquí**: mezclarla en este PR volvería el diff irrevisable y tocaría código de producción fuera de
+  alcance. Dos de los 26 sí eran de fixture/CI, no de scope, y se arreglaron:
+  `.dockerignore` no dejaba viajar `docs/security/` a la imagen (lo audita
+  `test_project_scope_schema_contract.php`, que por eso pasaba en local y fallaba en CI) y
+  `test_bi_project_scope.php` tenía cableados dos project_id (`73, 27`) donde el 27 no es miembro de
+  `test.A` en el fixture aislado de CI — se ató a los proyectos que el propio test ya calcula. Un
+  tercer ajuste salió de arreglar el primero: `test_project_scope_schema_contract.php` nunca
+  imprimía una señal de comprobación en su rama de éxito (siempre había fallado antes, así que esa
+  rama nunca se había ejercitado en el corredor real) y `scripts/run-php-tests.php` lo marcaba
+  SOSPECHOSO. **Reverificado con línea base real tras los tres ajustes:** `--nivel=http` pasa de 76
+  a 78 aprobados, de 26 a 24 fallos y de 1 a 0 sospechosos; la lista de 24 que sigue fallando es
+  subconjunto exacto de los 26 originales — ningún caso nuevo roto (`diff` limpio salvo los dos que
+  se arreglaron).
+- **Los dos gates visuales (`G_FULL_APP_FLOW`, `G_RUNTIME_BUDGET_CHECK`) no tienen línea base en CI
+  desde hace cinco días.** Establecerla puede exigir aprobar capturas o presupuestos nuevos — decisión
+  de Felipe, no de esta sesión.
+
+**2026-09-03 — Seis gates del carril visual están en rojo, y ninguno es de los frentes que los
+destaparon. → Merece frente propio: «poner el carril visual en verde».** El job
+`design-system-runtime` llevaba sin correr desde el 2026-08-29 (primero por el contrato del
+compose, después por el 403 del laboratorio). Con los dos arreglados en
+`fix/gate-metadatos-rol-admin`, el job **llega hasta el final por primera vez** y deja ver la deuda
+que estaba escondida detrás. Corrida `33759660935`, tema `dark`, sha `d419072d`:
+
+| Gate | Resultado |
+|---|---|
+| `G_LABORATORY_GATES` | **success** ← las 24 pruebas del 403, arregladas |
+| `G_PILOT_LAB_GATES`, `G_PG_PERSISTENCE_RBAC`, `G_SEMANAL_ROLES_PHASES`, `G_RUNTIME_GRANTS`, `G_PHP_ADMIN_DB`, `G_RUNTIME_BUDGET_MEASURE` | success |
+| `G_PHPSTAN_BASELINE` | failure — `New PHPStan findings: 7` |
+| `G_PHPSTAN_PDC` | failure — 1 error, `Services/Pdc/SeguimientoService.php:672` |
+| `G_PHP_SUITE` | failure — los mismos fallos ya medidos en `main` |
+| `G_FULL_APP_FLOW`, `G_RUNTIME_BUDGET_CHECK`, `G_KEYBOARD_REFLOW_EVIDENCE` | failure |
+
+Atribución de cada rojo, medida y no supuesta:
+
+- **`G_PHPSTAN_BASELINE`**: `docs/design-system/phpstan-baseline.json` tiene `fingerprints: []`
+  —tolera cero— y `main` produce 7 avisos. Los 7 son idénticos en `main` y en la rama (medido con
+  `phpstan analyse src admin/src`: `Found 7 errors` en ambos, misma lista:
+  `ProgramacionIntermediaController.php:624`, `Database.php`, `MultiProjectScope.php:13,14,28`).
+  **Límite de esta afirmación:** el gate imprime el conteo, no los fingerprints, así que la
+  equivalencia se sostiene en el número más la comparación local de la lista.
+- **`G_PHPSTAN_PDC`**: `activePackageNames()` sin tipo de iterable, en un archivo que ninguno de
+  los dos frentes tocó.
+- **`G_PHP_SUITE`**: es la cola del gate de scope, ya anotada en el bloqueante siguiente.
+- **Los tres últimos**: gates visuales y de rendimiento que llevaban cinco días sin ejecutarse; su
+  línea base en CI no existe todavía, así que hay que establecerla antes de leerlos.
+
+**No se arreglan desde el frente del 403 a propósito.** El camino corto —registrar los 7
+fingerprints en el JSON para que el gate se ponga verde— es un renglón de trabajo y apaga el único
+control que iba a avisar del próximo; `AGENTS.md` lo prohíbe con nombre propio («no regeneres
+snapshots ni baselines para forzar un resultado verde»), y sería especialmente torcido hacerlo
+desde un PR cuyo hallazgo central es que tapar un error lo esconde durante días.
+
+**Trampa de lectura, medida el 2026-09-03:** en este job los pasos individuales aparecen con ✓
+aunque fallen —cada uno registra su resultado en una variable `G_*` y el rojo lo pone el paso final
+`Summarize gate results`—. Leer «✓ Enforce PHPStan baseline» y concluir que pasó es un error fácil:
+el veredicto está en el resumen, no en los pasos.
+
+**2026-09-02 — El gate de scope rompe la lectura de metadatos en `admin/` y en 20+ pruebas; el
+403 del laboratorio ya se arregló, esta es su cola.** `ProjectSqlGuard` rechaza cualquier tabla
+calificada por schema desde el 2026-08-29, e `information_schema` lo está. La rama
+`fix/gate-metadatos-rol-admin` cerró los siete llamadores de `src/` pasándolos por
+`Database::tableExists()/columnExists()/tablesWithColumn()`, pero quedan dos frentes sin tocar,
+ambos **ya rojos en `main` antes de ese arreglo** (medido: 24 pruebas fallan en `--nivel=http` y 23
+en `--nivel=db` sobre `main` 58d11137, con el mismo conjunto exacto antes y después de la rama):
+
+- **`admin/src/`** arma la consulta a mano en seis puntos (`Models/Project.php:983,1007,1193,1205`,
+  `Controllers/DashboardController.php:579`, `Controllers/FamilyCatalogController.php:578`). El
+  panel de Admin comparte el `Database` de `src/`, así que sí pasa por el gate: `Project.php`
+  aparece en el stack de `test_admin_global_project_model.php`.
+- **Las pruebas mismas**, que consultan por `Database::query()` con SQL propio
+  (`test_cip_poblado.php`, `test_pdc_v2_*`, `test_preconstruction_import_global_ids.php`,
+  `test_schedule_update_draft_import.php`, …). Aquí hay dos causas mezcladas: metadatos calificados
+  por schema, y consultas a tablas de proyecto sin `ProjectScope` activo. **No son el mismo
+  problema y conviene separarlas antes de tocar nada** — la segunda puede ser el gate funcionando
+  como debe, con pruebas que no declaran su scope.
+
+Merece frente propio: es más grande que el 403 y no lo bloquea.
+
+**2026-09-02 — Trampa medida: el nivel `http` de la suite no se puede correr desde un worktree con
+el `.env` enlazado.** `CLAUDE.md` manda `ln -s` y para `docker compose` está bien (lo lee desde el
+host), pero el enlace apunta a una ruta del host que **dentro del contenedor no existe**, así que
+el PHP servido lee un `.env` ilegible: `DEV_DOOR` aparece cerrado y fallan
+`test_admin_dev_door_guard`, `test_dev_door_http`, `test_admin_modulos` y
+`test_semanal_sanear_csrf`. Parecen regresión y no lo son — con una copia real del `.env` las
+cuatro vuelven a verde. Costó una vuelta el 2026-09-02. Pendiente decidir si se documenta en
+`CLAUDE.md` o si `scripts/` monta el `.env` de otra forma para el caso http.
+
+**Resuelto 2026-09-02 — el bloqueante «el laboratorio de diseño responde 403 al administrador»
+deja de serlo.** Se retira de esta sección, no se deja marcado: el reporte planteaba dos caminos
+(semilla con rol `C`, o mala elección entre membresías) y **ninguno de los dos era**. Los datos
+estaban sanos — `test.A` conservaba sus cinco membresías `'A'`. La causa real fue el gate de scope
+rechazando `information_schema` dentro de un `catch` que convertía la excepción en «la tabla no
+existe», con `DEFAULT_ROLE` (`'C'`) como relleno. Arreglado en `fix/gate-metadatos-rol-admin`, que
+además trae el contrato del compose de CI porque los dos PR se necesitaban mutuamente para poder
+ponerse verdes. La cadena completa, en la entrada del `CHANGELOG`. Lo que queda vivo de aquel
+reporte es el primer bloqueante de esta sección: la cola del mismo defecto en `admin/` y en las
+pruebas.
 
 **2026-08-28 — `theme.js` deshace el claro de entrada (D12) en 7 páginas reales; bloquea el
 arranque del plan de Programa General, no la fase cero actual.** Destapado ejecutando el goal
@@ -1009,6 +1189,12 @@ estado por defecto mientras Felipe no reparta.
 necesita autorización propia y explícita de Felipe, siempre, y publicar en `main` no la concede.
 
 ## Hechas (últimas 10)
+
+- [x] 2026-09-03 — **Publicado `2670146b` (skill `datatables-to-handsontable` archivada) más
+  `2bc9c6d0`** con `scripts/publicar.sh` del repo: frontmatter v2 a la skill y vocabulario cerrado
+  en `decisiones/merge-carril-rojo-pr23.md`, que tenían `wiki (forma)` en rojo. El aviso de
+  veracidad que quedaba (131 commits desde el 2026-08-25) se atendió el mismo día: **undécimo pase
+  publicado en `00218633`**, 65 páginas, 16 corregidas y 1 derogada; detalle en [[memoria/log]].
 
 - [x] 2026-08-28 — **Fase cero de temas y forma, CERRADA — las 11 tareas del plan, PR abierto
   contra `main`.** Ejecutada de corrido con `subagent-driven-development` sobre el goal

@@ -53,15 +53,31 @@ try {
     $failures[] = 'resolve() did not return an empty adapter result without an explicit project selection';
 }
 
-try {
-    $multiProjectScope = $scope->scope([73, 27], $session, 'test:bi-project-scope');
-    if (!$multiProjectScope instanceof MultiProjectScope) {
-        $failures[] = 'scope() did not return a MultiProjectScope';
-    } elseif ($multiProjectScope->projectIds() !== [27, 73]) {
-        $failures[] = 'scope() did not normalize and sort authorized project IDs';
+// El par de obras sale de `$authorizedIds`, que este mismo test ya calculó, y NO de dos números
+// cableados. Estaba `[73, 27]` esperando `[27, 73]`, y el 27 no es miembro de `test.A` en el fixture
+// aislado de CI (sí lo es en la base de desarrollo), así que el test pasaba en local y fallaba en el
+// carril con «scope() rejected authorized projects 73/27» — que se lee como un fallo de
+// autorización cuando era una obra ausente. Lo que este bloque comprueba es que un conjunto
+// autorizado se normaliza y se ordena; para eso sirve cualquier par autorizado, y se pasa al revés
+// a propósito para que el orden signifique algo.
+$parAutorizado = array_slice($authorizedIds, 0, 2);
+if (count($parAutorizado) < 2) {
+    $failures[] = 'el fixture no da dos obras autorizadas para comprobar la normalización';
+} else {
+    $esperado = $parAutorizado;
+    sort($esperado, SORT_NUMERIC);
+    $pedido = array_reverse($parAutorizado);
+    try {
+        $multiProjectScope = $scope->scope($pedido, $session, 'test:bi-project-scope');
+        if (!$multiProjectScope instanceof MultiProjectScope) {
+            $failures[] = 'scope() did not return a MultiProjectScope';
+        } elseif ($multiProjectScope->projectIds() !== $esperado) {
+            $failures[] = 'scope() did not normalize and sort authorized project IDs';
+        }
+    } catch (\Throwable $error) {
+        $failures[] = 'scope() rejected authorized projects '
+            . implode('/', $pedido) . ': ' . $error->getMessage();
     }
-} catch (\Throwable $error) {
-    $failures[] = 'scope() rejected authorized projects 73/27: ' . $error->getMessage();
 }
 
 try {

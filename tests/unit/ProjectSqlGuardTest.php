@@ -193,6 +193,167 @@ final class ProjectSqlGuardTest extends TestCase
         );
     }
 
+    public function testInjectsProjectIntoEveryRowOfMultiRowInsert(): void
+    {
+        $guarded = $this->guard->guard(
+            'INSERT INTO auto_program_log (semana, consecutivo, accion, detalle) VALUES (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)',
+            [8, 10, 'crear', 'uno', 8, 11, 'crear', 'dos', 8, 12, 'crear', 'tres'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+
+        self::assertSame(
+            'INSERT INTO auto_program_log (project_id, semana, consecutivo, accion, detalle) '
+            . 'VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)',
+            $guarded->sql,
+        );
+        self::assertSame(
+            [73, 8, 10, 'crear', 'uno', 73, 8, 11, 'crear', 'dos', 73, 8, 12, 'crear', 'tres'],
+            $guarded->params,
+        );
+    }
+
+    public function testValidatesExplicitProjectIdOnEveryRowOfMultiRowInsert(): void
+    {
+        $guarded = $this->guard->guard(
+            'INSERT INTO auto_program_log (project_id, semana, detalle) VALUES (?, ?, ?), (?, ?, ?)',
+            [73, 8, 'uno', 73, 9, 'dos'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+
+        self::assertSame(
+            'INSERT INTO auto_program_log (project_id, semana, detalle) VALUES (?, ?, ?), (?, ?, ?)',
+            $guarded->sql,
+        );
+        self::assertSame([73, 8, 'uno', 73, 9, 'dos'], $guarded->params);
+    }
+
+    public function testRejectsMultiRowInsertWhenAnyRowProjectIdDiffersFromScope(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        // La segunda fila trae el project_id de otra obra (27); la primera es correcta (73).
+        // El rechazo tiene que alcanzar a CUALQUIER fila, no solo a la primera.
+        $this->guard->guard(
+            'INSERT INTO auto_program_log (project_id, semana, detalle) VALUES (?, ?, ?), (?, ?, ?)',
+            [73, 8, 'uno', 27, 9, 'dos'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
+    public function testValidatesRowsThatMixExplicitLiteralsWithProjectIdPlaceholder(): void
+    {
+        // Forma real de MaestroInsumosService::generarVinculos()
+        // (src/Services/Pdc/MaestroInsumosService.php:92) — el caso concreto que TASKS.md
+        // confirmó reventando en caliente: project_id explícito + un literal fijo ('pendiente')
+        // en otra columna de la misma tupla, repetido por cada fila del lote.
+        $guarded = $this->guard->guard(
+            "INSERT INTO auto_program_log (project_id, semana, consecutivo, accion, detalle) "
+            . "VALUES (?, ?, ?, 'crear', ?), (?, ?, ?, 'crear', ?), (?, ?, ?, 'crear', ?)",
+            [73, 8, 1, 'uno', 73, 8, 2, 'dos', 73, 8, 3, 'tres'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+
+        self::assertSame(
+            "INSERT INTO auto_program_log (project_id, semana, consecutivo, accion, detalle) "
+            . "VALUES (?, ?, ?, 'crear', ?), (?, ?, ?, 'crear', ?), (?, ?, ?, 'crear', ?)",
+            $guarded->sql,
+        );
+        self::assertSame([73, 8, 1, 'uno', 73, 8, 2, 'dos', 73, 8, 3, 'tres'], $guarded->params);
+    }
+
+    public function testInjectsProjectIntoRowsWithUnevenPlaceholderCountsIncludingAZeroPlaceholderRow(): void
+    {
+        // Caso adversarial de la revisión de seguridad (2026-09-03): las filas 1 y 3
+        // terminan con el MISMO índice de inserción, porque la fila 2 no aporta ningún
+        // placeholder propio (su `semana` es un literal) y el conteo de placeholders no
+        // avanza entre la 1 y la 3. Es el caso que expondría un error de uno-por-uno si
+        // la construcción del nuevo array de parámetros dependiera del orden entre
+        // índices duplicados en vez de fijarlo por la posición de cada fila.
+        $guarded = $this->guard->guard(
+            "INSERT INTO auto_program_log (semana, detalle) VALUES (?, 'uno'), (8, 'dos'), (?, 'tres')",
+            [8, 9],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+
+        self::assertSame(
+            "INSERT INTO auto_program_log (project_id, semana, detalle) "
+            . "VALUES (?, ?, 'uno'), (?, 8, 'dos'), (?, ?, 'tres')",
+            $guarded->sql,
+        );
+        self::assertSame([73, 8, 73, 73, 9], $guarded->params);
+    }
+
+    public function testRejectsMultiRowInsertWhenOnlyTheLastRowOfThreeDiffersFromScope(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        // Filas 1 y 2 correctas (73); solo la ÚLTIMA trae otra obra (27). Un bucle que
+        // se detuviera antes de tiempo, o que solo revisara la primera o segunda fila,
+        // dejaría pasar esta.
+        $this->guard->guard(
+            'INSERT INTO auto_program_log (project_id, semana, detalle) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?)',
+            [73, 8, 'uno', 73, 9, 'dos', 27, 10, 'tres'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
+    public function testRejectsNonPlaceholderProjectIdInASecondaryRow(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        // La primera fila usa un placeholder homólogo válido; la segunda trae un
+        // literal fijo en la posición de project_id -intento de colar un valor que no
+        // es un placeholder en una fila que no es la primera.
+        $this->guard->guard(
+            'INSERT INTO auto_program_log (project_id, semana, detalle) VALUES (?, ?, ?), (27, ?, ?)',
+            [73, 8, 'uno', 9, 'dos'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
+    public function testRejectsNonPlaceholderProjectIdInTheLastRowOfThree(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guard(
+            'INSERT INTO auto_program_log (project_id, semana, detalle) VALUES (?, ?, ?), (?, ?, ?), (27, ?, ?)',
+            [73, 8, 'uno', 73, 9, 'dos', 10, 'tres'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
+    public function testRejectsMultiRowInsertWithNonTupleAfterComma(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guard(
+            'INSERT INTO auto_program_log (project_id, semana, detalle) VALUES (?, ?, ?), x',
+            [73, 8, 'uno'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
+    public function testRejectsMultiRowInsertWithTrailingComma(): void
+    {
+        $this->expectException(ProjectScopeViolation::class);
+
+        $this->guard->guard(
+            'INSERT INTO auto_program_log (project_id, semana, detalle) VALUES (?, ?, ?),',
+            [73, 8, 'uno'],
+            new ProjectScope(73, 'test.A', 'A'),
+            $this->catalog,
+        );
+    }
+
     public function testRejectsTwoProjectTablesWithoutProjectRelation(): void
     {
         $this->expectException(ProjectScopeViolation::class);

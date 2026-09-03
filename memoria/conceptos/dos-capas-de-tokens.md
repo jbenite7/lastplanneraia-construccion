@@ -15,7 +15,7 @@ resumen: "Los tokens tienen dos capas: --aia-* es la paleta de marca y --ds-* el
 | Capa | Cuántas | Qué es |
 |---|---|---|
 | `--aia-*` | 37 | La **paleta de marca**: los colores que existen, heredados de la identidad de AIA. |
-| `--ds-*` | 295 | El **alias semántico**: para qué sirve cada color en una interfaz. |
+| `--ds-*` | 354 | El **alias semántico**: para qué sirve cada color en una interfaz. Eran 295 el 2026-08-24; el tema claro contractual (2026-08-28) trajo el resto. Medido con `grep -cE '^\s*--ds-[a-zA-Z0-9-]+:' public/css/tokens.css` el 2026-09-03. |
 
 `docs/design-system/tokens.md:3-6` lo dice en una línea: `--aia-*` es «paleta y decisiones
 heredadas de marca», `--ds-*` son «alias semánticos para componentes y gates nuevos».

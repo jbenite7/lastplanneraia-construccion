@@ -452,9 +452,8 @@ class SubcontratistasApiController
             return false;
         }
 
-        return (int) $this->db->query(
-            'SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?',
-            [$table, $column],
-        )->fetchColumn() > 0;
+        // Por Database::columnExists(): consultar `information_schema` con query() lanza
+        // DomainException desde que ProjectSqlGuard cerró las tablas calificadas por schema.
+        return $this->db->columnExists($table, $column);
     }
 }

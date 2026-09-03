@@ -16,6 +16,14 @@ admin/logs
 docs/*
 !docs/design-system/
 !docs/design-system/**
+# `docs/security/` viaja desde el 2026-09-03 porque `tests/test_project_scope_schema_contract.php`
+# lo AUDITA: comprueba que `rls-runtime-boundary.md` existe y que nombra DML-only, admin-db,
+# advisory, SHOW GRANTS, --apply, backup y restore. Sin esta excepcion el documento no entra en la
+# imagen, el test falla en CI con «Falta el documento de frontera runtime» y pasa en local, donde
+# `docs/` si existe — un rojo que no se puede reproducir donde se trabaja. El contrato tiene que
+# viajar a donde se ejecuta.
+!docs/security/
+!docs/security/**
 .omo
 .env*
 !.env.example
