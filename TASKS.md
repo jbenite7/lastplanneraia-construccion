@@ -939,8 +939,9 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 - [x] 2026-09-03 — **Publicado `2670146b` (skill `datatables-to-handsontable` archivada) más
   `2bc9c6d0`** con `scripts/publicar.sh` del repo: frontmatter v2 a la skill y vocabulario cerrado
-  en `decisiones/merge-carril-rojo-pr23.md`, que tenían `wiki (forma)` en rojo. Queda vivo el aviso
-  de veracidad de la wiki (131 commits desde el 2026-08-25, umbral 40): toca un pase.
+  en `decisiones/merge-carril-rojo-pr23.md`, que tenían `wiki (forma)` en rojo. El aviso de
+  veracidad que quedaba (131 commits desde el 2026-08-25) se atendió el mismo día: **undécimo pase
+  publicado en `00218633`**, 65 páginas, 16 corregidas y 1 derogada; detalle en [[memoria/log]].
 
 - [x] 2026-08-28 — **Fase cero de temas y forma, CERRADA — las 11 tareas del plan, PR abierto
   contra `main`.** Ejecutada de corrido con `subagent-driven-development` sobre el goal
