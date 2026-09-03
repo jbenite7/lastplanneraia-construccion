@@ -243,11 +243,18 @@ continuación de la entrada de abajo. Dos correcciones a esa entrada, medidas al
   en 16 sitios del runtime servido, la consolidación de informes muerta, los INSERT por lote del PDC
   contra el guard — esta última con decisión de arquitectura pendiente de Felipe). Mezclar ese
   arreglo en este PR volvería el diff irrevisable y tocaría código de producción fuera de alcance.
-  Dos hallazgos menores sí quedaron en la rama porque no son de scope, sino de fixture/CI: `.dockerignore`
-  no dejaba viajar `docs/security/` a la imagen (lo audita `test_project_scope_schema_contract.php`,
-  que por eso pasaba en local y fallaba en CI) y `test_bi_project_scope.php` tenía cableados dos
-  project_id (`73, 27`) donde el 27 no es miembro de `test.A` en el fixture aislado de CI — se ató a
-  los proyectos que el propio test ya calcula.
+  Dos hallazgos menores sí se arreglaron en la rama porque no son de scope, sino de fixture/CI:
+  `.dockerignore` no dejaba viajar `docs/security/` a la imagen (lo audita
+  `test_project_scope_schema_contract.php`, que por eso pasaba en local y fallaba en CI) y
+  `test_bi_project_scope.php` tenía cableados dos project_id (`73, 27`) donde el 27 no es miembro de
+  `test.A` en el fixture aislado de CI — se ató a los proyectos que el propio test ya calcula. Un
+  tercer ajuste salió de arreglar el primero: `test_project_scope_schema_contract.php` nunca
+  imprimía una señal de comprobación en su rama de éxito (siempre había fallado antes, así que esa
+  rama nunca se había ejercitado en el corredor real) y `scripts/run-php-tests.php` lo marcaba
+  SOSPECHOSO. **Reverificado con línea base real tras los tres ajustes:** `--nivel=http` pasa de 76
+  a 78 aprobados, de 26 a 24 fallos y de 1 a 0 sospechosos; la lista de 24 que sigue fallando es
+  subconjunto exacto de los 26 originales — ningún caso nuevo roto (`diff` limpio salvo los dos que
+  se arreglaron).
 - **Los dos gates visuales (`G_FULL_APP_FLOW`, `G_RUNTIME_BUDGET_CHECK`) no tienen línea base en CI
   desde hace cinco días.** Establecerla puede exigir aprobar capturas o presupuestos nuevos — decisión
   de Felipe, no de esta sesión.
