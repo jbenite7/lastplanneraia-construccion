@@ -2,7 +2,18 @@
  * Context Manager
  * Handles global application state (Week, Project, Module)
  * Dispatches events when context changes.
+ *
+ * `setWeek()`/`clearWeek()` llaman a `ContextController` (src/Controllers/Core/ContextController.php),
+ * endurecido en T02: exige `X-CSRF-Token` (form-key `shell_api`, mismo patrón que `lps_drawer.js`)
+ * y devuelve `{ok, ...}` / `{ok:false, error:{code,message}}`, no el `{success,message}` original.
+ * El token lo emite `views/partials/shell_sidebar.php` en `<meta name="lps-shell-csrf-token">`
+ * (2026-09-03) — el único parcial que incluyen las 16 vistas que traen este script.
  */
+function lpsShellCsrfToken() {
+  const meta = document.querySelector('meta[name="lps-shell-csrf-token"]');
+  return (meta && meta.getAttribute('content')) || '';
+}
+
 class ContextManager {
   constructor() {
     this.state = {
@@ -33,12 +44,15 @@ class ContextManager {
     try {
       const response = await fetch('/context/week', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': lpsShellCsrfToken(),
+        },
         body: JSON.stringify({ semana: week }),
       });
       const data = await response.json();
 
-      if (data.success) {
+      if (data.ok) {
         this.state.week = week;
         // Dispatch updated event
         document.dispatchEvent(new CustomEvent('context:updated', { detail: this.state }));
@@ -49,11 +63,12 @@ class ContextManager {
           window.location.reload();
         }
       } else {
-        console.error('Context Error:', data.message);
+        const mensaje = (data.error && data.error.message) || 'Error desconocido';
+        console.error('Context Error:', mensaje);
         if (window.AIA && window.AIA.Notice && typeof window.AIA.Notice.error === 'function') {
-          AIA.Notice.error('No se pudo cambiar la semana: ' + data.message);
+          AIA.Notice.error('No se pudo cambiar la semana: ' + mensaje);
         } else if (typeof window.alert === 'function') {
-          window.alert('No se pudo cambiar la semana: ' + data.message);
+          window.alert('No se pudo cambiar la semana: ' + mensaje);
         }
       }
     } catch (err) {
@@ -65,11 +80,14 @@ class ContextManager {
     try {
       const response = await fetch('/context/clear-week', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': lpsShellCsrfToken(),
+        },
       });
       const data = await response.json();
 
-      if (data.success) {
+      if (data.ok) {
         this.state.week = 0;
         // Dispatch updated event
         document.dispatchEvent(new CustomEvent('context:updated', { detail: this.state }));

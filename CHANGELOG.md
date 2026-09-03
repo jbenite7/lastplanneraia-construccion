@@ -28,6 +28,29 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Arreglado: cambiar de semana estaba roto para usuarios reales en 16 vistas legacy (2026-09-03)
+
+`ContextController::setWeek()`/`clearWeek()` (T02) exige `X-CSRF-Token` (form-key `shell_api`) y
+devuelve `{ok,...}`/`{ok:false, error:{code,message}}` desde hace tiempo, pero ninguna vista legacy
+emitía ese token — `public/js/core/ContextManager.js` mandaba el POST sin CSRF y leía el contrato
+de respuesta viejo (`{success,message}`). Destapado por `programacion-semanal-roles-phases.mjs`
+(11 fallos `CSRF_INVALID`) al correr `design-system-runtime` por primera vez contra
+`shell-minimo-react`.
+
+`views/partials/shell_sidebar.php` (el único parcial que incluyen las ~16 vistas con este JS) ya
+genera sus propios tokens CSRF de forma independiente por `<meta>` (el de `lps_week_admin`); se
+suma ahí uno para `shell_api` (`<meta name="lps-shell-csrf-token">`), y `ContextManager.js` lo lee
+con el mismo patrón que `lps_drawer.js`.
+
+### Arreglado: el CSS del shell React entraba sin capa en `/login` (2026-09-03)
+
+`frontend/src/shared/lps/lps-contexto.css` — el único CSS que compila el shell — se entregaba sin
+`@layer`, ganando a todas las capas del sistema de diseño
+(`docs/design-system/unlayered-delivery-inventory.json`). Envuelto en `@layer module`. De paso se
+retira una entrada obsoleta del inventario: `login-brand-unified.css` (la vista PHP vieja) ya no
+carga en `/login` desde que S01 movió esa ruta al shell React, y el gate lo reportaba como
+`stale-inventory-entry`.
+
 ### Documentación: skill `datatables-to-handsontable` archivada en el repo (2026-09-03)
 
 `docs/archivo/skills/datatables-to-handsontable/SKILL.md` guarda la skill de la migración puntual

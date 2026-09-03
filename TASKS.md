@@ -205,6 +205,41 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   registrada e intacta y `POST /login` no se movió, así que el rollback son tres líneas. Ocho goldens
   aprobados por Felipe. Cierre completo en `docs/superpowers/plans/2026-08-30-s01-login-react.md` ›
   `## Cierre`. **PR #20** abierto contra `main`, bloqueado por el CI (ver Bloqueantes).
+- [x] **Resuelto el 2026-09-03: el acceso abre en claro, no en oscuro** (decisión de Felipe).
+  `TEMA_FALLBACK` en `frontend/src/shell/tema.ts` pasa de `'oscuro'` a `'claro'`; el script de
+  arranque de `frontend/index.html` se invierte con la misma lógica. Los ocho goldens de
+  `login-react.visual.mjs` **no cambiaron** — cada captura fija su propio tema por `localStorage`,
+  ajeno al fallback —, verificado byte a byte contra el build reconstruido. Detalle en la spec
+  S01 §10.1/§16.
+- [x] **Resuelto el 2026-09-03: dos bugs reales de producción que el CI del PR #20 destapó al
+  correr por primera vez contra esta rama.** Ninguno lo causó el trabajo de hoy — ambos preexistían,
+  solo que `design-system-runtime` nunca había llegado tan lejos en `shell-minimo-react` hasta que
+  se resolvió la cadena de bloqueantes de PHPStan/guard (ver Bloqueantes).
+  - **CSS del shell sin capa en `/login`** — `frontend/src/shared/lps/lps-contexto.css` (único CSS
+    que compila el shell React) se entregaba sin `@layer`, así que ganaba a todas las capas del
+    sistema de diseño. Envuelto en `@layer module` (mismo patrón que `lab.css` y
+    `adapters/programa-general-handsontable.css`). De paso, `docs/design-system/unlayered-delivery-
+    inventory.json` tenía una entrada obsoleta para `/login` (`login-brand-unified.css`, la hoja de
+    la vista PHP vieja que ya no carga ahí desde que S01 movió esa ruta al shell React) — se retira,
+    no se conserva como excepción falsa.
+  - **Cambiar de semana estaba roto para usuarios reales** en cualquier página con la barra lateral
+    (`views/partials/shell_sidebar.php`, ~16 vistas). `ContextController::setWeek()`/`clearWeek()`
+    (T02) exige `X-CSRF-Token` con form-key `shell_api` desde antes de hoy, pero ninguna vista legacy
+    lo emitía — el JS legacy (`public/js/core/ContextManager.js`) mandaba el POST sin token y leía
+    el contrato de respuesta viejo (`data.success`/`data.message`) cuando el controlador ya devuelve
+    `{ok, week}`/`{ok:false, error:{code,message}}`. Se generaba el token `shell_api` en cuatro
+    controladores por separado (siguiendo el patrón ya establecido para `lps_drawer`) hasta
+    descubrir que `shell_sidebar.php` **ya genera sus propios tokens de forma independiente**
+    (línea de `lps_week_admin`) — se revirtieron los cuatro controladores y se emite el nuevo meta
+    `<meta name="lps-shell-csrf-token">` en ese único parcial, que cubre las 16 vistas de una vez.
+    `ContextManager.js` y el helper de test `tests/browser/support/session.mjs::changeWeek()` se
+    actualizan a leer ese meta y el contrato `{ok,...}`.
+  Verificado en runtime aislado: `programacion-semanal-roles-phases.mjs` → 11/11 (antes: 11 fallos
+  `CSRF_INVALID`); `design-system-unlayered-delivery.mjs` → 2/2 (antes: 1 fallo); `login-react.spec.mjs`
+  → 16/16 sin cambios; `test:design-system:runtime` completo → 31+1+20+1 pruebas, cero fallos;
+  `phpstan analyse src admin/src` → 1 error, confirmado preexistente a todo el trabajo de hoy
+  (`DatabaseWeekAdministrationRepository.php:277`, no tocado); `--nivel=puro` → 36/36 + PHPUnit
+  218 pruebas, verde.
 - [ ] **S01 — segunda mitad: retirar el login PHP (`MIGRATION_COMPLETE`).** Solo después de que el
   PR #20 entre a `main` y el corte haya recibido uso real durante una ventana que **nadie ha fijado
   todavía** (ni días ni criterio de «ya no hace falta volver» — fijarlo es lo primero). Entonces:

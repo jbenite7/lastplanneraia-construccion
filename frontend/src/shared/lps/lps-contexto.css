@@ -4,7 +4,15 @@
  * declaración de prioridad forzada de CSS (guardado por `rg` en el paso 4 del brief). Dark es el
  * tema inicial; claro usa las mismas
  * variables `--ds-active-*`, que ya resuelven por tema.
+ *
+ * Envuelto en `@layer module` (2026-09-03): Vite emite este archivo tal cual en el bundle de
+ * `/app/assets/`, y sin capa gana a TODAS las capas del sistema de diseño
+ * (docs/design-system/unlayered-delivery-inventory.json) — hallazgo de
+ * design-system-unlayered-delivery.mjs en /login. Misma capa que usan otros módulos
+ * (public/css/design-system/lab.css, adapters/programa-general-handsontable.css).
  */
+
+@layer module {
 
 /*
  * `.lps-layout-cajon` — la rejilla de escritorio que prescribe la spec (AC-168, diseño línea
@@ -264,3 +272,5 @@
     width: 100%;
   }
 }
+
+} /* @layer module */
