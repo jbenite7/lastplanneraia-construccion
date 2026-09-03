@@ -183,8 +183,11 @@ vivas en `main`**, medidas con petición HTTP real contra el stack local:
   - `project_id` listado dos veces en la lista de columnas usa la primera aparición
     (`array_search()`) e ignora la segunda — no explotable porque MySQL rechaza columnas duplicadas
     con error 1110.
-- [ ] **Siete errores de PHPStan en `src`**, uno de ellos por una entrada obsoleta del propio
-  `phpstan-baseline.neon` (`ignore.unmatched`). Preexistentes, sin relación de causa con lo anterior.
+- [x] **Arreglado el 2026-09-03 en el PR [#24](https://github.com/jbenite7/lastplanneraia-construccion/pull/24): los siete errores de PHPStan en `src`.** Esta entrada quedó desactualizada tras ese
+  cierre — seguía marcada `[ ]` señalando un estado que ya no existe. Verificado de nuevo aquí antes
+  de corregirla: `phpstan analyse src admin/src --memory-limit=1G` → `[OK] No errors` sobre `main`
+  (`d413b92e`). Detalle de la causa y el arreglo en la entrada del 2026-09-03 más arriba
+  («Cerrado en este frente, con `fingerprints: []` intacto»).
 
 También quedó anotada una trampa de documentación: `CLAUDE.md` manda enlazar el `.env` en un worktree
 con `ln -s` a ruta absoluta del host. Sirve para que `docker compose` sustituya variables, pero
