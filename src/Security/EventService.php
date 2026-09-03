@@ -106,20 +106,12 @@ class EventService
             return $this->tableExistsCache[$tableName];
         }
 
-        $sql = "SELECT COUNT(*) AS total
-                FROM information_schema.tables
-                WHERE table_schema = DATABASE()
-                  AND table_name = ?";
-
-        $exists = false;
-        try {
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([$tableName]);
-            $row = $stmt->fetch();
-            $exists = ((int) ($row['total'] ?? 0) > 0);
-        } catch (\Throwable $e) {
-            $exists = false;
-        }
+        // Database::tableExists() lee `information_schema` por fuera del gate de scope, que
+        // rechaza las tablas calificadas por schema desde el 2026-08-29. Armar la consulta aquí
+        // lanzaba DomainException, y el catch que la envolvía la convertía en «la tabla no
+        // existe»: la misma falla silenciosa que dejó a un administrador con rol de
+        // subcontratista en RbacService.
+        $exists = $this->db->tableExists($tableName);
 
         $this->tableExistsCache[$tableName] = $exists;
 

@@ -336,25 +336,18 @@ class LpsService
             'rows' => 0,
         ];
 
+        // Por Database::tablesWithColumn(): consultar `information_schema` con query() lanza
+        // DomainException desde que ProjectSqlGuard cerró las tablas calificadas por schema
+        // (2026-08-29). El filtro por nombre queda en PHP, que es donde puede leerse.
         if (method_exists($db, 'isUsingGlobalTables') && $db->isUsingGlobalTables()) {
-            $candidateTables = ['programacion_semanal', 'programa_consolidado'];
-            $placeholders = implode(',', array_fill(0, count($candidateTables), '?'));
-            $queryTables = "SELECT c.TABLE_NAME
-                            FROM information_schema.COLUMNS c
-                            WHERE c.TABLE_SCHEMA = DATABASE()
-                              AND c.COLUMN_NAME = 'medir_productividad'
-                              AND c.TABLE_NAME IN ({$placeholders})";
-            $stmtTables = $db->query($queryTables, $candidateTables);
+            $tables = $db->tablesWithColumn('medir_productividad', ['programacion_semanal', 'programa_consolidado']);
         } else {
-            $queryTables = "SELECT c.TABLE_NAME
-                            FROM information_schema.COLUMNS c
-                            WHERE c.TABLE_SCHEMA = DATABASE()
-                              AND c.COLUMN_NAME = 'medir_productividad'
-                              AND (c.TABLE_NAME LIKE ? ESCAPE '\\\\' OR c.TABLE_NAME LIKE ? ESCAPE '\\\\')";
-            $stmtTables = $db->query($queryTables, ['%\\_programacion\\_semanal', '%\\_programa\\_consolidado']);
+            $tables = array_values(array_filter(
+                $db->tablesWithColumn('medir_productividad'),
+                static fn(string $table): bool => str_ends_with($table, '_programacion_semanal')
+                    || str_ends_with($table, '_programa_consolidado'),
+            ));
         }
-
-        $tables = $stmtTables->fetchAll(\PDO::FETCH_COLUMN);
 
         foreach ($tables as $tableName) {
             if (!preg_match('/^[a-zA-Z0-9_]+$/', (string) $tableName)) {
