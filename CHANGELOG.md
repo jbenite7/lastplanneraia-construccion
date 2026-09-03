@@ -10,7 +10,7 @@ resumen: Todos los cambios notables en este proyecto serán documentados en este
 project: lps-aia
 type: changelog
 status: activo
-updated: 2026-08-27
+updated: 2026-09-02
 ---
 
 # Registro de Cambios (Changelog)
@@ -27,6 +27,58 @@ archivo registra solo cambios de producto liberados o por liberar. Ver [[IMPLEME
 para el estado de los planes en curso.
 
 ## [Sin publicar]
+
+### Arreglado: un administrador entraba al laboratorio interno con rol de subcontratista (2026-09-02)
+
+`GET /internal/design-system` respondía 403 a una sesión de Admin, y con eso tumbaba 24 pruebas del
+job `design-system-runtime` (~50 minutos de reloj), dejando el carril visual del repo inservible.
+
+La política no estaba mal: denegaba correctamente **para el rol que recibía**. Lo que llegaba mal
+era el rol. `RbacService::tableExists()` preguntaba por `project_members` con
+`SELECT ... FROM information_schema.tables`, y desde el 2026-08-29 `ProjectSqlGuard` rechaza toda
+tabla calificada por schema (`DomainException`, `ProjectSqlGuard.php:1634`). Esa excepción caía en
+un `catch (\Throwable) { $exists = false; }`, así que el servicio concluía que la tabla no existe,
+`resolveRoleFromProjectMembers()` devolvía `null` sin llegar a consultar nada, y `normalizeRole(null)`
+lo convertía en `RbacCatalog::DEFAULT_ROLE`, que es `'C'` (Subcontratista). Medido: `test.A` tenía
+sus cinco membresías `'A'` intactas todo el tiempo. Los datos nunca estuvieron mal.
+
+El arreglo no ablanda el gate ni la política. `Database` ya tenía la consulta bien hecha por dentro
+(`rawTableExists()`, público como `tableExists()` desde antes) y solo faltaba terminar de exponerla:
+se añaden `columnExists()` y `tablesWithColumn()`, y los siete sitios de `src/` que armaban la
+consulta a mano pasan por ahí — `RbacService`, `EventService`, `ReportProcessor`, `LpsService`,
+`ProfesionalesApiController`, `SubcontratistasApiController`, `ProgramChangeDetector` y el legado
+`productividad_temporal.php`. En `ReportProcessor` no había ningún catch: la excepción subía y
+rompía la generación de informes, también desde el 2026-08-29.
+
+Y se retiran tres fallas silenciosas, que es lo que dejó todo esto escondido cuatro días: el catch
+de `RbacService::tableExists()` y los `catch (\Throwable) → DEFAULT_ROLE` de
+`DesignSystemLabAccessPolicy` y `BiPreviewAccessPolicy`. Un fallo al resolver un rol se volvía
+indistinguible de una denegación legítima. Una decisión de autorización no puede apoyarse en una
+respuesta inventada: ahora falla ruidosamente.
+
+Cubierto por `tests/test_rbac_metadatos_sin_gate.php` (nivel `db`), que mide el mecanismo y no la
+semilla: busca en la base un usuario con membresía `'A'` real y comprueba que la resolución se la
+devuelve, que el laboratorio le responde 200, y que a quien no es administrador le sigue
+respondiendo 403.
+
+Los dos arreglos de abajo y este viajan juntos a propósito: el del control visual destraba el
+arranque del carril, y este hace que sus pruebas pasen. Por separado ninguno de los dos podía
+demostrarse en verde — cada PR moría en la mitad que le faltaba al otro.
+
+### Arreglado: el control visual del CI vuelve a ejecutarse (2026-09-02)
+
+Desde el endurecimiento del 2026-08-29 el job `design-system-runtime` no había corrido ni una vez:
+su paso de arranque rechazaba la configuración con «`DB_USER must be root; received
+lps_runtime_ci`». Dos piezas del repositorio se contradecían: `docker-compose.ci.yml` pasó a
+conectar la aplicación con la cuenta de runtime DML-only —que es lo correcto y lo que documenta
+`docs/security/runtime-db-user.md`—, pero `scripts/design-system-ci-compose-contract.mjs` seguía
+exigiendo los valores anteriores al endurecimiento. Nadie lo vio porque el job estático fallaba
+antes y este salía «omitido», que se lee como inocuo.
+
+Cede el contrato, no la seguridad: ahora exige la cuenta runtime y sus credenciales efímeras,
+comprueba que `db` inicialice esa misma cuenta, rechaza `root` de forma explícita y rechaza que
+runtime y administración compartan contraseña. Fijado por `tests/design-system/ci-preflight.test.mjs`,
+que con el contrato viejo cae.
 
 ### Arreglado: la programación semanal y el programa general volvían a cargar (2026-09-02)
 

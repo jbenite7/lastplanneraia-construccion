@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-28
+updated: 2026-09-02
 ---
 
 # Tareas
@@ -207,6 +207,88 @@ decidido de antemano), y se revirtió por decisión de Felipe. Detalle completo 
   el rollback para experimentos contra la base de dev: volver a sembrar desde el dump.
 
 ## Bloqueantes
+
+**2026-09-03 — Seis gates del carril visual están en rojo, y ninguno es de los frentes que los
+destaparon. → Merece frente propio: «poner el carril visual en verde».** El job
+`design-system-runtime` llevaba sin correr desde el 2026-08-29 (primero por el contrato del
+compose, después por el 403 del laboratorio). Con los dos arreglados en
+`fix/gate-metadatos-rol-admin`, el job **llega hasta el final por primera vez** y deja ver la deuda
+que estaba escondida detrás. Corrida `33759660935`, tema `dark`, sha `d419072d`:
+
+| Gate | Resultado |
+|---|---|
+| `G_LABORATORY_GATES` | **success** ← las 24 pruebas del 403, arregladas |
+| `G_PILOT_LAB_GATES`, `G_PG_PERSISTENCE_RBAC`, `G_SEMANAL_ROLES_PHASES`, `G_RUNTIME_GRANTS`, `G_PHP_ADMIN_DB`, `G_RUNTIME_BUDGET_MEASURE` | success |
+| `G_PHPSTAN_BASELINE` | failure — `New PHPStan findings: 7` |
+| `G_PHPSTAN_PDC` | failure — 1 error, `Services/Pdc/SeguimientoService.php:672` |
+| `G_PHP_SUITE` | failure — los mismos fallos ya medidos en `main` |
+| `G_FULL_APP_FLOW`, `G_RUNTIME_BUDGET_CHECK`, `G_KEYBOARD_REFLOW_EVIDENCE` | failure |
+
+Atribución de cada rojo, medida y no supuesta:
+
+- **`G_PHPSTAN_BASELINE`**: `docs/design-system/phpstan-baseline.json` tiene `fingerprints: []`
+  —tolera cero— y `main` produce 7 avisos. Los 7 son idénticos en `main` y en la rama (medido con
+  `phpstan analyse src admin/src`: `Found 7 errors` en ambos, misma lista:
+  `ProgramacionIntermediaController.php:624`, `Database.php`, `MultiProjectScope.php:13,14,28`).
+  **Límite de esta afirmación:** el gate imprime el conteo, no los fingerprints, así que la
+  equivalencia se sostiene en el número más la comparación local de la lista.
+- **`G_PHPSTAN_PDC`**: `activePackageNames()` sin tipo de iterable, en un archivo que ninguno de
+  los dos frentes tocó.
+- **`G_PHP_SUITE`**: es la cola del gate de scope, ya anotada en el bloqueante siguiente.
+- **Los tres últimos**: gates visuales y de rendimiento que llevaban cinco días sin ejecutarse; su
+  línea base en CI no existe todavía, así que hay que establecerla antes de leerlos.
+
+**No se arreglan desde el frente del 403 a propósito.** El camino corto —registrar los 7
+fingerprints en el JSON para que el gate se ponga verde— es un renglón de trabajo y apaga el único
+control que iba a avisar del próximo; `AGENTS.md` lo prohíbe con nombre propio («no regeneres
+snapshots ni baselines para forzar un resultado verde»), y sería especialmente torcido hacerlo
+desde un PR cuyo hallazgo central es que tapar un error lo esconde durante días.
+
+**Trampa de lectura, medida el 2026-09-03:** en este job los pasos individuales aparecen con ✓
+aunque fallen —cada uno registra su resultado en una variable `G_*` y el rojo lo pone el paso final
+`Summarize gate results`—. Leer «✓ Enforce PHPStan baseline» y concluir que pasó es un error fácil:
+el veredicto está en el resumen, no en los pasos.
+
+**2026-09-02 — El gate de scope rompe la lectura de metadatos en `admin/` y en 20+ pruebas; el
+403 del laboratorio ya se arregló, esta es su cola.** `ProjectSqlGuard` rechaza cualquier tabla
+calificada por schema desde el 2026-08-29, e `information_schema` lo está. La rama
+`fix/gate-metadatos-rol-admin` cerró los siete llamadores de `src/` pasándolos por
+`Database::tableExists()/columnExists()/tablesWithColumn()`, pero quedan dos frentes sin tocar,
+ambos **ya rojos en `main` antes de ese arreglo** (medido: 24 pruebas fallan en `--nivel=http` y 23
+en `--nivel=db` sobre `main` 58d11137, con el mismo conjunto exacto antes y después de la rama):
+
+- **`admin/src/`** arma la consulta a mano en seis puntos (`Models/Project.php:983,1007,1193,1205`,
+  `Controllers/DashboardController.php:579`, `Controllers/FamilyCatalogController.php:578`). El
+  panel de Admin comparte el `Database` de `src/`, así que sí pasa por el gate: `Project.php`
+  aparece en el stack de `test_admin_global_project_model.php`.
+- **Las pruebas mismas**, que consultan por `Database::query()` con SQL propio
+  (`test_cip_poblado.php`, `test_pdc_v2_*`, `test_preconstruction_import_global_ids.php`,
+  `test_schedule_update_draft_import.php`, …). Aquí hay dos causas mezcladas: metadatos calificados
+  por schema, y consultas a tablas de proyecto sin `ProjectScope` activo. **No son el mismo
+  problema y conviene separarlas antes de tocar nada** — la segunda puede ser el gate funcionando
+  como debe, con pruebas que no declaran su scope.
+
+Merece frente propio: es más grande que el 403 y no lo bloquea.
+
+**2026-09-02 — Trampa medida: el nivel `http` de la suite no se puede correr desde un worktree con
+el `.env` enlazado.** `CLAUDE.md` manda `ln -s` y para `docker compose` está bien (lo lee desde el
+host), pero el enlace apunta a una ruta del host que **dentro del contenedor no existe**, así que
+el PHP servido lee un `.env` ilegible: `DEV_DOOR` aparece cerrado y fallan
+`test_admin_dev_door_guard`, `test_dev_door_http`, `test_admin_modulos` y
+`test_semanal_sanear_csrf`. Parecen regresión y no lo son — con una copia real del `.env` las
+cuatro vuelven a verde. Costó una vuelta el 2026-09-02. Pendiente decidir si se documenta en
+`CLAUDE.md` o si `scripts/` monta el `.env` de otra forma para el caso http.
+
+**Resuelto 2026-09-02 — el bloqueante «el laboratorio de diseño responde 403 al administrador»
+deja de serlo.** Se retira de esta sección, no se deja marcado: el reporte planteaba dos caminos
+(semilla con rol `C`, o mala elección entre membresías) y **ninguno de los dos era**. Los datos
+estaban sanos — `test.A` conservaba sus cinco membresías `'A'`. La causa real fue el gate de scope
+rechazando `information_schema` dentro de un `catch` que convertía la excepción en «la tabla no
+existe», con `DEFAULT_ROLE` (`'C'`) como relleno. Arreglado en `fix/gate-metadatos-rol-admin`, que
+además trae el contrato del compose de CI porque los dos PR se necesitaban mutuamente para poder
+ponerse verdes. La cadena completa, en la entrada del `CHANGELOG`. Lo que queda vivo de aquel
+reporte es el primer bloqueante de esta sección: la cola del mismo defecto en `admin/` y en las
+pruebas.
 
 **2026-08-28 — `theme.js` deshace el claro de entrada (D12) en 7 páginas reales; bloquea el
 arranque del plan de Programa General, no la fase cero actual.** Destapado ejecutando el goal

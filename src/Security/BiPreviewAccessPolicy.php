@@ -54,11 +54,10 @@ final class BiPreviewAccessPolicy
         ));
 
         if ($username !== '') {
-            try {
-                return (new RbacService())->resolveRoleForUser($username);
-            } catch (\Throwable) {
-                return RbacCatalog::DEFAULT_ROLE;
-            }
+            // Sin catch, por el mismo criterio que DesignSystemLabAccessPolicy: convertir un
+            // fallo de resolución en DEFAULT_ROLE lo vuelve indistinguible de una denegación
+            // legítima, y así fue como la regresión de ProjectSqlGuard pasó cuatro días oculta.
+            return (new RbacService())->resolveRoleForUser($username);
         }
 
         return strtoupper(trim((string) (

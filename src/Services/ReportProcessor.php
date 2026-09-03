@@ -108,23 +108,16 @@ class ReportProcessor
             return false;
         }
 
-        $stmt = $this->db->query(
-            "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?",
-            [$tableName],
-        );
-
-        if ((int) $stmt->fetchColumn() > 0) {
+        // Por Database::tableExists()/columnExists(): consultar `information_schema` con query()
+        // lanza DomainException desde que ProjectSqlGuard cerró las tablas calificadas por schema
+        // (2026-08-29), y aquí no había catch, así que la excepción subía hasta romper el informe.
+        if ($this->db->tableExists($tableName)) {
             return true;
         }
 
         foreach (TableResolver::getValidTables() as $globalTable) {
             if (str_ends_with($tableName, '_' . $globalTable)) {
-                $stmt = $this->db->query(
-                    "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?",
-                    [$globalTable],
-                );
-
-                return (int) $stmt->fetchColumn() > 0;
+                return $this->db->tableExists($globalTable);
             }
         }
 
@@ -133,12 +126,7 @@ class ReportProcessor
 
     private function reportTableHasProjectId(string $table): bool
     {
-        $stmt = $this->db->query(
-            "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = 'project_id'",
-            [$table],
-        );
-
-        return (int) $stmt->fetchColumn() > 0;
+        return $this->db->columnExists($table, 'project_id');
     }
 
     private function clearReportTable(string $table, bool $pdcOnly = false): void

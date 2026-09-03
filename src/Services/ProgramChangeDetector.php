@@ -472,11 +472,9 @@ class ProgramChangeDetector
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
         // Ensure project_id column exists for global table support
-        $hasProjectId = (int) $this->db->query(
-            'SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?',
-            [$t, 'project_id'],
-        )->fetchColumn();
-        if ($hasProjectId === 0) {
+        // Por Database::columnExists(): consultar `information_schema` con query() lanza
+        // DomainException desde que ProjectSqlGuard cerró las tablas calificadas por schema.
+        if (!$this->db->columnExists($t, 'project_id')) {
             $this->db->query("ALTER TABLE `{$t}` ADD COLUMN `project_id` INT DEFAULT NULL AFTER `id`");
         }
     }

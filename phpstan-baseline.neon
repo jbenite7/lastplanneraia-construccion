@@ -194,7 +194,7 @@ parameters:
 			path: src/Core/Database.php
 
 		-
-			message: '#^Cannot call method query\(\) on class\-string\|object\.$#'
+			message: '#^Cannot call method tablesWithColumn\(\) on class\-string\|object\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Core/Lps/LpsService.php
@@ -236,7 +236,7 @@ parameters:
 			path: src/Legacy/nueva_semana.php
 
 		-
-			message: '#^Cannot call method query\(\) on class\-string\|object\.$#'
+			message: '#^Cannot call method tablesWithColumn\(\) on class\-string\|object\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Legacy/productividad_temporal.php
