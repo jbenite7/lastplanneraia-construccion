@@ -6,6 +6,25 @@ const EXPECTED_COMPOSE_FILES = ['docker-compose.ci.yml', 'docker-compose.yml'];
 const EXPECTED_DATABASE = 'lastplanneraia_ci';
 const DB_DOCKERFILE_PATH = 'database/fixtures/design-system-ci.Dockerfile';
 
+// Credenciales efimeras del proyecto Compose desechable de cada corrida. Son los defaults
+// `ci-*-only-*` de docker-compose.ci.yml (docs/security/runtime-db-user.md, «CI»): la app
+// conecta como la cuenta runtime, DML-only, y `db` conserva la contraseña administrativa solo
+// para inicializar y para la lane `admin-db`, que la inyecta en su unico paso.
+//
+// Hasta el 2026-09-02 este contrato exigia `DB_USER=root` y `ci-only-password`: eran los valores
+// del compose ANTERIOR al endurecimiento de 48e06072 (2026-08-29), que separo runtime de
+// administracion y nunca actualizo este archivo. El resultado fue que «Verify isolated runtime
+// target» rechazaba la configuracion correcta (`DB_USER must be root; received lps_runtime_ci`)
+// y el job de runtime aparecia `skipped` detras del estatico -- sin ejecutar un gate visual desde
+// esa fecha. Exigir root aqui era ademas lo contrario de lo que el resto del repo ya demuestra:
+// tests/design-system/visual-ci-contract.test.mjs prohibe root fuera de la lane admin-db, y el
+// config `runtime_db_least_privilege` de docker-compose.yml rehusa inicializar si MYSQL_USER es
+// root. El guardarrail sigue siendo exacto -- valores literales, no «cualquier cosa» -- pero
+// ahora vigila la intencion vigente y rechaza root de forma explicita.
+const EXPECTED_RUNTIME_USER = 'lps_runtime_ci';
+const EXPECTED_RUNTIME_PASSWORD = 'ci-runtime-only-password';
+const EXPECTED_ADMIN_PASSWORD = 'ci-admin-only-password';
+
 function reject(detail) {
   throw new Error(`Unsafe design-system CI target: ${detail}`);
 }
@@ -109,8 +128,12 @@ export function assertSafeCiComposeConfig(config, env = process.env) {
   requireEqual(app.environment?.DB_HOST, 'db', 'DB_HOST');
   requireEqual(app.environment?.DB_PORT, 3306, 'DB_PORT');
   requireEqual(app.environment?.DB_NAME, EXPECTED_DATABASE, 'DB_NAME');
-  requireEqual(app.environment?.DB_USER, 'root', 'DB_USER');
-  requireEqual(app.environment?.DB_PASS, 'ci-only-password', 'DB_PASS');
+  if (String(app.environment?.DB_USER ?? '') === 'root') {
+    reject('DB_USER must be the DML-only runtime account, never root: the app of the isolated CI '
+      + 'target connects with least privilege and only the admin-db lane may use the admin account');
+  }
+  requireEqual(app.environment?.DB_USER, EXPECTED_RUNTIME_USER, 'DB_USER');
+  requireEqual(app.environment?.DB_PASS, EXPECTED_RUNTIME_PASSWORD, 'DB_PASS');
   requireEqual(app.environment?.USE_GLOBAL_TABLES, 'true', 'USE_GLOBAL_TABLES');
   requireEqual(app.image, `lps-aia-design-system-ci:${runId}`, 'app image');
   assertLabels(app, env, runId);
@@ -131,7 +154,15 @@ export function assertSafeCiComposeConfig(config, env = process.env) {
   const dbDockerfile = canonicalBuildPath(db.build.dockerfile, dbContext, 'db Dockerfile');
   requireEqual(dbDockerfile, path.join(worktreeRoot, DB_DOCKERFILE_PATH), 'db Dockerfile');
   requireEqual(db.environment?.MYSQL_DATABASE, EXPECTED_DATABASE, 'MYSQL_DATABASE');
-  requireEqual(db.environment?.MYSQL_ROOT_PASSWORD, 'ci-only-password', 'MYSQL_ROOT_PASSWORD');
+  // La cuenta que la imagen oficial crea al inicializar debe ser la misma con la que la app
+  // conecta: si divergieran, la app entraria con una cuenta que el config de minimo privilegio
+  // nunca recorto.
+  requireEqual(db.environment?.MYSQL_USER, EXPECTED_RUNTIME_USER, 'MYSQL_USER');
+  requireEqual(db.environment?.MYSQL_PASSWORD, EXPECTED_RUNTIME_PASSWORD, 'MYSQL_PASSWORD');
+  requireEqual(db.environment?.MYSQL_ROOT_PASSWORD, EXPECTED_ADMIN_PASSWORD, 'MYSQL_ROOT_PASSWORD');
+  if (String(db.environment?.MYSQL_PASSWORD ?? '') === String(db.environment?.MYSQL_ROOT_PASSWORD ?? '')) {
+    reject('runtime and admin passwords must differ: sharing them collapses the two lanes into one');
+  }
   assertSinglePort(app, 80, 18081, 'app');
   assertSinglePort(db, 3306, 13307, 'db');
 

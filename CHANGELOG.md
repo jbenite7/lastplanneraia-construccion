@@ -10,7 +10,7 @@ resumen: Todos los cambios notables en este proyecto serán documentados en este
 project: lps-aia
 type: changelog
 status: activo
-updated: 2026-08-27
+updated: 2026-09-02
 ---
 
 # Registro de Cambios (Changelog)
@@ -60,6 +60,25 @@ Cubierto por `tests/test_rbac_metadatos_sin_gate.php` (nivel `db`), que mide el 
 semilla: busca en la base un usuario con membresía `'A'` real y comprueba que la resolución se la
 devuelve, que el laboratorio le responde 200, y que a quien no es administrador le sigue
 respondiendo 403.
+
+Los dos arreglos de abajo y este viajan juntos a propósito: el del control visual destraba el
+arranque del carril, y este hace que sus pruebas pasen. Por separado ninguno de los dos podía
+demostrarse en verde — cada PR moría en la mitad que le faltaba al otro.
+
+### Arreglado: el control visual del CI vuelve a ejecutarse (2026-09-02)
+
+Desde el endurecimiento del 2026-08-29 el job `design-system-runtime` no había corrido ni una vez:
+su paso de arranque rechazaba la configuración con «`DB_USER must be root; received
+lps_runtime_ci`». Dos piezas del repositorio se contradecían: `docker-compose.ci.yml` pasó a
+conectar la aplicación con la cuenta de runtime DML-only —que es lo correcto y lo que documenta
+`docs/security/runtime-db-user.md`—, pero `scripts/design-system-ci-compose-contract.mjs` seguía
+exigiendo los valores anteriores al endurecimiento. Nadie lo vio porque el job estático fallaba
+antes y este salía «omitido», que se lee como inocuo.
+
+Cede el contrato, no la seguridad: ahora exige la cuenta runtime y sus credenciales efímeras,
+comprueba que `db` inicialice esa misma cuenta, rechaza `root` de forma explícita y rechaza que
+runtime y administración compartan contraseña. Fijado por `tests/design-system/ci-preflight.test.mjs`,
+que con el contrato viejo cae.
 
 ### Arreglado: la programación semanal y el programa general volvían a cargar (2026-09-02)
 

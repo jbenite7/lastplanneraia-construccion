@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-28
+updated: 2026-09-02
 ---
 
 # Tareas
@@ -237,6 +237,17 @@ el PHP servido lee un `.env` ilegible: `DEV_DOOR` aparece cerrado y fallan
 `test_semanal_sanear_csrf`. Parecen regresión y no lo son — con una copia real del `.env` las
 cuatro vuelven a verde. Costó una vuelta el 2026-09-02. Pendiente decidir si se documenta en
 `CLAUDE.md` o si `scripts/` monta el `.env` de otra forma para el caso http.
+
+**Resuelto 2026-09-02 — el bloqueante «el laboratorio de diseño responde 403 al administrador»
+deja de serlo.** Se retira de esta sección, no se deja marcado: el reporte planteaba dos caminos
+(semilla con rol `C`, o mala elección entre membresías) y **ninguno de los dos era**. Los datos
+estaban sanos — `test.A` conservaba sus cinco membresías `'A'`. La causa real fue el gate de scope
+rechazando `information_schema` dentro de un `catch` que convertía la excepción en «la tabla no
+existe», con `DEFAULT_ROLE` (`'C'`) como relleno. Arreglado en `fix/gate-metadatos-rol-admin`, que
+además trae el contrato del compose de CI porque los dos PR se necesitaban mutuamente para poder
+ponerse verdes. La cadena completa, en la entrada del `CHANGELOG`. Lo que queda vivo de aquel
+reporte es el primer bloqueante de esta sección: la cola del mismo defecto en `admin/` y en las
+pruebas.
 
 **2026-08-28 — `theme.js` deshace el claro de entrada (D12) en 7 páginas reales; bloquea el
 arranque del plan de Programa General, no la fase cero actual.** Destapado ejecutando el goal

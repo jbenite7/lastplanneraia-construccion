@@ -55,8 +55,10 @@ function safeConfig() {
           DB_HOST: 'db',
           DB_PORT: '3306',
           DB_NAME: 'lastplanneraia_ci',
-          DB_USER: 'root',
-          DB_PASS: 'ci-only-password',
+          // Cuenta runtime DML-only del endurecimiento de 48e06072 (2026-08-29): la app del CI
+          // aislado nunca conecta como root; ver docs/security/runtime-db-user.md, «CI».
+          DB_USER: 'lps_runtime_ci',
+          DB_PASS: 'ci-runtime-only-password',
           USE_GLOBAL_TABLES: 'true',
         },
         ports: [{ target: 80, published: '18081' }],
@@ -75,7 +77,9 @@ function safeConfig() {
         },
         environment: {
           MYSQL_DATABASE: 'lastplanneraia_ci',
-          MYSQL_ROOT_PASSWORD: 'ci-only-password',
+          MYSQL_USER: 'lps_runtime_ci',
+          MYSQL_PASSWORD: 'ci-runtime-only-password',
+          MYSQL_ROOT_PASSWORD: 'ci-admin-only-password',
         },
         ports: [{ target: 3306, published: '13307' }],
         volumes: [
@@ -91,6 +95,32 @@ function safeConfig() {
 
 test('accepts only the deterministic isolated CI target', () => {
   assert.equal(assertSafeCiComposeConfig(safeConfig(), SAFE_ENV), true);
+});
+
+// 2026-09-02: hasta hoy este contrato exigia `DB_USER=root` -- el compose ANTERIOR al
+// endurecimiento de 48e06072 -- y por eso rechazaba la configuracion correcta y dejaba el job de
+// runtime en `skipped` desde el 2026-08-29. La app del CI aislado conecta con la cuenta runtime
+// DML-only; root queda reservado a la lane `admin-db`, que lo inyecta en su unico paso (lo vigila
+// visual-ci-contract.test.mjs). Este test fija las dos direcciones: root se rechaza aunque venga con
+// la contraseña administrativa correcta, y la cuenta runtime se rechaza si usa la administrativa.
+test('rejects root or the admin credentials as the runtime account', () => {
+  const rootApp = safeConfig();
+  rootApp.services.app.environment.DB_USER = 'root';
+  rootApp.services.app.environment.DB_PASS = 'ci-admin-only-password';
+  assert.throws(() => assertSafeCiComposeConfig(rootApp, SAFE_ENV), /never root/);
+
+  const adminPasswordOnRuntime = safeConfig();
+  adminPasswordOnRuntime.services.app.environment.DB_PASS = 'ci-admin-only-password';
+  assert.throws(() => assertSafeCiComposeConfig(adminPasswordOnRuntime, SAFE_ENV), /DB_PASS/);
+
+  const sharedPasswords = safeConfig();
+  sharedPasswords.services.db.environment.MYSQL_PASSWORD = 'ci-admin-only-password';
+  sharedPasswords.services.app.environment.DB_PASS = 'ci-admin-only-password';
+  assert.throws(() => assertSafeCiComposeConfig(sharedPasswords, SAFE_ENV), /DB_PASS|must differ/);
+
+  const divergentDbUser = safeConfig();
+  divergentDbUser.services.db.environment.MYSQL_USER = 'otra_cuenta';
+  assert.throws(() => assertSafeCiComposeConfig(divergentDbUser, SAFE_ENV), /MYSQL_USER/);
 });
 
 test('rejects a local or production database and volume', () => {
