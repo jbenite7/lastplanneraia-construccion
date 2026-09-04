@@ -51,6 +51,20 @@ retira una entrada obsoleta del inventario: `login-brand-unified.css` (la vista 
 carga en `/login` desde que S01 movió esa ruta al shell React, y el gate lo reportaba como
 `stale-inventory-entry`.
 
+### Conocido: dos tests de contrato CSRF fallan solo en CI, sin causa raíz cerrada (2026-09-03)
+
+`test_shell_week_administration_contract.php` y `test_shell_week_context_contract.php` — introducidos
+por el fix anterior (CSRF de cambio de semana) — pasan en cualquier reproducción local (incluida una
+imagen recién construida con el mismo digest de `php:8.3-apache` que usa CI y con la caché de GHA
+purgada) pero fallan por `CSRF_INVALID` en `design-system-runtime`, idéntico en los dos temas.
+Mecanismo localizado: el helper de ambos tests genera el token en un subproceso CLI que hace
+`session_id($sid); session_start();` sobre el SID de la sesión ya autenticada; en CI, `session_id()`
+queda vacío tras `session_start()`, sin ningún `E_WARNING` capturable, así que el token se genera en
+una sesión fantasma en vez de adjuntarse a la real. No es una vulnerabilidad activa — el endpoint real
+sigue validando CSRF correctamente contra usuarios reales; falla el helper del test, no el
+`ContextController`. Sin causa raíz confirmada tras cuatro corridas de CI de diagnóstico. Detalle
+completo en `TASKS.md` › «Migración React — shell mínimo».
+
 ### Documentación: skill `datatables-to-handsontable` archivada en el repo (2026-09-03)
 
 `docs/archivo/skills/datatables-to-handsontable/SKILL.md` guarda la skill de la migración puntual

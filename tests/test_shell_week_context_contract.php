@@ -51,26 +51,12 @@ function sesion(string $usuario): array
 
 function csrfTokenForSession(string $sessionId): string
 {
-    $diagFile = tempnam(sys_get_temp_dir(), 'csrf_diag_');
-    $script = '<?php require "/var/www/html/vendor/autoload.php"; '
-        . 'error_reporting(E_ALL); ini_set("display_errors", "1"); '
-        . '$diag = []; '
-        . '$diag[] = "uid=" . (function_exists("posix_getuid") ? posix_getuid() : "n/a") . " sid_pedido=" . $argv[1]; '
-        . 'session_id($argv[1]); '
-        . 'set_error_handler(function ($no, $str) use (&$diag) { $diag[] = "WARNING: {$str}"; return true; }); '
-        . 'session_start(); '
-        . 'restore_error_handler(); '
-        . '$diag[] = "sid_real_tras_start=" . session_id() . " coincide=" . (session_id() === $argv[1] ? "si" : "NO"); '
-        . '$diag[] = "shell_api_ya_en_sesion=" . (empty($_SESSION["_csrf_tokens"]["shell_api"]) ? "no" : substr($_SESSION["_csrf_tokens"]["shell_api"], 0, 12) . "..."); '
-        . 'file_put_contents($argv[2], implode("\n", $diag)); '
+    $script = '<?php require "/var/www/html/vendor/autoload.php"; session_id($argv[1]); @session_start(); '
         . 'echo \App\Security\CsrfTokenManager::generate("shell_api"); session_write_close();';
     $tmp = tempnam(sys_get_temp_dir(), 'csrf_gen_');
     file_put_contents($tmp, $script);
-    $token = trim((string) shell_exec('php ' . escapeshellarg($tmp) . ' ' . escapeshellarg($sessionId) . ' ' . escapeshellarg($diagFile) . ' 2>&1'));
+    $token = trim((string) shell_exec('php ' . escapeshellarg($tmp) . ' ' . escapeshellarg($sessionId) . ' 2>&1'));
     @unlink($tmp);
-    $diag = @file_get_contents($diagFile);
-    @unlink($diagFile);
-    fwrite(STDERR, "DIAG helper interno:\n" . ($diag !== false ? $diag : '(sin archivo de diagnóstico)') . "\n");
     if (strlen($token) < 32) {
         fwrite(STDERR, "ABORT: no se pudo generar el token CSRF shell_api (salida: {$token})\n");
         exit(2);
@@ -121,17 +107,7 @@ $semanaValida = (int) $semanaValida;
 $semanaInexistente = 900001; // muy por encima de cualquier semana fixture real
 
 [$jar, $sid] = sesion('test.R');
-
-// DIAGNÓSTICO TEMPORAL (2026-09-03) — instrumentación de un solo uso para el hallazgo
-// CSRF_INVALID que solo reproduce en CI (run 33811425650). Se revierte apenas se
-// tenga la causa raíz. No forma parte del contrato del test.
-$sessFile = sys_get_temp_dir() . "/sess_{$sid}";
-fwrite(STDERR, "DIAG sys_get_temp_dir()=" . sys_get_temp_dir() . " ini(session.save_path)=[" . ini_get('session.save_path') . "] getmypid()=" . getmypid() . "\n");
-fwrite(STDERR, "DIAG sessFile={$sessFile} existe=" . (file_exists($sessFile) ? 'si' : 'no') . " contenido_pre=" . var_export(@file_get_contents($sessFile), true) . "\n");
-
 $token = csrfTokenForSession($sid);
-
-fwrite(STDERR, "DIAG token_generado=" . substr($token, 0, 8) . "... existe_post=" . (file_exists($sessFile) ? 'si' : 'no') . " contenido_post=" . var_export(@file_get_contents($sessFile), true) . "\n");
 
 $fallos = 0;
 $total = 0;
