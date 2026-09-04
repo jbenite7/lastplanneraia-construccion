@@ -2,11 +2,11 @@
 capa: wiki
 tipo: goal
 estado: vigente
-fecha: 2026-09-03
+fecha: 2026-09-04
 areas: [proceso]
 tags: [dashboard]
 fuente: los 65 `goals/<slug>/goal.md` recontados el 2026-09-03 en el pase de veracidad, más `git ls-files` y el lint de la wiki
-resumen: "Estado de los 65 goals del repo, leído de la sección `## Cierre` de cada goal.md: 59 cerrados y 6 abiertos"
+resumen: "Estado de los 66 goals del repo, leído de la sección `## Cierre` de cada goal.md: 59 cerrados y 7 abiertos"
 ---
 # Estado de los goals
 
@@ -32,10 +32,12 @@ Para las **fases de los cuatro programas y los pendientes vivos**, [[TASKS]], qu
 | | Cuántos | Qué significa |
 |---|---|---|
 | **Cerrados** | 59 | `## Cierre` con evidencia. Incluye 1 retirado y 1 descartado |
-| **Abiertos** | 6 | objetivo redactado, sin cierre |
+| **Abiertos** | 7 | objetivo redactado, sin cierre |
 | **Plantilla** | 0 | ya no queda ninguna |
 
-*(Recuento del **2026-09-03**, pase de veracidad, con
+*(**Actualizado el 2026-09-04**: entró [[goals/guard-datos-suite/goal|guard-datos-suite]], abierto, con
+su medición hecha antes de declararlo. Son **66 carpetas, 59 con cierre, 7 sin él**. Recuento previo del
+**2026-09-03**, pase de veracidad, con
 `for d in goals/*/; do grep -q '^## Cierre' $d/goal.md; done`: **65 carpetas, 59 con cierre, 6 sin
 él, 0 sin `goal.md`**. La tabla anterior decía 58/5 sobre 63, corte del 2026-08-25 que envejeció
 nueve días; la de antes, 42/13/1 del 2026-08-19, sumaba 56.)*
@@ -59,6 +61,11 @@ un frente. **La última que quedaba, `apply-recalculo-estados`, ya tiene su `## 
 > seguía dando por abiertos — uno como «activo» y el otro como «pausado». **Ninguno de los cinco que
 > quedaban está esperando trabajo ajeno: a tres les falta solo escribir su cierre.**
 >
+> **2026-09-04: 59 de 66.** Entró `guard-datos-suite`, abierto: devolver `G_PHP_SUITE` a verde tras
+> `ProjectSqlGuard`, con los 24 tests en rojo del CI clasificados uno por uno — 8 destapan código de
+> producción roto y 16 son tests que consultan sin declarar alcance. Es el segundo de los siete con
+> trabajo por delante de verdad.
+>
 > **Tercer recorte, 2026-09-03 (pase de veracidad): 59 de 65.** No salió ninguno; entraron dos:
 > `temas-y-forma-fase-cero` ya con cierre, y `paridad-shell-react-rls`, abierto y **en curso**, que
 > esta página no mencionaba. Es el único de los seis con trabajo activo de verdad.
@@ -66,6 +73,7 @@ un frente. **La última que quedaba, `apply-recalculo-estados`, ya tiene su `## 
 
 | Goal | Estado |
 |---|---|
+| [[goals/guard-datos-suite/goal\|guard-datos-suite]] | **Abierto el 2026-09-04, con su medición.** `G_PHP_SUITE` lleva 24 tests en rojo en cada corrida desde `ProjectSqlGuard` (`48e06072`). Clasificados: **8 destapan producción rota** (import SINCO del PDC, panel de administración, consolidación de informes, vistas BI) y **16 son tests sin adaptar**. Su condición de hecho prohíbe expresamente relajar el guard o saltar tests para cerrarlo |
 | [[goals/bi-control-tower-gemini/goal\|bi-control-tower-gemini]] | **Desbloqueado desde el 2026-08-20, y esta página decía lo contrario.** Su condición pedía aprobar seis modos, tres del tema `linen` retirado el 2026-07-25 (DS-030): nadie podía cumplirla. **Felipe resolvió D-7 con la opción (a): recortar la condición a los tres modos dark** (`DECISIONES_PENDIENTES.md:385`), y P4 lo confirma — «no bloquea a `bi-control-tower-gemini`, que cierra en dark por decisión propia». Lo que falta es **escribir su cierre**, no esperar nada. Ver [[condicion-de-hecho-caduca-sin-aviso]] |
 | [[goals/design-system-nucleo-gobernanza/goal\|design-system-nucleo-gobernanza]] | **No se cierra**, medido el 2026-08-10: de sus 15 gates solo 2 pasaban de verdad, 4 fallaban con evidencia, 8 no eran ejecutables y 1 era un recibo sin comando detrás. Los 14 artefactos de `docs/design-system/evidence/` eran stubs de dos claves. **Superado por el programa DS**: los 15 gates se reemplazan en DS-F3, no se arreglan. Ver [[gate-solo-cuenta-elementos-no-los-lee]] |
 | [[goals/reapertura-movil-y-tema-claro/goal\|reapertura-movil-y-tema-claro]] | **Abierto**, 4 de 7 fases cerradas (MO-F1, F2a-1, F2a-2a, F2a-2b). Quedan F2b —los 13 módulos restantes— y F3 —tema claro—; F4 se absorbió en DS-F3. **Su spec se derogó el 2026-08-25** a favor de P4, que ejecuta la decisión D-9 de Felipe: el trabajo vive ahí, no aquí |
