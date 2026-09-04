@@ -303,6 +303,13 @@ tests/browser/*
 !tests/browser/pdc-v2-vencimientos.spec.mjs
 !tests/browser/entrypoint-segmentation-dryrun.mjs
 !tests/browser/shell-week-admin.mjs
+!tests/browser/shell-week-context.spec.mjs
+!tests/browser/shell-runtime-react-errores.spec.mjs
+!tests/browser/shell-runtime-react-accesibilidad.spec.mjs
+!tests/browser/shell-runtime-react-a11y.spec.mjs
+!tests/browser/shell-runtime-react-layout.spec.mjs
+!tests/browser/shell-control-actividad.spec.mjs
+!tests/browser/shell-coexistence-navigation.spec.mjs
 !tests/browser/shell-sidebar-rollout.mjs
 !tests/browser/design-system-unlayered-delivery.mjs
 !tests/browser/design-system-table-contract.runtime.mjs
@@ -426,6 +433,8 @@ goals/ci-en-verde/*
 !tests/browser/programacion-movil-sin-grilla.mjs
 !tests/browser/programacion-movil-tarjeta.mjs
 !tests/browser/ct-intermedia.spec.mjs
+!tests/browser/login-react.spec.mjs
+!tests/browser/login-react.visual.mjs
 
 # Los goals entran en git — decision del usuario, 2026-08-18, misma razon que
 # `decisiones/` (D-COORD-1): sin versionar, dos sesiones escribiendo el mismo goal se

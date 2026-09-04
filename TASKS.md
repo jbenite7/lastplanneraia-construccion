@@ -200,12 +200,172 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
 - [x] **Shell mínimo React cerrado (2026-08-28):** `/app` cubre login, selección de proyecto,
   navegación por rol y tema claro/oscuro; la frontera conserva en PHP los módulos que aún no han
   migrado.
-- [ ] **Migrar recuperación de clave:** `password-forgot` y `password-reset` siguen en PHP por
-  decisión R12; requieren un frente propio que cubra correo, tokens y expiración.
+- [x] **S01 — el acceso lo sirve React, `CODE_COMPLETE` (2026-09-01).** `GET/HEAD` de `/` y `/login`
+  cruzan al shell React por un desvío en `SpaRouter` delante del router; la pantalla PHP sigue
+  registrada e intacta y `POST /login` no se movió, así que el rollback son tres líneas. Ocho goldens
+  aprobados por Felipe. Cierre completo en `docs/superpowers/plans/2026-08-30-s01-login-react.md` ›
+  `## Cierre`. **PR #20** abierto contra `main`, bloqueado por el CI (ver Bloqueantes).
+- [x] **Resuelto el 2026-09-03: el acceso abre en claro, no en oscuro** (decisión de Felipe).
+  `TEMA_FALLBACK` en `frontend/src/shell/tema.ts` pasa de `'oscuro'` a `'claro'`; el script de
+  arranque de `frontend/index.html` se invierte con la misma lógica. Los ocho goldens de
+  `login-react.visual.mjs` **no cambiaron** — cada captura fija su propio tema por `localStorage`,
+  ajeno al fallback —, verificado byte a byte contra el build reconstruido. Detalle en la spec
+  S01 §10.1/§16.
+- [x] **Resuelto el 2026-09-03: dos bugs reales de producción que el CI del PR #20 destapó al
+  correr por primera vez contra esta rama.** Ninguno lo causó el trabajo de hoy — ambos preexistían,
+  solo que `design-system-runtime` nunca había llegado tan lejos en `shell-minimo-react` hasta que
+  se resolvió la cadena de bloqueantes de PHPStan/guard (ver Bloqueantes).
+  - **CSS del shell sin capa en `/login`** — `frontend/src/shared/lps/lps-contexto.css` (único CSS
+    que compila el shell React) se entregaba sin `@layer`, así que ganaba a todas las capas del
+    sistema de diseño. Envuelto en `@layer module` (mismo patrón que `lab.css` y
+    `adapters/programa-general-handsontable.css`). De paso, `docs/design-system/unlayered-delivery-
+    inventory.json` tenía una entrada obsoleta para `/login` (`login-brand-unified.css`, la hoja de
+    la vista PHP vieja que ya no carga ahí desde que S01 movió esa ruta al shell React) — se retira,
+    no se conserva como excepción falsa.
+  - **Cambiar de semana estaba roto para usuarios reales** en cualquier página con la barra lateral
+    (`views/partials/shell_sidebar.php`, ~16 vistas). `ContextController::setWeek()`/`clearWeek()`
+    (T02) exige `X-CSRF-Token` con form-key `shell_api` desde antes de hoy, pero ninguna vista legacy
+    lo emitía — el JS legacy (`public/js/core/ContextManager.js`) mandaba el POST sin token y leía
+    el contrato de respuesta viejo (`data.success`/`data.message`) cuando el controlador ya devuelve
+    `{ok, week}`/`{ok:false, error:{code,message}}`. Se generaba el token `shell_api` en cuatro
+    controladores por separado (siguiendo el patrón ya establecido para `lps_drawer`) hasta
+    descubrir que `shell_sidebar.php` **ya genera sus propios tokens de forma independiente**
+    (línea de `lps_week_admin`) — se revirtieron los cuatro controladores y se emite el nuevo meta
+    `<meta name="lps-shell-csrf-token">` en ese único parcial, que cubre las 16 vistas de una vez.
+    `ContextManager.js` y el helper de test `tests/browser/support/session.mjs::changeWeek()` se
+    actualizan a leer ese meta y el contrato `{ok,...}`.
+  Verificado en runtime aislado: `programacion-semanal-roles-phases.mjs` → 11/11 (antes: 11 fallos
+  `CSRF_INVALID`); `design-system-unlayered-delivery.mjs` → 2/2 (antes: 1 fallo); `login-react.spec.mjs`
+  → 16/16 sin cambios; `test:design-system:runtime` completo → 31+1+20+1 pruebas, cero fallos;
+  `phpstan analyse src admin/src` → 1 error, confirmado preexistente a todo el trabajo de hoy
+  (`DatabaseWeekAdministrationRepository.php:277`, no tocado); `--nivel=puro` → 36/36 + PHPUnit
+  218 pruebas, verde.
+- [x] **Cerrada (2026-09-04) la regresión solo-CI de `CSRF_INVALID`** en
+  `test_shell_week_administration_contract.php` y `test_shell_week_context_contract.php`. Causa raíz
+  medida con instrumentación en CI, no inferida: el helper de ambos tests abría la sesión del
+  servidor desde un subproceso PHP (`session_id($sid); session_start();`). El archivo
+  `/tmp/sess_<sid>` lo crea Apache como `www-data` con modo `0600`; el CLI corre como root, y en el
+  runner de GitHub el `open()` devuelve «Permission denied (13)» pese al uid 0, porque `/tmp` es
+  sticky y world-writable y el endurecimiento de archivos regulares del kernel
+  (`fs.protected_regular`, activo en Ubuntu y en 0 en la VM de Docker Desktop) niega el acceso a un
+  archivo ajeno. `session_start()` devolvía `false`, `session_id()` quedaba vacío, y el token salía
+  en una sesión fantasma mientras el servidor validaba contra el real. La hipótesis anterior
+  —carrera por la programación de procesos en GitHub Actions— era falsa: el fallo es determinista.
+  El diagnóstico de la jornada anterior se había perdido porque `scripts/run-php-tests.php` solo
+  imprime las **últimas 15 líneas** de un test fallido, y el `uid` y los avisos salían antes de ese
+  corte; la ronda que lo cerró aborta en el punto exacto para que el diagnóstico quede al final.
+  Arreglo: el token se toma por HTTP del `<meta name="lps-shell-csrf-token">` del sidebar, la misma
+  vía del navegador. Mecanismo reproducido en local corriendo el subproceso como `nobody`, con los
+  dos mismos avisos y `session_id()` vacío.
+- [ ] **PR #20 no puede mergearse todavía, y ya no es por la regresión de CSRF.** Medido en la
+  corrida 33880761753 (2026-09-04, sha 2114a8f2): los dos tests del shell pasan en los dos temas,
+  y el conjunto de gates en rojo es **idéntico** al de la corrida anterior al arreglo (33827872388):
+  `G_PHPSTAN_BASELINE`, `G_PHP_SUITE`, `G_FULL_APP_FLOW`, `G_RUNTIME_BUDGET_CHECK` y
+  `G_KEYBOARD_REFLOW_EVIDENCE`. La diferencia entre ambas corridas son exactamente los dos tests
+  arreglados y nada más. Los 24 fallos restantes de `G_PHP_SUITE` son de nivel `db` y anteceden al
+  frente. Cada uno de esos gates tiene su propia entrada en este archivo; ninguno es del shell React.
+  **Ojo al leer el CI:** los pasos llevan `continue-on-error`, así que muestran «✓» aunque fallen —
+  el estado real se lee en las variables `G_*` del paso «Summarize gate results».
+- [ ] **S01 — segunda mitad: retirar el login PHP (`MIGRATION_COMPLETE`).** Solo después de que el
+  PR #20 entre a `main` y el corte haya recibido uso real durante una ventana que **nadie ha fijado
+  todavía** (ni días ni criterio de «ya no hace falta volver» — fijarlo es lo primero). Entonces:
+  borrar `views/auth/login.view.php`; quitar del router `GET/HEAD/POST /login`, `/password/update` y
+  `/login/cancelar`; reducir `LoginController` a `logout()`; crear `SpaHostController::show()` para
+  `GET /` y `GET /login` (FastRoute responde 405 al POST retirado); retirar del manifiesto `auth.json`
+  el escenario `auth-login-dark-1180x820`, que es el golden del login PHP y ya no representa lo que
+  sirve `/login`; y quitar `login.view.php` de `auth.json.sources` sin tocar las de S02/S03. Pasos 6–7
+  de §12 y tabla de §13 de la spec.
+- [x] **Resuelto el 2026-09-03: el acceso abre en claro.** Decisión de Felipe, siguiendo la
+  recomendación: `AGENTS.md` («claro es la cara del producto y el tema de entrada», spec de temas
+  2026-08-28) y `docs/design-system/manifests/auth.json` («claro por defecto sin flash») ceden la
+  spec S01 §10.1, no al revés. `TEMA_FALLBACK` en `frontend/src/shell/tema.ts` pasa de `'oscuro'` a
+  `'claro'`; el script de arranque en `frontend/index.html` (evita el flash antes de que React
+  hidrate) se invierte con la misma lógica.
+  **Los ocho goldens NO cambiaron, contra lo que esta entrada suponía.** Cada captura de
+  `login-react.visual.mjs` fija su propio tema explícito vía `localStorage` antes de navegar
+  (`fijarTema()` en `login-react-fixtures.mjs`) — ninguna depende del fallback sin preferencia
+  guardada. Verificado corriendo el spec real con `S01_GOLDENS_APROBADOS=1` contra el build
+  reconstruido: los 8 goldens comparan **byte a byte idénticos** a los ya aprobados. Solo cambia el
+  primer render antes de que exista cualquier preferencia guardada — un caso que ningún golden
+  ejercita.
+  Verificado además: `frontend` — 580/580 tests (con los 18 de `tema.test.ts` actualizados al nuevo
+  fallback), `tsc --noEmit` limpio; `login-react.spec.mjs` — 16/16 (funcional + accesibilidad en
+  ambos temas); `test_login_design_system_contract.mjs` → RC 0; `design-system-static-suite.mjs` →
+  8/8. Build de `public/app/` regenerado y comiteado junto con el cambio (contenido versionado,
+  llega a producción por `git pull`).
+- [ ] **S01 — `auth.json` no declara `consumerContract: "v1"`, y el validador de consumo lo omite en
+  silencio.** `scripts/design-system-consumer-contract.mjs:19` devuelve sin comprobar nada cuando
+  falta esa clave, y en modo explícito informa `PASS (1 manifiesto/s v1)` contando el archivo que
+  recibe, no los que valida. Los hashes de los goldens **sí** están vigilados por
+  `design-system-contracts.mjs` (comprobado saboteando un `sha256`), así que no hay agujero en las
+  baselines; lo que no corre para `auth` son las demás comprobaciones de consumo. Activar la clave
+  dispara reglas pensadas para vistas PHP (primitivas en la vista, assets canónicos) contra un módulo
+  React, y eso pide su propio ajuste. Dos arreglos posibles: adaptar el validador a manifiestos con
+  fuentes `.tsx`, o al menos que su mensaje no diga `PASS` cuando saltó. Solo `project-selector.json`
+  declara hoy la clave.
+- [ ] **Migrar recuperación de clave — es lo siguiente en Entrega 0:** `password-forgot` y
+  `password-reset` siguen en PHP por decisión R12. Sus planes ya existen y son decision-complete:
+  `docs/superpowers/plans/2026-08-30-s02-recuperar-clave-react.md` (precondición: S01 completo —
+  cumplida) y `…-s03-restablecer-clave-react.md`. S02 activa el incremento mínimo de `BrowserRouter`
+  y consume `MarcoAcceso`, `auth.ts`, `auth-react.css` y `SpaRouter::coincideConMapa()`, todos ya
+  construidos. **No arranca hasta que el PR #20 esté en `main`**: el gate de cierre de frente es
+  bloqueante y S02 se apoyaría en commits sin publicar.
 - [ ] **Resolver el menú contextual de Semanas:** definir su comportamiento y su lugar en la
   navegación React antes de migrar los módulos de programación.
 - [ ] **Definir QA y goldens durante la convivencia:** decidir por cada módulo si su golden PHP se
   archiva o se reemplaza al cruzar a React, y mantener cobertura extremo a extremo en ambos mundos.
+- [ ] **`/programa-general` responde 500 si se entra sin semana en sesión.** Descubierto el
+  2026-08-31 en la Tarea 9 del plan T01 (`docs/superpowers/plans/2026-08-30-t01-shell-runtime-react.md`)
+  al escribir `tests/browser/shell-coexistence-navigation.spec.mjs`: navegar directo a
+  `/programa-general` tras login (sin pasar antes por `changeWeek()`, el helper que fija la semana
+  vía `POST /context/week`) dispara `ProjectSqlGuard::"Alias de tabla de proyecto ambiguo:
+  semanas_activas"` en `src/Security/DataScope/ProjectSqlGuard.php:925`. Reproducir: `login()` +
+  `selectProject()` (o la puerta de desarrollo `/dev/entrar?u=test.R&p=<proyecto>`) y luego
+  `page.goto('/proyectos... /programa-general')` sin ninguna petición previa a
+  `/context/week` — responde 500 en vez del HTML de la vista. El spec de la Tarea 9 lo rodeó
+  navegando a `/proyectos` en su lugar (decisión de alcance correcta, no toca este bug). Ya tiene
+  sesión propia asignada por el coordinador para investigarlo y arreglarlo.
+  **Encuadre de Felipe (2026-08-31), que cambia qué hay que arreglar:** la invariante del producto es
+  que **siempre debe haber una semana**, salvo proyecto nuevo sin su primer cronograma cargado. Luego
+  «sesión sin semana» no es un caso legítimo que haya que soportar con gracia: es un estado que no
+  debería ser alcanzable, y el trabajo es averiguar **por qué se llegó a él**, no solo calificar el
+  alias SQL. Dato que estrecha la búsqueda: `PDC Sandbox E2E` **sí** tiene semanas —el shell React
+  mostraba «Semana 1» en la misma sesión—, así que el proyecto la tiene y la sesión no. Dos hipótesis
+  a discriminar antes de escribir el arreglo: (a) la puerta de servicio no siembra la semana y crea
+  un estado artificial que en producción no ocurriría, o (b) existe un camino real que la pierde.
+  En cualquiera de los dos casos, la pantalla no debe responder 500 nunca: en el único caso legítimo
+  (proyecto nuevo sin cronograma) debe guiar a cargar el primero.
+- [x] **La rama "sin sesión" de `NotificationController::getUnread()`/`::markAsRead()` era código
+  muerto por esta puerta — retirada en T02 Tarea 9 (2026-08-31).** Ambos métodos comprobaban
+  `$_SESSION['usuario']` y, si faltaba, respondían `403 {"error":"No autorizado"}` — pero
+  `SessionMiddleware::check()` corre antes en el pipeline (`public/index.php:55-57`, antes de que
+  exista el router) y ya intercepta esa misma petición sin sesión con
+  `401 {"success":false,"sessionExpired":true,"reason":"missing_session","redirect":"/login"}`.
+  Descubierto caracterizando T02 (`docs/superpowers/plans/2026-08-30-t02-contexto-lps-react.md`,
+  Tarea 1) al escribir `tests/test_lps_api_contract.php`. Anotado ahí para que Task 9 (que sí
+  modifica `NotificationController`) decidiera: se optó por **retirar** la rama, no conservarla
+  como defensa en profundidad — una rama que ninguna prueba puede alcanzar documenta un contrato
+  falso. Verificado con `tests/test_lps_api_contract.php` y `tests/test_notifications_api_contract.php`
+  tras el retiro (ambos en verde).
+
+- [ ] **`public/js/components/notifications.js::markAsRead()` manda su POST sin CSRF y hoy es
+  inofensivo por accidente, no por diseño (T02 Tarea 9, 2026-08-31).** Desde esta tarea,
+  `NotificationController::markAsRead()` exige el header `X-CSRF-Token` (form-key `shell_api`).
+  El `fetch` de `notifications.js` nunca lo manda — hoy no importa porque `initNotifications()`
+  corta antes (`#notificationBadge`/`#notificationList` ya no existen en ninguna vista del sidebar
+  rollout), pero el día que alguien vuelva a renderizar esos IDs, ese POST empezará a fallar con
+  403 `CSRF_INVALID` de inmediato, sin aviso previo. Dejé un comentario-trampa al inicio del
+  archivo explicando el porqué y el arreglo (emitir el token `shell_api` a esa vista, p. ej. vía
+  `<meta>` como `lps-drawer-csrf-token`). No lo arreglé aquí porque el brief de Tarea 9 autoriza
+  explícitamente omitir el camino legado si no requiere cambio funcional hoy — pero alguien debe
+  decidir si esto merece spec propio antes de que el sidebar rollout se revierta o el badge vuelva.
+
+- [ ] **`LpsService::getActivityComments()` y `addActivityComment()` quedaron sin llamador desde el
+  controlador.** Al normalizar el hilo en la Tarea 5 de T02 (`8e83a705`), `LpsApiController` pasó a
+  usar `LpsThreadService`; de los dos métodos viejos solo `addActivityComment()` sigue vivo, y lo
+  llama `escalarAlertasActivas()` internamente. Se dejaron intactos por estar fuera del alcance de esa
+  tarea. Revisar al recortar `LpsService`, para no dejar código muerto ni retirar por error el camino
+  que el escalamiento sí usa.
 
 ## Pendiente de decisión: despliegue a producción
 
@@ -277,6 +437,14 @@ decidido de antemano), y se revirtió por decisión de Felipe. Detalle completo 
   el rollback para experimentos contra la base de dev: volver a sembrar desde el dump.
 
 ## Bloqueantes
+
+**Nota de fusión (2026-09-03, esta rama):** el bloqueante que este archivo tenía sobre el contrato
+del compose de CI y el 403 del administrador ya está resuelto — los PR #22 y `fix/gate-metadatos-rol-admin`
+lo cerraron, y las dos entradas de abajo (fechadas 2026-09-03 y 2026-09-02) son la continuación
+completa de esa misma historia, ya integrada a `main`. Lo único que ese bloqueante decía y que sigue
+vigente para esta rama: **el PR #20 (S01 + T01 + T02) y el PR #21 seguían esperando esa cadena de CI
+para poder mergear** — ahora que la cadena está resuelta y `origin/main` acaba de integrarse aquí,
+corresponde reevaluar si el PR #20 ya puede avanzar.
 
 **2026-09-03 — Dos de los gates del carril visual ya cerraron; quedan tres, y uno de ellos es una
 deuda de otros frentes, no del carril.** Frente `fix/carril-visual-verde` (rama en PR),
@@ -725,6 +893,42 @@ estado por defecto mientras Felipe no reparta.
   temporal no está autorizada.
 
 ## Diferibles
+
+- [ ] 2026-09-01 — **El sistema de diseño valida escritorio en un ancho que su propio token llama
+  tablet.** `--ds-breakpoint-desktop` vale `1200px` (`public/css/tokens.css:731`), pero `DESIGN.md`,
+  `AGENTS.md` y `docs/design-system/README.md` declaran **1180×820 como viewport canónico de
+  validación** de todo el sistema. Con el token, el ancho en que se valida cae del lado de tablet:
+  se estaría revisando siempre una presentación que ningún usuario de escritorio ve.
+  **No es teórico ni nuevo:** cinco módulos ya lo sortearon escribiendo `1180px` a mano —
+  `handsontable-module.css:343`, `project-selector.css:41`, `programacion-intermedia.css:130`,
+  `programacion-semanal.css:1513,1547` y ahora `auth-react.css:24` — cada uno repitiendo su propia
+  nota explicativa. El sexto va a repetirla otra vez.
+  **Es decisión de diseño, no técnica**, y por eso no la tomé: o el token baja a 1180, o el viewport
+  canónico sube a 1200. Lo que no se sostiene es que difieran. Lo destapó la Tarea 11 de
+  `docs/superpowers/plans/2026-08-30-s01-login-react.md`.
+
+- [ ] 2026-08-31 — **El login tarda distinto según si la cuenta existe, y eso se puede medir desde
+  fuera.** `AuthenticationService::verifyCredentials()` devuelve `null` de inmediato cuando el usuario
+  no existe, saltándose `password_verify()`; con un usuario que sí existe siempre paga el costo de
+  bcrypt. El cuerpo de la respuesta es idéntico en ambos casos —eso está bien cubierto y verificado—
+  pero **el tiempo no**, así que alguien con paciencia puede averiguar qué cuentas existen sin
+  adivinar una sola contraseña. **Preexistente:** lo destapó la revisión de la Tarea 5 de
+  `docs/superpowers/plans/2026-08-30-s01-login-react.md`, que trazó los tres caminos de fallo; el
+  archivo no lo tocó ese frente. El arreglo estándar es hacer un `password_verify()` contra un hash
+  señuelo cuando el usuario no existe, para que ambos caminos cuesten lo mismo. Merece tarea propia:
+  toca autenticación y hay que medir tiempos antes y después para saber si de verdad se cerró.
+
+- [ ] 2026-08-31 — **La longitud mínima de contraseña se mide distinto en el navegador y en el
+  servidor cuando hay caracteres multibyte.** El JS del modal usa `password.length`
+  (`views/auth/login.view.php:170`, unidades UTF-16) y el PHP usa `strlen()`
+  (`src/Services/Auth/PasswordPolicyService.php`, bytes). Con acentos o emoji, una clave puede
+  pasar el umbral de 6 en un lado y no en el otro. **Preexistente, no lo introdujo la migración
+  React:** lo destapó la revisión de la Tarea 3 de `docs/superpowers/plans/2026-08-30-s01-login-react.md`,
+  que verificó las cinco reglas en las tres fuentes (servidor, `pattern` del HTML, JS del modal) y
+  las encontró idénticas salvo en esto. Se deja fuera del frente a propósito: **cambiar cómo se
+  cuenta la longitud es una decisión de producto** — hoy hay usuarios con claves válidas que
+  podrían dejar de serlo. Cuando se vuelva a tocar el flujo de contraseñas, decidir primero qué
+  unidad manda y alinear las tres fuentes a ella.
 
 - [ ] 2026-08-28 — **El botón de colapsar el sidebar del laboratorio no responde a Enter por
   teclado** (`design-system-lab-keyboard.mjs:83`, ambas patas del CI, tema claro y oscuro). El test

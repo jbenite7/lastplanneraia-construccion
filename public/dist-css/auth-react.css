@@ -1,0 +1,106 @@
+@layer module {
+  .aia-auth {
+    min-block-size: 100dvh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+  .aia-auth__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ds-space-8);
+    justify-items: center;
+    align-content: center;
+  }
+  .aia-auth__layout > .aia-card {
+    inline-size: 100%;
+    max-inline-size: 26rem;
+    box-shadow: var(--ds-shadow-lg);
+  }
+  .aia-auth :where(form) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-4);
+  }
+  .aia-auth__acciones {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--ds-space-4);
+    margin-block-start: var(--ds-space-2);
+  }
+  .aia-auth__acciones > .aia-btn {
+    inline-size: 100%;
+    justify-content: center;
+  }
+  .aia-auth__acciones > a {
+    justify-content: center;
+  }
+  .aia-auth__clave {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--ds-space-1);
+  }
+  .aia-auth__clave > .aia-input {
+    inline-size: 100%;
+  }
+  .aia-auth__clave-toggle {
+    min-block-size: var(--ds-target-min);
+    display: inline-flex;
+    align-items: center;
+    padding-inline: var(--ds-space-2);
+    border: 0;
+    background: none;
+    color: var(--ds-active-action-primary);
+    text-decoration: underline;
+    cursor: pointer;
+    font: inherit;
+  }
+  .aia-auth__clave-toggle:disabled {
+    cursor: not-allowed;
+    opacity: var(--ds-opacity-disabled, 0.6);
+  }
+  .aia-auth :where(a) {
+    min-block-size: var(--ds-target-min);
+    display: inline-flex;
+    align-items: center;
+    color: var(--ds-active-action-primary);
+    text-decoration: underline;
+  }
+  @media (min-width: 48rem) {
+    .aia-auth__layout {
+      gap: var(--ds-space-12);
+    }
+  }
+  @media (min-width: 73.75rem) {
+    .aia-auth__layout > .aia-card {
+      max-inline-size: 28rem;
+    }
+  }
+  @media (min-width: 90rem) {
+    .aia-auth__layout {
+      gap: var(--ds-space-18);
+    }
+    .aia-auth__layout > .aia-card {
+      max-inline-size: 30rem;
+    }
+  }
+  @media (max-width: 24.375rem) {
+    .aia-auth__dialog {
+      inline-size: 100%;
+      max-width: 100%;
+      min-block-size: 100dvh;
+      max-height: 100dvh;
+      margin: 0;
+      border-radius: var(--ds-radius-none);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .aia-auth,
+    .aia-auth * {
+      scroll-behavior: auto;
+      transition-duration: 0.01ms;
+      animation-duration: 0.01ms;
+    }
+  }
+}

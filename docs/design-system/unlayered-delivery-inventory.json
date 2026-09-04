@@ -118,14 +118,7 @@
   "runtime": {
     "/login": {
       "authenticated": false,
-      "unlayered": [
-        {
-          "sheet": "/css/login-brand-unified.css",
-          "via": "link",
-          "unlayeredRules": 50,
-          "case": "7-login-brand-unified"
-        }
-      ]
+      "unlayered": []
     },
     "/password/forgot": {
       "authenticated": false,
@@ -327,7 +320,7 @@
     "4-sweetalert2-runtime": "CERRADO dba703b: sweetalert2.all.min.js lleva el CSS embebido y lo inyecta en un <style> creado en runtime. No estaba en ningun archivo del repo. Hoy sale limpio del probe porque va envuelto en @layer vendor.",
     "5-handsontable-pdc": "ABIERTO: /vendor/handsontable/handsontable.full.min.css en /pdc. Su th es opaco del vendor y no lee ningun token.",
     "6-adminlte-login": "CERRADO 2026-08-06: las tres vistas de views/auth/ traian <link> al CDN de AdminLTE 3.2, sin capa y por tanto ganando a TODAS las capas en declaraciones normales. Medido: su button { border-radius: 0 } dejaba en radio 0 el boton del dialogo de sesion caducada y .h1..h6 { color: inherit } ganaba al adaptador de sweetalert2. Ahora el vendor se sirve local y capado desde public/css/design-system/entrypoints/attach-adminlte.css (layer(vendor)), emitido por renderForModule('auth'): adminlte salio de VIEW_OWNED_VENDORS y entro en VENDOR_ATTACHMENTS + STANDALONE_ATTACHMENTS.",
-    "7-login-brand-unified": "ABIERTO (censado): /css/login-brand-unified.css sin capa y cargado despues del design system. No toca el popup, pero gana a todo lo capado.",
+    "7-login-brand-unified": "ABIERTO (censado): /css/login-brand-unified.css sin capa y cargado despues del design system. No toca el popup, pero gana a todo lo capado. ACTUALIZADO 2026-09-03: la entrada runtime de /login se retira -no queda huerfana, se elimina-, porque S01 movio esa ruta al shell React (SpaRouter) y esa vista ya no carga login-brand-unified.css; el gate de runtime lo reportaba como stale-inventory-entry. El caso sigue ABIERTO para /password/forgot y /password/reset, que aun sirve la vista PHP.",
     "8-font-awesome-inyectado": "CERRADO en esta tanda: public/js/cargarDatosGeneralesPagina2.js inyectaba un <link> a /public/vendor/font-awesome/css/all.css porque su guard solo reconocia link[href*=aia-design-system] y c0dd9a4 movio las cuatro rutas de /programacion-semanal al head segmentado (core.css). Entraba una SEGUNDA copia con 1436 reglas sin capa. El guard ahora reconoce LOS DOS heads; medido antes/despues, la inyeccion para en las 4 rutas y Font Awesome sigue aplicandose en las 16 rutas medidas (::before real del icono), incluidas las 12 que siguen en render().",
     "9-tailwind-cdn-bi": "CERRADO: views/bi/_layout.php cargaba https://cdn.tailwindcss.com, el Play CDN, un <script> que GENERABA el CSS en runtime y lo inyectaba en un <style> sin capa (132-135 reglas segun ruta, en las 8 rutas /bi/*). Medido: de esas reglas solo 97 eran utilidades; las otras 38 eran el PREFLIGHT, un reset global que derrotaba al design system y dejaba cinco primitivas aia-* rotas (boton sin fondo ni borde, .aia-input sin padding, .aia-select sin fondo, .aia-panel y .card sin borde). Las 97 utilidades viven ahora en public/css/design-system/adapters/bi-utilities.css dentro de @layer utilities, con los colores en tokens --ds-active-*; el preflight NO se replica salvo dos piezas acotadas a .bi-control-tower-page y en @layer base, que el markup si asumia y ningun CSS del repo cubria: el font-size de h1..h6 (si no, Bootstrap en @layer vendor los subia a 28/32px) y el reset de <button> (si no, 13 botones sin estilo de autor caian al 2px outset del navegador). El config inline window.tailwind.config nunca se aplico -el CDN sobreescribe window.tailwind al cargar- y se retiro con sus 38 usos de clases muertas. Las 8 rutas ya no aportan ninguna entrega sin capa.",
     "10-cdn-externo-auth": "CERRADO 2026-08-06: las tres vistas de views/auth/ traian ademas <link> a fonts.googleapis.com/css2 (Montserrat+Inter) y al CDN de Font Awesome 5.15.4, los dos SIN capa. Eran redundantes: core.css ya importa design-system/fonts.css (Inter 400-800 y Montserrat 600-700 locales, DS-007) y /public/vendor/font-awesome/css/all.css dentro de layer(vendor). Retirados los dos <link>, auth queda con cero entregas sin capa por CDN. Los <script> de jQuery y Bootstrap siguen viniendo por CDN: son JS y no entregan CSS."

@@ -28,6 +28,49 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Arreglado: cambiar de semana estaba roto para usuarios reales en 16 vistas legacy (2026-09-03)
+
+`ContextController::setWeek()`/`clearWeek()` (T02) exige `X-CSRF-Token` (form-key `shell_api`) y
+devuelve `{ok,...}`/`{ok:false, error:{code,message}}` desde hace tiempo, pero ninguna vista legacy
+emitía ese token — `public/js/core/ContextManager.js` mandaba el POST sin CSRF y leía el contrato
+de respuesta viejo (`{success,message}`). Destapado por `programacion-semanal-roles-phases.mjs`
+(11 fallos `CSRF_INVALID`) al correr `design-system-runtime` por primera vez contra
+`shell-minimo-react`.
+
+`views/partials/shell_sidebar.php` (el único parcial que incluyen las ~16 vistas con este JS) ya
+genera sus propios tokens CSRF de forma independiente por `<meta>` (el de `lps_week_admin`); se
+suma ahí uno para `shell_api` (`<meta name="lps-shell-csrf-token">`), y `ContextManager.js` lo lee
+con el mismo patrón que `lps_drawer.js`.
+
+### Arreglado: el CSS del shell React entraba sin capa en `/login` (2026-09-03)
+
+`frontend/src/shared/lps/lps-contexto.css` — el único CSS que compila el shell — se entregaba sin
+`@layer`, ganando a todas las capas del sistema de diseño
+(`docs/design-system/unlayered-delivery-inventory.json`). Envuelto en `@layer module`. De paso se
+retira una entrada obsoleta del inventario: `login-brand-unified.css` (la vista PHP vieja) ya no
+carga en `/login` desde que S01 movió esa ruta al shell React, y el gate lo reportaba como
+`stale-inventory-entry`.
+
+### Arreglado: los dos tests de contrato CSRF que solo fallaban en CI (2026-09-04)
+
+`test_shell_week_administration_contract.php` y `test_shell_week_context_contract.php` fallaban por
+`CSRF_INVALID` en `design-system-runtime` (los dos temas, idéntico) y pasaban en cualquier
+reproducción local. La causa raíz, medida con instrumentación en CI: el helper de ambos tests
+generaba el token `shell_api` en un subproceso PHP que hacía `session_id($sid); session_start();`
+sobre la sesión ya autenticada. El archivo `/tmp/sess_<sid>` lo crea Apache como `www-data` con modo
+`0600`; el CLI corre como root, y en el kernel del runner de GitHub el `open()` devuelve
+«Permission denied (13)» **pese al uid 0** — `/tmp` es sticky y de escritura para todos, y el
+endurecimiento de archivos regulares del kernel (`fs.protected_regular`, activo en Ubuntu y en 0 en
+la VM de Docker Desktop) niega el acceso a un archivo de otro dueño. `session_start()` devolvía
+`false`, `session_id()` quedaba vacío y `CsrfTokenManager::generate()` emitía un token en una sesión
+fantasma que nadie persiste, mientras el servidor validaba contra el token real.
+
+El arreglo elimina el mecanismo entero: el token se toma por HTTP del
+`<meta name="lps-shell-csrf-token">` que emite `views/partials/shell_sidebar.php`, que es la misma
+vía del navegador (`public/js/core/ContextManager.js`). No toca `/tmp`, no necesita el SID y prueba
+el camino real del usuario. Nunca fue una vulnerabilidad: `ContextController` siempre validó CSRF
+correctamente.
+
 ### Documentación: skill `datatables-to-handsontable` archivada en el repo (2026-09-03)
 
 `docs/archivo/skills/datatables-to-handsontable/SKILL.md` guarda la skill de la migración puntual
@@ -89,6 +132,28 @@ comprueba que `db` inicialice esa misma cuenta, rechaza `root` de forma explíci
 runtime y administración compartan contraseña. Fijado por `tests/design-system/ci-preflight.test.mjs`,
 que con el contrato viejo cae.
 
+### Añadido: el acceso a la aplicación lo sirve React (S01, 2026-09-01)
+
+`/` y `/login` muestran ahora la pantalla de acceso construida en React: login, avisos de sesión
+vencida, cuenta inactiva y clave restablecida (consumidos una sola vez), errores por campo, cambio
+obligatorio de contraseña con confirmación antes de cancelar, y la entrada oculta de mantenimiento
+servida por el mismo shell sin publicar su ruta en el bundle. Funciona en claro y oscuro y en los
+cuatro tamaños de referencia (390, 768, 1180 y 1440 de ancho), con un solo título por pantalla, foco
+visible, objetivos de 44 px y sin desbordes.
+
+La pantalla PHP **no se retiró**: sigue registrada detrás de un desvío en el router, y el envío del
+formulario (`POST /login`) sigue yendo a ella a propósito. Volver atrás es quitar `/login` de una
+lista. El retiro llegará tras una ventana de uso real, como segunda mitad del mismo plan.
+
+De la verificación en navegador salieron y se corrigieron cinco defectos de la pantalla nueva —contraste
+insuficiente del enlace de recuperación en tema claro, foco perdido al cancelar el cambio de clave,
+presentación (acciones pegadas, campos sin separar, tarjeta indistinguible del fondo) y el pie de
+página fuera de pantalla en escritorio— más un defecto del repositorio que la sacaba de verde en el
+CI: `ProjectScopeResolverTest` abría conexión a base de datos siendo una prueba de nivel `puro`.
+
+Plan: [[docs/superpowers/plans/2026-08-30-s01-login-react]] › `## Cierre`. Pendiente de integrar a
+`main` (PR #20): lo bloquea una contradicción de configuración del CI anotada en [[TASKS]].
+
 ### Arreglado: la programación semanal y el programa general volvían a cargar (2026-09-02)
 
 Las dos pantallas reventaban al abrirse desde el endurecimiento del 2026-08-29. La consulta que trae
@@ -133,6 +198,75 @@ proyecto en la consulta el guard exige `<raíz>.project_id = ?`. Sin eso, `amarr
 
 Quedan dos roturas de producción bajo el mismo gate, anotadas en [[TASKS]] y **no** arregladas aquí:
 el alias ambiguo de `semanas_activas` en `/programacion-semanal` y los INSERT por lote del PDC.
+
+### Añadido: plataforma del shell React — T01-A (2026-08-31)
+
+Primera pieza de la Entrega 0 del programa de migración a React. Completa el shell que la entrada
+`/app` había estrenado el 2026-08-28, hasta dejarlo utilizable como plataforma por los módulos que
+vienen después.
+
+- **Arranque y sesión:** `GET /api/session` es el único bootstrap y compone siete estados de arranque
+  (anónimo, cambio de clave requerido, autenticado sin proyecto, listo, expirado, error recuperable,
+  cargando) con `Cache-Control: no-store` y sin exponer base de datos, prefijos ni secretos.
+  `SesionProvider` los gobierna desde un Context único.
+- **Frontera HTTP:** `frontend/src/lib/api/cliente.ts` es el único punto con `fetch` de producción,
+  y parsea con Zod tanto el éxito como el error — antes descartaba el cuerpo de error tipado.
+- **Navegación autorizada por el servidor:** el manifiesto de grupos, ítems y acciones se compone en
+  PHP desde `RbacManager`, rol normalizado y membresía activa. React ya no contiene matriz de roles,
+  catálogo de rutas ni construcción de URL privilegiada.
+- **`AppShell` reutilizable:** un `nav`, un `main`, enlace de salto y outlet de módulos, con barra
+  lateral persistente en escritorio y cajón en móvil/tableta. Verificado en 390×844, 768×1024,
+  1180×820 y 1440×900, en ambos temas.
+- **Semanas:** las reglas de crear y eliminar la última semana salen del código legado a
+  `WeekAdministrationService`, con repositorio inyectable; los scripts legados quedan como llamadores
+  de compatibilidad. Probado con dobles de prueba, sin escribir en la base.
+- **Sesión viva:** un único `ControlActividad` posee el vencimiento de 3600 segundos, el latido y el
+  cierre de sesión; cambiar de proyecto o cerrar sesión aborta lo que esté en vuelo y descarta
+  respuestas de la generación anterior.
+- **Tema:** oscuro pasa a ser el inicial y el de reserva cuando no hay preferencia guardada, es
+  inválida o el almacenamiento falla, aplicado antes del primer pintado. Claro conserva controles y
+  comportamiento idénticos.
+
+### Añadido: contexto LPS, cajón contextual y bandeja de avisos — T02-A (2026-08-31)
+
+Segunda pieza de la Entrega 0. Construye el contexto compartido que las pantallas de programación
+usarán para abrir restricciones, comentar y escalar, sin que ninguna tenga que reimplementarlo.
+
+- **Reglas del dominio LPS en un solo sitio:** restricciones, ITR, severidad, diagnóstico y resumen
+  salen del JavaScript antiguo a módulos propios, probados contra el original. Se conservaron tal cual
+  sus rarezas —incluidos dos niveles de escalamiento que colisionan— para que después se sepa qué
+  cambió por el traslado y qué por una corrección.
+- **El servidor decide el objetivo y las acciones:** qué actividad o alerta se abre, y si quien mira
+  puede comentar, cerrar o escalar, se resuelve en el servidor a partir de la sesión y la membresía.
+  El navegador no inventa autoridad.
+- **Hilo de comentarios normalizado:** raíces y respuestas de un solo nivel, menciones como metadato,
+  y una respuesta que sirve a la vez a las pantallas antiguas y a las nuevas desde una sola lectura.
+- **Crisis y simulación endurecidas:** registrar y cerrar una crisis nunca dispara el escalamiento
+  masivo, y la simulación no muta nada.
+- **Bandeja de avisos** con su servicio propio, aislado de la base de datos.
+
+### Corregido: marcar un aviso como leído no exigía token de seguridad (2026-08-31)
+
+El endpoint que marca avisos como leídos aceptaba peticiones sin token CSRF. Ahora lo exige, como el
+resto de las mutaciones del shell. Verificado que no rompe nada: el cliente antiguo se autodesactiva
+cuando no encuentra sus anclajes, y ninguna vista los dibuja ya — con el aviso escrito en ese mismo
+archivo para quien vuelva a activarlos algún día.
+
+### Corregido: la barra lateral se veía rota (2026-08-31)
+
+Desde que se le añadió el bloque de semana, el encabezado repartía mal su espacio: «Last Planner AIA»
+se componía una letra por línea y el nombre del proyecto quedaba invisible. Además el menú se
+desbordaba y se pintaba encima del conmutador de tema y del botón de cuenta. Ambos corregidos y
+cubiertos por una prueba que mide el resultado en un navegador real, porque ninguna prueba anterior
+podía verlo.
+
+### Corregido: texto ilegible del menú lateral en tema claro (2026-08-31)
+
+El panel lateral conserva fondo oscuro aunque la página pase a tema claro, pero el texto de sus
+enlaces sí seguía el tema de la página: quedaba oscuro sobre oscuro. Medido en 1,11:1 y 2,56:1 de
+contraste, muy por debajo del mínimo legible de 4,5:1. Ahora usa los tokens que el sistema de diseño
+ya tenía definidos para ese caso. El tema oscuro no cambia —ahí ambos tokens resuelven al mismo
+valor—, así que las pantallas PHP, que solo usan oscuro, quedan igual.
 
 ### Añadido: shell mínimo React (2026-08-28)
 

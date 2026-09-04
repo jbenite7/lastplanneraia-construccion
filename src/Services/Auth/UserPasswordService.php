@@ -23,12 +23,17 @@ class UserPasswordService
     ): array {
         $user = $this->findFirstByUsername($username);
         if ($user === null) {
-            return ['success' => false, 'message' => 'Usuario no encontrado'];
+            return ['success' => false, 'message' => 'Usuario no encontrado', 'fieldErrors' => []];
         }
 
-        $validationMessage = $this->policy->validate($password, $confirm, (string) ($user['password'] ?? ''));
-        if ($validationMessage !== null) {
-            return ['success' => false, 'message' => $validationMessage];
+        $currentHash = (string) ($user['password'] ?? '');
+        $fieldErrors = $this->policy->validateFields($password, $confirm, $currentHash);
+        if ($fieldErrors !== []) {
+            return [
+                'success' => false,
+                'message' => $this->policy->validate($password, $confirm, $currentHash),
+                'fieldErrors' => $fieldErrors,
+            ];
         }
 
         try {
@@ -40,11 +45,11 @@ class UserPasswordService
             $stmt = $this->db->prepare($sql);
             $stmt->execute([$newHash, (string) $user['usuario']]);
 
-            return ['success' => true, 'message' => 'Contraseña actualizada correctamente.'];
+            return ['success' => true, 'message' => 'Contraseña actualizada correctamente.', 'fieldErrors' => []];
         } catch (\Throwable $e) {
             error_log('UserPasswordService::changePasswordForUsername ' . $e->getMessage());
 
-            return ['success' => false, 'message' => 'Error al actualizar la contraseña.'];
+            return ['success' => false, 'message' => 'Error al actualizar la contraseña.', 'fieldErrors' => []];
         }
     }
 

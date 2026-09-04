@@ -10,7 +10,7 @@ resumen: "Catálogo del trabajo fechado: cada spec de diseño con el plan que la
 project: lps-aia
 type: plan-inventory
 status: activo
-updated: 2026-08-31
+updated: 2026-09-02
 ---
 # Registro de trabajo
 
@@ -359,3 +359,29 @@ not implement, commit, push, publish or deploy»).
 
 No hay estado intermedio que registrar: no es que falte marcar «ejecutado» en algunos, es que
 ninguno de los 29 lo está.
+
+## Lote de migración a React — actualización del 2026-09-02
+
+La auditoría de arriba («las 29 son propuesto») dejó de ser cierta el mismo día en que se escribió.
+Medido contra las secciones `## Cierre` de los planes y `git log` sobre la rama `shell-minimo-react`:
+
+| Plan | Estado | Evidencia |
+|---|---|---|
+| T01 — Shell y runtime React | **ejecutado (T01-A)**, retiro T01-R diferido | `## Cierre` del plan, cerrado 2026-08-31; 9 commits `385e1242`→`5ec9cb3b` |
+| T02 — Contexto LPS, drawer y notificaciones | **ejecutado (T02-A)**, retiro T02-R diferido | `## Cierre` del plan, cerrado 2026-08-31; 17 commits `9205de16`→`2e59e1f3` |
+| S01 — Login React | **ejecutado, `CODE_COMPLETE`** (2026-09-01); `MIGRATION_COMPLETE` pendiente | `## Cierre` del plan; commits `ce7ee550`…`30d00078`; **PR #20** abierto contra `main` |
+| S02–S27, T03 | propuesto | sin commits de código sobre sus archivos |
+
+Tres cosas que conviene leer junto a esa tabla:
+
+- **Los tres «ejecutado» comparten patrón: la parte constructiva está hecha y el retiro del legado
+  no.** T01-R, T02-R y la segunda mitad de la Tarea 14 de S01 se difirieron por la misma razón —el
+  censo de consumidores da distinto de cero, o la ventana de rollback no ha corrido— y esa razón está
+  escrita en cada plan. No es trabajo a medias: es la condición que cada plan puso para no borrar.
+- **Nada de esto está en `main` todavía.** El PR #20 lleva los tres frentes (51 commits). Su CI
+  estático pasa; el de runtime falla por una contradicción de configuración ajena
+  (`48e06072` fija `DB_USER=lps_runtime_ci`, `design-system-ci-compose-contract.mjs` exige `root`)
+  que además revela que **el job de gates visuales no se ejecuta en `main` desde el 2026-08-29**.
+  Detalle y ruling en [[TASKS]] › Bloqueantes.
+- **La lectura de las casillas sigue sin valer** (regla de `AGENTS.md`): los tres planes ejecutados
+  tienen sus `- [ ]` vacías. El estado se lee de `## Cierre` y de git, como aquí.

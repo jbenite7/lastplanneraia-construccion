@@ -14,10 +14,15 @@ if (!isset($dbInstance)) {
     $dbInstance = Database::getInstance();
 }
 
+use App\Security\DataScope\MissingProjectScope;
+use App\Security\DataScope\ProjectScope;
 use App\Services\RestrictionConfigResolver;
+use App\Services\Shell\CrearSemanaComando;
+use App\Services\Shell\DatabaseWeekAdministrationRepository;
+use App\Services\Shell\ResultadoCreacionSemana;
+use App\Services\Shell\WeekAdministrationService;
 
 $db = $_GET['db'] ?? $_POST['db'] ?? '';
-$opcion = $_POST["opcion"] ?? "nueva_sem";
 $f_inicio_sem_raw = $_POST["f_inicio_sem"] ?? '';
 $f_inicio_sem = date("Y-m-d", strtotime($f_inicio_sem_raw));
 $pdcActivo = $_SESSION['pdcActivo'] ?? 0;
@@ -32,180 +37,58 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $db)) {
     die(json_encode(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]));
 }
 
-// Resolve table names via TableResolver
-$tPrograma = TableResolver::resolveByPrefix($db, 'programa');
-$tProgConsolidado = TableResolver::resolveByPrefix($db, 'programa_consolidado');
-$tSemanasActivas = TableResolver::resolveByPrefix($db, 'semanas_activas');
-
-$scope = $dbInstance->dataScope()->current();
-if (!$scope instanceof \App\Security\DataScope\ProjectScope) {
-    throw new \App\Security\DataScope\MissingProjectScope('La operación requiere un proyecto activo.');
-}
-$projectId = $scope->projectId();
-
-$restrictionConfig = RestrictionConfigResolver::resolve($db);
-$isPreConstruccion = $restrictionConfig['isPreConstruccion'];
-
+/**
+ * Tarea 5 (T01): las reglas de crear semana se extrajeron a `WeekAdministrationService`. Este
+ * script sigue siendo la puerta de entrada legada (`shell_week_admin.js` todavía la llama) pero
+ * ya no ejecuta SQL propio — solo traduce sesión/CSRF/rol a un comando y el resultado tipado de
+ * vuelta a la forma de respuesta histórica (`[conteo,0,0,confirmada]` para el bloqueo por semana
+ * sin confirmar, `{respuesta:"ERROR",...}` para el resto de bloqueos, y el array posicional
+ * `[semana, conteoPDC, ejecucionActualizada, semanalConfirmada]` para el éxito — igual que
+ * producía `modificar_sem_estado.php`).
+ */
 try {
-    $stmt = $dbInstance->queryWithProject("SELECT COUNT(*) AS conteo FROM {$tSemanasActivas} WHERE project_id = ?", [$projectId], $projectId);
-    $data = $stmt->fetch();
-    $conteo = (int) ($data["conteo"] ?? 0);
-
-    $semanalConfirmada = 0;
-    if ($conteo > 0) {
-        $stmtVerif = $dbInstance->queryWithProject("SELECT Semanal_Confirmada FROM {$tSemanasActivas} WHERE project_id = ? AND Semana = ?", [$projectId, $conteo], $projectId);
-        $dataVerif = $stmtVerif->fetch();
-        $semanalConfirmada = (int) ($dataVerif["Semanal_Confirmada"] ?? 0);
+    $scope = $dbInstance->dataScope()->current();
+    if (!$scope instanceof ProjectScope) {
+        throw new MissingProjectScope('La operación requiere un proyecto activo.');
     }
+    $projectId = $scope->projectId();
 
-    if ($conteo > 0 && $semanalConfirmada == 0 && !$esAdmin) {
-        $respuesta = [$conteo, 0, 0, $semanalConfirmada];
-        echo json_encode($respuesta, JSON_UNESCAPED_UNICODE);
-    } else {
-        $semana_crear = $conteo + 1;
-        $f_fin_sem = date("Y-m-d", strtotime($f_inicio_sem . "+ 6 days"));
-        $fCreacionSemana = date("Y-m-d");
-        $nextSemanaId = (int) $dbInstance
-            ->queryWithProject("SELECT COALESCE(MAX(Id), 0) + 1 FROM {$tSemanasActivas} WHERE project_id = ?", [$projectId], $projectId)
-            ->fetchColumn();
+    $restrictionConfig = RestrictionConfigResolver::resolve($db);
+    $isPreConstruccion = $restrictionConfig['isPreConstruccion'];
 
-        $sqlInsertSemana = "INSERT INTO {$tSemanasActivas} (project_id, Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, fechaCreacionSemana) VALUES (?, ?, ?, ?, ?, ?)";
-        $dbInstance->query($sqlInsertSemana, [$projectId, $nextSemanaId, $semana_crear, $f_inicio_sem, $f_fin_sem, $fCreacionSemana]);
+    $servicio = new WeekAdministrationService(new DatabaseWeekAdministrationRepository($dbInstance));
+    $comando = new CrearSemanaComando($projectId, $f_inicio_sem, $isPreConstruccion, $esAdmin);
+    $resultado = $servicio->crear($comando);
 
-        if ($conteo == 0) {
-            // Validar que el Programa Maestro tenga actividades antes de copiar
-            $stmtPrograma = $dbInstance->queryWithProject("SELECT COUNT(*) AS c FROM {$tPrograma} WHERE project_id = ?", [$projectId], $projectId);
-            if ((int) $stmtPrograma->fetch()['c'] === 0) {
-                // Rollback: eliminar la semana recién creada
-                $dbInstance->queryWithProject("DELETE FROM {$tSemanasActivas} WHERE project_id = ? AND Semana = ?", [$projectId, $semana_crear], $projectId);
-                echo json_encode(["respuesta" => "ERROR", "mensaje" => "No hay actividades en el Programa Maestro. Cargue el programa antes de crear la primera semana."]);
-                return;
-            }
-
-            $baseConsolidadoId = (int) $dbInstance
-                ->queryWithProject("SELECT COALESCE(MAX(row_id), MAX(Consecutivo), 0) FROM {$tProgConsolidado} WHERE project_id = ?", [$projectId], $projectId)
-                ->fetchColumn();
-            if ($isPreConstruccion) {
-                $sqlCopy = "INSERT INTO {$tProgConsolidado}(project_id, row_id, Consecutivo, Semana, unique_id, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, restriccion_pc_1, restriccion_pc_2, restriccion_pc_3, restriccion_pc_4, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana)
-                            SELECT ?, ? + ROW_NUMBER() OVER (ORDER BY unique_id, Id), ? + ROW_NUMBER() OVER (ORDER BY unique_id, Id), ?, unique_id, unique_id, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 0, IFNULL(Ejecutado, 0), Estado, IFNULL(Semanas_Inicio, 0), IFNULL(Estado_Restricciones, '0'), IFNULL(restriccion_pc_1, '0%'), IFNULL(restriccion_pc_2, '0%'), IFNULL(restriccion_pc_3, '0%'), IFNULL(restriccion_pc_4, '0%'), Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, IFNULL(Ejecutado, 0) FROM {$tPrograma} WHERE project_id = ?";
-            } else {
-                $sqlCopy = "INSERT INTO {$tProgConsolidado}(project_id, row_id, Consecutivo, Semana, unique_id, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana)
-                            SELECT ?, ? + ROW_NUMBER() OVER (ORDER BY unique_id, Id), ? + ROW_NUMBER() OVER (ORDER BY unique_id, Id), ?, unique_id, unique_id, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 0, IFNULL(Ejecutado, 0), Estado, IFNULL(Semanas_Inicio, 0), IFNULL(Estado_Restricciones, '0'), IFNULL(D_y_E, '0'), IFNULL(Materiales, '0'), IFNULL(MdeO, '0'), IFNULL(Equipos, '0'), IFNULL(Predecesora, '0'), IFNULL(Pdto_Cons, '0'), IFNULL(Modelo, '0'), Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, IFNULL(Ejecutado, 0) FROM {$tPrograma} WHERE project_id = ?";
-            }
-            $dbInstance->query($sqlCopy, [$projectId, $baseConsolidadoId, $baseConsolidadoId, $semana_crear, $projectId]);
-            $normalizationService = new \App\Services\ProgramaConsolidadoNormalizationService($dbInstance);
-            $normalizationService->normalizeChapters($db, $semana_crear);
-            if ($isPreConstruccion) {
-                $sqlReset = "UPDATE {$tProgConsolidado} SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, restriccion_pc_1='0%', restriccion_pc_2='0%', restriccion_pc_3='0%', restriccion_pc_4='0%', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE project_id = ? AND Semana = ? AND Titulo=1";
-            } else {
-                $sqlReset = "UPDATE {$tProgConsolidado} SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, D_y_E='0', Materiales='0', MdeO='0', Equipos='0', Predecesora='0', Pdto_Cons='0', Modelo='0', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE project_id = ? AND Semana = ? AND Titulo=1";
-            }
-            $dbInstance->queryWithProject($sqlReset, [$projectId, $semana_crear], $projectId);
-
+    if (!$resultado->exito) {
+        if ($resultado->motivoBloqueo === ResultadoCreacionSemana::BLOQUEO_SEMANA_NO_CONFIRMADA) {
+            // Forma histórica: el cliente lee semana=info[0] y confirmada=info[3].
+            $filaConteo = $dbInstance
+                ->queryWithProject(
+                    "SELECT COUNT(*) AS conteo FROM " . TableResolver::resolveByPrefix($db, 'semanas_activas') . " WHERE project_id = ?",
+                    [$projectId],
+                    $projectId,
+                )
+                ->fetch();
+            $conteoActual = $filaConteo['conteo'] ?? 0;
+            echo json_encode([(int) $conteoActual, 0, 0, 0], JSON_UNESCAPED_UNICODE);
         } else {
-            $stmtMax = $dbInstance->queryWithProject("SELECT MAX(Semana) AS max_semana FROM {$tProgConsolidado} WHERE project_id = ?", [$projectId], $projectId);
-            $dataMax = $stmtMax->fetch();
-            $maxSemanaProgramaConsolidado = (int) ($dataMax["max_semana"] ?? $conteo);
-
-            // Limpiar datos huérfanos si hay semanas superiores a la esperada
-            if ($maxSemanaProgramaConsolidado > $semana_crear) {
-                $dbInstance->queryWithProject("DELETE FROM {$tProgConsolidado} WHERE project_id = ? AND Semana > ?", [$projectId, $semana_crear], $projectId);
-                error_log("[nueva_semana] Limpieza de datos huérfanos: eliminadas semanas > $semana_crear en programa_consolidado");
-            }
-
-            if ($maxSemanaProgramaConsolidado == $semana_crear) {
-                if ($isPreConstruccion) {
-                    $campos = "Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, restriccion_pc_1, restriccion_pc_2, restriccion_pc_3, restriccion_pc_4, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Activa, Ejecutado_Siguiente_Semana, codigo_actividad, medir_productividad, cantidad_ppto, unidad";
-                } else {
-                    $campos = "Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Activa, Ejecutado_Siguiente_Semana, codigo_actividad, medir_productividad, cantidad_ppto, unidad";
-                }
-                $ifnullCheck = $isPreConstruccion
-                    ? ['restriccion_pc_1', 'restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4', 'Ejecutado', 'Estado_Restricciones']
-                    : ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo', 'Ejecutado', 'Estado_Restricciones'];
-                $setClause = "";
-                foreach (explode(',', $campos) as $campoRaw) {
-                    $campo = trim($campoRaw);
-                    if (in_array($campo, $ifnullCheck)) {
-                        $setClause .= "dest.$campo = IFNULL(src.$campo, 0), ";
-                    } else {
-                        $setClause .= "dest.$campo = src.$campo, ";
-                    }
-                }
-                $setClause = rtrim($setClause, ', ');
-
-                $sqlBigUpdate = "UPDATE {$tProgConsolidado} AS dest
-                                 INNER JOIN (SELECT * FROM {$tProgConsolidado} WHERE project_id = ? AND Semana = ? AND Titulo = 0) AS src
-                                 ON src.project_id = dest.project_id
-                                 AND REPLACE(REPLACE(dest.programaAnteriorAsociar, '<b>', ''), '</b>', '') = REPLACE(REPLACE(src.Actividad, '<b>', ''), '</b>', '')
-                                 SET $setClause
-                                 WHERE dest.project_id = ? AND dest.Semana = ?";
-                $dbInstance->query($sqlBigUpdate, [$projectId, $conteo, $projectId, $semana_crear]);
-
-                $sqlReprog = "UPDATE {$tSemanasActivas} SET reprogramacion=1, diferenciaEstructuraCron=(SELECT COUNT(*) FROM {$tProgConsolidado} WHERE project_id = ? AND Semana=? AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL AND Titulo != 1 AND (Ejecutado IS NULL OR Estado_Restricciones IS NULL OR programaAnteriorAsociar IS NOT NULL)) WHERE project_id = ? AND Semana=?";
-                $dbInstance->queryWithProject($sqlReprog, [$projectId, $semana_crear, $projectId, $semana_crear], $projectId);
-
-            } else {
-                if ($isPreConstruccion) {
-                    $cols = "unique_id, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, unidad, cantidad_ppto, codigo_actividad, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, restriccion_pc_1, restriccion_pc_2, restriccion_pc_3, restriccion_pc_4, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana, programaAnteriorAsociar";
-                } else {
-                    $cols = "unique_id, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, unidad, cantidad_ppto, codigo_actividad, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana, programaAnteriorAsociar";
-                }
-
-                // Generate safe select columns dealing with potential NULLs for NOT NULL columns
-                $arrCols = explode(', ', $cols);
-                $arrSelect = [];
-                $ifnullCheckCols = $isPreConstruccion
-                    ? ['restriccion_pc_1', 'restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4', 'Ejecutado', 'Estado_Restricciones']
-                    : ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo', 'Ejecutado', 'Estado_Restricciones'];
-                foreach ($arrCols as $c) {
-                    $c = trim($c);
-                    if (in_array($c, $ifnullCheckCols)) {
-                        $arrSelect[] = "IFNULL($c, 0)";
-                    } else {
-                        $arrSelect[] = $c;
-                    }
-                }
-                $selectCols = implode(', ', $arrSelect);
-
-                $baseConsolidadoId = (int) $dbInstance
-                    ->queryWithProject("SELECT COALESCE(MAX(row_id), MAX(Consecutivo), 0) FROM {$tProgConsolidado} WHERE project_id = ?", [$projectId], $projectId)
-                    ->fetchColumn();
-                $sqlInsertCopy = "INSERT INTO {$tProgConsolidado}(project_id, row_id, Consecutivo, Semana, $cols)
-                                   SELECT ?, ? + ROW_NUMBER() OVER (ORDER BY COALESCE(row_id, Consecutivo), unique_id, Id), ? + ROW_NUMBER() OVER (ORDER BY COALESCE(row_id, Consecutivo), unique_id, Id), ?, $selectCols FROM {$tProgConsolidado} WHERE project_id = ? AND Semana = ?";
-                $dbInstance->query($sqlInsertCopy, [$projectId, $baseConsolidadoId, $baseConsolidadoId, $semana_crear, $projectId, $conteo]);
-            }
-
-            $normalizationService = new \App\Services\ProgramaConsolidadoNormalizationService($dbInstance);
-            $normalizationService->normalizeChapters($db, $semana_crear);
-            if ($isPreConstruccion) {
-                $dbInstance->queryWithProject("UPDATE {$tProgConsolidado} SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, restriccion_pc_1='0%', restriccion_pc_2='0%', restriccion_pc_3='0%', restriccion_pc_4='0%', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE project_id = ? AND Semana = ? AND Titulo=1", [$projectId, $semana_crear], $projectId);
-                $dbInstance->queryWithProject("UPDATE {$tProgConsolidado} SET Ejecutado = 0, Estado_Restricciones = '0', restriccion_pc_1 = '0%', restriccion_pc_2 = '0%', restriccion_pc_3 = '0%', restriccion_pc_4 = '0%' WHERE project_id = ? AND Ejecutado IS NULL AND Semana = ? AND Titulo=0", [$projectId, $semana_crear], $projectId);
-            } else {
-                $dbInstance->queryWithProject("UPDATE {$tProgConsolidado} SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, D_y_E='0', Materiales='0', MdeO='0', Equipos='0', Predecesora='0', Pdto_Cons='0', Modelo='0', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE project_id = ? AND Semana = ? AND Titulo=1", [$projectId, $semana_crear], $projectId);
-                $dbInstance->queryWithProject("UPDATE {$tProgConsolidado} SET Ejecutado = 0, Estado_Restricciones = '0', D_y_E = '0', Materiales = '0', MdeO = '0', Equipos = '0', Predecesora = '0', Pdto_Cons = '0', Modelo = '0' WHERE project_id = ? AND Ejecutado IS NULL AND Semana = ? AND Titulo=0", [$projectId, $semana_crear], $projectId);
-            }
-
-
-
-            $carryoverService = new \App\Services\WeeklyRealProgressCarryoverService($dbInstance);
-            $carryoverService->syncWeek($db, $conteo, $semana_crear);
-
-            // La línea base contractual se siembra sola la primera vez que un proyecto tiene
-            // programa. Write-once: si ya está declarada, esto no hace nada. La lógica vive en el
-            // servicio, no aquí — `src/Legacy/` es mantenimiento (AGENTS.md).
-            (new \App\Services\LineaBaseContractualService($dbInstance))->sembrarSiFalta((int) $projectId);
-
-            // El arrastre semanal del PDC v1 (copia de filas de `pdc` + paquetes, subcontratos
-            // y estado de proceso) se eliminó el 2026-08-04 junto con el módulo. `pdcActivo`
-            // sigue siendo un atributo del proyecto y viaja en la respuesta como `$conteoPDC`.
+            echo json_encode(["respuesta" => "ERROR", "mensaje" => $resultado->mensaje]);
         }
 
-        $conteoPDC = $pdcActivo;
-        $semana = $semana_crear;
-        $ejecucionActualizada = 1;
-        $dbName = $db;
-        include __DIR__ . "/modificar_sem_estado.php";
+        return;
     }
+
+    $semana = $resultado->semana;
+    $conteoPDC = $pdcActivo;
+    $ejecucionActualizada = 1;
+
+    // `modificar_sem_estado.php` también sabe leer `Semanal_Confirmada` de la semana recién
+    // creada para el cuarto elemento de la respuesta; una semana recién creada nunca viene
+    // confirmada, así que es siempre 0 — igual que el script legado.
+    $semanalConfirmada = 0;
+
+    echo json_encode([$semana, $conteoPDC, $ejecucionActualizada, $semanalConfirmada]);
 } catch (Exception $e) {
     echo json_encode(["respuesta" => "ERROR", "mensaje" => $e->getMessage()]);
 }

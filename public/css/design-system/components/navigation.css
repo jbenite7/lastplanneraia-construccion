@@ -1,4 +1,40 @@
 @layer components {
+  /* Skip link del shell React (T01-Tarea 4): ningún token existente cubre "fuera de
+     pantalla hasta recibir foco" con posición fija — `.aia-visually-hidden` (core.css)
+     oculta permanentemente, sin ese revelado. Único componente nuevo que esta tarea
+     justifica per su propio contrato: "agrega un token nuevo solo si un contrato de
+     diseño que falla primero prueba que falta" (ver navigation-authority/AppShell
+     tests). Compone solo con tokens `--ds-*` ya existentes. */
+  .aia-skip-link {
+    position: fixed;
+    top: var(--ds-space-3);
+    left: var(--ds-space-3);
+    z-index: var(--ds-z-shell-toast);
+    padding: var(--ds-space-2) var(--ds-space-4);
+    border-radius: var(--ds-radius-control-sm);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+    font-weight: var(--ds-type-weight-semibold);
+    text-decoration: none;
+    transform: translateY(-200%);
+    transition: transform var(--ds-motion-standard);
+  }
+
+  .aia-skip-link:focus-visible {
+    transform: translateY(0);
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+    box-shadow: var(--ds-shadow-focus);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aia-skip-link {
+      transition: none;
+    }
+  }
+}
+
+@layer components {
   .aia-navigation {
     overflow: hidden;
     border: var(--ds-border-width) solid var(--ds-active-border);
@@ -125,7 +161,9 @@
     border: var(--ds-border-width) solid var(--ds-active-border);
     border-radius: var(--ds-radius-lg);
     background: var(--ds-active-nav-bg);
-    color: var(--ds-active-text-primary);
+    /* Mismo motivo que `.aia-sidebar__link`/`.aia-sidebar__utility` más arriba: este fondo no
+       sigue el tema de página, así que el color por defecto tampoco puede hacerlo. */
+    color: var(--ds-active-nav-text);
     overflow: visible;
     transition:
       width var(--ds-motion-standard),
@@ -152,6 +190,15 @@
     border-block-end: var(--ds-border-width) solid var(--ds-active-border);
   }
 
+  /* `color` aquí NO puede ser `--ds-active-text-primary`: el rail (`.aia-navigation--sidebar`)
+     fija su fondo a `--ds-active-nav-bg`, que en tema claro sigue siendo oscuro a propósito
+     (`theme-claro.css`, decisión de marca — el rail no sigue el tema de página). Un texto que sí
+     siga el tema de página queda oscuro sobre fondo oscuro. `--ds-active-nav-text`/
+     `-muted` son los tokens que `theme-claro.css` ya define para exactamente este caso —
+     `.aia-sidebar__brand`/`.aia-sidebar__context` ya los usaban (líneas de abajo); `.aia-sidebar__
+     utility`/`.aia-sidebar__link` no, y eso dejaba "Indicadores LPS", "Tema: claro" y "Cuenta ·
+     …" en 1.11:1/2.56:1 de contraste en tema claro (hallazgo axe, Tarea 8 T01,
+     `tests/browser/shell-runtime-react-a11y.spec.mjs`). */
   .aia-sidebar__brand,
   .aia-sidebar__utility,
   .aia-sidebar__link {
@@ -159,7 +206,7 @@
     align-items: center;
     min-height: var(--ds-sidebar-item-min-height);
     gap: var(--ds-space-3);
-    color: var(--ds-active-text-primary);
+    color: var(--ds-active-nav-text);
     font: inherit;
     text-decoration: none;
   }
@@ -213,6 +260,16 @@
 
   .aia-sidebar__context {
     display: grid;
+    /* Explícito, no implícito: con solo `.aia-sidebar__brand` (col 1, fijo) y
+       `.aia-sidebar__toggle` (col 2, fijo) en el header, este era el único hijo
+       auto-colocado y el algoritmo de grid lo dejaba en la col 1 "por suerte"
+       (única celda libre en la fila). En cuanto aparece un segundo hijo
+       auto-colocado (p. ej. `.aia-sidebar__week`, shell React, Tarea 5 T01), el
+       algoritmo rellena la fila por columnas antes de abrir fila nueva y el
+       segundo ítem le roba la col 2 al toggle, colapsando la col 1 a 0px —
+       bug medido 2026-08-30 (fix-sidebar-header). Fijar la columna hace el
+       layout robusto al número de hijos del header. */
+    grid-column: 1;
     gap: var(--ds-space-1);
     min-width: 0;
     color: var(--ds-active-nav-text-muted);
@@ -220,7 +277,7 @@
   }
 
   .aia-sidebar__context span {
-    color: var(--ds-active-text-primary);
+    color: var(--ds-active-nav-text);
     font-weight: var(--ds-type-weight-semibold);
   }
 
@@ -234,7 +291,7 @@
     border: var(--ds-border-width) solid transparent;
     border-radius: var(--ds-radius-control-sm);
     background: transparent;
-    color: var(--ds-active-text-secondary);
+    color: var(--ds-active-nav-text-muted);
     cursor: pointer;
     text-align: start;
   }
@@ -295,7 +352,9 @@
    group labels only. */
   .aia-navigation--sidebar .aia-sidebar__group h3 {
     margin: var(--ds-space-2) var(--ds-space-3) 0 !important;
-    color: var(--ds-active-text-secondary) !important;
+    /* Mismo motivo que `.aia-sidebar__link`/`.aia-sidebar__utility`: el fondo del rail no sigue
+       el tema de página (`--ds-active-nav-bg`), así que el color tampoco puede hacerlo. */
+    color: var(--ds-active-nav-text-muted) !important;
     font-size: var(--ds-type-size-xs);
     font-weight: var(--ds-type-weight-bold);
     letter-spacing: normal !important;
@@ -543,6 +602,7 @@
      se retiran del flujo: el contexto vive en la context-bar visible y los
      aria-labelledby siguen computando el nombre desde elementos display:none. */
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__context,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__week,
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__group h3 {
     display: none;
   }

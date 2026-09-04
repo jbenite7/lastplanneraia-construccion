@@ -402,7 +402,33 @@ function tieneSenalDeComprobacion(string $salida): bool
         }
     }
 
-    return false;
+    return cuentaComprobacionesRealizadas($enMinusculas);
+}
+
+/**
+ * Segunda forma de respaldar un verde: en vez de anunciar «pasa», el test dice cuántas
+ * comprobaciones hizo. `tests/test_php_test_lane_manifest.php` cierra con «Lane manifest:
+ * 7 checks» y `tests/test_runtime_boundary_ci_contract.php` con «Runtime boundary CI
+ * contract: 63 checks»; ninguna de las dos casa con la lista de señales, así que ambos
+ * salían SOSPECHOSO y ponían el agregador entero en rc=1 pese a comprobar 7 y 63 cosas.
+ *
+ * Es la misma trampa que ya documenta el comentario de `SENALES_DE_COMPROBACION` —el
+ * detector juzgando en un idioma distinto al que el test reporta—, solo que al revés:
+ * allí el detector hablaba inglés y el test español, aquí el detector solo entiende las
+ * fórmulas de veredicto y el test reporta un recuento.
+ *
+ * El cero es deliberado y es la mitad del valor de esta función: «0 checks» NO respalda
+ * nada, así que se sigue marcando SOSPECHOSO. Un test que no comprobó nada y sale 0 es
+ * exactamente lo que este detector existe para cazar.
+ *
+ * Sin cubrir a propósito: «0 comprobaciones» sí pasa hoy, pero no por esta función sino
+ * porque `comprobacion` está en `SENALES_DE_COMPROBACION` como subcadena suelta. Es un
+ * agujero anterior y de otra forma; taparlo cambia el veredicto de tests que hoy pasan,
+ * así que no se hace de refilón dentro de otro arreglo.
+ */
+function cuentaComprobacionesRealizadas(string $salidaEnMinusculas): bool
+{
+    return preg_match('/\b(?!0+\b)\d+\s+checks?\b/u', $salidaEnMinusculas) === 1;
 }
 
 /**
