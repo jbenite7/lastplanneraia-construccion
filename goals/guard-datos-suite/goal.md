@@ -254,6 +254,29 @@ phpstan analyse src admin/src --memory-limit=1G → RC=0 · [OK] No errors
 test_project_scope_callsite_audit → RC=0
 ```
 
+### La condición de hecho, cumplida en una corrida real de GitHub Actions
+
+Corrida [33893451861](https://github.com/jbenite7/lastplanneraia-construccion/actions/runs/33893451861)
+(PR #30). Leído de las variables `G_*` del paso «Summarize gate results», que es lo que el goal
+exigía — no del `conclusion` de los pasos, que llevan `continue-on-error` y muestran «✓» aunque
+fallen.
+
+```
+                              main (33886885126)   PR #30 (33893451861)
+G_PHP_SUITE                        failure       →     success   ← la condición de hecho
+G_FULL_APP_FLOW                    failure             failure
+G_RUNTIME_BUDGET_CHECK             failure             failure
+G_KEYBOARD_REFLOW_EVIDENCE         failure             failure
+(los nueve gates restantes)        success             success
+```
+
+`G_PHP_SUITE: success` **en los dos temas de la matriz**, claro y oscuro.
+
+Los otros tres siguen en rojo **y ya lo estaban en `main`**: son los frentes que este goal declara
+fuera de alcance, cada uno con su entrada en `TASKS.md`. El job `design-system-runtime` sigue
+fallando por ellos, así que el CI del PR está en rojo por causas ajenas a este frente — mergear con
+esos tres rojos preexistentes es decisión de Felipe, no de este cierre.
+
 ### Cuatro fallos de producción más, que estaban escondidos detrás de los tests
 
 Ninguno se veía antes: el test moría en su primera consulta sin alcance y nunca llegaba tan lejos.
