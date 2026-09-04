@@ -35,6 +35,18 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 la suite quedó arreglado en el frente `fix/suite-main-scope`; **estas dos son de producción y siguen
 vivas en `main`**, medidas con petición HTTP real contra el stack local:
 
+- [ ] **`tests/test_bi_constraint_write.php` sigue muerto por el guard — la suite no quedó
+  arreglada del todo (medido el 2026-09-04).** El encabezado de arriba dice que «lo de la suite
+  quedó arreglado en el frente `fix/suite-main-scope`»; para este archivo no. Corriendo contra la
+  base de dev muere en su primer fixture con `MissingProjectScope: La consulta a tablas de proyecto
+  exige un ProjectScope activo` (`ProjectSqlGuard.php:57`, vía `Database::query()`), antes de
+  ejercitar una sola aserción. Son **cinco** consultas del archivo a tablas de proyecto sin scope, y
+  dos de ellas son la comprobación de persistencia, no fixtures: envolverlas exige criterio sobre
+  qué alcance corresponde en cada punto —`SystemScope` o el del proyecto 73— y hacerlo a ojo podría
+  tapar justo la propiedad de aislamiento que el test existe para probar. Por eso se dejó como está
+  al pasar por ahí el 2026-09-04. Su hermano `test_bi_metric_endpoint.php` sí pasa entero (39
+  aserciones): consulta `project_members`, que es tabla global. El mismo síntoma tienen los 24 tests
+  que `G_PHP_SUITE` reporta en rojo en cada corrida de CI.
 - [x] **Arreglado el 2026-09-02: el alias ambiguo de `semanas_activas`.** La misma consulta estaba
   copiada en dos sitios —`src/Legacy/datosGeneralesPagina.php` y `ProgramaGeneralController`— y
   nombraba la tabla dos veces sin alias, así que `/programacion-semanal` y `/programa-general`

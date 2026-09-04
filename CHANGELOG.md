@@ -28,6 +28,26 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Arreglado: la deuda latente de los dos tests de BI que abrían la sesión del servidor (2026-09-04)
+
+`tests/test_bi_metric_endpoint.php` y `tests/test_bi_constraint_write.php` obtenían un dato de la
+sesión lanzando un subproceso PHP que hacía `session_id($sid); session_start();` sobre el archivo
+que crea Apache. Es el mismo mecanismo cuya causa raíz se midió el 2026-09-04 al cerrar la
+regresión solo-CI de los contratos del shell: `/tmp/sess_<sid>` es de `www-data` con modo 0600, el
+CLI corre como root, y en el kernel del runner de GitHub el `open()` devuelve «Permission denied
+(13)» pese al uid 0 — `/tmp` es sticky y de escritura para todos, y `fs.protected_regular` (activo
+en Ubuntu, en 0 en la VM de Docker Desktop) niega el acceso a un archivo de otro dueño. No se
+manifestaba porque ambos declaran `@requiere: datos-proyecto` y el CI solo llega a `--nivel=http`.
+
+- **Métricas**: la semana de aterrizaje se lee ahora por HTTP, del `navigation.bi.href` que
+  devuelve `GET /api/session`. Ya no abre la sesión desde otro proceso.
+- **Restricciones**: no hay vía HTTP posible. El único sitio que emite el form-key `ct_piloto` es
+  `BiViewController::renderCtPiloto()`, que solo se sirve con `CT_PILOTO=1` — bandera local, no
+  versionada y ausente en `docker-compose.ci.yml`, así que leerlo por HTTP cambiaría un fallo
+  latente en CI por un aborto seguro en CI. El subproceso corre ahora como el **dueño real** del
+  archivo de sesión (derivado con `fileowner()`, no fijado a mano), con lo que ni el modo 0600 ni
+  `fs.protected_regular` le aplican.
+
 ### Documentación: skill `datatables-to-handsontable` archivada en el repo (2026-09-03)
 
 `docs/archivo/skills/datatables-to-handsontable/SKILL.md` guarda la skill de la migración puntual
