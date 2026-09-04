@@ -31,9 +31,17 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 
 ## Gate de datos: lo que el guard destapó y sigue roto (2026-09-02)
 
-`ProjectSqlGuard` (2026-08-29, `48e06072`) rompió más que la herramienta de línea de comandos. Lo de
-la suite quedó arreglado en el frente `fix/suite-main-scope`; **estas dos son de producción y siguen
-vivas en `main`**, medidas con petición HTTP real contra el stack local:
+**Frente abierto el 2026-09-04 con su medición: [[goals/guard-datos-suite/goal|guard-datos-suite]].**
+Los 24 tests que `G_PHP_SUITE` reporta en rojo en cada corrida están ahí clasificados uno por uno —
+**8 destapan código de producción roto** (import SINCO del PDC, panel de administración, la
+consolidación de informes y las vistas BI) y **16 son tests que consultan sin declarar alcance**.
+La condición de hecho y lo que el frente tiene prohibido hacer viven en ese goal.
+
+`ProjectSqlGuard` (2026-08-29, `48e06072`) rompió más que la herramienta de línea de comandos.
+~~Lo de la suite quedó arreglado en el frente `fix/suite-main-scope`~~ — **eso caducó: la suite
+sigue con 24 tests en rojo**, medidos el 2026-09-04 en dos corridas distintas (ver el goal enlazado
+arriba). Las dos de abajo son de producción y siguen vivas en `main`, medidas con petición HTTP real
+contra el stack local:
 
 - [ ] **`tests/test_bi_constraint_write.php` sigue muerto por el guard — la suite no quedó
   arreglada del todo (medido el 2026-09-04).** El encabezado de arriba dice que «lo de la suite
