@@ -7,6 +7,8 @@ require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/../src/Core/TableResolver.php';
 require_once __DIR__ . '/../admin/src/Models/Project.php';
 
+use App\Security\DataScope\SystemScopeRunner;
+
 $db = Database::getInstance();
 $model = new Admin\Models\Project($db);
 $failed = 0;
@@ -20,12 +22,11 @@ function okAdmin(bool $condition, string $message): void
     }
 }
 
+// `information_schema` no pasa por Database::query(): ProjectSqlGuard rechaza las tablas
+// calificadas por schema. La puerta de metadatos es tableExists(), que consulta con PDO crudo.
 function tableExistsAdmin(Database $db, string $table): bool
 {
-    return (int) $db->query(
-        'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
-        [$table]
-    )->fetchColumn() > 0;
+    return $db->tableExists($table);
 }
 
 echo "=== Admin global project model ===" . PHP_EOL;
@@ -60,8 +61,17 @@ $prefix = (string) ($project['Base_de_Datos'] ?? '');
 okAdmin(str_ends_with($prefix, '_pc'), 'pre-construction prefix keeps compatibility suffix');
 okAdmin(!tableExistsAdmin($db, "{$prefix}_programa"), 'admin does not create legacy prefixed tables');
 
+// Las comprobaciones sobre `semanas_activas` son la aserción, no preparación: cuentan las filas
+// de ESTE project_id antes y después de borrar. El alcance de sistema reproduce el entorno en que
+// corre el panel de administración; el filtro por project_id se conserva intacto, que es lo que
+// de verdad prueba el aislamiento.
+$asSystem = static fn (string $reason, callable $op) => (new SystemScopeRunner($db->dataScope()))->run($reason, $op);
+
 $weeks = $projectId > 0
-    ? (int) $db->query('SELECT COUNT(*) FROM semanas_activas WHERE project_id = ?', [$projectId])->fetchColumn()
+    ? $asSystem('test:admin-global-project-model:weeks', static fn (): int => (int) $db->query(
+        'SELECT COUNT(*) FROM semanas_activas WHERE project_id = ?',
+        [$projectId]
+    )->fetchColumn())
     : 0;
 okAdmin($weeks === 1, 'admin creates initial global week');
 
@@ -77,10 +87,10 @@ $remainingProject = (int) $db->query(
     'SELECT COUNT(*) FROM general_proyectos_procesos WHERE Id = ?',
     [$projectId]
 )->fetchColumn();
-$remainingWeeks = (int) $db->query(
+$remainingWeeks = $asSystem('test:admin-global-project-model:remaining', static fn (): int => (int) $db->query(
     'SELECT COUNT(*) FROM semanas_activas WHERE project_id = ?',
     [$projectId]
-)->fetchColumn();
+)->fetchColumn());
 okAdmin($remainingProject === 0, 'project metadata removed');
 okAdmin($remainingWeeks === 0, 'global rows removed');
 

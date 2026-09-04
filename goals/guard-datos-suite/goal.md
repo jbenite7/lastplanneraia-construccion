@@ -1,11 +1,11 @@
 ---
 capa: fuente
 tipo: goal-doc
-estado: abierto
+estado: cerrado
 fecha: 2026-09-04
 areas: [datos, rbac, qa, proceso]
 fuente: goals/guard-datos-suite/goal.md
-resumen: "Devolver G_PHP_SUITE a verde tras ProjectSqlGuard: 24 tests en rojo en cada corrida de CI, medidos y clasificados el 2026-09-04 — 16 son tests sin adaptar y 8 destapan código de producción roto"
+resumen: "CERRADO 2026-09-04: G_PHP_SUITE de 24 fallos a 0. Los 8 de producción y los 16 tests sin adaptar, más 2 clases PHPUnit que nadie había contado y 4 fallos de producción que estaban escondidos detrás de los tests"
 ---
 
 # Frente: guard-datos-suite
@@ -139,6 +139,197 @@ sea la solución.
 Los otros tres gates rojos de `design-system-runtime` (`G_FULL_APP_FLOW`,
 `G_RUNTIME_BUDGET_CHECK`, `G_KEYBOARD_REFLOW_EVIDENCE`) son frentes distintos y tienen su propia
 entrada en `TASKS.md`.
+
+## Cierre — primera mitad (los ocho de producción), 2026-09-04
+
+**Los ocho tests de la lista pasan, y el arreglo está en el código de producción.** Los 16 tests sin
+adaptar siguen abiertos: `G_PHP_SUITE` seguirá en rojo hasta que se cierre la segunda mitad, tal como
+preveía este goal.
+
+Verificado en el runtime aislado de CI reproducido en local (`docker-compose.yml` +
+`docker-compose.ci.yml`, proyecto propio en el puerto 18081, con el worktree montado y comprobado por
+`md5sum` contra el árbol local antes de leer ningún código de salida).
+
+### Los ocho, uno por uno
+
+```
+test_pdc_v2_maestro_sinco_import      → RC=0
+test_admin_global_project_model       → RC=0
+test_linea_base_contractual_service   → RC=0
+test_report_processor_cic_project_scope → RC=0
+test_general_api_update_without_user  → RC=0
+test_preconstruction_import_global_ids → RC=0
+test_schedule_update_draft_import     → RC=0
+test_bi_views_exist                   → RC=0
+```
+
+### Diferencial contra `main`, que es la prueba de que no se empeora nada
+
+Misma suite, mismo stack, dos árboles. `main` en `63518a5a`:
+
+```
+main:  === 102 corridos: 78 pasaron, 24 fallaron, 0 sospechosos, 0 se saltaron solos, 37 omitidos ===
+rama:  === 102 corridos: 86 pasaron, 16 fallaron, 0 sospechosos, 0 se saltaron solos, 37 omitidos ===
+
+ARREGLADOS (8): test_admin_global_project_model, test_bi_views_exist,
+                test_general_api_update_without_user, test_linea_base_contractual_service,
+                test_pdc_v2_maestro_sinco_import, test_preconstruction_import_global_ids,
+                test_report_processor_cic_project_scope, test_schedule_update_draft_import
+NUEVOS FALLOS: ninguno
+SIGUEN ROJOS: 16 (los tests sin adaptar de la segunda mitad)
+```
+
+Resto de gates sobre la rama:
+
+```
+--nivel=puro → RC=0 · 33 corridos: 33 pasaron · PHPUnit: 13 clase(s), en verde (rc=0)
+phpstan analyse src admin/src --memory-limit=1G → RC=0 · [OK] No errors
+test_project_scope_callsite_audit → RC=0 · 0 hallazgos
+```
+
+### Lo que NO se hizo, y es deliberado
+
+No se relajó `ProjectSqlGuard`, no se marcó ningún test como saltado y no se movió el
+`// @requiere:` de ninguno. Los dos usos nuevos de `SystemScopeRunner` entraron por la lista blanca
+de `test_project_scope_callsite_audit`, cada uno con su justificación escrita, que es el mecanismo
+que el repo ya tenía para esto.
+
+### Correcciones a lo que este goal daba por cierto
+
+1. **La medición pendiente de `information_schema` está hecha, y el conteo era otro.** De los diez
+   archivos listados, **ocho ya estaban migrados**: solo conservan comentarios explicando por qué
+   delegan en `Database`. Quedaba SQL real en dos — `admin/src/Models/Project.php` (cuatro
+   consultas, arregladas) y `admin/src/Controllers/DashboardController.php` (una, **sigue abierta**:
+   está dentro de un `try/catch` que devuelve ceros, así que falla en silencio y el panel muestra
+   0 MB y 0 tablas).
+
+2. **La consolidación de informes no estaba muerta por lo que decía `TASKS.md`.** El alias ambiguo
+   —su «tercer problema»— no bloqueaba nada. Lo que la mataba eran siete consultas sin `project_id`
+   que operaban sobre todas las obras, y la peor **borraba** el CIC/CIP de las demás en cada
+   consolidación. El `FROM DUAL` sí era un obstáculo real y se quitó: era decorativo.
+
+3. **Tres de los ocho no eran «producción rota» en el sentido de la tabla.** `GeneralApiController`
+   se comportaba correctamente al exigir alcance; lo que fallaba era que los tests construían el
+   controlador saltándose `SessionMiddleware`, que es quien enlaza el `ProjectScope` en una petición
+   real. Se resolvió con `tests/support/SessionScopeHarness.php`, que enlaza esa mitad con el mismo
+   `ProjectScopeResolver` de producción — no con un atajo. Sí había un fallo de producción en ese
+   controlador, y se arregló: un `project_id` repetido en el WHERE que rompía el borrado de
+   huérfanas del import.
+
+### Hallazgo enrutado, no arreglado
+
+`src/Legacy/nueva_semana.php` no puede activar un borrador de semana: su `UPDATE` con tabla derivada
+no satisface al guard. Lo destapó `test_schedule_update_draft_import` al llegar más lejos que antes;
+ese test **pasa igual**, porque su aserción mira el conteo de filas y no el payload. Queda anotado en
+`TASKS.md` como tarea propia: es legado sin cobertura, y reescribir ese `UPDATE` de paso habría
+convertido este frente en otro.
+
+## Cierre — segunda mitad (los 16 tests) y del frente, 2026-09-04
+
+**Los 16 pasan, y `G_PHP_SUITE` queda en verde: el nivel `http` va de 24 fallos a 0.** Verificado en
+el mismo runtime aislado de CI reproducido en local, con el worktree montado y comprobado por
+`md5sum` contra el árbol local antes de leer ningún código de salida — y otra vez al montar `main`
+para el diferencial, que es donde esa comprobación de verdad gana algo.
+
+### Diferencial contra `main` (`63518a5a`), misma suite y mismo stack
+
+```
+main:  === 102 corridos: 78 pasaron, 24 fallaron, 0 sospechosos, 0 se saltaron solos, 37 omitidos ===
+rama:  === 102 corridos: 100 pasaron,  0 fallaron, 0 sospechosos, 2 se saltaron solos, 37 omitidos ===
+
+ARREGLADOS: los 24
+NUEVOS FALLOS: ninguno
+```
+
+Los 2 «se saltaron solos» son `test_bi_alcance_responsables` y `test_bitacora_avance_endpoint`:
+llegan a su `SKIP` propio porque el fixture sintético de CI no trae la fila que necesitan. Es su
+comportamiento de diseño, no un silenciamiento — antes ni siquiera alcanzaban esa línea.
+
+Resto de gates sobre la rama:
+
+```
+--nivel=puro → RC=0 · 33 corridos: 33 pasaron · PHPUnit: 13 clase(s), en verde (rc=0)
+--nivel=http → RC=0 · PHPUnit: 17 clase(s), en verde (rc=0)
+phpstan analyse src admin/src --memory-limit=1G → RC=0 · [OK] No errors
+test_project_scope_callsite_audit → RC=0
+```
+
+### La condición de hecho, cumplida en una corrida real de GitHub Actions
+
+Corrida [33893451861](https://github.com/jbenite7/lastplanneraia-construccion/actions/runs/33893451861)
+(PR #30). Leído de las variables `G_*` del paso «Summarize gate results», que es lo que el goal
+exigía — no del `conclusion` de los pasos, que llevan `continue-on-error` y muestran «✓» aunque
+fallen.
+
+```
+                              main (33886885126)   PR #30 (33893451861)
+G_PHP_SUITE                        failure       →     success   ← la condición de hecho
+G_FULL_APP_FLOW                    failure             failure
+G_RUNTIME_BUDGET_CHECK             failure             failure
+G_KEYBOARD_REFLOW_EVIDENCE         failure             failure
+(los nueve gates restantes)        success             success
+```
+
+`G_PHP_SUITE: success` **en los dos temas de la matriz**, claro y oscuro.
+
+Los otros tres siguen en rojo **y ya lo estaban en `main`**: son los frentes que este goal declara
+fuera de alcance, cada uno con su entrada en `TASKS.md`. El job `design-system-runtime` sigue
+fallando por ellos, así que el CI del PR está en rojo por causas ajenas a este frente — mergear con
+esos tres rojos preexistentes es decisión de Felipe, no de este cierre.
+
+### Cuatro fallos de producción más, que estaban escondidos detrás de los tests
+
+Ninguno se veía antes: el test moría en su primera consulta sin alcance y nunca llegaba tan lejos.
+
+| Qué está roto para un usuario | Dónde |
+|---|---|
+| El catálogo de paquetes solo muestra los que la obra ya usa | `PaquetesService::catalogo()` — bajo alcance de obra el gate vuelve `INNER` su `LEFT JOIN` |
+| Las sugerencias de paquete no responden | `/plan-compras/api/paquetes/sugerencias`, sus tres capas |
+| Los avisos del visor de presupuesto revientan | `PresupuestoImportService::avisosDelPresupuesto()` |
+| Actividades por insumo revienta | `PaquetesService::actividadesPorInsumo()` |
+
+Los dos últimos son el mismo defecto: unían `pdc_presupuesto_items` con
+`pdc_presupuesto_apu_insumos` **solo por `id`**, sin relacionar `project_id`. El gate los rechazaba
+con razón — es la forma exacta en que un JOIN se salta el aislamiento entre obras.
+
+### La decisión que hubo que subir
+
+**El catálogo de paquetes se lee entre obras a propósito, y eso ningún `ProjectScope` puede
+expresarlo.** Decisión de Felipe, 2026-09-04: se declara el cruce, no se suprime. Las cuatro
+lecturas pasan por `PaquetesService::leerCatalogoEntreObras()` con su razón escrita, autorizadas en
+la lista blanca de `test_project_scope_callsite_audit`. Lo que viaja entre obras es id y nombre de
+paquete —catálogo de la empresa— y un conteo de obras; nunca una fila de la obra ajena. La
+alternativa evaluada, sugerir solo con la historia propia, dejaba a cada obra nueva sin ninguna
+sugerencia, que es cuando más ayudan.
+
+### Correcciones a lo que este goal daba por cierto
+
+1. **Los 16 no eran 16: eran 16 scripts más dos clases PHPUnit**, `CarryoverAvanceSemanalTest` y
+   `PgAvanceEdicionManualTest`, con 9 errores de la misma causa. No las contó ninguna de las dos
+   mediciones de CI ni la de este goal, y no por descuido: `scripts/run-php-tests.php` reporta
+   PHPUnit en una línea `===` **aparte** de la de los scripts sueltos, así que quien lee «24
+   fallaron» se lleva solo la mitad del tablero. Sin ellas `G_PHP_SUITE` no habría quedado verde.
+
+2. **«Mecánicos salvo donde la consulta es la aserción» se quedó corto.** El orden sugerido daba los
+   16 por trámite. De trámite tuvieron poco: cuatro destaparon producción rota y uno obligó a subir
+   una decisión de producto. La lección es la de la primera mitad otra vez — el guard no distingue
+   entre un test perezoso y un fallo real, y hasta que el test no llega al final no se sabe cuál de
+   los dos era.
+
+### Lo que NO se hizo, y es deliberado
+
+No se relajó `ProjectSqlGuard`, no se marcó ningún test como saltado y no se movió el `// @requiere:`
+de ninguno. `tests/test_bi_constraint_write.php` —el de las cinco consultas, dos de ellas
+aserciones— **sigue abierto a propósito**: es nivel `datos-proyecto`, fuera del CI, y no bloquea la
+condición de hecho. Queda anotado en `TASKS.md` con la regla que ahora sí está escrita para
+resolverlo.
+
+### La herramienta que queda
+
+`tests/support/ScopeFixture.php`, y sobre todo la regla que lleva escrita en su cabecera: el alcance
+de una **aserción de aislamiento** es el de la obra que se **observa**, nunca el de la que se acaba
+de escribir. Elegirlo al revés no rompe el test — lo deja en verde midiendo lo contrario de lo que
+dice, que es peor.
 
 ## Archivos de este goal
 

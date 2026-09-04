@@ -31,6 +31,7 @@ const CORTE_CREADO_EN_MIGRACION = '2026-08-18 11:53:29';
 require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/../src/Core/TableResolver.php';
+require_once __DIR__ . '/support/ScopeFixture.php';
 
 $db = Database::getInstance();
 $failed = 0;
@@ -47,11 +48,9 @@ function okGestion(bool $condition, string $message): void
 echo "=== CT-7.3 pi_shared_constraints: columnas de gestion ===" . PHP_EOL;
 
 // ------------------------------------------------------- 1. Las 5 columnas, tipo y nulabilidad
-$columnas = $db->query(
-    "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_TYPE, COLUMN_DEFAULT
-     FROM information_schema.COLUMNS
-     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'pi_shared_constraints'"
-)->fetchAll(PDO::FETCH_ASSOC);
+// Los metadatos se piden por la puerta de `Database`: `information_schema` es tabla calificada
+// por schema y el gate la rechaza, así que armarla aquí a mano moriría antes de comprobar nada.
+$columnas = $db->columnDefinitions('pi_shared_constraints');
 
 $porNombre = [];
 foreach ($columnas as $c) {
@@ -85,10 +84,13 @@ okGestion(
 
 // ---------------------------------------------------- 3. ValorObjetivo intacto (la migracion
 // solo LEE esa columna para calcular EstadoLiberacion; nunca debio escribirla)
-$valorObjetivoCol = $db->query(
-    "SELECT COLUMN_TYPE, IS_NULLABLE FROM information_schema.COLUMNS
-     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'pi_shared_constraints' AND COLUMN_NAME = 'ValorObjetivo'"
-)->fetch(PDO::FETCH_ASSOC);
+$valorObjetivoCol = null;
+foreach ($db->columnDefinitions('pi_shared_constraints') as $definicion) {
+    if ($definicion['COLUMN_NAME'] === 'ValorObjetivo') {
+        $valorObjetivoCol = $definicion;
+        break;
+    }
+}
 okGestion(
     ($valorObjetivoCol['COLUMN_TYPE'] ?? '') === 'varchar(20)' && ($valorObjetivoCol['IS_NULLABLE'] ?? '') === 'NO',
     'ValorObjetivo conserva su tipo original varchar(20) NOT NULL'
@@ -97,10 +99,17 @@ okGestion(
 // ------------------- 4. Backfill correcto SOLO para las filas que existian al migrar (Important 2)
 echo PHP_EOL . "=== Backfill de EstadoLiberacion contra la regla CT-7.3 (filas pre-migracion) ===" . PHP_EOL;
 
-$stmt = $db->query(
-    'SELECT Id, project_id, ValorObjetivo, EstadoLiberacion, CreadoEn FROM pi_shared_constraints'
+// Esta lectura cruza obras a propósito y no puede no hacerlo: lo que se juzga es si el backfill
+// de una migración fue correcto en TODA la base, no en una obra. Va como mantenimiento, con su
+// razón escrita; acotarla a un proyecto convertiría el control en una muestra y dejaría sin
+// comprobar justo las filas donde la migración pudo equivocarse.
+$todasLasFilas = ScopeFixture::comoSistema(
+    $db,
+    'test:constraints-gestion-schema:backfill-de-migracion',
+    static fn () => $db->query(
+        'SELECT Id, project_id, ValorObjetivo, EstadoLiberacion, CreadoEn FROM pi_shared_constraints'
+    )->fetchAll(PDO::FETCH_ASSOC),
 );
-$todasLasFilas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $filasPreMigracion = array_values(array_filter(
     $todasLasFilas,

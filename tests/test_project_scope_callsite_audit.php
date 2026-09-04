@@ -366,7 +366,28 @@ function auditSystemRunnerCallerAllowed(string $relative): bool
     return in_array($relative, [
         'src/Controllers/Gestion/ReportController.php',
         'admin/src/Controllers/DashboardController.php',
+        // Alta, respaldo y baja de proyectos desde el panel de administración. No puede usar
+        // ProjectScope: no hay proyecto en sesión —admin trabaja *sobre* los proyectos, no dentro
+        // de uno— y en create() el proyecto acaba de nacer, mientras en delete() está por
+        // desaparecer. Cada consulta conserva su `WHERE project_id = ?` explícito.
+        'admin/src/Models/Project.php',
         'admin/async/consolidate.php',
+        // Re-enganche del catálogo de insumos del PDC. Cruza obras por diseño: el maestro es de la
+        // empresa, así que un insumo nuevo resuelve pendientes de cualquier proyecto — forma que
+        // ningún ProjectScope puede expresar. Sólo se usa en la variante global; la acotada a un
+        // proyecto pasa por queryWithProject.
+        'src/Services/Pdc/MaestroInsumosService.php',
+        // Catálogo de paquetes de contratación del PDC, en sus dos lecturas: el catálogo mismo
+        // (`catalogo()`, cuyo `insumosGlobal` cuenta el uso en TODAS las obras) y las tres capas de
+        // sugerencia, que proponen un paquete porque otras obras ya clasificaron ese insumo. Las
+        // cuatro cruzan obras por diseño y ninguna cabe en un ProjectScope: la forma que necesitan
+        // es «todas menos esta», o directamente «todas». Bajo el alcance de una sola obra el gate
+        // convierte el LEFT JOIN del catálogo en INNER y desaparecen los paquetes que esa obra aún
+        // no usa, que son justo los que hay que poder elegir. Lo que sale es catálogo de empresa y
+        // estadística agregada —id, nombre y conteo de obras—, nunca una fila de la obra ajena.
+        // Decisión de Felipe, 2026-09-04 (segunda mitad de guard-datos-suite): la alternativa era
+        // sugerir solo con la historia propia, que deja a cada obra nueva sin ninguna sugerencia.
+        'src/Services/Pdc/PaquetesService.php',
         'scripts/higiene/reparar-mojibake-causas.php',
         // Seed del sandbox e2e del PDC. Herramienta de desarrollo, no servida: la invocan los specs
         // de tests/browser/pdc-v2-*.spec.mjs por linea de comandos, fuera de SessionMiddleware.

@@ -21,6 +21,14 @@ $assert = static function (bool $c, string $m) use (&$failures): void {
 };
 
 $db = Database::getInstance();
+
+// Todo este test transcurre dentro de una sola obra: siembra, importa y lee la versión de
+// PDC_TAM y de nadie más. El alcance se declara una vez, con el mismo project_id que ya llevaban
+// las consultas, así que el gate reescribe el WHERE al valor que el test pedía y las aserciones
+// siguen midiendo lo mismo.
+$db->dataScope()->clear();
+$db->dataScope()->bind(new \App\Security\DataScope\ProjectScope(PDC_TAM, 'test-pdc-tamiz', 'A'));
+
 $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [PDC_TAM]);
 
 echo "=== PDC v2: tamiz del presupuesto (avisos del visor) ===\n";
@@ -99,6 +107,7 @@ $assert(($a['costoTotal'] ?? 0) > 0, 'El costo total de la versión viaja con lo
 $assert(count($arbol['items'] ?? []) === 13 && count($arbol['insumos'] ?? []) === 6, 'Con avisos abiertos el árbol se sirve completo: los avisos no esconden ni bloquean nada.');
 
 $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [PDC_TAM]);
+$db->dataScope()->clear();
 @unlink($fx);
 
 echo $failures === [] ? "\n=== OK ===\n" : "\n" . count($failures) . " FAIL\n";

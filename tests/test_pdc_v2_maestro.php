@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/support/pdc_fixture_presupuesto.php';
+require_once __DIR__ . '/support/ScopeFixture.php';
 
 use App\Services\Pdc\MaestroInsumosService;
 use App\Services\Pdc\PresupuestoExcelParser;
@@ -26,9 +27,12 @@ $assert = static function (bool $condition, string $message) use (&$failures): v
 
 $db = Database::getInstance();
 $limpiar = static function () use ($db): void {
+    // Lo que está acotado a una obra se limpia bajo el alcance de esa obra.
     foreach ([PDC_M_PROJECT_A, PDC_M_PROJECT_B] as $pid) {
-        $db->query('DELETE FROM pdc_insumo_vinculos WHERE project_id = ?', [$pid]);
-        $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$pid]);
+        ScopeFixture::enProyecto($db, $pid, static function () use ($db, $pid): void {
+            $db->query('DELETE FROM pdc_insumo_vinculos WHERE project_id = ?', [$pid]);
+            $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$pid]);
+        });
     }
     $db->query('DELETE FROM general_maestro_insumos WHERE creado_por = ?', [PDC_M_MARCA]);
 
@@ -36,12 +40,21 @@ $limpiar = static function () use ($db): void {
     // con estos nombres del fixture compartido bajo creado_por='Test Admin' (no PDC_M_MARCA).
     // El cold start de este test exige que no existan, así que se borran por nombre
     // sin importar el creador. Orden FK-safe: vínculos primero (FK RESTRICT).
+    // Este borrado sí cruza obras por diseño: limpia los vínculos que cualquier proyecto tenga
+    // contra esas entradas del catálogo global, que es lo que el cold start exige. Por eso va bajo
+    // SystemScope con su razón escrita, y no bajo el alcance de una obra concreta —elegir una
+    // dejaría los vínculos de las demás en pie y el test arrancaría sucio.
     $normsFixture = ['TEJA DE ZINC', 'AYUDANTE', 'CONCRETO 4000PSI', 'SERVICIO BOMBEO'];
     $marcadores = implode(',', array_fill(0, count($normsFixture), '?'));
-    $db->query("DELETE FROM pdc_insumo_vinculos WHERE maestro_id IN (SELECT id FROM general_maestro_insumos WHERE descripcion_norm IN ({$marcadores}))", $normsFixture);
-    $db->query("DELETE FROM general_maestro_insumos WHERE descripcion_norm IN ({$marcadores})", $normsFixture);
+    ScopeFixture::comoSistema($db, 'test:pdc-maestro-cold-start', static function () use ($db, $marcadores, $normsFixture): void {
+        $db->query("DELETE FROM pdc_insumo_vinculos WHERE maestro_id IN (SELECT id FROM general_maestro_insumos WHERE descripcion_norm IN ({$marcadores}))", $normsFixture);
+        $db->query("DELETE FROM general_maestro_insumos WHERE descripcion_norm IN ({$marcadores})", $normsFixture);
+    });
 };
 $limpiar();
+
+// El test transcurre en la obra A; el tramo que mira a B abre su propio alcance.
+ScopeFixture::abrir($db, PDC_M_PROJECT_A, 'test-pdc-maestro');
 
 // v2: mismo presupuesto pero el precio de TEJA cambia (contenido distinto → versión nueva real).
 // Con el anti-duplicado de A1.7 un re-import de contenido IDÉNTICO ya no crea versión (sinCambios),
@@ -100,7 +113,11 @@ $assert($v['resumen']['cobertura'] === 0.0, 'Cobertura 0% en cold start.');
 $assert($v['vinculos'][0]['estado'] === 'pendiente', 'Orden: pendientes primero.');
 
 // Aislamiento: B sin vínculos.
-$assert($maestro->generarVinculos(PDC_M_PROJECT_B) === null, 'B sin versión → null.');
+// Aserción de aislamiento: desde el alcance de B.
+$assert(
+    ScopeFixture::enProyecto($db, PDC_M_PROJECT_B, static fn () => $maestro->generarVinculos(PDC_M_PROJECT_B)) === null,
+    'B sin versión → null.',
+);
 
 echo "=== PDC v2: maestro — acciones de la cola ===\n";
 
@@ -238,6 +255,8 @@ $actTeja = (int) $db->query('SELECT activo FROM general_maestro_insumos WHERE id
 $assert($rReact['creados'] === 0 && $rReact['vinculados'] === 1 && $actTeja === 1, 'El masivo reactiva un maestro retirado y vincula.');
 
 foreach ([$tmpB, $tmp2] as $f) { @unlink($f); }
+
+ScopeFixture::cerrar($db);
 
 @unlink($tmp);
 $limpiar();

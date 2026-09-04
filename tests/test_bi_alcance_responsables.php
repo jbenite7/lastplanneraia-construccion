@@ -11,6 +11,7 @@ declare(strict_types=1);
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/support/ScopeFixture.php';
 
 use App\Controllers\Bi\BiViewController;
 
@@ -20,6 +21,9 @@ $projectId = (int) ($argv[1] ?? 68);
 // Toma cualquier profesional real con email de ese proyecto para armar el caso.
 $dbName = $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: '';
 $tProf = \TableResolver::resolveByPrefix((string) $dbName, 'profesionales');
+// El caso se arma y se comprueba dentro de una sola obra, la misma que ya filtraban las consultas.
+ScopeFixture::abrir($db, $projectId, 'test-bi-alcance');
+
 $fila = $db->query(
     "SELECT p.nombre, u.usuario FROM {$tProf} p
      INNER JOIN general_usuarios u ON u.email = p.email
@@ -28,6 +32,7 @@ $fila = $db->query(
 )->fetch();
 
 if ($fila === false) {
+    ScopeFixture::cerrar($db);
     echo "SKIP: el proyecto $projectId no tiene ningún profesional con usuario cruzado por email\n";
     exit(0);
 }
@@ -42,6 +47,8 @@ $controller = new class extends BiViewController {
 $_SESSION['db'] = $dbName;
 
 $obtenido = $controller->exponerResolverNombre($fila['usuario'], $projectId);
+
+ScopeFixture::cerrar($db);
 
 if ($obtenido !== $fila['nombre']) {
     echo "FALLA: esperaba '{$fila['nombre']}', obtuvo '" . var_export($obtenido, true) . "'\n";

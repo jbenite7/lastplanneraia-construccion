@@ -10,7 +10,7 @@ resumen: Todos los cambios notables en este proyecto serán documentados en este
 project: lps-aia
 type: changelog
 status: activo
-updated: 2026-09-03
+updated: 2026-09-04
 ---
 
 # Registro de Cambios (Changelog)
@@ -27,6 +27,91 @@ archivo registra solo cambios de producto liberados o por liberar. Ver [[IMPLEME
 para el estado de los planes en curso.
 
 ## [Sin publicar]
+
+### Arreglado: el gate de datos vuelve a verde, y con él cuatro fallos más de producción (2026-09-04)
+
+Segunda mitad del frente `guard-datos-suite`, la que cerraba `G_PHP_SUITE`. Los **16 tests sin
+adaptar** declaran ahora su alcance, y con ellos aparecieron **cuatro fallos de producción más** que
+seguían escondidos detrás: hasta que el test no llegaba tan lejos, nadie los veía.
+
+Lo que estaba roto, por lo que un usuario sufría:
+
+- **Catálogo de paquetes del plan de compras.** `catalogo()` se leía bajo el alcance de una obra, y
+  ahí el gate convierte su `LEFT JOIN` en `INNER`: **desaparecían del listado los paquetes que esa
+  obra todavía no usaba** —justo los que hay que poder elegir— y `insumosGlobal` dejaba de contar el
+  uso global. Un catálogo de empresa que solo mostraba lo ya usado.
+- **Sugerencias de paquete** (`/plan-compras/api/paquetes/sugerencias`). Sus tres capas proponen un
+  paquete porque otras obras ya clasificaron ese insumo, y ese cruce no cabe en el alcance de una
+  obra. Estaban muertas desde el 2026-08-29.
+- **Avisos del visor de presupuesto** (`PresupuestoImportService::avisosDelPresupuesto()`) y
+  **actividades por insumo** (`PaquetesService::actividadesPorInsumo()`). Unían
+  `pdc_presupuesto_items` con `pdc_presupuesto_apu_insumos` **solo por `id`, sin relacionar
+  `project_id`**: el gate lo rechazaba, y con razón, porque es la forma en que un JOIN se salta el
+  aislamiento entre obras. Se relacionan las dos tablas por su `project_id`.
+
+**La lectura entre obras del catálogo queda declarada, no suprimida.** Decisión de Felipe del
+2026-09-04: el catálogo de paquetes es de la empresa y lo que hace útil una sugerencia es
+precisamente que otra obra ya clasificó ese insumo. Las cuatro lecturas pasan por
+`PaquetesService::leerCatalogoEntreObras()`, con su razón escrita y autorizadas en
+`test_project_scope_callsite_audit`. Lo que viaja es id, nombre y conteo de obras — nunca una fila
+de la obra ajena. La alternativa evaluada, sugerir solo con la historia propia, dejaba a cada obra
+nueva sin ninguna sugerencia.
+
+Añadidas dos puertas de metadatos a `Database`, quinta y sexta de la familia:
+`columnDefinitions()` (cómo está declarada una columna) y `foreignKeyExists()` (que una FK existe
+**y apunta a donde se dice**, no solo que existe). Sin ellas, los controles de esquema tendrían que
+armar SQL contra `information_schema`, que es lo que el gate rechaza.
+
+Del lado de las pruebas: `tests/support/ScopeFixture.php` declara el alcance de un tramo de test y
+escribe la regla que importa — el alcance de una **aserción de aislamiento** es el de la obra que se
+observa, nunca el de la que se acaba de escribir; elegirlo al revés tapa justo la propiedad que la
+prueba existe para probar.
+
+Medición, misma suite y mismo stack sobre los dos árboles: `main` 24 fallos → rama **0 fallos**,
+**ningún fallo nuevo**. Se sumaron dos clases PHPUnit (`CarryoverAvanceSemanalTest`,
+`PgAvanceEdicionManualTest`, 9 errores) que ninguna medición previa había contado, porque el runner
+las reporta en una línea aparte de la de los scripts sueltos.
+
+No se relajó `ProjectSqlGuard`, no se marcó ningún test como saltado y no se movió el `// @requiere:`
+de ninguno.
+
+### Arreglado: los ocho fallos de producción que el gate de datos había destapado (2026-09-04)
+
+`ProjectSqlGuard` (`48e06072`, 2026-08-29) dejó 24 tests en rojo en `G_PHP_SUITE`. La clasificación
+del frente `guard-datos-suite` mostró que **ocho no eran tests perezosos: era código que no
+funcionaba para un usuario real**. Esos ocho quedan arreglados en el código de producción, no en el
+test que los detecta. Los 16 restantes son tests sin adaptar y siguen abiertos, que es la segunda
+mitad del frente.
+
+Lo que estaba roto, por lo que un usuario sufría:
+
+- **Panel de administración.** `create()`, `delete()` y `exportToSql()` de proyectos. El borrado era
+  el peor: la excepción del guard caía en un `catch` que solo escribía al log, así que las filas del
+  proyecto no se borraban y el panel reportaba éxito.
+- **Import SINCO del plan de compras.** Cargar el maestro de insumos terminaba en fatal.
+- **Import de cronograma del programa general.** Un `AND p.project_id = ?` repetido en el mismo
+  WHERE hacía que el guard leyera el `NOT` de un `NOT IN` vecino como negación del alcance.
+- **Consolidación de informes (CIC/CIP).** Siete consultas operaban sobre todas las obras a la vez.
+  La más grave: `deleteRowsNotInProcessedEntities()` recibía el `project_id` y no lo usaba, así que
+  **cada proyecto consolidado borraba el CIC/CIP de esa semana en todas las demás obras**. Además,
+  `MAX(Semana)` se calculaba global —cada proyecto se consolidaba en la semana de otro— y los
+  acumulados se escribían con `WHERE Id = ?` siendo `cic.Id` una secuencia *por proyecto*.
+- **Vistas BI.** Su comprobación de existencia no declaraba alcance.
+
+Añadido de paso: `Database::indexExists()`, cuarta puerta de metadatos, para que las migraciones
+idempotentes dejen de armar SQL contra `information_schema`. No cachea a propósito — quien pregunta
+por un índice está a punto de crearlo.
+
+**Corrección de una medición previa.** El goal daba por medir «cuáles de diez archivos usan
+`information_schema` a través de `Database::query()`». Medido: **ocho de los diez ya estaban
+migrados** y solo conservaban comentarios explicando por qué delegan en `Database`. Quedaba SQL real
+en dos: `admin/src/Models/Project.php` (cuatro consultas) y
+`admin/src/Controllers/DashboardController.php` (una, dentro de un `try/catch` que devuelve ceros —
+sigue abierta, ver `TASKS.md`).
+
+Verificado en el runtime aislado de CI reproducido en local: nivel `http` pasa de **24 fallos a 16**,
+sin un solo fallo nuevo; nivel `puro` 33/33 y PHPUnit 13 clases en verde; PHPStan `[OK] No errors`.
+
 
 ### Arreglado: la deuda latente de los dos tests de BI que abrían la sesión del servidor (2026-09-04)
 

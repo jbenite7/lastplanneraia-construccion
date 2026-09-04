@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/support/ScopeFixture.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 
 use App\Services\Pdc\PaquetesService;
@@ -23,16 +24,28 @@ $P1 = 999901; $P2 = 999902;
 
 // Cleanup FK-safe por marca de test: asignaciones → paquetes → vínculos → versiones → maestro.
 $limpiar = static function () use ($db, $P1, $P2): void {
-    $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id IN (?, ?)', [$P1, $P2]);
-    $db->query('DELETE FROM pdc_correcciones_motor WHERE project_id IN (?, ?)', [$P1, $P2]);
+    // Lo acotado a una obra se borra obra por obra, bajo el alcance de cada una: un
+    // `IN (P1, P2)` no cabe en un ProjectScope, y partirlo en dos pasadas dice lo mismo sin
+    // pedir permisos de sistema para lo que no los necesita.
+    foreach ([$P1, $P2] as $pid) {
+        ScopeFixture::enProyecto($db, $pid, static function () use ($db, $pid): void {
+            $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id = ?', [$pid]);
+            $db->query('DELETE FROM pdc_correcciones_motor WHERE project_id = ?', [$pid]);
+            $db->query('DELETE FROM pdc_insumo_vinculos WHERE project_id = ?', [$pid]);
+            $db->query('DELETE FROM pdc_presupuesto_apu_insumos WHERE project_id = ?', [$pid]);
+            $db->query('DELETE FROM pdc_presupuesto_items WHERE project_id = ?', [$pid]);
+            $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$pid]);
+        });
+    }
+    // Estas dos son catálogo de empresa, no de obra: no llevan project_id ni alcance.
     $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por IN ('test-a3', 'test-a36')");
-    $db->query('DELETE FROM pdc_insumo_vinculos WHERE project_id IN (?, ?)', [$P1, $P2]);
-    $db->query('DELETE FROM pdc_presupuesto_apu_insumos WHERE project_id IN (?, ?)', [$P1, $P2]);
-    $db->query('DELETE FROM pdc_presupuesto_items WHERE project_id IN (?, ?)', [$P1, $P2]);
-    $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id IN (?, ?)', [$P1, $P2]);
     $db->query("DELETE FROM general_maestro_insumos WHERE creado_por = 'test-a3'");
 };
 $limpiar();
+
+// El grueso del test vive en P1; los tramos que observan P2 abren su propio alcance, porque son
+// aserciones de aislamiento y mirarlas desde P1 taparía justo lo que prueban.
+ScopeFixture::abrir($db, $P1, 'test-pdc-paquetes');
 
 // Maestro: 1 insumo con agrupación + tipo_recurso (para verificar el passthrough en insumosDeVersion).
 $db->query(
@@ -162,7 +175,7 @@ $rowCer2 = $db->query("SELECT paquete_id, omitido FROM pdc_insumo_paquete WHERE 
 $assert((int) $rowCer2['paquete_id'] === $pisosId && (int) $rowCer2['omitido'] === 0, 'Asignar un omitido limpia la omisión.');
 
 // Aislamiento por proyecto.
-$filasP2 = (int) $db->query('SELECT COUNT(*) FROM pdc_insumo_paquete WHERE project_id = ?', [$P2])->fetchColumn();
+$filasP2 = (int) ScopeFixture::enProyecto($db, $P2, static fn () => $db->query('SELECT COUNT(*) FROM pdc_insumo_paquete WHERE project_id = ?', [$P2])->fetchColumn());
 $assert($filasP2 === 0, 'Aislamiento por project_id.');
 
 // --- desasignar ---
@@ -186,7 +199,7 @@ $conA = $svc->insumosDeVersion($P1, 'asignados');
 $assert(count($conA['insumos']) === 1, 'Filtro asignados: 1 (cerámico).');
 $omit = $svc->insumosDeVersion($P1, 'omitidos');
 $assert(count($omit['insumos']) === 1 && $omit['insumos'][0]['descripcionNorm'] === 'ACERO DE REFUERZO 60000PSI', 'Filtro omitidos: 1 (acero).');
-$assert($svc->insumosDeVersion($P2, 'todos') === null, 'Proyecto sin presupuesto → null (NO_VERSION).');
+$assert(ScopeFixture::enProyecto($db, $P2, static fn () => $svc->insumosDeVersion($P2, 'todos')) === null, 'Proyecto sin presupuesto → null (NO_VERSION).');
 
 $res = $svc->resumen($P1);
 $assert($res['total'] === 4 && $res['asignados'] === 1 && $res['omitidos'] === 1, 'Resumen: 1 asignado + 1 omitido de 4.');
@@ -209,7 +222,7 @@ $assert(
     || $ceram['ruta'] === 'COSTO DIRECTO › PISOS Y ENCHAPES › PISOS ZONAS PRIVADAS › ENCHAPE DE PISOS',
     'La ruta va del capítulo a la actividad, separada por «›»: ' . ($ceram['ruta'] ?? 'sin ruta'),
 );
-$assert($svc->actividadesPorInsumo($P2) === null, 'Proyecto sin versión → null.');
+$assert(ScopeFixture::enProyecto($db, $P2, static fn () => $svc->actividadesPorInsumo($P2)) === null, 'Proyecto sin versión → null.');
 
 // --- Herencia en re-import ---
 $db->query('UPDATE pdc_presupuesto_versiones SET activa = 0 WHERE project_id = ?', [$P1]);
@@ -407,6 +420,8 @@ $assert($antesMasivo === $despuesMasivo, 'Omitir sin propuesta previa no inventa
 $catA36 = $svc->catalogo();
 $assert($catA36 !== [] && array_key_exists('admiteMateriales', $catA36[0]), 'El catálogo expone admiteMateriales para cada paquete.');
 $assert(is_bool($catA36[0]['admiteMateriales']), 'admiteMateriales llega como booleano, no como 0/1.');
+
+ScopeFixture::cerrar($db);
 
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();

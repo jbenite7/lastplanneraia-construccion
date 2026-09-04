@@ -67,6 +67,82 @@ namespace App\Services\Pdc;
 final class PaquetesService
 {
     /**
+     * Consulta el consenso de las demás obras para sugerir un paquete.
+     *
+     * Las tres capas de sugerencia miran a propósito fuera de la obra actual: el catálogo de
+     * paquetes es de la empresa, y lo que hace útil una sugerencia es precisamente que otras obras
+     * ya clasificaron ese insumo. Ningún `ProjectScope` puede expresar «todas menos esta», así que
+     * el cruce se declara como lo que es —lectura del consenso del catálogo— en vez de quedar
+     * implícito.
+     *
+     * Lo que sale de aquí es catálogo y estadística agregada: el id y el nombre del paquete, y en
+     * cuántas obras se usó. Nunca una fila, un valor ni un insumo de la obra ajena. Decisión de
+     * Felipe, 2026-09-04, al cerrar la segunda mitad de `guard-datos-suite`; la alternativa
+     * —sugerir solo con la historia propia— dejaba a cada obra nueva sin sugerencias.
+     *
+     * Respeta el alcance que ya hubiera enlazado y lo devuelve: en una petición real hay un
+     * ProjectScope activo, y `SystemScopeRunner` exige el contexto vacío para correr.
+     *
+     * @param array<mixed> $params
+     */
+    private function consultarConsensoEntreObras(string $sql, array $params): mixed
+    {
+        return $this->leerCatalogoEntreObras(
+            'pdc:paquetes:consenso-entre-obras',
+            $sql,
+            $params,
+            static fn (\PDOStatement $stmt): mixed => $stmt->fetch(\PDO::FETCH_ASSOC),
+        );
+    }
+
+    /**
+     * Lee el catálogo de paquetes con su uso agregado en todas las obras.
+     *
+     * El catálogo es de la empresa y `insumosGlobal` significa lo que dice: cuántas asignaciones
+     * tiene ese paquete en el conjunto de las obras. Bajo el alcance de una sola, el gate mete
+     * `a.project_id = ?` en el WHERE y el `LEFT JOIN` se comporta como `INNER`: desaparecen los
+     * paquetes que esta obra todavía no usa —justo los que hay que poder elegir— y el conteo deja
+     * de ser global. Por eso la lectura se declara, igual que las tres capas de sugerencia.
+     *
+     * @param array<mixed> $params
+     * @return list<array<string, mixed>>
+     */
+    private function consultarCatalogoEntreObras(string $sql, array $params): array
+    {
+        /** @var list<array<string, mixed>> $filas */
+        $filas = $this->leerCatalogoEntreObras(
+            'pdc:paquetes:catalogo-de-empresa',
+            $sql,
+            $params,
+            static fn (\PDOStatement $stmt): array => $stmt->fetchAll(\PDO::FETCH_ASSOC),
+        );
+
+        return $filas;
+    }
+
+    /**
+     * @param array<mixed> $params
+     */
+    private function leerCatalogoEntreObras(string $razon, string $sql, array $params, callable $leer): mixed
+    {
+        $contexto = $this->db->dataScope();
+        $previo = $contexto->current();
+        $contexto->clear();
+
+        try {
+            return (new \App\Security\DataScope\SystemScopeRunner($contexto))->run(
+                $razon,
+                fn (): mixed => $leer($this->db->query($sql, $params)),
+            );
+        } finally {
+            $contexto->clear();
+            if ($previo !== null) {
+                $contexto->bind($previo);
+            }
+        }
+    }
+
+    /**
      * Tipo de negociación — QUÉ se compra. `no_aplica` es el quinto y último, y es distinto de los
      * otros cuatro: no describe una compra sino su ausencia. Existe porque los buckets que no se le
      * compran a nadie (nómina propia, imprevistos, provisiones) arrastraban el tipo `consumibles`,
@@ -474,7 +550,7 @@ final class PaquetesService
             $where .= ' AND p.nombre_norm LIKE ?';
             $params[] = '%' . addcslashes(MaestroInsumosService::normalizar($busqueda), '\\%_') . '%';
         }
-        $rows = $this->db->query(
+        $rows = $this->consultarCatalogoEntreObras(
             "SELECT p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion, p.admite_materiales,
                     COUNT(a.id) AS insumos_global
              FROM general_paquetes_contratacion p
@@ -483,7 +559,7 @@ final class PaquetesService
              GROUP BY p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion, p.admite_materiales
              ORDER BY p.nombre ASC",
             $params,
-        )->fetchAll(\PDO::FETCH_ASSOC);
+        );
         return array_map(static fn (array $r): array => [
             'id' => (int) $r['id'],
             'nombre' => $r['nombre'],
@@ -1118,7 +1194,7 @@ final class PaquetesService
      */
     private function sugerirExacta(int $projectId, array $insumo): ?array
     {
-        $row = $this->db->query(
+        $row = $this->consultarConsensoEntreObras(
             'SELECT a.paquete_id, p.nombre, COUNT(DISTINCT a.project_id) AS proyectos
              FROM pdc_insumo_paquete a
              JOIN general_paquetes_contratacion p ON p.id = a.paquete_id AND p.activo = 1
@@ -1127,7 +1203,7 @@ final class PaquetesService
              ORDER BY proyectos DESC, p.nombre ASC
              LIMIT 1',
             [$insumo['descripcionNorm'], $insumo['unidad'], $projectId],
-        )->fetch(\PDO::FETCH_ASSOC);
+        );
         if ($row === false) {
             return null;
         }
@@ -1156,7 +1232,7 @@ final class PaquetesService
         $condiciones = implode(' + ', array_fill(0, count($tokens), '(a.descripcion_norm LIKE ?)'));
         $params = array_map(static fn ($t) => '%' . addcslashes($t, '\\%_') . '%', $tokens);
         $params[] = $projectId;
-        $row = $this->db->query(
+        $row = $this->consultarConsensoEntreObras(
             "SELECT a.paquete_id, p.nombre,
                     SUM({$condiciones}) AS score, COUNT(DISTINCT a.project_id) AS proyectos
              FROM pdc_insumo_paquete a
@@ -1167,7 +1243,7 @@ final class PaquetesService
              ORDER BY score DESC, proyectos DESC, p.nombre ASC
              LIMIT 1",
             $params,
-        )->fetch(\PDO::FETCH_ASSOC);
+        );
         if ($row === false) {
             return null;
         }
@@ -1192,7 +1268,7 @@ final class PaquetesService
         if (($insumo['agrupacion'] ?? null) === null || $insumo['agrupacion'] === '') {
             return null;
         }
-        $row = $this->db->query(
+        $row = $this->consultarConsensoEntreObras(
             'SELECT a.paquete_id, p.nombre, COUNT(*) AS usos
              FROM pdc_insumo_paquete a
              JOIN general_maestro_insumos m
@@ -1203,7 +1279,7 @@ final class PaquetesService
              ORDER BY usos DESC, p.nombre ASC
              LIMIT 1',
             [$insumo['agrupacion']],
-        )->fetch(\PDO::FETCH_ASSOC);
+        );
         if ($row === false) {
             return null;
         }
@@ -1310,7 +1386,7 @@ final class PaquetesService
             "SELECT ai.descripcion, ai.unidad, ai.cantidad_total, ai.valor_total,
                     it.codigo, it.descripcion AS actividad, ai.item_id
              FROM pdc_presupuesto_apu_insumos ai
-             JOIN pdc_presupuesto_items it ON it.id = ai.item_id
+             JOIN pdc_presupuesto_items it ON it.id = ai.item_id AND it.project_id = ai.project_id
              WHERE ai.project_id = ? AND ai.version_id = ?
              ORDER BY ai.valor_total DESC",
             [$projectId, $vid],
@@ -1478,7 +1554,7 @@ final class PaquetesService
             'SELECT ai.descripcion, ai.unidad, ai.item_id, it.descripcion AS actividad,
                     SUM(ai.valor_total) AS valor
              FROM pdc_presupuesto_apu_insumos ai
-             JOIN pdc_presupuesto_items it ON it.id = ai.item_id
+             JOIN pdc_presupuesto_items it ON it.id = ai.item_id AND it.project_id = ai.project_id
              WHERE ai.project_id = ? AND ai.version_id = ?
              GROUP BY ai.descripcion, ai.unidad, ai.item_id, it.descripcion
              ORDER BY valor DESC',
@@ -1644,7 +1720,7 @@ final class PaquetesService
             'SELECT ai.descripcion, ai.unidad, ai.item_id, it.codigo, it.descripcion AS actividad,
                     SUM(ai.cantidad_total) AS cantidad, SUM(ai.valor_total) AS valor
              FROM pdc_presupuesto_apu_insumos ai
-             JOIN pdc_presupuesto_items it ON it.id = ai.item_id
+             JOIN pdc_presupuesto_items it ON it.id = ai.item_id AND it.project_id = ai.project_id
              WHERE ai.project_id = ? AND ai.version_id = ?
              GROUP BY ai.descripcion, ai.unidad, ai.item_id, it.codigo, it.descripcion',
             [$projectId, $vid],

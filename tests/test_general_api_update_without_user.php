@@ -8,6 +8,7 @@ use App\Controllers\Api\GeneralApiController;
 use App\Security\CsrfTokenManager;
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/support/SessionScopeHarness.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -58,7 +59,22 @@ try {
             continue;
         }
 
-        $db->setProjectContext($projectId);
+        // El alcance se resuelve desde $_SESSION con el mismo resolver que usa SessionMiddleware,
+        // así que la sesión de esta membresía tiene que existir ya para buscar su fila. Antes
+        // bastaba `setProjectContext()`, que leía una $_SESSION todavía vacía y se quedaba callado:
+        // el contexto no se enlazaba y la consulta de abajo moría sin decir por qué.
+        $_SESSION = [
+            'usuario' => (string) $membership['usuario'],
+            'permiso' => (string) $membership['role'],
+            'permiso_canonico' => (string) $membership['role'],
+            'project_id' => $projectId,
+            'db' => $dbPrefix,
+            'timeout' => time(),
+        ];
+        if (!SessionScopeHarness::bindFromSession($db)) {
+            continue;
+        }
+
         $row = $db->queryWithProject(
             'SELECT unique_id, Id, Ejecutado, codigo_actividad, unidad, cantidad_ppto, Fecha_Inicio, Fecha_Fin, Semana
              FROM programa_consolidado
@@ -112,6 +128,8 @@ try {
     $_SERVER['HTTP_ACCEPT'] = 'application/json';
     $_SERVER['HTTP_X_AIA_EXPECT_JSON'] = '1';
     $_SERVER['HTTP_X_CSRF_TOKEN'] = CsrfTokenManager::generate('programa_general_save');
+    // La sesión definitiva del escenario sustituye a la del sondeo: hay que re-enlazar el alcance.
+    SessionScopeHarness::requireFromSession($db);
     $payloadOmitsUser = !array_key_exists('user', $_POST);
     $sessionUser = (string) $_SESSION['usuario'];
 

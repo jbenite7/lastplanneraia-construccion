@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
+require_once __DIR__ . '/support/ScopeFixture.php';
 
 $failures = [];
 $assert = static function (bool $c, string $m) use (&$failures): void {
@@ -38,34 +39,46 @@ $assert(
 );
 
 // ── 2 · La FK que justificaba anularlos apunta a `unique_id`, y se satisface ─
-$fk = $db->query(
-    "SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
-      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'programa_consolidado'
-        AND CONSTRAINT_NAME = 'fk_pc__programa__unique_id'
-        AND COLUMN_NAME = 'unique_id' AND REFERENCED_TABLE_NAME = 'programa'
-        AND REFERENCED_COLUMN_NAME = 'unique_id'",
-)->fetchColumn();
+// Los metadatos se piden por la puerta de `Database`, no armando la consulta a
+// `information_schema` aquí: es tabla calificada por schema y el gate las rechaza, con razón.
+$fk = $db->foreignKeyExists(
+    'programa_consolidado',
+    'fk_pc__programa__unique_id',
+    'unique_id',
+    'programa',
+    'unique_id',
+);
 $assert(
-    (int) $fk === 1,
+    $fk,
     'La FK de `unique_id` referencia `programa.unique_id` — no `programa.Consecutivo`, que es lo que '
-    . 'la migración obsoleta suponía. Dio ' . $fk,
+    . 'la migración obsoleta suponía. Dio ' . var_export($fk, true),
 );
 
 // ── 3 · Ninguna obra con paquetes amarrados puede quedarse sin frentes ───────
 // Se mira solo donde importa —obras que ya usan el Plan de Compras—, y se informa de las demás en
 // vez de callarlas: una cobertura que se pierde en silencio se acaba dando por hecha.
-$obras = $db->query(
-    'SELECT DISTINCT f.project_id FROM pdc_paquete_frente f ORDER BY f.project_id',
-)->fetchAll(\PDO::FETCH_COLUMN);
+// Descubrir QUÉ obras usan el Plan de Compras cruza obras por definición: no hay un proyecto
+// desde el que preguntarlo. Va como mantenimiento, con su razón escrita. Lo que se comprueba de
+// cada obra, en cambio, se mira desde el alcance de esa obra, más abajo.
+$obras = ScopeFixture::comoSistema(
+    $db,
+    'test:pdc-frentes-contrato:censo-de-obras',
+    static fn () => $db->query(
+        'SELECT DISTINCT f.project_id FROM pdc_paquete_frente f ORDER BY f.project_id',
+    )->fetchAll(\PDO::FETCH_COLUMN),
+);
 
 if ($obras === []) {
     echo "SKIP: ninguna obra tiene paquetes amarrados en esta base; nada que comprobar.\n";
 }
 foreach ($obras as $projectId) {
     $projectId = (int) $projectId;
+    // Cada obra se mira desde su propio alcance, que es como la miraría el producto.
+    ScopeFixture::abrir($db, $projectId, 'test-pdc-frentes');
     $semana = $db->query('SELECT MAX(Semana) FROM semanas_activas WHERE project_id = ?', [$projectId])->fetchColumn();
     if ($semana === false || $semana === null) {
         echo "SKIP: la obra {$projectId} no tiene semana activa.\n";
+        ScopeFixture::cerrar($db);
         continue;
     }
     $fila = $db->query(
@@ -76,6 +89,7 @@ foreach ($obras as $projectId) {
 
     if ((int) $fila['encabezados'] === 0) {
         echo "SKIP: la obra {$projectId} no tiene encabezados en su semana activa ({$semana}).\n";
+        ScopeFixture::cerrar($db);
         continue;
     }
     $assert(
@@ -93,6 +107,7 @@ foreach ($obras as $projectId) {
         "PlanFechasService::frentesDisponibles({$projectId}) devuelve al menos un frente. Dio "
         . count($frentes),
     );
+    ScopeFixture::cerrar($db);
 }
 
 if ($failures !== []) {

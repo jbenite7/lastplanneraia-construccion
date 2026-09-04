@@ -11,6 +11,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/support/SessionScopeHarness.php';
 
 if (!defined('PROJECT_ROOT')) {
     define('PROJECT_ROOT', dirname(__DIR__));
@@ -87,13 +88,24 @@ try {
     (new Xlsx($spreadsheet))->save($xlsxPath);
     $spreadsheet->disconnectWorksheets();
 
-    $activeUser = $db->query(
-        'SELECT usuario FROM general_usuarios WHERE activo = 1 ORDER BY (usuario = ?) DESC LIMIT 1',
+    $userRow = $db->query(
+        'SELECT id, usuario FROM general_usuarios WHERE activo = 1 ORDER BY (usuario = ?) DESC LIMIT 1',
         ['jbenitez'],
-    )->fetchColumn();
-    if (!is_string($activeUser) || $activeUser === '') {
+    )->fetch(PDO::FETCH_ASSOC);
+    $activeUser = (string) ($userRow['usuario'] ?? '');
+    $activeUserId = (int) ($userRow['id'] ?? 0);
+    if ($activeUser === '' || $activeUserId <= 0) {
         throw new RuntimeException('No hay un usuario activo para la sesión del test.');
     }
+
+    // El alcance se resuelve contra `project_members`, así que el fixture tiene que darle al
+    // usuario una membresía real en el proyecto que acaba de crear. Antes bastaba con ponerlo en
+    // $_SESSION, y eso describía un usuario que «tiene» un proyecto al que nunca fue asociado:
+    // un escenario que en producción no existe. La fila se va con el proyecto en el delete final.
+    $db->query(
+        'INSERT INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)',
+        [$projectId, $activeUserId, 'A'],
+    );
 
     $_SESSION = [
         'usuario' => $activeUser,
@@ -106,6 +118,10 @@ try {
         'area' => 'Pre-Construccion',
         'timeout' => time(),
     ];
+    // El controlador se invoca directamente, sin SessionMiddleware: el alcance hay que enlazarlo
+    // aquí, con el mismo resolver que usa producción.
+    SessionScopeHarness::requireFromSession($db);
+
     $_GET = [
         'db' => $dbPrefix,
         'semana' => 1,
