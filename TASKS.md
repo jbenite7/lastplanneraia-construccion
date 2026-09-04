@@ -596,6 +596,18 @@ estado por defecto mientras Felipe no reparta.
   `programacion-intermedia.css`. Nada duplicado ni indebido: no hay un arreglo que evite la
   aprobación. **Sigue esperando decisión de Felipe.**
 
+  **Y la sospecha de esta entrada quedó confirmada, así que el trabajo previo existe:** «puede que
+  haya que añadir ese artefacto al job» — hay que añadirlo. Comprobado el 2026-09-04 sobre la corrida
+  `33901153624` (PR #31), que falla y por tanto dispara `Preserve failure evidence`: su artefacto
+  `design-system-failure-evidence-light` **no contiene** `test-output/design-system-runtime-budget.json`.
+  Solo trae los dos directorios del laboratorio de teclado y el `docker-compose.log`. La causa es la
+  ya conocida de `test-output/`: `Collect keyboard and reflow evidence` corre después de
+  `Measure runtime budgets` y pisa la carpeta — el mismo mecanismo que en 2026-08-28 dejó al piloto
+  sin capturas y que `ci.yml:424-431` documenta. O sea que **la medición de las seis métricas no
+  sobrevive hoy a ninguna corrida**, ni verde ni roja, y sin ella no se puede escribir
+  `0.5.0-measurement.json` con procedencia real. Primer paso de este pendiente: subir ese JSON como
+  artefacto propio, pegado a su paso de medición y antes de que nada pise la carpeta.
+
   **El método NO es negociable y está escrito en el propio script** (`scripts/design-system-runtime-budget.mjs`,
   comentario de la generación `0.4.0`): la baseline se mide **en el mismo entorno donde el gate la
   verifica**, es decir en una corrida real de GitHub Actions, nunca en la máquina local. Ese fue
