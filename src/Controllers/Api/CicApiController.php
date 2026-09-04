@@ -47,6 +47,14 @@ class CicApiController
 
             // Build UNION query replicating legacy listar_CIC.php
             $filter = "AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'";
+            // Cada parte del UNION nombra `cic` TRES veces —la externa, la subconsulta de
+            // `semanasEnProyecto` y la del `MAX(Semana)`—. Sin alias las tres se llaman igual y
+            // ProjectSqlGuard aborta con «Alias de tabla de proyecto ambiguo: cic», porque con
+            // raíces homónimas no puede decidir a cuál pertenece cada `project_id = ?`. Mismo caso
+            // ya resuelto en ForecastService::getContractorPac4W(). Por eso el filtro se genera
+            // por alias en vez de ser una cadena fija.
+            $filterFor = static fn (string $alias): string =>
+                "AND {$alias}.tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'";
             $subs = $this->db->query("SELECT DISTINCT(subcontratista) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cic') . " WHERE project_id = ? AND Semana <= ? {$filter} ORDER BY subcontratista ASC", [$projectId, $semana])->fetchAll(\PDO::FETCH_COLUMN);
 
             if (empty($subs)) {
@@ -58,7 +66,7 @@ class CicApiController
             $unionParts = [];
             $params = [];
             foreach ($subs as $sub) {
-                $part = "SELECT `Id`, `Semana`, (SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cic') . " WHERE project_id = ? AND `subcontratista` = ? AND Semana <= ? {$filter}) AS `semanasEnProyecto`, `subcontratista`, `correo_contacto`, `NIT`, `alcance`, `tipo_proveedor`, `PAC`, `PAC_Acum`, `P_Completado`, `P_Completado_Acum`, `Calidad`, `Calidad_Acum`, `GSA`, `GSA_Acum`, `SST`, `SST_Acum`, `ADM`, `ADM_Acum`, `Cal_Integral`, `Cal_Integral_Acum`, `Observaciones`, `mdo_cal_1`, `mdo_cal_2`, `mdo_cal_3`, `mdo_adm_1`, `mdo_adm_2`, `mdo_adm_3`, `mdo_adm_4`, `mdo_adm_5`, `mdo_gsa_1`, `mdo_gsa_2`, `mdo_gsa_3`, `mdo_gsa_4`, `mdo_gsa_5`, `mdo_gsa_6`, `mdo_gsa_7`, `mdo_gsa_8`, `mdo_sst_1`, `mdo_sst_2`, `mdo_sst_3`, `mdo_sst_4`, `mdo_sst_5`, `mdo_sst_6`, `mdo_sst_7`, `mdo_sst_8`, `mdo_sst_9`, `mdo_sst_10`, `si_cal_1`, `si_cal_2`, `si_cal_3`, `si_adm_1`, `si_adm_2`, `si_adm_3`, `si_adm_4`, `si_adm_5`, `si_adm_6`, `si_gsa_1`, `si_gsa_2`, `si_gsa_3`, `si_gsa_4`, `si_gsa_5`, `si_gsa_6`, `si_gsa_7`, `si_gsa_8`, `si_gsa_9`, `si_gsa_10`, `si_gsa_11`, `si_gsa_12`, `si_gsa_13`, `si_gsa_14`, `si_sst_1`, `si_sst_2`, `si_sst_3`, `si_sst_4`, `si_sst_5`, `si_sst_6`, `si_sst_7`, `si_sst_8`, `si_sst_9`, `si_sst_10` FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cic') . " WHERE project_id = ? AND `subcontratista` = ? AND Semana = (SELECT MAX(`Semana`) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cic') . " WHERE project_id = ? AND `subcontratista` = ? AND Semana <= ? {$filter}) {$filter}";
+                $part = "SELECT c.`Id`, c.`Semana`, (SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cic') . " sp WHERE sp.project_id = ? AND sp.`subcontratista` = ? AND sp.Semana <= ? " . $filterFor('sp') . ") AS `semanasEnProyecto`, `subcontratista`, `correo_contacto`, `NIT`, `alcance`, `tipo_proveedor`, `PAC`, `PAC_Acum`, `P_Completado`, `P_Completado_Acum`, `Calidad`, `Calidad_Acum`, `GSA`, `GSA_Acum`, `SST`, `SST_Acum`, `ADM`, `ADM_Acum`, `Cal_Integral`, `Cal_Integral_Acum`, `Observaciones`, `mdo_cal_1`, `mdo_cal_2`, `mdo_cal_3`, `mdo_adm_1`, `mdo_adm_2`, `mdo_adm_3`, `mdo_adm_4`, `mdo_adm_5`, `mdo_gsa_1`, `mdo_gsa_2`, `mdo_gsa_3`, `mdo_gsa_4`, `mdo_gsa_5`, `mdo_gsa_6`, `mdo_gsa_7`, `mdo_gsa_8`, `mdo_sst_1`, `mdo_sst_2`, `mdo_sst_3`, `mdo_sst_4`, `mdo_sst_5`, `mdo_sst_6`, `mdo_sst_7`, `mdo_sst_8`, `mdo_sst_9`, `mdo_sst_10`, `si_cal_1`, `si_cal_2`, `si_cal_3`, `si_adm_1`, `si_adm_2`, `si_adm_3`, `si_adm_4`, `si_adm_5`, `si_adm_6`, `si_gsa_1`, `si_gsa_2`, `si_gsa_3`, `si_gsa_4`, `si_gsa_5`, `si_gsa_6`, `si_gsa_7`, `si_gsa_8`, `si_gsa_9`, `si_gsa_10`, `si_gsa_11`, `si_gsa_12`, `si_gsa_13`, `si_gsa_14`, `si_sst_1`, `si_sst_2`, `si_sst_3`, `si_sst_4`, `si_sst_5`, `si_sst_6`, `si_sst_7`, `si_sst_8`, `si_sst_9`, `si_sst_10` FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cic') . " c WHERE c.project_id = ? AND c.`subcontratista` = ? AND c.Semana = (SELECT MAX(mx.`Semana`) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cic') . " mx WHERE mx.project_id = ? AND mx.`subcontratista` = ? AND mx.Semana <= ? " . $filterFor('mx') . ") " . $filterFor('c');
                 $unionParts[] = $part;
                 array_push($params, $projectId, $sub, $semana, $projectId, $sub, $projectId, $sub, $semana);
             }

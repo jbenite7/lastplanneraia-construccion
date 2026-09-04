@@ -394,6 +394,15 @@ continuación de la entrada de abajo. Dos correcciones a esa entrada, medidas al
   desde hace cinco días.** Establecerla puede exigir aprobar capturas o presupuestos nuevos — decisión
   de Felipe, no de esta sesión.
 
+  **Corregido el 2026-09-04, y la mitad de esta entrada era falsa.** De los dos, **solo
+  `G_RUNTIME_BUDGET_CHECK` era línea base.** `G_FULL_APP_FLOW` no tenía nada que aprobar: eran **tres
+  bugs de código**, cada uno dejando un módulo respondiendo error (CIC, indicadores y
+  auto-programación semanal). Se arreglaron en `fix/carril-visual-full-app-flow` y el gate quedó en
+  `13 passed`. La lección, que es lo que vale para la próxima: **«el gate lleva días sin correr» no
+  es lo mismo que «su línea base caducó»** — dar por caducado lo que no se ha reproducido deja bugs
+  vivos escondidos detrás de una excusa de proceso. Se reprodujeron en runtime aislado en la primera
+  corrida, con los mismos 3 fallos de 13 que la corrida `33895697935`.
+
 **2026-09-03 — Seis gates del carril visual están en rojo, y ninguno es de los frentes que los
 destaparon. → Merece frente propio: «poner el carril visual en verde».** El job
 `design-system-runtime` llevaba sin correr desde el 2026-08-29 (primero por el contrato del
@@ -577,6 +586,27 @@ estado por defecto mientras Felipe no reparta.
   es una regresión: es el CSS nuevo de la fase cero de temas y forma (24 tokens de estado claro,
   `gravity-flag.css`, tokens de forma/tabla/densidad, `--ds-color-surface-well-*`), todo ello
   posterior a la baseline 0.4.0.
+
+  **Remedido el 2026-09-04 sobre `main` (`aba2589d`, corrida `33895697935`): son 131.477 B**, 26 más
+  que en el PR #18, contra el mismo máximo de 130.314. Es **el único gate del carril visual que
+  sigue en rojo** tras arreglar `G_FULL_APP_FLOW`, y su atribución se confirmó por
+  `git diff --stat 13e692aa..HEAD -- public/css` (el `sourceRef` de la baseline 0.4.0): **846 líneas
+  añadidas en 15 hojas**, todas de trabajo legítimo — `theme-claro.css` (115), `tokens.css` (212),
+  `readiness-popover.css` (195), `readiness-squares.css`, `gravity-flag.css`,
+  `programacion-intermedia.css`. Nada duplicado ni indebido: no hay un arreglo que evite la
+  aprobación. **Sigue esperando decisión de Felipe.**
+
+  **Y la sospecha de esta entrada quedó confirmada, así que el trabajo previo existe:** «puede que
+  haya que añadir ese artefacto al job» — hay que añadirlo. Comprobado el 2026-09-04 sobre la corrida
+  `33901153624` (PR #31), que falla y por tanto dispara `Preserve failure evidence`: su artefacto
+  `design-system-failure-evidence-light` **no contiene** `test-output/design-system-runtime-budget.json`.
+  Solo trae los dos directorios del laboratorio de teclado y el `docker-compose.log`. La causa es la
+  ya conocida de `test-output/`: `Collect keyboard and reflow evidence` corre después de
+  `Measure runtime budgets` y pisa la carpeta — el mismo mecanismo que en 2026-08-28 dejó al piloto
+  sin capturas y que `ci.yml:424-431` documenta. O sea que **la medición de las seis métricas no
+  sobrevive hoy a ninguna corrida**, ni verde ni roja, y sin ella no se puede escribir
+  `0.5.0-measurement.json` con procedencia real. Primer paso de este pendiente: subir ese JSON como
+  artefacto propio, pegado a su paso de medición y antes de que nada pise la carpeta.
 
   **El método NO es negociable y está escrito en el propio script** (`scripts/design-system-runtime-budget.mjs`,
   comentario de la generación `0.4.0`): la baseline se mide **en el mismo entorno donde el gate la
