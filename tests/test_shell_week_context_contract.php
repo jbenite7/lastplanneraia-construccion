@@ -20,7 +20,7 @@ const BASE = 'http://localhost';
 const PROYECTO = 'Da Porto';
 const PROJECT_ID = 73;
 
-function sesion(string $usuario): array
+function sesion(string $usuario): string
 {
     $jar = tempnam(sys_get_temp_dir(), 'cookies_');
     $url = BASE . '/dev/entrar?u=' . urlencode($usuario) . '&p=' . urlencode(PROYECTO);
@@ -46,75 +46,34 @@ function sesion(string $usuario): array
         exit(2);
     }
 
-    return [$jar, $sid];
+    return $jar;
 }
 
-function csrfTokenForSession(string $sessionId): string
+/**
+ * Toma el token CSRF de `shell_api` por HTTP, del `<meta name="lps-shell-csrf-token">` que emite
+ * `views/partials/shell_sidebar.php` — exactamente la vía por la que lo obtiene el navegador
+ * (`public/js/core/ContextManager.js`).
+ *
+ * La versión anterior abría la sesión del servidor desde un subproceso PHP (`session_id($sid);
+ * session_start()`). Eso funcionaba en local y fallaba siempre en CI: el archivo `/tmp/sess_<sid>`
+ * lo crea Apache como `www-data` con modo 0600, el CLI corre como root, y en el kernel del runner
+ * de GitHub el `open()` devuelve «Permission denied (13)» pese al uid 0 — `/tmp` es sticky y
+ * world-writable, y el endurecimiento de archivos regulares del kernel (`fs.protected_regular`,
+ * activo en Ubuntu y no en la VM de Docker Desktop) niega el acceso a un archivo de otro dueño.
+ * `session_start()` devolvía `false`, `session_id()` quedaba vacío y `CsrfTokenManager::generate()`
+ * emitía un token en una sesión fantasma que nadie persiste: el servidor validaba contra el token
+ * real y respondía 403 `CSRF_INVALID`. Leerlo por HTTP no toca `/tmp`, no necesita el SID y prueba
+ * el mismo camino que el usuario.
+ */
+function csrfTokenShellApi(string $jar): string
 {
-    $diagFile = tempnam(sys_get_temp_dir(), 'csrf_diag_');
-    $script = <<<'HIJO'
-<?php
-$diag = [];
-$sid = $argv[1];
-$out = $argv[2];
-$anota = static function (string $linea) use (&$diag, $out): void {
-    $diag[] = $linea;
-    file_put_contents($out, implode("\n", $diag));
-};
-$anota('uid=' . (function_exists('posix_getuid') ? posix_getuid() : 'n/a')
-    . ' euid=' . (function_exists('posix_geteuid') ? posix_geteuid() : 'n/a'));
-$anota('output_previo_al_require ob=' . ob_get_level() . ' headers_sent=' . (headers_sent() ? 'SI' : 'no'));
-require '/var/www/html/vendor/autoload.php';
-$anota('tras_require ob=' . ob_get_level() . ' headers_sent=' . (headers_sent() ? 'SI' : 'no')
-    . ' display_errors=' . var_export(ini_get('display_errors'), true));
-$anota('save_path=' . var_export(ini_get('session.save_path'), true)
-    . ' tmp=' . sys_get_temp_dir()
-    . ' strict=' . ini_get('session.use_strict_mode')
-    . ' handler=' . ini_get('session.save_handler'));
-$archivo = sys_get_temp_dir() . '/sess_' . $sid;
-$anota('archivo=' . $archivo
-    . ' existe=' . (file_exists($archivo) ? 'si' : 'no')
-    . ' legible=' . (is_readable($archivo) ? 'si' : 'no')
-    . ' escribible=' . (is_writable($archivo) ? 'si' : 'no')
-    . ' owner=' . (file_exists($archivo) ? (string) fileowner($archivo) : '-')
-    . ' perms=' . (file_exists($archivo) ? decoct(fileperms($archivo) & 0777) : '-')
-    . ' bytes=' . (file_exists($archivo) ? (string) filesize($archivo) : '-'));
-$anota('session_id_set=' . var_export(session_id($sid), true));
-$avisos = [];
-set_error_handler(static function (int $no, string $str) use (&$avisos): bool {
-    $avisos[] = "[{$no}] {$str}";
-    return true;
-});
-$arranco = session_start();
-restore_error_handler();
-$anota('session_start_devolvio=' . var_export($arranco, true)
-    . ' status=' . session_status()
-    . ' id_tras_start=' . var_export(session_id(), true)
-    . ' coincide=' . (session_id() === $sid ? 'si' : 'NO'));
-foreach ($avisos as $aviso) {
-    $anota('AVISO ' . $aviso);
-}
-$ultimo = error_get_last();
-$anota('error_get_last=' . ($ultimo === null ? 'ninguno' : $ultimo['message']));
-$anota('shell_api_en_sesion=' . (empty($_SESSION['_csrf_tokens']['shell_api'])
-    ? 'no'
-    : substr((string) $_SESSION['_csrf_tokens']['shell_api'], 0, 12) . '...'));
-echo \App\Security\CsrfTokenManager::generate('shell_api');
-session_write_close();
-HIJO;
-    $tmp = tempnam(sys_get_temp_dir(), 'csrf_gen_');
-    file_put_contents($tmp, $script);
-    $token = trim((string) shell_exec('php ' . escapeshellarg($tmp) . ' ' . escapeshellarg($sessionId) . ' ' . escapeshellarg($diagFile) . ' 2>/dev/null'));
-    @unlink($tmp);
-    $diag = (string) @file_get_contents($diagFile);
-    @unlink($diagFile);
-    if (strlen($token) < 32 || !str_contains($diag, 'coincide=si')) {
-        fwrite(STDOUT, "DIAGNOSTICO DEL SUBPROCESO (ultimas lineas a proposito):\n" . $diag . "\n");
-        fwrite(STDOUT, "token_len=" . strlen($token) . "\n");
+    [$codigo, $html] = curlReq(BASE . '/programacion-semanal', null, $jar);
+    if ($codigo !== 200 || !preg_match('/<meta name="lps-shell-csrf-token" content="([a-f0-9]{64})"/', $html, $m)) {
+        fwrite(STDERR, "ABORT: no se pudo leer el token CSRF shell_api del meta de la vista (HTTP {$codigo})\n");
         exit(2);
     }
 
-    return $token;
+    return $m[1];
 }
 
 /** @return array{0:int,1:string} */
@@ -158,8 +117,8 @@ if ($semanaValida === false) {
 $semanaValida = (int) $semanaValida;
 $semanaInexistente = 900001; // muy por encima de cualquier semana fixture real
 
-[$jar, $sid] = sesion('test.R');
-$token = csrfTokenForSession($sid);
+$jar = sesion('test.R');
+$token = csrfTokenShellApi($jar);
 
 $fallos = 0;
 $total = 0;

@@ -240,25 +240,23 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   `phpstan analyse src admin/src` → 1 error, confirmado preexistente a todo el trabajo de hoy
   (`DatabaseWeekAdministrationRepository.php:277`, no tocado); `--nivel=puro` → 36/36 + PHPUnit
   218 pruebas, verde.
-- [ ] **Regresión abierta, solo-CI: `test_shell_week_administration_contract.php` y
-  `test_shell_week_context_contract.php` fallan por `CSRF_INVALID` en `design-system-runtime`
-  (ambos temas, idéntico), causada por el commit del punto anterior (confirmado con
-  `git checkout ef7b09a8` — ahí ambos pasan). **No reproduce en ningún runtime local**, incluida una
-  imagen recién construida con el mismo digest exacto de `php:8.3-apache` que usa CI
-  (`sha256:060ed9c0…`) y con la caché de GHA purgada a propósito para descartar staleness. Mecanismo
-  localizado con instrumentación temporal (revertida en este commit): el helper de los dos tests
-  genera el token `shell_api` en un subproceso CLI que hace `session_id($sid); session_start();`
-  sobre el SID real de la sesión ya autenticada — funciona perfecto en local (mismo cruce root/
-  www-data sobre el archivo de sesión, probado dos veces) pero en CI, `session_id()` **queda vacío
-  tras `session_start()`**, sin ningún `E_WARNING` capturable (probado con `set_error_handler`
-  atrapando todo). El token se genera entonces en una sesión fantasma que nadie vuelve a leer,
-  mientras la sesión real —la que valida el servidor— conserva el token anterior. Hipótesis sin
-  confirmar: condición de carrera específica de cómo GitHub Actions programa procesos bajo carga,
-  que la holgura de CPU de un Mac nunca dispara. **No es una vulnerabilidad activa**: el endpoint
-  real (`ContextController`) sigue exigiendo y validando CSRF correctamente contra usuarios reales;
-  es el *helper del test* el que no logra adjuntarse a la sesión que él mismo creó. Cuatro corridas
-  de CI (~1 hora) gastadas en diagnóstico el 2026-09-03, sin cerrar causa raíz — decisión de Felipe:
-  parar aquí y retomar con más tiempo o con ojos frescos.
+- [x] **Cerrada (2026-09-04) la regresión solo-CI de `CSRF_INVALID`** en
+  `test_shell_week_administration_contract.php` y `test_shell_week_context_contract.php`. Causa raíz
+  medida con instrumentación en CI, no inferida: el helper de ambos tests abría la sesión del
+  servidor desde un subproceso PHP (`session_id($sid); session_start();`). El archivo
+  `/tmp/sess_<sid>` lo crea Apache como `www-data` con modo `0600`; el CLI corre como root, y en el
+  runner de GitHub el `open()` devuelve «Permission denied (13)» pese al uid 0, porque `/tmp` es
+  sticky y world-writable y el endurecimiento de archivos regulares del kernel
+  (`fs.protected_regular`, activo en Ubuntu y en 0 en la VM de Docker Desktop) niega el acceso a un
+  archivo ajeno. `session_start()` devolvía `false`, `session_id()` quedaba vacío, y el token salía
+  en una sesión fantasma mientras el servidor validaba contra el real. La hipótesis anterior
+  —carrera por la programación de procesos en GitHub Actions— era falsa: el fallo es determinista.
+  El diagnóstico de la jornada anterior se había perdido porque `scripts/run-php-tests.php` solo
+  imprime las **últimas 15 líneas** de un test fallido, y el `uid` y los avisos salían antes de ese
+  corte; la ronda que lo cerró aborta en el punto exacto para que el diagnóstico quede al final.
+  Arreglo: el token se toma por HTTP del `<meta name="lps-shell-csrf-token">` del sidebar, la misma
+  vía del navegador. Mecanismo reproducido en local corriendo el subproceso como `nobody`, con los
+  dos mismos avisos y `session_id()` vacío.
 - [ ] **S01 — segunda mitad: retirar el login PHP (`MIGRATION_COMPLETE`).** Solo después de que el
   PR #20 entre a `main` y el corte haya recibido uso real durante una ventana que **nadie ha fijado
   todavía** (ni días ni criterio de «ya no hace falta volver» — fijarlo es lo primero). Entonces:

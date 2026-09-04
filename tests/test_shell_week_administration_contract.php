@@ -24,7 +24,7 @@ const BASE = 'http://localhost';
 const PROYECTO = 'Da Porto';
 const PROJECT_ID = 73;
 
-function sesion(string $usuario): array
+function sesion(string $usuario): string
 {
     $jar = tempnam(sys_get_temp_dir(), 'cookies_');
     $url = BASE . '/dev/entrar?u=' . urlencode($usuario) . '&p=' . urlencode(PROYECTO);
@@ -50,23 +50,34 @@ function sesion(string $usuario): array
         exit(2);
     }
 
-    return [$jar, $sid];
+    return $jar;
 }
 
-function csrfTokenForSession(string $sessionId): string
+/**
+ * Toma el token CSRF de `shell_api` por HTTP, del `<meta name="lps-shell-csrf-token">` que emite
+ * `views/partials/shell_sidebar.php` — exactamente la vía por la que lo obtiene el navegador
+ * (`public/js/core/ContextManager.js`).
+ *
+ * La versión anterior abría la sesión del servidor desde un subproceso PHP (`session_id($sid);
+ * session_start()`). Eso funcionaba en local y fallaba siempre en CI: el archivo `/tmp/sess_<sid>`
+ * lo crea Apache como `www-data` con modo 0600, el CLI corre como root, y en el kernel del runner
+ * de GitHub el `open()` devuelve «Permission denied (13)» pese al uid 0 — `/tmp` es sticky y
+ * world-writable, y el endurecimiento de archivos regulares del kernel (`fs.protected_regular`,
+ * activo en Ubuntu y no en la VM de Docker Desktop) niega el acceso a un archivo de otro dueño.
+ * `session_start()` devolvía `false`, `session_id()` quedaba vacío y `CsrfTokenManager::generate()`
+ * emitía un token en una sesión fantasma que nadie persiste: el servidor validaba contra el token
+ * real y respondía 403 `CSRF_INVALID`. Leerlo por HTTP no toca `/tmp`, no necesita el SID y prueba
+ * el mismo camino que el usuario.
+ */
+function csrfTokenShellApi(string $jar): string
 {
-    $script = '<?php require "/var/www/html/vendor/autoload.php"; session_id($argv[1]); @session_start(); '
-        . 'echo \App\Security\CsrfTokenManager::generate("shell_api"); session_write_close();';
-    $tmp = tempnam(sys_get_temp_dir(), 'csrf_gen_');
-    file_put_contents($tmp, $script);
-    $token = trim((string) shell_exec('php ' . escapeshellarg($tmp) . ' ' . escapeshellarg($sessionId) . ' 2>&1'));
-    @unlink($tmp);
-    if (strlen($token) < 32) {
-        fwrite(STDERR, "ABORT: no se pudo generar el token CSRF shell_api (salida: {$token})\n");
+    [$codigo, $html] = curlReq(BASE . '/programacion-semanal', null, $jar);
+    if ($codigo !== 200 || !preg_match('/<meta name="lps-shell-csrf-token" content="([a-f0-9]{64})"/', $html, $m)) {
+        fwrite(STDERR, "ABORT: no se pudo leer el token CSRF shell_api del meta de la vista (HTTP {$codigo})\n");
         exit(2);
     }
 
-    return $token;
+    return $m[1];
 }
 
 /** @return array{0:int,1:string} */
@@ -110,10 +121,10 @@ if ($maxSemanaReal <= 0) {
 $semanaQueNoEsLaUltima = $maxSemanaReal > 1 ? $maxSemanaReal - 1 : $maxSemanaReal + 999; // nunca la máxima real
 
 // test.R tiene lps.semana.crear y lps.semana.eliminar (RbacCatalog); test.V no tiene ninguno.
-[$jarR, $sidR] = sesion('test.R');
-$tokenR = csrfTokenForSession($sidR);
-[$jarV, $sidV] = sesion('test.V');
-$tokenV = csrfTokenForSession($sidV);
+$jarR = sesion('test.R');
+$tokenR = csrfTokenShellApi($jarR);
+$jarV = sesion('test.V');
+$tokenV = csrfTokenShellApi($jarV);
 
 $fallos = 0;
 $total = 0;

@@ -51,19 +51,25 @@ retira una entrada obsoleta del inventario: `login-brand-unified.css` (la vista 
 carga en `/login` desde que S01 movió esa ruta al shell React, y el gate lo reportaba como
 `stale-inventory-entry`.
 
-### Conocido: dos tests de contrato CSRF fallan solo en CI, sin causa raíz cerrada (2026-09-03)
+### Arreglado: los dos tests de contrato CSRF que solo fallaban en CI (2026-09-04)
 
-`test_shell_week_administration_contract.php` y `test_shell_week_context_contract.php` — introducidos
-por el fix anterior (CSRF de cambio de semana) — pasan en cualquier reproducción local (incluida una
-imagen recién construida con el mismo digest de `php:8.3-apache` que usa CI y con la caché de GHA
-purgada) pero fallan por `CSRF_INVALID` en `design-system-runtime`, idéntico en los dos temas.
-Mecanismo localizado: el helper de ambos tests genera el token en un subproceso CLI que hace
-`session_id($sid); session_start();` sobre el SID de la sesión ya autenticada; en CI, `session_id()`
-queda vacío tras `session_start()`, sin ningún `E_WARNING` capturable, así que el token se genera en
-una sesión fantasma en vez de adjuntarse a la real. No es una vulnerabilidad activa — el endpoint real
-sigue validando CSRF correctamente contra usuarios reales; falla el helper del test, no el
-`ContextController`. Sin causa raíz confirmada tras cuatro corridas de CI de diagnóstico. Detalle
-completo en `TASKS.md` › «Migración React — shell mínimo».
+`test_shell_week_administration_contract.php` y `test_shell_week_context_contract.php` fallaban por
+`CSRF_INVALID` en `design-system-runtime` (los dos temas, idéntico) y pasaban en cualquier
+reproducción local. La causa raíz, medida con instrumentación en CI: el helper de ambos tests
+generaba el token `shell_api` en un subproceso PHP que hacía `session_id($sid); session_start();`
+sobre la sesión ya autenticada. El archivo `/tmp/sess_<sid>` lo crea Apache como `www-data` con modo
+`0600`; el CLI corre como root, y en el kernel del runner de GitHub el `open()` devuelve
+«Permission denied (13)» **pese al uid 0** — `/tmp` es sticky y de escritura para todos, y el
+endurecimiento de archivos regulares del kernel (`fs.protected_regular`, activo en Ubuntu y en 0 en
+la VM de Docker Desktop) niega el acceso a un archivo de otro dueño. `session_start()` devolvía
+`false`, `session_id()` quedaba vacío y `CsrfTokenManager::generate()` emitía un token en una sesión
+fantasma que nadie persiste, mientras el servidor validaba contra el token real.
+
+El arreglo elimina el mecanismo entero: el token se toma por HTTP del
+`<meta name="lps-shell-csrf-token">` que emite `views/partials/shell_sidebar.php`, que es la misma
+vía del navegador (`public/js/core/ContextManager.js`). No toca `/tmp`, no necesita el SID y prueba
+el camino real del usuario. Nunca fue una vulnerabilidad: `ContextController` siempre validó CSRF
+correctamente.
 
 ### Documentación: skill `datatables-to-handsontable` archivada en el repo (2026-09-03)
 
