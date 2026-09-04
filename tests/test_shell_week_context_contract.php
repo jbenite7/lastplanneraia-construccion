@@ -51,14 +51,66 @@ function sesion(string $usuario): array
 
 function csrfTokenForSession(string $sessionId): string
 {
-    $script = '<?php require "/var/www/html/vendor/autoload.php"; session_id($argv[1]); @session_start(); '
-        . 'echo \App\Security\CsrfTokenManager::generate("shell_api"); session_write_close();';
+    $diagFile = tempnam(sys_get_temp_dir(), 'csrf_diag_');
+    $script = <<<'HIJO'
+<?php
+$diag = [];
+$sid = $argv[1];
+$out = $argv[2];
+$anota = static function (string $linea) use (&$diag, $out): void {
+    $diag[] = $linea;
+    file_put_contents($out, implode("\n", $diag));
+};
+$anota('uid=' . (function_exists('posix_getuid') ? posix_getuid() : 'n/a')
+    . ' euid=' . (function_exists('posix_geteuid') ? posix_geteuid() : 'n/a'));
+$anota('output_previo_al_require ob=' . ob_get_level() . ' headers_sent=' . (headers_sent() ? 'SI' : 'no'));
+require '/var/www/html/vendor/autoload.php';
+$anota('tras_require ob=' . ob_get_level() . ' headers_sent=' . (headers_sent() ? 'SI' : 'no')
+    . ' display_errors=' . var_export(ini_get('display_errors'), true));
+$anota('save_path=' . var_export(ini_get('session.save_path'), true)
+    . ' tmp=' . sys_get_temp_dir()
+    . ' strict=' . ini_get('session.use_strict_mode')
+    . ' handler=' . ini_get('session.save_handler'));
+$archivo = sys_get_temp_dir() . '/sess_' . $sid;
+$anota('archivo=' . $archivo
+    . ' existe=' . (file_exists($archivo) ? 'si' : 'no')
+    . ' legible=' . (is_readable($archivo) ? 'si' : 'no')
+    . ' escribible=' . (is_writable($archivo) ? 'si' : 'no')
+    . ' owner=' . (file_exists($archivo) ? (string) fileowner($archivo) : '-')
+    . ' perms=' . (file_exists($archivo) ? decoct(fileperms($archivo) & 0777) : '-')
+    . ' bytes=' . (file_exists($archivo) ? (string) filesize($archivo) : '-'));
+$anota('session_id_set=' . var_export(session_id($sid), true));
+$avisos = [];
+set_error_handler(static function (int $no, string $str) use (&$avisos): bool {
+    $avisos[] = "[{$no}] {$str}";
+    return true;
+});
+$arranco = session_start();
+restore_error_handler();
+$anota('session_start_devolvio=' . var_export($arranco, true)
+    . ' status=' . session_status()
+    . ' id_tras_start=' . var_export(session_id(), true)
+    . ' coincide=' . (session_id() === $sid ? 'si' : 'NO'));
+foreach ($avisos as $aviso) {
+    $anota('AVISO ' . $aviso);
+}
+$ultimo = error_get_last();
+$anota('error_get_last=' . ($ultimo === null ? 'ninguno' : $ultimo['message']));
+$anota('shell_api_en_sesion=' . (empty($_SESSION['_csrf_tokens']['shell_api'])
+    ? 'no'
+    : substr((string) $_SESSION['_csrf_tokens']['shell_api'], 0, 12) . '...'));
+echo \App\Security\CsrfTokenManager::generate('shell_api');
+session_write_close();
+HIJO;
     $tmp = tempnam(sys_get_temp_dir(), 'csrf_gen_');
     file_put_contents($tmp, $script);
-    $token = trim((string) shell_exec('php ' . escapeshellarg($tmp) . ' ' . escapeshellarg($sessionId) . ' 2>&1'));
+    $token = trim((string) shell_exec('php ' . escapeshellarg($tmp) . ' ' . escapeshellarg($sessionId) . ' ' . escapeshellarg($diagFile) . ' 2>/dev/null'));
     @unlink($tmp);
-    if (strlen($token) < 32) {
-        fwrite(STDERR, "ABORT: no se pudo generar el token CSRF shell_api (salida: {$token})\n");
+    $diag = (string) @file_get_contents($diagFile);
+    @unlink($diagFile);
+    if (strlen($token) < 32 || !str_contains($diag, 'coincide=si')) {
+        fwrite(STDOUT, "DIAGNOSTICO DEL SUBPROCESO (ultimas lineas a proposito):\n" . $diag . "\n");
+        fwrite(STDOUT, "token_len=" . strlen($token) . "\n");
         exit(2);
     }
 
