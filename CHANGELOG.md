@@ -28,6 +28,34 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Arreglado: tres módulos que respondían error, destapados por el gate del navegador (2026-09-04)
+
+Frente `fix/carril-visual-full-app-flow`. El gate `G_FULL_APP_FLOW` llevaba días en rojo y se
+sospechaba de su línea base caducada. No lo era: **los tres fallos eran de código, y los tres dejaban
+un módulo respondiendo error al usuario.** Reproducidos en runtime aislado antes de tocar nada
+(3 de 13 pruebas en rojo, exactamente las mismas que en la corrida `33895697935`).
+
+Lo que estaba roto, por lo que un usuario sufría:
+
+- **Listado del CIC** (`/api/cic/list`). Cada parte de su UNION nombra `cic` tres veces sin alias, y
+  `ProjectSqlGuard` aborta ahí con «Alias de tabla de proyecto ambiguo»: con dos raíces homónimas no
+  puede decidir a cuál pertenece cada `project_id`. **La pantalla de contratistas no cargaba.**
+- **Generación de indicadores** (`/api/indicadores/generar`). Mismo error, con diez subconsultas
+  sobre `programacion_semanal`. **Los indicadores de la semana no se generaban.**
+- **Auto-programación semanal** (`/api/semanal/auto-program`). `ProgramChangeDetector` creaba su
+  tabla de log con `CREATE TABLE` en caliente, y el runtime es DML-only por diseño. Además el
+  esquema que creaba estaba atrasado respecto al contrato de migraciones —sin `project_id`, sin
+  `unique_id` y sin FK—, así que en el único caso donde habría servido habría creado una tabla
+  degradada. Se retira: la tabla la garantizan las migraciones.
+
+Los dos primeros son el mismo arreglo que ya llevaban `ForecastService::getContractorPac4W()` y
+`EstadoSemanalService`, cada uno con su porqué escrito al lado desde el 2026-09-02. Es la tercera
+vez que este error aparece en sitios distintos.
+
+**`G_RUNTIME_BUDGET_CHECK` no entra aquí y sigue en rojo a propósito**: su rojo sí es línea base
+—`cssGzipBytes` 131.477 contra 130.314 de máximo, por 846 líneas de CSS legítimo posterior a la
+baseline `0.4.0`— y aprobarlo es decisión de Felipe, medida en Actions. Ver `TASKS.md`.
+
 ### Arreglado: el gate de datos vuelve a verde, y con él cuatro fallos más de producción (2026-09-04)
 
 Segunda mitad del frente `guard-datos-suite`, la que cerraba `G_PHP_SUITE`. Los **16 tests sin
