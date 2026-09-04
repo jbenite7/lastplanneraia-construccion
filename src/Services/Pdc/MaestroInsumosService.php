@@ -2,6 +2,8 @@
 
 namespace App\Services\Pdc;
 
+use App\Security\DataScope\SystemScopeRunner;
+
 /**
  * Maestro global de insumos (Fase A2): consolidación de insumos únicos por
  * versión de presupuesto, matching exacto contra el catálogo general_maestro_insumos
@@ -573,17 +575,55 @@ final class MaestroInsumosService
      */
     public function reengancharPendientes(?int $projectId = null): int
     {
-        $filtro = $projectId !== null ? ' AND v.project_id = ?' : '';
-        $params = $projectId !== null ? [$projectId] : [];
-        $stmt = $this->db->query(
-            "UPDATE pdc_insumo_vinculos v
-             JOIN general_maestro_insumos m
-               ON m.descripcion_norm = v.descripcion_norm AND m.unidad = v.unidad AND m.activo = 1
-             SET v.maestro_id = m.id, v.estado = 'auto'
-             WHERE v.estado = 'pendiente'{$filtro}",
-            $params,
+        // `pdc_insumo_vinculos` es tabla de proyecto, así que ProjectSqlGuard exige alcance. Cuál
+        // corresponde depende de cómo se llamó, y las dos formas son legítimas:
+        //
+        //  - Acotado a un proyecto: alcance de ese proyecto, con su `project_id` en el WHERE.
+        //  - Global (el caso del import de SINCO): la operación cruza obras **a propósito**, porque
+        //    el catálogo es de la empresa y un insumo nuevo resuelve pendientes de cualquiera. Eso
+        //    ningún ProjectScope puede expresarlo, así que se declara como mantenimiento.
+        //
+        // Lo que no se hace en ninguno de los dos casos es ensanchar el WHERE: el filtro por
+        // proyecto se conserva tal cual cuando lo hay.
+        if ($projectId !== null) {
+            return $this->db->queryWithProject(
+                "UPDATE pdc_insumo_vinculos v
+                 JOIN general_maestro_insumos m
+                   ON m.descripcion_norm = v.descripcion_norm AND m.unidad = v.unidad AND m.activo = 1
+                 SET v.maestro_id = m.id, v.estado = 'auto'
+                 WHERE v.estado = 'pendiente' AND v.project_id = ?",
+                [$projectId],
+                $projectId,
+            )->rowCount();
+        }
+
+        return $this->runGlobalMaintenance(
+            'pdc:maestro:reenganche-global',
+            fn (): int => $this->db->query(
+                "UPDATE pdc_insumo_vinculos v
+                 JOIN general_maestro_insumos m
+                   ON m.descripcion_norm = v.descripcion_norm AND m.unidad = v.unidad AND m.activo = 1
+                 SET v.maestro_id = m.id, v.estado = 'auto'
+                 WHERE v.estado = 'pendiente'",
+            )->rowCount(),
         );
-        return $stmt->rowCount();
+    }
+
+    /**
+     * Corre una operación del catálogo que cruza proyectos por diseño.
+     *
+     * Respeta un alcance ya enlazado en vez de abrir otro: enlazar dos veces es un error, y si el
+     * alcance vigente es de un proyecto concreto, que el guard decida — no es este método quien
+     * debe ensancharlo por su cuenta.
+     */
+    private function runGlobalMaintenance(string $reason, callable $operation): mixed
+    {
+        $context = $this->db->dataScope();
+        if ($context->current() !== null) {
+            return $operation();
+        }
+
+        return (new SystemScopeRunner($context))->run($reason, $operation);
     }
 
     /** Retira un insumo del catálogo: activo=0, auditoría y reversión global del auto-match. */
