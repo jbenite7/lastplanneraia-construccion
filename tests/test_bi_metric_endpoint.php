@@ -125,9 +125,9 @@ const METRIC_KEY_DESCRIPTIVA = 'ps_pac_expected';
  * Idéntico a `tests/test_bi_constraint_write.php::sesion()` — ver ese archivo para el porqué de
  * capturar el PHPSESSID directo del header `Set-Cookie` en vez del cookie jar en disco.
  *
- * @return array{0:string,1:string} [ruta al cookie jar, PHPSESSID de esta sesión]
+ * @return string ruta al cookie jar de esta sesión
  */
-function sesion(string $usuario): array
+function sesion(string $usuario): string
 {
     $jar = tempnam(sys_get_temp_dir(), 'cookies_');
     $url = BASE . '/dev/entrar?u=' . urlencode($usuario) . '&p=' . urlencode(PROYECTO);
@@ -160,7 +160,7 @@ function sesion(string $usuario): array
         exit(2);
     }
 
-    return [$jar, $sid];
+    return $jar;
 }
 
 /**
@@ -186,32 +186,43 @@ function getReq(string $url, string $jar): array
 }
 
 /**
- * Lee `$_SESSION['semana']` de la sesión de servidor que ya abrió el dev door, SIN sesión HTTP
- * nueva, SIN cookie, sin tocar el candado de DevDoor — mismo mecanismo y mismo motivo que
- * `tests/test_bi_constraint_write.php::csrfTokenForSession()` (subproceso PHP fijado al mismo
- * `session_id`, mismo almacén de archivos que usa Apache en el contenedor `app`). Se usa aquí en vez
- * de adivinar la "semana de aterrizaje" que calcula `ProjectLandingService` (depende de rol/área,
- * lógica que este test no debe duplicar ni suponer).
+ * Lee por HTTP la semana de aterrizaje que el servidor calculó para esta sesión, del
+ * `navigation.bi.href` que devuelve `GET /api/session` — el mismo valor que
+ * `ProjectLandingService` dejó en `$_SESSION['semana']`, pero observado desde fuera.
  *
- * @return ?string null si la sesión no trae `semana` (no debería pasar tras un login real, pero se
- *                 distingue explícito de "0" en vez de tratarlos igual).
+ * La versión anterior lo leía abriendo la sesión del servidor desde un subproceso PHP
+ * (`session_id($sid); session_start();`). Ese mecanismo es el que causó una regresión que solo
+ * fallaba en CI, cerrada el 2026-09-04 en los contratos del shell (commit 4c7251ba): el archivo
+ * `/tmp/sess_<sid>` lo crea Apache como `www-data` con modo 0600, el CLI corre como root, y en el
+ * kernel del runner de GitHub el `open()` devuelve «Permission denied (13)» pese al uid 0 —
+ * `/tmp` es sticky y de escritura para todos, y el endurecimiento de archivos regulares del
+ * kernel (`fs.protected_regular`, activo en Ubuntu y en 0 en la VM de Docker Desktop) niega el
+ * acceso a un archivo de otro dueño. `session_start()` devolvía `false` y `$_SESSION` quedaba
+ * vacío. Aquí no se manifestaba todavía porque este archivo declara `@requiere: datos-proyecto`
+ * y el CI solo llega a `--nivel=http`; era deuda latente, no un test sano.
+ *
+ * @return ?string null si la sesión no expone semana en la navegación (no debería pasar tras un
+ *                 login real de un rol con acceso a BI, pero se distingue explícito de "0").
  */
-function leerSemanaDeSesion(string $sessionId): ?string
+function semanaDeSesion(string $jar): ?string
 {
-    $script = '<?php '
-        . 'session_id($argv[1]); '
-        . '@session_start(); '
-        . 'echo isset($_SESSION["semana"]) ? (string) $_SESSION["semana"] : "__NULL__"; '
-        . 'session_write_close();';
-    $tmp = tempnam(sys_get_temp_dir(), 'semana_sesion_');
-    file_put_contents($tmp, $script);
-    $salida = trim((string) shell_exec('php ' . escapeshellarg($tmp) . ' ' . escapeshellarg($sessionId) . ' 2>&1'));
-    @unlink($tmp);
-    if ($salida === '' ) {
-        fwrite(STDERR, "ABORT: no se pudo leer \$_SESSION['semana'] (salida vacia)\n");
+    [$codigo, $cuerpo] = getReq(BASE . '/api/session', $jar);
+    if ($codigo !== 200) {
+        fwrite(STDERR, "ABORT: GET /api/session respondio HTTP {$codigo}\n");
         exit(2);
     }
-    return $salida === '__NULL__' ? null : $salida;
+
+    $json = json_decode($cuerpo, true);
+    $href = $json['navigation']['bi']['href'] ?? null;
+    if (!is_string($href)) {
+        fwrite(STDERR, "ABORT: /api/session no trae navigation.bi.href (cuerpo: " . substr($cuerpo, 0, 300) . ")\n");
+        exit(2);
+    }
+    if (!preg_match('/[?&]semana=(\d+)/', $href, $m)) {
+        return null;
+    }
+
+    return $m[1];
 }
 
 $db = Database::getInstance();
@@ -251,8 +262,8 @@ $check = function (bool $ok, string $nombre, string $detalle = '') use (&$fallos
 
 // ------------------------------------------------------------------------------- Sesiones -----
 
-[$jarA, $sidA] = sesion('test.A');
-[$jarV, $sidV] = sesion('test.V');
+$jarA = sesion('test.A');
+$jarV = sesion('test.V');
 
 // ---------------------------------------------- Caso 1: test.A, semana explícita -> 200 -----
 
@@ -342,9 +353,9 @@ if (is_array($json1)) {
 // ------------------------------------ Caso 3: sin `semana` -> cae a $_SESSION['semana'] real -----
 // Ruta real que usara `getMetric()` en ct-app (pieza 2 de este paso): sin selector de semana en la
 // UI, Intermedia.tsx llama sin query param. La semana de aterrizaje real se lee de la sesion de
-// servidor (leerSemanaDeSesion()), no se adivina.
+// servidor por HTTP (semanaDeSesion()), no se adivina.
 
-$semanaSesionA = leerSemanaDeSesion($sidA);
+$semanaSesionA = semanaDeSesion($jarA);
 $urlSinSemana = BASE . '/api/bi/control-tower/metricas/' . METRIC_KEY;
 [$code3, $body3] = getReq($urlSinSemana, $jarA);
 $json3 = json_decode($body3, true);
