@@ -107,7 +107,17 @@ $semanaValida = (int) $semanaValida;
 $semanaInexistente = 900001; // muy por encima de cualquier semana fixture real
 
 [$jar, $sid] = sesion('test.R');
+
+// DIAGNÓSTICO TEMPORAL (2026-09-03) — instrumentación de un solo uso para el hallazgo
+// CSRF_INVALID que solo reproduce en CI (run 33811425650). Se revierte apenas se
+// tenga la causa raíz. No forma parte del contrato del test.
+$sessFile = sys_get_temp_dir() . "/sess_{$sid}";
+fwrite(STDERR, "DIAG sys_get_temp_dir()=" . sys_get_temp_dir() . " ini(session.save_path)=[" . ini_get('session.save_path') . "] getmypid()=" . getmypid() . "\n");
+fwrite(STDERR, "DIAG sessFile={$sessFile} existe=" . (file_exists($sessFile) ? 'si' : 'no') . " contenido_pre=" . var_export(@file_get_contents($sessFile), true) . "\n");
+
 $token = csrfTokenForSession($sid);
+
+fwrite(STDERR, "DIAG token_generado=" . substr($token, 0, 8) . "... existe_post=" . (file_exists($sessFile) ? 'si' : 'no') . " contenido_post=" . var_export(@file_get_contents($sessFile), true) . "\n");
 
 $fallos = 0;
 $total = 0;
