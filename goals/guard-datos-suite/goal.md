@@ -1,11 +1,11 @@
 ---
 capa: fuente
 tipo: goal-doc
-estado: abierto
+estado: cerrado
 fecha: 2026-09-04
 areas: [datos, rbac, qa, proceso]
 fuente: goals/guard-datos-suite/goal.md
-resumen: "Devolver G_PHP_SUITE a verde tras ProjectSqlGuard: 24 tests en rojo en cada corrida de CI, medidos y clasificados el 2026-09-04 — 16 son tests sin adaptar y 8 destapan código de producción roto"
+resumen: "CERRADO 2026-09-04: G_PHP_SUITE de 24 fallos a 0. Los 8 de producción y los 16 tests sin adaptar, más 2 clases PHPUnit que nadie había contado y 4 fallos de producción que estaban escondidos detrás de los tests"
 ---
 
 # Frente: guard-datos-suite
@@ -223,6 +223,90 @@ no satisface al guard. Lo destapó `test_schedule_update_draft_import` al llegar
 ese test **pasa igual**, porque su aserción mira el conteo de filas y no el payload. Queda anotado en
 `TASKS.md` como tarea propia: es legado sin cobertura, y reescribir ese `UPDATE` de paso habría
 convertido este frente en otro.
+
+## Cierre — segunda mitad (los 16 tests) y del frente, 2026-09-04
+
+**Los 16 pasan, y `G_PHP_SUITE` queda en verde: el nivel `http` va de 24 fallos a 0.** Verificado en
+el mismo runtime aislado de CI reproducido en local, con el worktree montado y comprobado por
+`md5sum` contra el árbol local antes de leer ningún código de salida — y otra vez al montar `main`
+para el diferencial, que es donde esa comprobación de verdad gana algo.
+
+### Diferencial contra `main` (`63518a5a`), misma suite y mismo stack
+
+```
+main:  === 102 corridos: 78 pasaron, 24 fallaron, 0 sospechosos, 0 se saltaron solos, 37 omitidos ===
+rama:  === 102 corridos: 100 pasaron,  0 fallaron, 0 sospechosos, 2 se saltaron solos, 37 omitidos ===
+
+ARREGLADOS: los 24
+NUEVOS FALLOS: ninguno
+```
+
+Los 2 «se saltaron solos» son `test_bi_alcance_responsables` y `test_bitacora_avance_endpoint`:
+llegan a su `SKIP` propio porque el fixture sintético de CI no trae la fila que necesitan. Es su
+comportamiento de diseño, no un silenciamiento — antes ni siquiera alcanzaban esa línea.
+
+Resto de gates sobre la rama:
+
+```
+--nivel=puro → RC=0 · 33 corridos: 33 pasaron · PHPUnit: 13 clase(s), en verde (rc=0)
+--nivel=http → RC=0 · PHPUnit: 17 clase(s), en verde (rc=0)
+phpstan analyse src admin/src --memory-limit=1G → RC=0 · [OK] No errors
+test_project_scope_callsite_audit → RC=0
+```
+
+### Cuatro fallos de producción más, que estaban escondidos detrás de los tests
+
+Ninguno se veía antes: el test moría en su primera consulta sin alcance y nunca llegaba tan lejos.
+
+| Qué está roto para un usuario | Dónde |
+|---|---|
+| El catálogo de paquetes solo muestra los que la obra ya usa | `PaquetesService::catalogo()` — bajo alcance de obra el gate vuelve `INNER` su `LEFT JOIN` |
+| Las sugerencias de paquete no responden | `/plan-compras/api/paquetes/sugerencias`, sus tres capas |
+| Los avisos del visor de presupuesto revientan | `PresupuestoImportService::avisosDelPresupuesto()` |
+| Actividades por insumo revienta | `PaquetesService::actividadesPorInsumo()` |
+
+Los dos últimos son el mismo defecto: unían `pdc_presupuesto_items` con
+`pdc_presupuesto_apu_insumos` **solo por `id`**, sin relacionar `project_id`. El gate los rechazaba
+con razón — es la forma exacta en que un JOIN se salta el aislamiento entre obras.
+
+### La decisión que hubo que subir
+
+**El catálogo de paquetes se lee entre obras a propósito, y eso ningún `ProjectScope` puede
+expresarlo.** Decisión de Felipe, 2026-09-04: se declara el cruce, no se suprime. Las cuatro
+lecturas pasan por `PaquetesService::leerCatalogoEntreObras()` con su razón escrita, autorizadas en
+la lista blanca de `test_project_scope_callsite_audit`. Lo que viaja entre obras es id y nombre de
+paquete —catálogo de la empresa— y un conteo de obras; nunca una fila de la obra ajena. La
+alternativa evaluada, sugerir solo con la historia propia, dejaba a cada obra nueva sin ninguna
+sugerencia, que es cuando más ayudan.
+
+### Correcciones a lo que este goal daba por cierto
+
+1. **Los 16 no eran 16: eran 16 scripts más dos clases PHPUnit**, `CarryoverAvanceSemanalTest` y
+   `PgAvanceEdicionManualTest`, con 9 errores de la misma causa. No las contó ninguna de las dos
+   mediciones de CI ni la de este goal, y no por descuido: `scripts/run-php-tests.php` reporta
+   PHPUnit en una línea `===` **aparte** de la de los scripts sueltos, así que quien lee «24
+   fallaron» se lleva solo la mitad del tablero. Sin ellas `G_PHP_SUITE` no habría quedado verde.
+
+2. **«Mecánicos salvo donde la consulta es la aserción» se quedó corto.** El orden sugerido daba los
+   16 por trámite. De trámite tuvieron poco: cuatro destaparon producción rota y uno obligó a subir
+   una decisión de producto. La lección es la de la primera mitad otra vez — el guard no distingue
+   entre un test perezoso y un fallo real, y hasta que el test no llega al final no se sabe cuál de
+   los dos era.
+
+### Lo que NO se hizo, y es deliberado
+
+No se relajó `ProjectSqlGuard`, no se marcó ningún test como saltado y no se movió el `// @requiere:`
+de ninguno. `tests/test_bi_constraint_write.php` —el de las cinco consultas, dos de ellas
+aserciones— **sigue abierto a propósito**: es nivel `datos-proyecto`, fuera del CI, y no bloquea la
+condición de hecho. Queda anotado en `TASKS.md` con la regla que ahora sí está escrita para
+resolverlo.
+
+### La herramienta que queda
+
+`tests/support/ScopeFixture.php`, y sobre todo la regla que lleva escrita en su cabecera: el alcance
+de una **aserción de aislamiento** es el de la obra que se **observa**, nunca el de la que se acaba
+de escribir. Elegirlo al revés no rompe el test — lo deja en verde midiendo lo contrario de lo que
+dice, que es peor.
 
 ## Archivos de este goal
 

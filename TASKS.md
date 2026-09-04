@@ -37,11 +37,23 @@ Los 24 tests que `G_PHP_SUITE` reporta en rojo en cada corrida están ahí clasi
 consolidación de informes y las vistas BI) y **16 son tests que consultan sin declarar alcance**.
 La condición de hecho y lo que el frente tiene prohibido hacer viven en ese goal.
 
-**Primera mitad CERRADA el 2026-09-04: los ocho de producción están arreglados en el código.** El
-nivel `http` pasa de 24 fallos a 16 sin ningún fallo nuevo, medido en el runtime aislado de CI
-reproducido en local. Ver `CHANGELOG.md` › «los ocho fallos de producción que el gate de datos había
-destapado» y la sección `## Cierre` del goal. **Los 16 tests sin adaptar siguen abiertos** y son la
-segunda mitad del frente: mientras existan, `G_PHP_SUITE` sigue en rojo.
+**FRENTE CERRADO el 2026-09-04, las dos mitades.** El nivel `http` pasa de **24 fallos a 0**, sin
+ningún fallo nuevo, medido sobre los dos árboles con la misma suite y el mismo stack. La segunda
+mitad —los 16 tests sin adaptar— destapó **cuatro fallos de producción más** que estaban escondidos
+detrás de ellos: el catálogo de paquetes mutilado, las tres capas de sugerencia muertas y dos JOIN
+que unían tablas de proyecto sin relacionar `project_id`. Ver `CHANGELOG.md` › «el gate de datos
+vuelve a verde» y la sección `## Cierre` del goal.
+
+Dos cosas que la segunda mitad dejó medidas:
+
+- **Los 16 no eran 16.** Había además **dos clases PHPUnit** con la misma causa (9 errores):
+  `CarryoverAvanceSemanalTest` y `PgAvanceEdicionManualTest`. Ninguna medición previa las contó
+  porque `scripts/run-php-tests.php` reporta PHPUnit en una línea aparte de la de los scripts
+  sueltos, y quien lee «24 fallaron» se queda con esa. Al contar fallos de este runner, hay que
+  mirar **las dos** líneas `===`.
+- **La lectura entre obras del catálogo de paquetes quedó declarada, por decisión de Felipe del
+  2026-09-04**, no suprimida: pasa por `PaquetesService::leerCatalogoEntreObras()` y está
+  autorizada con su justificación en `test_project_scope_callsite_audit`.
 
 Tres cosas que esa mitad dejó medidas y cambian lo escrito más abajo:
 
@@ -80,7 +92,11 @@ contra el stack local:
   dos de ellas son la comprobación de persistencia, no fixtures: envolverlas exige criterio sobre
   qué alcance corresponde en cada punto —`SystemScope` o el del proyecto 73— y hacerlo a ojo podría
   tapar justo la propiedad de aislamiento que el test existe para probar. Por eso se dejó como está
-  al pasar por ahí el 2026-09-04. Su hermano `test_bi_metric_endpoint.php` sí pasa entero (39
+  al pasar por ahí el 2026-09-04. **Sigue abierto tras cerrar `guard-datos-suite`**, y a propósito:
+  es nivel `datos-proyecto`, fuera del CI, así que no bloquea `G_PHP_SUITE`. Lo que sí cambió es que
+  ahora existe la herramienta y, sobre todo, la regla escrita para hacerlo bien —
+  `tests/support/ScopeFixture.php`: el alcance de una aserción de aislamiento es el de la obra que
+  se **observa**, nunca el de la que se acaba de escribir. Su hermano `test_bi_metric_endpoint.php` sí pasa entero (39
   aserciones): consulta `project_members`, que es tabla global. El mismo síntoma tienen los 24 tests
   que `G_PHP_SUITE` reporta en rojo en cada corrida de CI.
 - [x] **Arreglado el 2026-09-02: el alias ambiguo de `semanas_activas`.** La misma consulta estaba
