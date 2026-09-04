@@ -801,6 +801,20 @@ class Database
         return $this->tableExistsCache[$tableName];
     }
 
+    private function rawIndexExists(string $tableName, string $indexName): bool
+    {
+        if (preg_match('/^[A-Za-z0-9_]+$/', $tableName) !== 1 || preg_match('/^[A-Za-z0-9_]+$/', $indexName) !== 1) {
+            return false;
+        }
+
+        $stmt = $this->pdo->prepare(
+            'SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = ? AND index_name = ?'
+        );
+        $stmt->execute([$tableName, $indexName]);
+
+        return ((int) $stmt->fetchColumn()) > 0;
+    }
+
     private function rawColumnExists(string $tableName, string $columnName): bool
     {
         if (preg_match('/^[A-Za-z0-9_]+$/', $tableName) !== 1 || preg_match('/^[A-Za-z0-9_]+$/', $columnName) !== 1) {
@@ -875,6 +889,25 @@ class Database
     public function columnExists(string $tableName, string $columnName): bool
     {
         return $this->rawColumnExists($tableName, $columnName);
+    }
+
+    /**
+     * Verifica si un índice existe en la tabla indicada.
+     *
+     * Cuarta puerta de metadatos, por la misma razón que las tres anteriores: `information_schema`
+     * es una tabla calificada por schema y ProjectSqlGuard las rechaza. La usan las migraciones
+     * idempotentes, que preguntan antes de cada `ALTER TABLE ... ADD INDEX`.
+     *
+     * A diferencia de tableExists()/columnExists(), **no cachea**: quien pregunta por un índice
+     * está a punto de crearlo, así que una respuesta memorizada sería falsa en la línea siguiente.
+     *
+     * @param string $tableName Nombre de la tabla que contiene el índice.
+     * @param string $indexName Nombre del índice a verificar.
+     * @return bool
+     */
+    public function indexExists(string $tableName, string $indexName): bool
+    {
+        return $this->rawIndexExists($tableName, $indexName);
     }
 
     /**
