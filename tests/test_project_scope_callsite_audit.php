@@ -366,7 +366,17 @@ function auditSystemRunnerCallerAllowed(string $relative): bool
     return in_array($relative, [
         'src/Controllers/Gestion/ReportController.php',
         'admin/src/Controllers/DashboardController.php',
+        // Alta, respaldo y baja de proyectos desde el panel de administración. No puede usar
+        // ProjectScope: no hay proyecto en sesión —admin trabaja *sobre* los proyectos, no dentro
+        // de uno— y en create() el proyecto acaba de nacer, mientras en delete() está por
+        // desaparecer. Cada consulta conserva su `WHERE project_id = ?` explícito.
+        'admin/src/Models/Project.php',
         'admin/async/consolidate.php',
+        // Re-enganche del catálogo de insumos del PDC. Cruza obras por diseño: el maestro es de la
+        // empresa, así que un insumo nuevo resuelve pendientes de cualquier proyecto — forma que
+        // ningún ProjectScope puede expresar. Sólo se usa en la variante global; la acotada a un
+        // proyecto pasa por queryWithProject.
+        'src/Services/Pdc/MaestroInsumosService.php',
         'scripts/higiene/reparar-mojibake-causas.php',
         // Seed del sandbox e2e del PDC. Herramienta de desarrollo, no servida: la invocan los specs
         // de tests/browser/pdc-v2-*.spec.mjs por linea de comandos, fuera de SessionMiddleware.

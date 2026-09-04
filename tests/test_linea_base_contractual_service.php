@@ -56,6 +56,7 @@ final class DatabaseFalsaConCarrera extends \Database
             default => throw new \RuntimeException('DatabaseFalsaConCarrera: llamada inesperada #' . $this->llamada),
         };
     }
+
 }
 
 $fallos = [];
@@ -76,6 +77,13 @@ register_shutdown_function(static function () use ($db, $original): void {
         [$original['inicio'], $original['fin']],
     );
 });
+
+// El servicio consulta `programa_consolidado`, tabla de proyecto: ProjectSqlGuard exige un alcance
+// declarado además del filtro por `project_id`. En una petición real lo enlaza SessionMiddleware
+// desde la sesión; aquí el test opera sobre el proyecto 68 sin sesión, así que lo declara él. El
+// alcance es del mismo proyecto que el test dice estar mirando: no ensancha nada.
+$db->dataScope()->clear();
+$db->dataScope()->bind(new \App\Security\DataScope\ProjectScope(68, 'test-linea-base', 'A'));
 
 // 1. Un proyecto con línea base declarada la devuelve tal cual.
 $db->query("UPDATE general_proyectos_procesos
