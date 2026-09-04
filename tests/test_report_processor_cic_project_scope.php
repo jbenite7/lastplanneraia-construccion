@@ -47,6 +47,18 @@ try {
     BiContractFixture::seedCicScenario($db);
     \TableResolver::clearCache();
 
+    // La consolidación CIC/CIP recorre TODOS los proyectos por diseño: es mantenimiento, no
+    // trabajo dentro de una obra. En producción la lanza DashboardController bajo
+    // SystemScopeRunner, y ese es el alcance que el test reproduce aquí. El fixture queda fuera
+    // porque abre el suyo propio, y anidar dos es un error.
+    //
+    // Que el alcance sea de sistema no afloja lo que este test prueba: el aislamiento entre el
+    // proyecto A y el centinela B sigue dependiendo del SQL de ReportProcessor, que es justo lo
+    // que se está midiendo.
+    (new \App\Security\DataScope\SystemScopeRunner($db->dataScope()))->run(
+        'test:report-processor-cic',
+        static function () use ($db, &$failures, $projectA, $projectB, $semana): void {
+
     $outsideCicBefore = cicProjectRows($db, 'cic', $projectB);
     $outsideCipBefore = cicProjectRows($db, 'cip', $projectB);
 
@@ -136,6 +148,8 @@ try {
             $failures[] = "CIP {$projectA} copio metadata del centinela del proyecto {$projectB}";
         }
     }
+        },
+    );
 } catch (Throwable $error) {
     $failures[] = get_class($error) . ': ' . $error->getMessage();
 } finally {
