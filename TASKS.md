@@ -257,6 +257,15 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   Arreglo: el token se toma por HTTP del `<meta name="lps-shell-csrf-token">` del sidebar, la misma
   vía del navegador. Mecanismo reproducido en local corriendo el subproceso como `nobody`, con los
   dos mismos avisos y `session_id()` vacío.
+- [ ] **PR #20 no puede mergearse todavía, y ya no es por la regresión de CSRF.** Medido en la
+  corrida 33880761753 (2026-09-04, sha 2114a8f2): los dos tests del shell pasan en los dos temas,
+  y el conjunto de gates en rojo es **idéntico** al de la corrida anterior al arreglo (33827872388):
+  `G_PHPSTAN_BASELINE`, `G_PHP_SUITE`, `G_FULL_APP_FLOW`, `G_RUNTIME_BUDGET_CHECK` y
+  `G_KEYBOARD_REFLOW_EVIDENCE`. La diferencia entre ambas corridas son exactamente los dos tests
+  arreglados y nada más. Los 24 fallos restantes de `G_PHP_SUITE` son de nivel `db` y anteceden al
+  frente. Cada uno de esos gates tiene su propia entrada en este archivo; ninguno es del shell React.
+  **Ojo al leer el CI:** los pasos llevan `continue-on-error`, así que muestran «✓» aunque fallen —
+  el estado real se lee en las variables `G_*` del paso «Summarize gate results».
 - [ ] **S01 — segunda mitad: retirar el login PHP (`MIGRATION_COMPLETE`).** Solo después de que el
   PR #20 entre a `main` y el corte haya recibido uso real durante una ventana que **nadie ha fijado
   todavía** (ni días ni criterio de «ya no hace falta volver» — fijarlo es lo primero). Entonces:
