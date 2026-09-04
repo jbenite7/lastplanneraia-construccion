@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/support/pdc_fixture_presupuesto.php';
+require_once __DIR__ . '/support/ScopeFixture.php';
 
 use App\Services\Pdc\PresupuestoExcelParser;
 use App\Services\Pdc\PresupuestoImportService;
@@ -24,11 +25,17 @@ $assert = static function (bool $condition, string $message) use (&$failures): v
 
 $db = Database::getInstance();
 $limpiar = static function () use ($db): void {
+    // Limpieza obra por obra, cada una bajo su propio alcance.
     foreach ([PDC_TEST_PROJECT_A, PDC_TEST_PROJECT_B] as $pid) {
-        $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$pid]); // CASCADE borra items/insumos
+        ScopeFixture::enProyecto($db, $pid, static function () use ($db, $pid): void {
+            $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$pid]); // CASCADE borra items/insumos
+        });
     }
 };
 $limpiar();
+
+// El test importa y lee en la obra A; los dos tramos que miran a B abren su propio alcance.
+ScopeFixture::abrir($db, PDC_TEST_PROJECT_A, 'test-pdc-import');
 
 echo "=== PDC v2: flujo de import (preview) ===\n";
 $storeDir = sys_get_temp_dir() . '/pdc-imports-test-' . getmypid();
@@ -70,7 +77,9 @@ $nIns = (int) $db->query('SELECT COUNT(*) FROM pdc_presupuesto_apu_insumos WHERE
 $assert($nItems === 8 && $nIns === 4, 'Items (8) e insumos (4) persistidos.');
 // item_id de los insumos apunta a la actividad correcta
 $row = $db->query(
-    'SELECT i.codigo FROM pdc_presupuesto_apu_insumos a JOIN pdc_presupuesto_items i ON i.id = a.item_id WHERE a.project_id = ? AND a.version_id = ? AND a.descripcion = ?',
+    'SELECT i.codigo FROM pdc_presupuesto_apu_insumos a
+       JOIN pdc_presupuesto_items i ON i.id = a.item_id AND i.project_id = a.project_id
+      WHERE a.project_id = ? AND a.version_id = ? AND a.descripcion = ?',
     [PDC_TEST_PROJECT_A, $c1['versionId'], 'TEJA DE ZINC'],
 )->fetchColumn();
 $assert($row === '01.01.01.01', 'Insumo amarrado por item_id a su actividad.');
@@ -117,16 +126,21 @@ $assert(
 );
 $assert(count($service->versiones(PDC_TEST_PROJECT_A)) === 1, 'Sigue habiendo 1 sola versión tras el re-import equivalente.');
 
-// Aislamiento por proyecto: B no ve nada.
-$assert($service->versiones(PDC_TEST_PROJECT_B) === [], 'Proyecto B no ve versiones de A.');
+// Aislamiento por proyecto: B no ve nada. Es la aserción, así que se mira desde el alcance de B.
+$assert(
+    ScopeFixture::enProyecto($db, PDC_TEST_PROJECT_B, static fn () => $service->versiones(PDC_TEST_PROJECT_B)) === [],
+    'Proyecto B no ve versiones de A.',
+);
 
 // Transaccionalidad: token de proyecto distinto no confirma nada en B.
 $tmp3 = sys_get_temp_dir() . '/pdc_flujo_valido3.xlsx';
 pdcFixturePresupuestoValido($tmp3);
 $p3 = $service->previewDesdeArchivo($tmp3, 'x.xlsx', PDC_TEST_PROJECT_A, 'tester');
-$cB = $service->confirmar($p3['importToken'], PDC_TEST_PROJECT_B);
+$cB = ScopeFixture::enProyecto($db, PDC_TEST_PROJECT_B, static fn () => $service->confirmar($p3['importToken'], PDC_TEST_PROJECT_B));
 $assert($cB['ok'] === false && $cB['code'] === 'TOKEN_EXPIRED', 'Token de otro proyecto se rechaza.');
 foreach ([$tmp2, $tmp3] as $f) { @unlink($f); }
+
+ScopeFixture::cerrar($db);
 
 @unlink($tmp);
 @unlink($tmpBad);

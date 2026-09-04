@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/support/pdc_fixture_presupuesto.php';
+require_once __DIR__ . '/support/ScopeFixture.php';
 
 use App\Services\Pdc\PresupuestoExcelParser;
 use App\Services\Pdc\PresupuestoImportService;
@@ -22,11 +23,22 @@ $assert = static function (bool $c, string $m) use (&$failures): void {
 
 $db = Database::getInstance();
 $limpiar = static function () use ($db): void {
-    $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id IN (?, ?)', [PDC_IMP_A, PDC_IMP_A + 1]);
-    $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [PDC_IMP_A]);
+    // Obra por obra, cada una bajo su alcance: la vecina (PDC_IMP_A + 1) existe solo para el
+    // fixture de aislamiento, y también hay que dejarla limpia.
+    foreach ([PDC_IMP_A, PDC_IMP_A + 1] as $pid) {
+        ScopeFixture::enProyecto($db, $pid, static function () use ($db, $pid): void {
+            $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id = ?', [$pid]);
+        });
+    }
+    ScopeFixture::enProyecto($db, PDC_IMP_A, static function () use ($db): void {
+        $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [PDC_IMP_A]);
+    });
     $db->query('DELETE FROM general_paquetes_contratacion WHERE nombre_norm = ?', ['CUBIERTAS IMP TEST']);
 };
 $limpiar();
+
+// El test transcurre en PDC_IMP_A; la siembra en la obra vecina abre su propio alcance.
+ScopeFixture::abrir($db, PDC_IMP_A, 'test-pdc-impacto');
 
 echo "=== PDC v2: impacto de reimportar sobre el trabajo hecho ===\n";
 $store = new PresupuestoImportStore(sys_get_temp_dir() . '/pdc-imp-store-' . getmypid());
@@ -133,11 +145,16 @@ $assert($activaAntes === $activaDespues, 'Cancelar: la versión activa queda int
 $assert($asignadosAntes === $asignadosDespues, 'Cancelar: las asignaciones a paquete quedan intactas.');
 
 // Aislamiento entre proyectos: el impacto no ve asignaciones de otro proyecto.
-$db->query(
-    'INSERT INTO pdc_insumo_paquete (project_id, descripcion_norm, unidad, paquete_id, omitido, asignado_por, updated_at)
-     VALUES (?, ?, ?, ?, 0, ?, NOW())',
-    [PDC_IMP_A + 1, 'MALLA ELECTROSOLDADA', 'KG', $paqueteId, 'tester'],
-);
+// Fixture de la obra vecina, no de esta: se siembra bajo SU alcance. Sembrarlo bajo el de
+// PDC_IMP_A haría que el gate reescribiera el project_id y la fila caería en la obra observada,
+// con lo que la aserción de abajo pasaría por la razón contraria a la que dice.
+ScopeFixture::enProyecto($db, PDC_IMP_A + 1, static function () use ($db, $paqueteId): void {
+    $db->query(
+        'INSERT INTO pdc_insumo_paquete (project_id, descripcion_norm, unidad, paquete_id, omitido, asignado_por, updated_at)
+         VALUES (?, ?, ?, ?, 0, ?, NOW())',
+        [PDC_IMP_A + 1, 'MALLA ELECTROSOLDADA', 'KG', $paqueteId, 'tester'],
+    );
+});
 $p3 = $service->previewDesdeArchivo($v2, 'v2-aislamiento.xlsx', PDC_IMP_A, 'tester');
 $assert($p3['impacto']['nuevosSinPaquete']['cantidad'] === 1, 'Aislamiento: una asignación de otro proyecto no da destino a MALLA aquí.');
 
@@ -150,6 +167,8 @@ $tejaSigue = (int) $db->query(
 $assert($c2['ok'] === true && $tejaSigue === 1, 'Confirmar conserva la asignación de TEJA (contrato de herencia de A3 intacto).');
 
 $limpiar();
+ScopeFixture::cerrar($db);
+
 foreach ([$v1, $v2] as $f) { @unlink($f); }
 
 echo $failures === [] ? "\n=== OK ===\n" : "\n" . count($failures) . " FAIL\n";

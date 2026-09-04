@@ -377,6 +377,17 @@ function auditSystemRunnerCallerAllowed(string $relative): bool
         // ningún ProjectScope puede expresar. Sólo se usa en la variante global; la acotada a un
         // proyecto pasa por queryWithProject.
         'src/Services/Pdc/MaestroInsumosService.php',
+        // Catálogo de paquetes de contratación del PDC, en sus dos lecturas: el catálogo mismo
+        // (`catalogo()`, cuyo `insumosGlobal` cuenta el uso en TODAS las obras) y las tres capas de
+        // sugerencia, que proponen un paquete porque otras obras ya clasificaron ese insumo. Las
+        // cuatro cruzan obras por diseño y ninguna cabe en un ProjectScope: la forma que necesitan
+        // es «todas menos esta», o directamente «todas». Bajo el alcance de una sola obra el gate
+        // convierte el LEFT JOIN del catálogo en INNER y desaparecen los paquetes que esa obra aún
+        // no usa, que son justo los que hay que poder elegir. Lo que sale es catálogo de empresa y
+        // estadística agregada —id, nombre y conteo de obras—, nunca una fila de la obra ajena.
+        // Decisión de Felipe, 2026-09-04 (segunda mitad de guard-datos-suite): la alternativa era
+        // sugerir solo con la historia propia, que deja a cada obra nueva sin ninguna sugerencia.
+        'src/Services/Pdc/PaquetesService.php',
         'scripts/higiene/reparar-mojibake-causas.php',
         // Seed del sandbox e2e del PDC. Herramienta de desarrollo, no servida: la invocan los specs
         // de tests/browser/pdc-v2-*.spec.mjs por linea de comandos, fuera de SessionMiddleware.

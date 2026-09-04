@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/support/ScopeFixture.php';
 require_once __DIR__ . '/support/BiContractFixture.php';
 
 $db = \Database::getInstance();
@@ -38,9 +39,19 @@ function biReconciliationFail(string $message): void
     $failed++;
 }
 
+/**
+ * Reconciliar las vistas BI contra sus fuentes cruza obras por diseño: cada comprobación mira el
+ * conjunto de proyectos del fixture a la vez, y de eso trata —que la vista y la fuente digan lo
+ * mismo en todas—. Ningún ProjectScope puede expresar ese conjunto, así que va como mantenimiento
+ * con su razón escrita, igual que `test_bi_views_exist`.
+ */
 function biAssertZero(\Database $db, string $sql, string $message): void
 {
-    $count = (int) $db->query($sql)->fetchColumn();
+    $count = (int) ScopeFixture::comoSistema(
+        $db,
+        'test:bi-source-reconciliation',
+        static fn () => $db->query($sql)->fetchColumn(),
+    );
     $count === 0
         ? biReconciliationPass($message)
         : biReconciliationFail("{$message} ({$count} discrepancies)");
@@ -110,9 +121,13 @@ if ($curveSql === false || substr_count($curveSql, $clampedProgress) !== 3) {
 
 // Guardia anti-vacuidad: si el fixture dejara de sembrar, las reconciliaciones de abajo
 // pasarían en verde sobre cero filas sin medir nada.
-$fixtureRowCount = (int) $db->query(
-    "SELECT COUNT(*) FROM bi_pg_semana WHERE project_id IN ({$fixtureProjectsSql})",
-)->fetchColumn();
+$fixtureRowCount = (int) ScopeFixture::comoSistema(
+    $db,
+    'test:bi-source-reconciliation:guardia-anti-vacuidad',
+    static fn () => $db->query(
+        "SELECT COUNT(*) FROM bi_pg_semana WHERE project_id IN ({$fixtureProjectsSql})",
+    )->fetchColumn(),
+);
 $fixtureRowCount > 0
     ? biReconciliationPass('fixture projects expose rows through bi_pg_semana')
     : biReconciliationFail('fixture projects expose rows through bi_pg_semana');
