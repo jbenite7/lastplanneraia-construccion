@@ -10,7 +10,7 @@ resumen: Todos los cambios notables en este proyecto serán documentados en este
 project: lps-aia
 type: changelog
 status: activo
-updated: 2026-09-03
+updated: 2026-09-04
 ---
 
 # Registro de Cambios (Changelog)
@@ -27,6 +27,44 @@ archivo registra solo cambios de producto liberados o por liberar. Ver [[IMPLEME
 para el estado de los planes en curso.
 
 ## [Sin publicar]
+
+### Arreglado: los ocho fallos de producción que el gate de datos había destapado (2026-09-04)
+
+`ProjectSqlGuard` (`48e06072`, 2026-08-29) dejó 24 tests en rojo en `G_PHP_SUITE`. La clasificación
+del frente `guard-datos-suite` mostró que **ocho no eran tests perezosos: era código que no
+funcionaba para un usuario real**. Esos ocho quedan arreglados en el código de producción, no en el
+test que los detecta. Los 16 restantes son tests sin adaptar y siguen abiertos, que es la segunda
+mitad del frente.
+
+Lo que estaba roto, por lo que un usuario sufría:
+
+- **Panel de administración.** `create()`, `delete()` y `exportToSql()` de proyectos. El borrado era
+  el peor: la excepción del guard caía en un `catch` que solo escribía al log, así que las filas del
+  proyecto no se borraban y el panel reportaba éxito.
+- **Import SINCO del plan de compras.** Cargar el maestro de insumos terminaba en fatal.
+- **Import de cronograma del programa general.** Un `AND p.project_id = ?` repetido en el mismo
+  WHERE hacía que el guard leyera el `NOT` de un `NOT IN` vecino como negación del alcance.
+- **Consolidación de informes (CIC/CIP).** Siete consultas operaban sobre todas las obras a la vez.
+  La más grave: `deleteRowsNotInProcessedEntities()` recibía el `project_id` y no lo usaba, así que
+  **cada proyecto consolidado borraba el CIC/CIP de esa semana en todas las demás obras**. Además,
+  `MAX(Semana)` se calculaba global —cada proyecto se consolidaba en la semana de otro— y los
+  acumulados se escribían con `WHERE Id = ?` siendo `cic.Id` una secuencia *por proyecto*.
+- **Vistas BI.** Su comprobación de existencia no declaraba alcance.
+
+Añadido de paso: `Database::indexExists()`, cuarta puerta de metadatos, para que las migraciones
+idempotentes dejen de armar SQL contra `information_schema`. No cachea a propósito — quien pregunta
+por un índice está a punto de crearlo.
+
+**Corrección de una medición previa.** El goal daba por medir «cuáles de diez archivos usan
+`information_schema` a través de `Database::query()`». Medido: **ocho de los diez ya estaban
+migrados** y solo conservaban comentarios explicando por qué delegan en `Database`. Quedaba SQL real
+en dos: `admin/src/Models/Project.php` (cuatro consultas) y
+`admin/src/Controllers/DashboardController.php` (una, dentro de un `try/catch` que devuelve ceros —
+sigue abierta, ver `TASKS.md`).
+
+Verificado en el runtime aislado de CI reproducido en local: nivel `http` pasa de **24 fallos a 16**,
+sin un solo fallo nuevo; nivel `puro` 33/33 y PHPUnit 13 clases en verde; PHPStan `[OK] No errors`.
+
 
 ### Arreglado: la deuda latente de los dos tests de BI que abrían la sesión del servidor (2026-09-04)
 

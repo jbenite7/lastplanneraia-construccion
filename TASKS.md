@@ -37,6 +37,34 @@ Los 24 tests que `G_PHP_SUITE` reporta en rojo en cada corrida están ahí clasi
 consolidación de informes y las vistas BI) y **16 son tests que consultan sin declarar alcance**.
 La condición de hecho y lo que el frente tiene prohibido hacer viven en ese goal.
 
+**Primera mitad CERRADA el 2026-09-04: los ocho de producción están arreglados en el código.** El
+nivel `http` pasa de 24 fallos a 16 sin ningún fallo nuevo, medido en el runtime aislado de CI
+reproducido en local. Ver `CHANGELOG.md` › «los ocho fallos de producción que el gate de datos había
+destapado» y la sección `## Cierre` del goal. **Los 16 tests sin adaptar siguen abiertos** y son la
+segunda mitad del frente: mientras existan, `G_PHP_SUITE` sigue en rojo.
+
+Tres cosas que esa mitad dejó medidas y cambian lo escrito más abajo:
+
+- **La consolidación de informes NO estaba muerta por el alias.** Estaba muerta por siete consultas
+  sin `project_id` que cruzaban obras, y la peor **borraba** el CIC/CIP de todas las demás. El
+  `FROM DUAL` se quitó (era decorativo). El alias ambiguo, que se daba por tercer problema, ya no
+  bloquea nada: el test de aislamiento pasa sin tocarlo.
+- **De los diez archivos con `information_schema`, ocho ya estaban migrados** y solo conservaban el
+  comentario que lo explica. La lista de «16 sitios del runtime servido» de más abajo está medida
+  sobre un árbol viejo: re-medir antes de usarla.
+- **Sigue abierto:** `admin/src/Controllers/DashboardController.php:~579` (`getDatabaseStats()`)
+  arma SQL contra `information_schema` dentro de un `try/catch` que devuelve ceros. No revienta:
+  **falla en silencio** y el panel muestra 0 MB y 0 tablas. Es el único uso real que queda.
+
+- [ ] **Hallazgo nuevo (2026-09-04): `nueva_semana.php` no puede activar un borrador de semana.**
+  Su `UPDATE ... AS dest INNER JOIN (SELECT ...) AS src` usa una tabla derivada, y el guard no
+  reconoce `src.project_id = dest.project_id` como relación válida: responde
+  «La tabla programa_consolidado no está relacionada por project_id con dest». Lo destapó
+  `test_schedule_update_draft_import` al llegar más lejos que antes. **Ese test pasa igual**, porque
+  su aserción mira el conteo de filas y no el payload, así que hoy nadie lo vigila. La reescritura
+  natural es cambiar la derivada por un self-join con las condiciones en el `ON`; es legado sin
+  cobertura propia, así que merece su propia tarea y no se hizo de paso.
+
 `ProjectSqlGuard` (2026-08-29, `48e06072`) rompió más que la herramienta de línea de comandos.
 ~~Lo de la suite quedó arreglado en el frente `fix/suite-main-scope`~~ — **eso caducó: la suite
 sigue con 24 tests en rojo**, medidos el 2026-09-04 en dos corridas distintas (ver el goal enlazado

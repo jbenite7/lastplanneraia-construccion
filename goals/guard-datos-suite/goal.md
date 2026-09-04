@@ -140,6 +140,90 @@ Los otros tres gates rojos de `design-system-runtime` (`G_FULL_APP_FLOW`,
 `G_RUNTIME_BUDGET_CHECK`, `G_KEYBOARD_REFLOW_EVIDENCE`) son frentes distintos y tienen su propia
 entrada en `TASKS.md`.
 
+## Cierre — primera mitad (los ocho de producción), 2026-09-04
+
+**Los ocho tests de la lista pasan, y el arreglo está en el código de producción.** Los 16 tests sin
+adaptar siguen abiertos: `G_PHP_SUITE` seguirá en rojo hasta que se cierre la segunda mitad, tal como
+preveía este goal.
+
+Verificado en el runtime aislado de CI reproducido en local (`docker-compose.yml` +
+`docker-compose.ci.yml`, proyecto propio en el puerto 18081, con el worktree montado y comprobado por
+`md5sum` contra el árbol local antes de leer ningún código de salida).
+
+### Los ocho, uno por uno
+
+```
+test_pdc_v2_maestro_sinco_import      → RC=0
+test_admin_global_project_model       → RC=0
+test_linea_base_contractual_service   → RC=0
+test_report_processor_cic_project_scope → RC=0
+test_general_api_update_without_user  → RC=0
+test_preconstruction_import_global_ids → RC=0
+test_schedule_update_draft_import     → RC=0
+test_bi_views_exist                   → RC=0
+```
+
+### Diferencial contra `main`, que es la prueba de que no se empeora nada
+
+Misma suite, mismo stack, dos árboles. `main` en `63518a5a`:
+
+```
+main:  === 102 corridos: 78 pasaron, 24 fallaron, 0 sospechosos, 0 se saltaron solos, 37 omitidos ===
+rama:  === 102 corridos: 86 pasaron, 16 fallaron, 0 sospechosos, 0 se saltaron solos, 37 omitidos ===
+
+ARREGLADOS (8): test_admin_global_project_model, test_bi_views_exist,
+                test_general_api_update_without_user, test_linea_base_contractual_service,
+                test_pdc_v2_maestro_sinco_import, test_preconstruction_import_global_ids,
+                test_report_processor_cic_project_scope, test_schedule_update_draft_import
+NUEVOS FALLOS: ninguno
+SIGUEN ROJOS: 16 (los tests sin adaptar de la segunda mitad)
+```
+
+Resto de gates sobre la rama:
+
+```
+--nivel=puro → RC=0 · 33 corridos: 33 pasaron · PHPUnit: 13 clase(s), en verde (rc=0)
+phpstan analyse src admin/src --memory-limit=1G → RC=0 · [OK] No errors
+test_project_scope_callsite_audit → RC=0 · 0 hallazgos
+```
+
+### Lo que NO se hizo, y es deliberado
+
+No se relajó `ProjectSqlGuard`, no se marcó ningún test como saltado y no se movió el
+`// @requiere:` de ninguno. Los dos usos nuevos de `SystemScopeRunner` entraron por la lista blanca
+de `test_project_scope_callsite_audit`, cada uno con su justificación escrita, que es el mecanismo
+que el repo ya tenía para esto.
+
+### Correcciones a lo que este goal daba por cierto
+
+1. **La medición pendiente de `information_schema` está hecha, y el conteo era otro.** De los diez
+   archivos listados, **ocho ya estaban migrados**: solo conservan comentarios explicando por qué
+   delegan en `Database`. Quedaba SQL real en dos — `admin/src/Models/Project.php` (cuatro
+   consultas, arregladas) y `admin/src/Controllers/DashboardController.php` (una, **sigue abierta**:
+   está dentro de un `try/catch` que devuelve ceros, así que falla en silencio y el panel muestra
+   0 MB y 0 tablas).
+
+2. **La consolidación de informes no estaba muerta por lo que decía `TASKS.md`.** El alias ambiguo
+   —su «tercer problema»— no bloqueaba nada. Lo que la mataba eran siete consultas sin `project_id`
+   que operaban sobre todas las obras, y la peor **borraba** el CIC/CIP de las demás en cada
+   consolidación. El `FROM DUAL` sí era un obstáculo real y se quitó: era decorativo.
+
+3. **Tres de los ocho no eran «producción rota» en el sentido de la tabla.** `GeneralApiController`
+   se comportaba correctamente al exigir alcance; lo que fallaba era que los tests construían el
+   controlador saltándose `SessionMiddleware`, que es quien enlaza el `ProjectScope` en una petición
+   real. Se resolvió con `tests/support/SessionScopeHarness.php`, que enlaza esa mitad con el mismo
+   `ProjectScopeResolver` de producción — no con un atajo. Sí había un fallo de producción en ese
+   controlador, y se arregló: un `project_id` repetido en el WHERE que rompía el borrado de
+   huérfanas del import.
+
+### Hallazgo enrutado, no arreglado
+
+`src/Legacy/nueva_semana.php` no puede activar un borrador de semana: su `UPDATE` con tabla derivada
+no satisface al guard. Lo destapó `test_schedule_update_draft_import` al llegar más lejos que antes;
+ese test **pasa igual**, porque su aserción mira el conteo de filas y no el payload. Queda anotado en
+`TASKS.md` como tarea propia: es legado sin cobertura, y reescribir ese `UPDATE` de paso habría
+convertido este frente en otro.
+
 ## Archivos de este goal
 
 - [[goals/guard-datos-suite/goal|goal.md]] (este archivo)
