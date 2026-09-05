@@ -377,6 +377,23 @@ jobs:
           APP_URL: http://127.0.0.1:18081
           E2E_BASE_URL: http://127.0.0.1:18081
         run: npm run test:runtime-budget:measure
+      # Va AQUI, pegado a la medicion, por la misma razon que «Preserve pilot lab evidence»
+      # (:424-431): `test-output/` es compartido y «Collect keyboard and reflow evidence» lo
+      # pisa mas abajo. Medido el 2026-09-04 sobre la corrida 33901153624: el job fallo,
+      # «Preserve failure evidence» se disparo, y su artefacto NO traia
+      # `design-system-runtime-budget.json` — solo los dos directorios del teclado y el log.
+      # Sin este paso la medicion de las seis metricas no sobrevive a ninguna corrida, ni verde
+      # ni roja, y sin ella no hay forma de escribir un `<generacion>-measurement.json` con
+      # procedencia real: la baseline se mide en el runner o no se mide (comentario de 0.4.0 en
+      # scripts/design-system-runtime-budget.mjs). `always()` porque la medicion vale igual
+      # cuando el check de abajo sale rojo — es justo entonces cuando hace falta leerla.
+      - name: Preserve the runtime-budget measurement
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: runtime-budget-measurement-${{ matrix.theme }}
+          path: test-output/design-system-runtime-budget.json
+          if-no-files-found: warn
       # P2 Tarea 3 (2026-08-24): Fase 2 de goals/runtime-budgets-al-ci quedaba "redactada y sin
       # aplicar" — envolver el check en `gate-receipt.mjs` para que la corrida deje recibo, igual
       # que full-app-flow y semanal-roles-phases. `closeout-evidence.json` ya declaraba el comando

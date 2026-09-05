@@ -28,6 +28,24 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Aprobado: presupuesto de runtime a la generación 0.5.0, medido en Actions (2026-09-04)
+
+Frente `runtime-budget-0.5.0`, por aprobación de Felipe del 2026-09-04. El único rojo que quedaba
+en `main` era `cssGzipBytes`: 131.477 B contra un techo de 130.314, por 846 líneas de CSS legítimo
+de la fase cero de temas y forma. La generación nueva fija 131.477 y conserva las tolerancias de
+0.4.0; la atribución cuadra al byte en diez hojas, sin residuo
+([[docs/design-system/runtime-measurements/2026-09-04-atribucion-0.5.0]]).
+
+Cómo se midió, porque el método es la mitad del valor: **tres corridas por `workflow_dispatch`
+sobre el mismo commit** (`70ae2922`), en serie porque el grupo de concurrencia cancela en cadena,
+y se versiona la mediana por `initializationMs` (`run-33934598207-1-dark`). Los tiempos quedan en
+la banda de 0.4.0 (630–647 ms). Para que la medición pudiera bajarse hubo que añadir antes un
+artefacto propio al CI: hasta hoy `test-output/` se pisaba y ninguna corrida la conservaba.
+
+Dos trampas nuevas escritas en la atribución: la corrida de `pull_request` mide un commit de
+fusión sintético que no existe en ninguna rama (no sirve de baseline), y una sola muestra de tiempo
+puede saltar sola —295,9 ms en la grilla— sin que el código haya cambiado.
+
 ### Cerrado: `runtime-budgets-al-ci` — los dos gates con procedencia de corrida real (2026-09-04)
 
 Frente `acta-full-app-flow-actions`. La spec llevaba desde el 25 de agosto `vigente` por media

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "kind": "current-measurement-receipt",
+  "designSystemVersion": "0.5.0",
+  "measuredDesignSystemVersion": "1.1.0",
+  "status": "ci-measured",
+  "recordedAt": "2026-09-05T01:05:08.067Z",
+  "measurementPath": "docs/design-system/runtime-measurements/0.5.0-measurement.json",
+  "measurementSha256": "3325421138c006126a53635d19a1b9d03a6b748eed4c0e46263a50030f844aae",
+  "assetInventorySha256": "bf31092f2f620a7e92d0365718b0e9f3856b0246c2812fe017141673fccef518",
+  "metricsSha256": "09d480b08dfa2a63b189b64f808135122ad7175719f3143d83783e31c856b143",
+  "rawSamplesPreserved": true,
+  "versionEvidence": "docs/design-system/version.json records 1.1.0; 0.5.0 is the runtime-budget generation label, not the product version",
+  "sourceHistory": {
+    "originCommitAvailable": true,
+    "recoveryFromOriginGitHistory": true,
+    "sourceRef": "70ae29226daea263fc3df18543e24567fadf07f1",
+    "ciRunId": "run-33934598207-1-dark",
+    "note": "Medido por GitHub Actions (run-33934598207-1-dark) sobre el runtime aislado de CI, tema oscuro. Es el intento mediano por initializationMs de tres de la misma corrida sobre el mismo commit; los otros dos (33933866319 y 33935387697) quedan citados en el informe de atribucion."
+  }
+}

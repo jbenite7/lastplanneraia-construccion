@@ -1,0 +1,60 @@
+{
+  "$schema": "https://lastplanneraia.com/schemas/design-system-runtime-budget-v1.json",
+  "schemaVersion": 1,
+  "kind": "baseline",
+  "measurementKind": "current",
+  "status": "approved",
+  "designSystemVersion": "0.5.0",
+  "route": "/programa-general",
+  "viewport": "1440x900",
+  "theme": "dark",
+  "density": "compact",
+  "fixture": "sanitized-pilot-v1",
+  "sourceRef": "70ae29226daea263fc3df18543e24567fadf07f1",
+  "sourceTreeHash": "14089e16fae93047d50e58c840e42a567ec1fef1ad3340acd495b12ebff01711",
+  "recordedAt": "2026-09-05T01:05:08.067Z",
+  "approval": {
+    "status": "approved",
+    "approvedBy": "user",
+    "approvalRef": "user-approved-runtime-budget-0.5.0-2026-09-04"
+  },
+  "justification": {
+    "attributionPath": "docs/design-system/runtime-measurements/2026-09-04-atribucion-0.5.0.md",
+    "decisionRef": "aprobacion de Felipe 2026-09-04 / TASKS.md «regenerar el presupuesto a 0.5.0»",
+    "summary": "Re-aprobacion por CSS nuevo, no por regresion. Desde 0.4.0 (13e692aa) entraron 846 lineas de hoja de estilo en 15 archivos de la fase cero de temas y forma; cssGzipBytes +3.211 B atribuidos al byte: readiness-popover.css +1.008 (nuevo), tokens.css +554, gravity-flag.css +553 (nuevo), aia-design-system.css +448, readiness-squares.css +432 (nuevo), core.css +146, programa-general.css +93, y -23 en tres hojas. Sin archivos de sha256 identico y peso distinto: baseline y medicion en el mismo entorno. jsGzipBytes +761 dentro de tolerancia. Tiempos en la misma banda de 0.4.0: initializationMs 630,6-647,3 y handsontableInteractionMs 174,6-185,4 en medianas de tres corridas por workflow_dispatch sobre 70ae2922. Aprobado por Felipe el 2026-09-04."
+  },
+  "recovery": {
+    "manifestPath": "docs/design-system/runtime-measurements/0.5.0-recovery-manifest.json",
+    "manifestSha256": "4539b6219647d0a943698389605ab4fcee683821f7fb3c642271f2ebc1ac38ca",
+    "measurementPath": "docs/design-system/runtime-measurements/0.5.0-measurement.json",
+    "measurementSha256": "3325421138c006126a53635d19a1b9d03a6b748eed4c0e46263a50030f844aae"
+  },
+  "metrics": {
+    "adapterAssets": [
+      "/css/design-system/adapters/datatables.css",
+      "/css/design-system/adapters/handsontable.css",
+      "/css/design-system/adapters/legacy-bridge.css",
+      "/css/design-system/adapters/lps-drawer.css",
+      "/css/design-system/adapters/programa-general-handsontable.css",
+      "/css/design-system/adapters/select2.css",
+      "/css/design-system/adapters/shell-sidebar.css",
+      "/css/design-system/adapters/sweetalert2.css"
+    ],
+    "laboratoryAssets": [],
+    "cssGzipBytes": 131477,
+    "jsGzipBytes": 644593,
+    "duplicateRequestCount": 0,
+    "themeFlashCount": 0,
+    "initializationMs": 632.1,
+    "handsontableInteractionMs": 185.4
+  },
+  "tolerances": {
+    "cssGzipBytes": 2048,
+    "jsGzipBytes": 4096,
+    "addedAdapterAssets": 0,
+    "duplicateRequestCount": 0,
+    "themeFlashCount": 0,
+    "initializationMs": 110,
+    "handsontableInteractionMs": 60
+  }
+}
