@@ -826,8 +826,19 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
-- [ ] 2026-08-28 — **El botón de colapsar el sidebar del laboratorio no responde a Enter por
-  teclado** (`design-system-lab-keyboard.mjs:83`, ambas patas del CI, tema claro y oscuro). El test
+- [x] 2026-08-28 — **El botón de colapsar el sidebar del laboratorio no responde a Enter por
+  teclado** (`design-system-lab-keyboard.mjs:83`, ambas patas del CI, tema claro y oscuro).
+  **Resuelto el 2026-09-05, y era el test, no el componente.** Reproducido en runtime aislado e
+  instrumentado en Playwright: la pulsación de Enter sobre el botón dispara
+  `keydown→keypress→click→keyup`, nadie hace `preventDefault`, y el `click` cambia el estado **una
+  sola vez** — igual que el click de ratón y Espacio. Lo que fallaba era el punto de partida: el
+  test nació el 2026-07-20 (`321b0951`) cuando el sidebar del laboratorio arrancaba expandido, y
+  `4bc75ef9` (2026-07-23) cambió el fixture a `'initialState' => 'collapsed'` a propósito. Enter
+  alterna, así que sobre un sidebar colapsado lo expandía y el assert esperaba lo contrario. El HTML
+  servido ya trae `data-sidebar-state="collapsed"` antes de cualquier JS. Arreglo en el test, sin
+  aflojar ningún assert: si arranca colapsado, se expande primero (y se afirma), y desde ahí se
+  prueban las dos transiciones que Escape necesita. `test:design-system:evidence` en `RC=0` claro y
+  oscuro, `static` en `RC=0`. Sigue siendo no bloqueante por contrato; no se ascendió. Texto original: El test
   enfoca `[data-sidebar-toggle]` y presiona Enter; `data-sidebar-state` se queda en `expanded` en
   vez de pasar a `collapsed`. El botón es nativo (`<button type="button">`,
   `src/View/Components/DesignSystemComponent.php:432`) y el listener solo escucha `click`

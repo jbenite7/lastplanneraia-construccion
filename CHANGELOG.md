@@ -28,6 +28,16 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Arreglado: la evidencia de teclado del laboratorio vuelve a verde — era el test (2026-09-05)
+
+Frente `fix/gate-teclado-sidebar`. `G_KEYBOARD_REFLOW_EVIDENCE` llevaba en rojo desde el
+2026-08-28 por un assert de Enter sobre el sidebar del laboratorio, y la pregunta escrita era si
+fallaba el test o el componente. Instrumentado en Playwright: **el componente responde bien** —
+Enter dispara `click` y alterna el estado una sola vez, como el ratón y Espacio. El test daba por
+supuesto que el sidebar arrancaba expandido, y desde `4bc75ef9` (2026-07-23, tres días después de
+escribirse el test) el fixture arranca colapsado a propósito. Se fija el punto de partida en el
+test sin aflojar ningún assert; el gate sigue siendo no bloqueante por contrato.
+
 ### Aprobado: presupuesto de runtime a la generación 0.5.0, medido en Actions (2026-09-04)
 
 Frente `runtime-budget-0.5.0`, por aprobación de Felipe del 2026-09-04. El único rojo que quedaba
