@@ -580,8 +580,14 @@ estado por defecto mientras Felipe no reparta.
 
 ## Ahora
 
-- [ ] **CI · regenerar el presupuesto de runtime a la generación 0.5.0 — decisión de Felipe del
-  2026-08-28, con su método ya fijado.** El gate `runtime-budgets` está en rojo en el PR #18 por
+- [x] **CI · regenerar el presupuesto de runtime a la generación 0.5.0 — decisión de Felipe del
+  2026-08-28, con su método ya fijado.** **Hecho el 2026-09-04**, aprobado por Felipe ese día, en
+  la rama `runtime-budget-0.5.0`: artefacto propio para la medición (era el prerrequisito medido
+  abajo), tres corridas por `workflow_dispatch` sobre `70ae2922` en serie, mediana
+  `run-33934598207-1-dark` versionada como `0.5.0-measurement.json`, manifiesto, baseline con
+  tolerancias de 0.4.0, generación declarada, `check` apuntado, atribución al byte. Validación
+  local de forma y procedencia en verde y `static` en `RC=0`; el veredicto final es
+  `G_RUNTIME_BUDGET_CHECK` en Actions. Lo que sigue es el texto original de la entrada. El gate `runtime-budgets` está en rojo en el PR #18 por
   `cssGzipBytes`: **131.451 B medidos contra 128.266 + 2.048 de tolerancia** (+3.185 B, ~2,5 %). No
   es una regresión: es el CSS nuevo de la fase cero de temas y forma (24 tokens de estado claro,
   `gravity-flag.css`, tokens de forma/tabla/densidad, `--ds-color-surface-well-*`), todo ello
