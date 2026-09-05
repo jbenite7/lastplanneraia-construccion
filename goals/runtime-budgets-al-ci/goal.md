@@ -328,3 +328,16 @@ public/css/aia-design-system.css:33:
 Los dos adaptadores que reventaron el gate en `31566518358` se importan hoy con la ruta que el
 baseline 0.3.5 declara. **Límite:** el gate mide URLs servidas en runtime, no el árbol. Probable, no
 demostrado.
+
+## Cierre completado — 2026-09-04: la media condición que el 2026-08-24 se adelantó
+
+El `## Cierre` de arriba declaró el goal cerrado con la procedencia de `runtime-budgets` resuelta,
+pero la condición de hecho de la spec pedía **dos** gates con corrida real y `full-app-flow` seguía
+con recibo local (`sourceRef: 79debf28`, `tree.dirty: true`). La spec lo anotó el 2026-08-25 y
+quedó `vigente` mientras este goal decía cerrado.
+
+Hoy coinciden. Recibo de `full-app-flow` bajado de la corrida
+[33902983755](https://github.com/jbenite7/lastplanneraia-construccion/actions/runs/33902983755)
+(`main` en `6d82bba2`, tema claro; el oscuro también `passed`): `exitCode: 0`, `dirty: false`,
+`G_FULL_APP_FLOW: success`. Fijado en `15b075c2` (recibo) y `98dee120` (índice);
+`test:design-system:static` en `RC=0` sobre ese sha. La spec pasa a `estado: cerrado`.
