@@ -102,7 +102,7 @@ jobs:
       # ni docker-compose.ci.yml: sus tres líneas de COMPOSER_INSTALL_FLAGS están fijadas por
       # tests/design-system/visual-ci-contract.test.mjs:143-145.
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
       # El arg vacio trae las dependencias de desarrollo (PHPUnit); es el mismo
       # valor que antes pasaba compose. mode=min basta: el Dockerfile es de una
       # sola etapa y todas sus capas viven en la imagen final.
@@ -218,7 +218,7 @@ jobs:
       # El espejo de CSS viaja versionado desde 10dd634e, asi que el arbol ya
       # esta completo al construir; el build va tras la verificacion igualmente.
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
       - name: Build the isolated app image
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         with:
