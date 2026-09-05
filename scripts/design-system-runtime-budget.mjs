@@ -88,6 +88,19 @@ const BASELINE_GENERATIONS = {
     measurementPath: 'docs/design-system/runtime-measurements/0.4.0-measurement.json',
     manifestPath: 'docs/design-system/runtime-measurements/0.4.0-recovery-manifest.json',
   },
+  // 0.5.0 (2026-09-04): re-aprobacion por CSS nuevo, no por regresion. Desde 0.4.0 entraron 846
+  // lineas de hoja de estilo en 15 archivos (tema claro, tokens de estado y forma, gravity-flag,
+  // readiness-popover/squares) y `cssGzipBytes` paso de 128.266 a 131.477 B: 1.163 B por encima
+  // del techo. Aprobado por Felipe el 2026-09-04. Medido donde el gate verifica —tres intentos de
+  // la misma corrida de Actions sobre el mismo commit, se archiva la mediana— porque es la regla
+  // que 0.4.0 dejo escrita arriba y la unica forma de que `initializationMs` compare codigo y no
+  // maquinas. El artefacto que hace posible traer la medicion se agrego en el mismo frente: hasta
+  // entonces `test-output/` se pisaba antes de subirse y ninguna corrida la conservaba.
+  '0.5.0': {
+    measurementKind: 'current',
+    measurementPath: 'docs/design-system/runtime-measurements/0.5.0-measurement.json',
+    manifestPath: 'docs/design-system/runtime-measurements/0.5.0-recovery-manifest.json',
+  },
 };
 
 export function baselineGeneration(version) {
