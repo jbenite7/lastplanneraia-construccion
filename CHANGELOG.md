@@ -28,6 +28,18 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Cerrado: `runtime-budgets-al-ci` — los dos gates con procedencia de corrida real (2026-09-04)
+
+Frente `acta-full-app-flow-actions`. La spec llevaba desde el 25 de agosto `vigente` por media
+condición de hecho: `full-app-flow` tenía recibo «regenerado localmente» cuando la spec exigía una
+corrida real de Actions para los dos gates. Hoy el recibo se bajó del artefacto de la corrida
+`33902983755` (`main` en `6d82bba2`, `exitCode 0`, `dirty: false`, los dos temas en `passed`) y se
+fijó en `closeout-evidence.json` en dos tiempos, como pide el contrato. `test:design-system:static`
+en `RC=0`. Spec a `cerrado`; el goal, que se había adelantado, ya coincide con ella.
+
+Sin ejecutar ningún gate en local: `migrate-receipts.mjs` se descartó porque corre el comando en la
+máquina, que es la procedencia que esta spec vino a dejar atrás.
+
 ### Arreglado: tres módulos que respondían error, destapados por el gate del navegador (2026-09-04)
 
 Frente `fix/carril-visual-full-app-flow`. El gate `G_FULL_APP_FLOW` llevaba días en rojo y se

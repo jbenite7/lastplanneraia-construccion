@@ -913,8 +913,12 @@ estado por defecto mientras Felipe no reparta.
   llegó a la pantalla del plan**. Es media hora de comprobación, no un despliegue. Trampa escrita en
   [[memoria/trampas/el-sha-de-partida-leido-como-estado-actual]].
 
-- [ ] 2026-08-25 — **`runtime-budgets-al-ci`: le falta media condición de hecho, y no es el cierre
-  de dos minutos que parecía.** Medido al pasar: los nueve gates de `closeout-evidence.json` están
+- [x] 2026-08-25 — **`runtime-budgets-al-ci`: le falta media condición de hecho, y no es el cierre
+  de dos minutos que parecía.** **Cerrado el 2026-09-04:** al final sí fue corto, pero solo porque
+  otro frente lo dejó maduro sin buscarlo — el PR #31 arregló los tres bugs que tenían a
+  `full-app-flow` en rojo, y la primera corrida verde de `main` (33902983755, `6d82bba2`) produjo
+  el recibo con procedencia real que faltaba. Bajado del artefacto y fijado en dos tiempos
+  (`15b075c2` recibo, `98dee120` índice), `static` en `RC=0`. Spec a `cerrado`. Texto original: Medido al pasar: los nueve gates de `closeout-evidence.json` están
   en `passed`, y `runtime-budgets` **sí** tiene procedencia de corrida real de Actions (32787664690).
   Pero la condición de hecho exige **dos** gates con esa procedencia, y `full-app-flow` lleva recibo
   **«regenerado localmente»** (`verifiedAt: 2026-08-14`, `sourceRef: 79debf28`). Un recibo local no

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-19-runtime-budgets-al-ci-design.md
@@ -90,3 +90,31 @@ darla por buena vaciaría su propio propósito.
 fijar su procedencia en `closeout-evidence.json`, como ya se hizo con `runtime-budgets`.
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
+
+---
+
+## Cierre — 2026-09-04
+
+**La media condición que faltaba quedó cumplida, y con procedencia real.** El recibo de
+`full-app-flow` se bajó del artefacto `full-app-flow-receipt-light` de la corrida
+[33902983755](https://github.com/jbenite7/lastplanneraia-construccion/actions/runs/33902983755) de
+GitHub Actions, sobre `main` en `6d82bba2`: `result: passed`, `exitCode: 0`, `tree.dirty: false`,
+13 tests en 1.5 min. El tema oscuro de la misma corrida también dio `passed`. Leído además de la
+variable del paso «Summarize gate results»: `G_FULL_APP_FLOW: success`.
+
+Fijado en dos tiempos, como exige el contrato: el recibo en `15b075c2` y el índice apuntando a ese
+commit en `98dee120` (`sourceRef`, `artifactSha256` y `sourceFingerprint` recalculados;
+`verifiedAt: 2026-09-04T17:59:11Z`; `fixtureSha256` sin cambio, `0a3617dd`, igual al
+`CI_FIXTURE_SHA256` de la corrida). `npm run test:design-system:static` → `STATIC_RC=0` sobre
+`98dee120`. Sustituye al recibo local del 2026-08-14 (`tree.dirty: true`, `sourceRef: 79debf28`).
+
+No se ejecutó ningún gate en local para producir esta acta: `migrate-receipts.mjs` se descartó a
+propósito porque ejecuta el comando en la máquina, que es justo la procedencia que esta spec vino a
+dejar atrás.
+
+**Por qué apareció el recibo ahora y no antes.** El gate llevaba días en rojo en Actions y se lo
+tenía por «línea base caducada». No lo era: escondía tres bugs de código, arreglados en el PR #31
+(`6d82bba2`). La primera corrida verde tras ese merge es la que produjo este recibo.
+
+Condición de hecho: cumplida en sus dos mitades. Su goal, que se había adelantado al declarar
+`## Cierre` el 2026-08-24, ahora coincide con la spec.
