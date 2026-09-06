@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
+require_once __DIR__ . '/support/ScopeFixture.php';
 
 const BASE = 'http://localhost';
 const PROYECTO = 'Da Porto';
@@ -44,6 +45,11 @@ function curlReq(string $url, ?array $post, string $jar): array {
 
 $db = Database::getInstance();
 $db->setProjectContext(PROJECT_ID);
+
+// Este proceso solo prepara y comprueba datos de Da Porto; la edición de verdad la hace el
+// endpoint por HTTP, en su propia petición y con su propio alcance. Aquí se declara el de esta
+// obra, que es el que ya llevaban todas las consultas de abajo.
+ScopeFixture::abrir($db, PROJECT_ID, 'test-bitacora-avance');
 
 $proyectoExiste = $db->query(
     "SELECT COUNT(*) FROM general_proyectos_procesos WHERE Id = ? AND Base_de_Datos = ?",
@@ -109,6 +115,8 @@ $db->queryWithProject(
     [$avanceOriginal, SEMANA, UID], PROJECT_ID,
 );
 $db->query("DELETE FROM pg_avance_edicion_manual WHERE project_id = ? AND unique_id = ?", [PROJECT_ID, UID]);
+
+ScopeFixture::cerrar($db);
 
 $fallos = 0;
 if ($code !== 200) { $fallos++; echo "FALLO: el endpoint devolvio $code (esperaba 200)\n"; }

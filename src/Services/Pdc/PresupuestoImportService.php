@@ -699,7 +699,7 @@ final class PresupuestoImportService
                     it.id AS item_id, it.codigo, it.descripcion AS actividad, it.unidad AS unidad_actividad,
                     it.cantidad AS cantidad_actividad
              FROM pdc_presupuesto_apu_insumos i
-             JOIN pdc_presupuesto_items it ON it.id = i.item_id
+             JOIN pdc_presupuesto_items it ON it.id = i.item_id AND it.project_id = i.project_id
              WHERE i.project_id = ? AND i.version_id = ?
              ORDER BY it.codigo ASC, i.id ASC',
             [$projectId, $versionId],
@@ -745,10 +745,10 @@ final class PresupuestoImportService
         // Actividades sin cantidad que además no tienen ninguna línea de insumo: existen y también
         // hay que mirarlas, así que el conteo no puede salir solo del recorrido de arriba.
         $huerfanas = $this->db->query(
-            "SELECT codigo, descripcion FROM pdc_presupuesto_items
-             WHERE project_id = ? AND version_id = ? AND tipo_fila = 'actividad'
-               AND (cantidad = 0 OR cantidad IS NULL)
-               AND id NOT IN (SELECT item_id FROM pdc_presupuesto_apu_insumos WHERE project_id = ? AND version_id = ?)",
+            "SELECT it.codigo, it.descripcion FROM pdc_presupuesto_items it
+             WHERE it.project_id = ? AND it.version_id = ? AND it.tipo_fila = 'actividad'
+               AND (it.cantidad = 0 OR it.cantidad IS NULL)
+               AND it.id NOT IN (SELECT ai.item_id FROM pdc_presupuesto_apu_insumos ai WHERE ai.project_id = ? AND ai.version_id = ?)",
             [$projectId, $versionId, $projectId, $versionId],
         )->fetchAll(\PDO::FETCH_ASSOC);
         foreach ($huerfanas as $h) {

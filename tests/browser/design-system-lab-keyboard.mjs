@@ -78,7 +78,19 @@ for (const viewport of VIEWPORTS) {
     await page.locator('[data-lab-family-link][data-family-target="shell-navigation"]').click();
     const sidebar = page.locator('[data-family="shell-navigation"] [data-shell-pattern="sidebar"]');
     const sidebarToggle = sidebar.locator('[data-sidebar-toggle]');
+    // El fixture del laboratorio arranca colapsado desde 4bc75ef9 (2026-07-23); este assert nacio
+    // tres dias antes, cuando arrancaba expandido, y nunca habia corrido hasta aqui porque el test
+    // moria arriba por el tema (b97a1b54). Enter alterna, asi que sobre un sidebar colapsado lo
+    // expandia y el assert de abajo fallaba sin que el componente hiciera nada mal — medido en
+    // Playwright con la secuencia keydown→keypress→click→keyup y un solo cambio de estado. Se parte
+    // de expandido a proposito para probar las dos transiciones que Escape necesita: colapsar y
+    // restaurar. No se afloja el assert; se fija el punto de partida.
     await sidebarToggle.focus();
+    if (await sidebar.getAttribute('data-sidebar-state') === 'collapsed') {
+      await sidebarToggle.press('Enter');
+      await expect(sidebar).toHaveAttribute('data-sidebar-state', 'expanded');
+      await expect(sidebarToggle).toHaveAttribute('aria-expanded', 'true');
+    }
     await sidebarToggle.press('Enter');
     await expect(sidebar).toHaveAttribute('data-sidebar-state', 'collapsed');
     await expect(sidebarToggle).toHaveAttribute('aria-expanded', 'false');

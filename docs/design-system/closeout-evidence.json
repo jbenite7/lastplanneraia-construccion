@@ -124,18 +124,18 @@
       "id": "full-app-flow",
       "kind": "automatic",
       "status": "passed",
-      "verifiedAt": "2026-08-14T15:32:50Z",
+      "verifiedAt": "2026-09-04T17:59:11Z",
       "blocking": true,
       "evidence": [
         {
-          "summary": "Recibo regenerado localmente (13 tests, 1.0m) tras ampliar database/fixtures/design-system-ci.sql (8a0d5e46) para que programacion-semanal-roles-phases.mjs corra en el stack aislado; invalidaba el fixtureSha256 anterior.",
+          "summary": "Recibo bajado de la corrida 33902983755 de GitHub Actions (main en 6d82bba2, job design-system-runtime light, 13 tests, 1.5m). Primera procedencia real de Actions para este gate: el anterior era local (tree.dirty true). El tema oscuro de la misma corrida también dio passed.",
           "commandId": "ds.full-app-flow.v1",
           "command": "npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1",
           "exitCode": 0,
           "artifact": "docs/design-system/evidence/full-app-flow.json",
-          "artifactSha256": "59e060947ec21c6efa74006182dec76ad70c9bc7ad94f6398fbc407d022d2cfa",
-          "sourceRef": "79debf2831e26647db30bed28d7cba8c50112142",
-          "sourceFingerprint": "1c4088d345ca3091b0c61f45d779d59a193531724ec4131b1df6431891cd5619",
+          "artifactSha256": "57a7c466679b65802dc1d0b00168544ff47eb4fd61b22f8abf1cfc64f659a911",
+          "sourceRef": "15b075c210af86fd73c3e7a367257573835014f6",
+          "sourceFingerprint": "b44a78f592e5629558913338d13fb4e5a26bce6fcec1a7b7067d99b07fc4652e",
           "fixtureSha256": "0a3617dd17ea739af5025330627d6c73ed5efae260218626400d0a5159789fe8"
         }
       ]

@@ -201,24 +201,88 @@ function curlReq(string $url, ?string $jsonBody, string $jar, array $extraHeader
  * un subproceso PHP fijado al mismo session_id (mismo almacén de archivos que usa Apache en el
  * contenedor `app`), para no interferir con las sesiones PHP que este mismo script abre más
  * adelante via Database (Database::query() llama a @session_start() en algunos métodos).
+ *
+ * --- El subproceso corre como el DUEÑO del archivo de sesión, no como root (2026-09-04) ---
+ * Antes lo lanzaba tal cual, heredando root. Eso funciona en un Mac y falla siempre en el runner
+ * de GitHub, y es la causa raíz medida de la regresión cerrada ese día en los contratos del shell
+ * (commit 4c7251ba): `/tmp/sess_<sid>` lo crea Apache como `www-data` con modo 0600; el `open()`
+ * devuelve «Permission denied (13)» PESE al uid 0, porque `/tmp` es sticky y de escritura para
+ * todos y el endurecimiento de archivos regulares del kernel (`fs.protected_regular`, activo en
+ * Ubuntu y en 0 en la VM de Docker Desktop) niega el acceso a un archivo de otro dueño.
+ * `session_start()` devuelve false, `session_id()` queda vacío y el token sale en una sesión
+ * fantasma que nadie persiste → el servidor responde 403 CSRF_INVALID. Aquí no se manifestaba
+ * todavía porque este archivo declara `@requiere: datos-proyecto` y el CI solo llega a
+ * `--nivel=http`; era deuda latente, no un test sano.
+ *
+ * Los hermanos del shell resolvieron esto leyendo el token por HTTP del `<meta>` que emite la
+ * vista. Aquí no se puede: el único sitio que emite `ct_piloto` por HTTP es
+ * `BiViewController::renderCtPiloto()`, que solo se sirve con `CT_PILOTO=1` — bandera local, no
+ * versionada, ausente en `docker-compose.ci.yml`. Leerlo por HTTP cambiaría un fallo latente en
+ * CI por un aborto seguro en CI, que es peor. Correr el subproceso como el dueño del archivo
+ * elimina la causa sin añadir esa dependencia: el proceso pasa a ser propietario, así que ni los
+ * permisos 0600 ni `fs.protected_regular` le aplican.
  */
 function csrfTokenForSession(string $sessionId): string
 {
     $script = '<?php '
         . 'require "/var/www/html/vendor/autoload.php"; '
         . 'session_id($argv[1]); '
-        . '@session_start(); '
+        . 'if (@session_start() !== true || session_id() !== $argv[1]) { '
+        . '    fwrite(STDERR, "session_start() no se adjunto al SID pedido"); '
+        . '    exit(3); '
+        . '} '
         . 'echo \App\Security\CsrfTokenManager::generate("ct_piloto"); '
         . 'session_write_close();';
+
     $tmp = tempnam(sys_get_temp_dir(), 'csrf_gen_');
     file_put_contents($tmp, $script);
-    $token = trim((string) shell_exec('php ' . escapeshellarg($tmp) . ' ' . escapeshellarg($sessionId) . ' 2>&1'));
+    // tempnam() crea el archivo 0600 y con el dueño de ESTE proceso; sin esto, el subproceso
+    // degradado no podría leer el script que se le pide ejecutar.
+    chmod($tmp, 0644);
+    $errFile = tempnam(sys_get_temp_dir(), 'csrf_err_');
+    chmod($errFile, 0666);
+
+    $comando = 'php ' . escapeshellarg($tmp) . ' ' . escapeshellarg($sessionId);
+    $duenno = duennoDelArchivoDeSesion($sessionId);
+    if ($duenno !== null && function_exists('posix_geteuid') && posix_geteuid() === 0) {
+        $comando = 'su -s /bin/sh ' . escapeshellarg($duenno) . ' -c ' . escapeshellarg($comando);
+    }
+
+    $token = trim((string) shell_exec($comando . ' 2>' . escapeshellarg($errFile)));
+    $errores = trim((string) @file_get_contents($errFile));
     @unlink($tmp);
-    if (strlen($token) < 32) {
-        fwrite(STDERR, "ABORT: no se pudo generar el token CSRF ct_piloto (salida: {$token})\n");
+    @unlink($errFile);
+
+    if (strlen($token) !== 64 || !ctype_xdigit($token)) {
+        fwrite(STDERR, "ABORT: no se pudo generar el token CSRF ct_piloto"
+            . " (salida: '{$token}'" . ($errores !== '' ? ", stderr: '{$errores}'" : '') . ")\n");
         exit(2);
     }
+
     return $token;
+}
+
+/**
+ * Nombre del usuario del sistema al que pertenece el archivo de sesión del SID dado. Se deriva del
+ * archivo real en vez de fijar 'www-data' a mano: si el contenedor sirviera Apache con otro
+ * usuario, esto lo sigue; y si el archivo no existe todavía, devuelve null y el llamador deja el
+ * subproceso como está en vez de inventarse una identidad.
+ */
+function duennoDelArchivoDeSesion(string $sessionId): ?string
+{
+    $archivo = sys_get_temp_dir() . '/sess_' . $sessionId;
+    if (!is_file($archivo) || !function_exists('posix_getpwuid')) {
+        return null;
+    }
+
+    $uid = fileowner($archivo);
+    if ($uid === false) {
+        return null;
+    }
+
+    $pw = posix_getpwuid($uid);
+
+    return is_array($pw) && isset($pw['name']) && is_string($pw['name']) ? $pw['name'] : null;
 }
 
 /**

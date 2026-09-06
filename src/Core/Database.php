@@ -801,6 +801,20 @@ class Database
         return $this->tableExistsCache[$tableName];
     }
 
+    private function rawIndexExists(string $tableName, string $indexName): bool
+    {
+        if (preg_match('/^[A-Za-z0-9_]+$/', $tableName) !== 1 || preg_match('/^[A-Za-z0-9_]+$/', $indexName) !== 1) {
+            return false;
+        }
+
+        $stmt = $this->pdo->prepare(
+            'SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = ? AND index_name = ?'
+        );
+        $stmt->execute([$tableName, $indexName]);
+
+        return ((int) $stmt->fetchColumn()) > 0;
+    }
+
     private function rawColumnExists(string $tableName, string $columnName): bool
     {
         if (preg_match('/^[A-Za-z0-9_]+$/', $tableName) !== 1 || preg_match('/^[A-Za-z0-9_]+$/', $columnName) !== 1) {
@@ -878,6 +892,25 @@ class Database
     }
 
     /**
+     * Verifica si un índice existe en la tabla indicada.
+     *
+     * Cuarta puerta de metadatos, por la misma razón que las tres anteriores: `information_schema`
+     * es una tabla calificada por schema y ProjectSqlGuard las rechaza. La usan las migraciones
+     * idempotentes, que preguntan antes de cada `ALTER TABLE ... ADD INDEX`.
+     *
+     * A diferencia de tableExists()/columnExists(), **no cachea**: quien pregunta por un índice
+     * está a punto de crearlo, así que una respuesta memorizada sería falsa en la línea siguiente.
+     *
+     * @param string $tableName Nombre de la tabla que contiene el índice.
+     * @param string $indexName Nombre del índice a verificar.
+     * @return bool
+     */
+    public function indexExists(string $tableName, string $indexName): bool
+    {
+        return $this->rawIndexExists($tableName, $indexName);
+    }
+
+    /**
      * Devuelve las tablas del esquema actual que tienen la columna indicada.
      *
      * Tercera y última puerta de metadatos, para quien necesita descubrir tablas en vez de
@@ -906,6 +939,70 @@ class Database
         }
 
         return array_values(array_intersect($found, $tableNames));
+    }
+
+    /**
+     * Devuelve la definición de las columnas de una tabla: nombre, tipo, nulabilidad y default.
+     *
+     * Quinta puerta de metadatos, por la misma razón que las cuatro anteriores. Las otras responden
+     * «¿existe?»; esta responde «¿cómo está declarada?», que es lo que necesita quien comprueba que
+     * una migración no cambió un tipo por accidente. Sin ella, ese control tendría que armar la
+     * consulta a `information_schema` por su cuenta — que es justo lo que ProjectSqlGuard rechaza.
+     *
+     * No cachea: quien pregunta por la forma de una tabla suele estar comprobando una migración,
+     * y una respuesta memorizada sería falsa después del `ALTER TABLE`.
+     *
+     * @return list<array{COLUMN_NAME: string, DATA_TYPE: string, IS_NULLABLE: string, COLUMN_TYPE: string, COLUMN_DEFAULT: string|null}>
+     */
+    public function columnDefinitions(string $tableName): array
+    {
+        if (preg_match('/^[A-Za-z0-9_]+$/', $tableName) !== 1) {
+            return [];
+        }
+
+        $stmt = $this->pdo->prepare(
+            'SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_TYPE, COLUMN_DEFAULT
+               FROM information_schema.COLUMNS
+              WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?
+              ORDER BY ORDINAL_POSITION'
+        );
+        $stmt->execute([$tableName]);
+
+        /** @var list<array{COLUMN_NAME: string, DATA_TYPE: string, IS_NULLABLE: string, COLUMN_TYPE: string, COLUMN_DEFAULT: string|null}> $rows */
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $rows;
+    }
+
+    /**
+     * Comprueba que una clave foránea concreta existe y apunta a donde se dice.
+     *
+     * Sexta puerta de metadatos. Se pregunta por la relación **entera** —constraint, columna,
+     * tabla y columna referenciadas— y no solo por el nombre, porque una FK que existe pero
+     * apunta a otra columna es exactamente el fallo que este control busca, y comprobar solo el
+     * nombre lo dejaría pasar.
+     */
+    public function foreignKeyExists(
+        string $tableName,
+        string $constraintName,
+        string $columnName,
+        string $referencedTable,
+        string $referencedColumn,
+    ): bool {
+        foreach ([$tableName, $constraintName, $columnName, $referencedTable, $referencedColumn] as $identificador) {
+            if (preg_match('/^[A-Za-z0-9_]+$/', $identificador) !== 1) {
+                return false;
+            }
+        }
+
+        $stmt = $this->pdo->prepare(
+            'SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
+              WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND CONSTRAINT_NAME = ?
+                AND COLUMN_NAME = ? AND REFERENCED_TABLE_NAME = ? AND REFERENCED_COLUMN_NAME = ?'
+        );
+        $stmt->execute([$tableName, $constraintName, $columnName, $referencedTable, $referencedColumn]);
+
+        return (int) $stmt->fetchColumn() > 0;
     }
 
     // Evitar clonación del objeto

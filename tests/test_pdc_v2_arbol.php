@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/support/pdc_fixture_presupuesto.php';
+require_once __DIR__ . '/support/ScopeFixture.php';
 
 use App\Services\Pdc\PresupuestoExcelParser;
 use App\Services\Pdc\PresupuestoImportService;
@@ -24,8 +25,12 @@ $assert = static function (bool $condition, string $message) use (&$failures): v
 
 $db = Database::getInstance();
 $limpiar = static function () use ($db): void {
+    // Limpieza obra por obra, cada una bajo su propio alcance: el DELETE ya venía acotado por
+    // project_id, así que el gate lo reescribe al mismo valor y no borra de más.
     foreach ([PDC_ARBOL_PROJECT_A, PDC_ARBOL_PROJECT_B] as $pid) {
-        $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$pid]);
+        ScopeFixture::enProyecto($db, $pid, static function () use ($db, $pid): void {
+            $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$pid]);
+        });
     }
 };
 $limpiar();
@@ -53,6 +58,10 @@ $fixtureArbolV2 = static function (string $path): void {
 echo "=== PDC v2: arbol() del visor ===\n";
 $store = new PresupuestoImportStore(sys_get_temp_dir() . '/pdc-arbol-store-' . getmypid());
 $service = new PresupuestoImportService($db, $store, new PresupuestoExcelParser());
+
+// El tramo que sigue transcurre entero dentro de la obra A: se importa su presupuesto y se lee
+// su árbol. El alcance de B se abre más abajo, justo para las aserciones de aislamiento.
+ScopeFixture::abrir($db, PDC_ARBOL_PROJECT_A, 'test-pdc-arbol');
 
 // Sin versiones → null.
 $assert($service->arbol(PDC_ARBOL_PROJECT_A) === null, 'Proyecto sin versiones → null.');
@@ -82,9 +91,14 @@ $assert($service->arbol(PDC_ARBOL_PROJECT_A)['version']['id'] === $c2['versionId
 $hist = $service->arbol(PDC_ARBOL_PROJECT_A, $c1['versionId']);
 $assert($hist !== null && $hist['version']['id'] === $c1['versionId'] && (int) $hist['version']['activa'] === 0, 'Versión histórica consultable por id.');
 
-// Aislamiento: B no ve la versión de A ni por id.
+// Aislamiento: B no ve la versión de A ni por id. Estas dos son la aserción, no preparación, así
+// que van bajo el alcance de B: mirarlas desde el alcance de A haría que el gate reescribiera el
+// project_id y el test comprobaría que A se ve a sí mismo, que no prueba nada.
+ScopeFixture::abrir($db, PDC_ARBOL_PROJECT_B, 'test-pdc-arbol');
 $assert($service->arbol(PDC_ARBOL_PROJECT_B) === null, 'Proyecto B sin árbol.');
 $assert($service->arbol(PDC_ARBOL_PROJECT_B, $c1['versionId']) === null, 'Proyecto B no accede a versión de A por id.');
+
+ScopeFixture::cerrar($db);
 
 foreach ([$tmp, $tmp2] as $f) { @unlink($f); }
 $limpiar();

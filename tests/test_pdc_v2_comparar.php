@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/support/pdc_fixture_presupuesto.php';
+require_once __DIR__ . '/support/ScopeFixture.php';
 
 use App\Services\Pdc\PresupuestoExcelParser;
 use App\Services\Pdc\PresupuestoImportService;
@@ -23,8 +24,11 @@ $assert = static function (bool $c, string $m) use (&$failures): void {
 
 $db = Database::getInstance();
 $limpiar = static function () use ($db): void {
+    // Limpieza obra por obra, cada una bajo su propio alcance.
     foreach ([PDC_CMP_A, PDC_CMP_B] as $pid) {
-        $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$pid]);
+        ScopeFixture::enProyecto($db, $pid, static function () use ($db, $pid): void {
+            $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$pid]);
+        });
     }
 };
 $limpiar();
@@ -70,6 +74,9 @@ echo "=== PDC v2: comparar() de versiones ===\n";
 $store = new PresupuestoImportStore(sys_get_temp_dir() . '/pdc-cmp-store-' . getmypid());
 $service = new PresupuestoImportService($db, $store, new PresupuestoExcelParser());
 
+// El grueso del test vive en la obra A; la única aserción que mira a B abre su propio alcance.
+ScopeFixture::abrir($db, PDC_CMP_A, 'test-pdc-comparar');
+
 // Importar dos versiones en el proyecto A.
 $v1 = sys_get_temp_dir() . '/pdc_cmp_v1.xlsx';
 $v2 = sys_get_temp_dir() . '/pdc_cmp_v2.xlsx';
@@ -82,7 +89,12 @@ $c2 = $service->confirmar($p2['importToken'], PDC_CMP_A);
 
 // Versión inexistente → null.
 $assert($service->comparar(PDC_CMP_A, $c1['versionId'], 999999) === null, 'Versión inexistente → null.');
-$assert($service->comparar(PDC_CMP_B, $c1['versionId'], $c2['versionId']) === null, 'Aislamiento: proyecto B no compara versiones de A.');
+// Esta es una aserción de aislamiento, no preparación: se mira desde el alcance de B, porque bajo
+// el de A el gate reescribiría el project_id y la prueba dejaría de probar lo que dice.
+$assert(
+    ScopeFixture::enProyecto($db, PDC_CMP_B, static fn () => $service->comparar(PDC_CMP_B, $c1['versionId'], $c2['versionId'])) === null,
+    'Aislamiento: proyecto B no compara versiones de A.',
+);
 
 $r = $service->comparar(PDC_CMP_A, $c1['versionId'], $c2['versionId']);
 $assert($r !== null, 'Comparación válida devuelve resultado.');
@@ -138,6 +150,8 @@ usort($ordenado3, static function (string $x, string $y): int {
     return count($px) <=> count($py);
 });
 $assert($codigos3 === $ordenado3, 'actividades en orden jerárquico por código.');
+
+ScopeFixture::cerrar($db);
 
 foreach ([$v1, $v2, $v3] as $f) { @unlink($f); }
 $limpiar();

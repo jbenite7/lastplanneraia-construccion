@@ -77,7 +77,6 @@ class ProgramChangeDetector
             $pgIndex[(int) $pg['unique_id']] = $pg;
         }
 
-        $this->ensureLogTable($dbPrefix);
         $newlyCommitted = [];
 
         // --- PASO 1: PS huérfanas (en PS, no en PG) ---
@@ -409,7 +408,6 @@ class ProgramChangeDetector
 
     public function getLog(string $dbPrefix, int $semana): array
     {
-        $this->ensureLogTable($dbPrefix);
         $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
         $tAutoLog = TableResolver::resolveByPrefix($dbPrefix, 'auto_program_log');
         $tProgCons = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
@@ -453,31 +451,24 @@ class ProgramChangeDetector
         return array_map('intval', $rows);
     }
 
-    private function ensureLogTable(string $dbPrefix): void
-    {
-        $t = TableResolver::resolveByPrefix($dbPrefix, 'auto_program_log');
-        $this->db->query("
-            CREATE TABLE IF NOT EXISTS `{$t}` (
-                `id` INT NOT NULL AUTO_INCREMENT,
-                `semana` INT NOT NULL,
-                `consecutivo` INT NOT NULL,
-                `accion` ENUM('comprometer','descomprometer','insert_cnp') NOT NULL,
-                `detalle` TEXT,
-                `categoria_cnp` VARCHAR(100) DEFAULT NULL,
-                `cnp` VARCHAR(100) DEFAULT NULL,
-                `creado_en` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (`id`),
-                KEY `idx_semana` (`semana`),
-                KEY `idx_consecutivo` (`consecutivo`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-        ");
-        // Ensure project_id column exists for global table support
-        // Por Database::columnExists(): consultar `information_schema` con query() lanza
-        // DomainException desde que ProjectSqlGuard cerró las tablas calificadas por schema.
-        if (!$this->db->columnExists($t, 'project_id')) {
-            $this->db->query("ALTER TABLE `{$t}` ADD COLUMN `project_id` INT DEFAULT NULL AFTER `id`");
-        }
-    }
+    // `ensureLogTable()` se retiró el 2026-09-04. Creaba `auto_program_log` con
+    // `CREATE TABLE IF NOT EXISTS` en cada llamada, y además la parcheaba con un `ALTER TABLE`
+    // condicional. Dos motivos para quitarlo, los dos medidos:
+    //
+    // 1. Es DDL en tiempo de ejecución, y el runtime es DML-only por diseño — lo atesta
+    //    `scripts/security/audit-runtime-db-grants.php --live`, que el CI corre en su propio gate.
+    //    En el runtime aislado de CI el usuario no tiene CREATE, así que la llamada reventaba con
+    //    «CREATE command denied to user 'lps_runtime_ci'» y tumbaba el gate `full-app-flow`
+    //    (corrida 33895697935, los dos temas de la matriz).
+    // 2. El esquema que creaba estaba ATRASADO respecto al contrato. `database/migrations/
+    //    20260630_global_tables_contract.sql:95` define la tabla con `project_id`, `unique_id`,
+    //    el índice `idx_apl_project_unique_week` y la FK `fk_apl__programa__unique_id`; este
+    //    método no creaba ninguna de esas cuatro cosas. O sea que en el único escenario donde
+    //    habría servido de algo —una base sin la tabla— la habría creado degradada y sin FK,
+    //    que es peor que fallar a la vista.
+    //
+    // La tabla la garantizan las migraciones. Si falta, lo que hay que correr es la migración,
+    // no dejar que una ruta de lectura improvise el esquema por su cuenta.
 
     private function logAction(string $dbPrefix, int $semana, int $consecutivo, string $accion, string $detalle, ?string $catCnp = null, ?string $cnp = null, ?string $creadoEn = null): void
     {

@@ -12,6 +12,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/support/SessionScopeHarness.php';
 
 if (!defined('PROJECT_ROOT')) {
     define('PROJECT_ROOT', dirname(__DIR__));
@@ -123,13 +124,22 @@ try {
         ));
     }
 
-    $activeUser = $database->query(
-        'SELECT usuario FROM general_usuarios WHERE activo = 1 ORDER BY (usuario = ?) DESC LIMIT 1',
+    $userRow = $database->query(
+        'SELECT id, usuario FROM general_usuarios WHERE activo = 1 ORDER BY (usuario = ?) DESC LIMIT 1',
         ['jbenitez'],
-    )->fetchColumn();
-    if (!is_string($activeUser) || $activeUser === '') {
+    )->fetch(PDO::FETCH_ASSOC);
+    $activeUser = (string) ($userRow['usuario'] ?? '');
+    $activeUserId = (int) ($userRow['id'] ?? 0);
+    if ($activeUser === '' || $activeUserId <= 0) {
         throw new RuntimeException('No hay un usuario activo para la sesión del test.');
     }
+
+    // El alcance se resuelve contra `project_members`: sin membresía real, el escenario no existe
+    // en producción y el resolver —con razón— no devuelve nada.
+    $database->query(
+        'INSERT INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)',
+        [$projectId, $activeUserId, 'A'],
+    );
 
     $_SESSION = [
         'usuario' => $activeUser,
@@ -145,6 +155,10 @@ try {
     $_SERVER['HTTP_ACCEPT'] = 'application/json';
     $_SERVER['HTTP_X_AIA_EXPECT_JSON'] = '1';
 
+    // El controlador se invoca directamente, sin SessionMiddleware: el alcance hay que enlazarlo
+    // aquí, con el mismo resolver que usa producción.
+    SessionScopeHarness::requireFromSession($database);
+
     [$firstDecoded, $firstPayload] = runScheduleImport($dbPrefix, $xlsxPath, $baselineStart);
     [$secondDecoded, $secondPayload] = runScheduleImport($dbPrefix, $xlsxPath, $baselineStart);
 
@@ -158,10 +172,13 @@ try {
     )->fetchColumn();
     $foreignKeyChecks = (int) $database->query('SELECT @@FOREIGN_KEY_CHECKS')->fetchColumn();
 
+    // `nueva_semana.php` exige su propio token por POST (`lps_week_admin`), distinto del que usa
+    // importExcel por cabecera. Sin él corta con `exit` y el test moría sin llegar a sus asserts.
     $_GET = ['db' => $dbPrefix];
     $_POST = [
         'opcion' => 'nueva_sem',
         'f_inicio_sem' => '2026-07-20',
+        '_csrf_token' => CsrfTokenManager::generate('lps_week_admin'),
     ];
     $dbInstance = $database;
     ob_start();

@@ -10,7 +10,7 @@ resumen: Todos los cambios notables en este proyecto serán documentados en este
 project: lps-aia
 type: changelog
 status: activo
-updated: 2026-09-03
+updated: 2026-09-04
 ---
 
 # Registro de Cambios (Changelog)
@@ -28,6 +28,197 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Arreglado: la evidencia de teclado del laboratorio vuelve a verde — era el test (2026-09-05)
+
+Frente `fix/gate-teclado-sidebar`. `G_KEYBOARD_REFLOW_EVIDENCE` llevaba en rojo desde el
+2026-08-28 por un assert de Enter sobre el sidebar del laboratorio, y la pregunta escrita era si
+fallaba el test o el componente. Instrumentado en Playwright: **el componente responde bien** —
+Enter dispara `click` y alterna el estado una sola vez, como el ratón y Espacio. El test daba por
+supuesto que el sidebar arrancaba expandido, y desde `4bc75ef9` (2026-07-23, tres días después de
+escribirse el test) el fixture arranca colapsado a propósito. Se fija el punto de partida en el
+test sin aflojar ningún assert; el gate sigue siendo no bloqueante por contrato.
+
+### Aprobado: presupuesto de runtime a la generación 0.5.0, medido en Actions (2026-09-04)
+
+Frente `runtime-budget-0.5.0`, por aprobación de Felipe del 2026-09-04. El único rojo que quedaba
+en `main` era `cssGzipBytes`: 131.477 B contra un techo de 130.314, por 846 líneas de CSS legítimo
+de la fase cero de temas y forma. La generación nueva fija 131.477 y conserva las tolerancias de
+0.4.0; la atribución cuadra al byte en diez hojas, sin residuo
+([[docs/design-system/runtime-measurements/2026-09-04-atribucion-0.5.0]]).
+
+Cómo se midió, porque el método es la mitad del valor: **tres corridas por `workflow_dispatch`
+sobre el mismo commit** (`70ae2922`), en serie porque el grupo de concurrencia cancela en cadena,
+y se versiona la mediana por `initializationMs` (`run-33934598207-1-dark`). Los tiempos quedan en
+la banda de 0.4.0 (630–647 ms). Para que la medición pudiera bajarse hubo que añadir antes un
+artefacto propio al CI: hasta hoy `test-output/` se pisaba y ninguna corrida la conservaba.
+
+Dos trampas nuevas escritas en la atribución: la corrida de `pull_request` mide un commit de
+fusión sintético que no existe en ninguna rama (no sirve de baseline), y una sola muestra de tiempo
+puede saltar sola —295,9 ms en la grilla— sin que el código haya cambiado.
+
+### Cerrado: `runtime-budgets-al-ci` — los dos gates con procedencia de corrida real (2026-09-04)
+
+Frente `acta-full-app-flow-actions`. La spec llevaba desde el 25 de agosto `vigente` por media
+condición de hecho: `full-app-flow` tenía recibo «regenerado localmente» cuando la spec exigía una
+corrida real de Actions para los dos gates. Hoy el recibo se bajó del artefacto de la corrida
+`33902983755` (`main` en `6d82bba2`, `exitCode 0`, `dirty: false`, los dos temas en `passed`) y se
+fijó en `closeout-evidence.json` en dos tiempos, como pide el contrato. `test:design-system:static`
+en `RC=0`. Spec a `cerrado`; el goal, que se había adelantado, ya coincide con ella.
+
+Sin ejecutar ningún gate en local: `migrate-receipts.mjs` se descartó porque corre el comando en la
+máquina, que es la procedencia que esta spec vino a dejar atrás.
+
+### Arreglado: tres módulos que respondían error, destapados por el gate del navegador (2026-09-04)
+
+Frente `fix/carril-visual-full-app-flow`. El gate `G_FULL_APP_FLOW` llevaba días en rojo y se
+sospechaba de su línea base caducada. No lo era: **los tres fallos eran de código, y los tres dejaban
+un módulo respondiendo error al usuario.** Reproducidos en runtime aislado antes de tocar nada
+(3 de 13 pruebas en rojo, exactamente las mismas que en la corrida `33895697935`).
+
+Lo que estaba roto, por lo que un usuario sufría:
+
+- **Listado del CIC** (`/api/cic/list`). Cada parte de su UNION nombra `cic` tres veces sin alias, y
+  `ProjectSqlGuard` aborta ahí con «Alias de tabla de proyecto ambiguo»: con dos raíces homónimas no
+  puede decidir a cuál pertenece cada `project_id`. **La pantalla de contratistas no cargaba.**
+- **Generación de indicadores** (`/api/indicadores/generar`). Mismo error, con diez subconsultas
+  sobre `programacion_semanal`. **Los indicadores de la semana no se generaban.**
+- **Auto-programación semanal** (`/api/semanal/auto-program`). `ProgramChangeDetector` creaba su
+  tabla de log con `CREATE TABLE` en caliente, y el runtime es DML-only por diseño. Además el
+  esquema que creaba estaba atrasado respecto al contrato de migraciones —sin `project_id`, sin
+  `unique_id` y sin FK—, así que en el único caso donde habría servido habría creado una tabla
+  degradada. Se retira: la tabla la garantizan las migraciones.
+
+Los dos primeros son el mismo arreglo que ya llevaban `ForecastService::getContractorPac4W()` y
+`EstadoSemanalService`, cada uno con su porqué escrito al lado desde el 2026-09-02. Es la tercera
+vez que este error aparece en sitios distintos.
+
+**`G_RUNTIME_BUDGET_CHECK` no entra aquí y sigue en rojo a propósito**: su rojo sí es línea base
+—`cssGzipBytes` 131.477 contra 130.314 de máximo, por 846 líneas de CSS legítimo posterior a la
+baseline `0.4.0`— y aprobarlo es decisión de Felipe, medida en Actions. Ver `TASKS.md`.
+
+### Arreglado: el gate de datos vuelve a verde, y con él cuatro fallos más de producción (2026-09-04)
+
+Segunda mitad del frente `guard-datos-suite`, la que cerraba `G_PHP_SUITE`. Los **16 tests sin
+adaptar** declaran ahora su alcance, y con ellos aparecieron **cuatro fallos de producción más** que
+seguían escondidos detrás: hasta que el test no llegaba tan lejos, nadie los veía.
+
+Lo que estaba roto, por lo que un usuario sufría:
+
+- **Catálogo de paquetes del plan de compras.** `catalogo()` se leía bajo el alcance de una obra, y
+  ahí el gate convierte su `LEFT JOIN` en `INNER`: **desaparecían del listado los paquetes que esa
+  obra todavía no usaba** —justo los que hay que poder elegir— y `insumosGlobal` dejaba de contar el
+  uso global. Un catálogo de empresa que solo mostraba lo ya usado.
+- **Sugerencias de paquete** (`/plan-compras/api/paquetes/sugerencias`). Sus tres capas proponen un
+  paquete porque otras obras ya clasificaron ese insumo, y ese cruce no cabe en el alcance de una
+  obra. Estaban muertas desde el 2026-08-29.
+- **Avisos del visor de presupuesto** (`PresupuestoImportService::avisosDelPresupuesto()`) y
+  **actividades por insumo** (`PaquetesService::actividadesPorInsumo()`). Unían
+  `pdc_presupuesto_items` con `pdc_presupuesto_apu_insumos` **solo por `id`, sin relacionar
+  `project_id`**: el gate lo rechazaba, y con razón, porque es la forma en que un JOIN se salta el
+  aislamiento entre obras. Se relacionan las dos tablas por su `project_id`.
+
+**La lectura entre obras del catálogo queda declarada, no suprimida.** Decisión de Felipe del
+2026-09-04: el catálogo de paquetes es de la empresa y lo que hace útil una sugerencia es
+precisamente que otra obra ya clasificó ese insumo. Las cuatro lecturas pasan por
+`PaquetesService::leerCatalogoEntreObras()`, con su razón escrita y autorizadas en
+`test_project_scope_callsite_audit`. Lo que viaja es id, nombre y conteo de obras — nunca una fila
+de la obra ajena. La alternativa evaluada, sugerir solo con la historia propia, dejaba a cada obra
+nueva sin ninguna sugerencia.
+
+Añadidas dos puertas de metadatos a `Database`, quinta y sexta de la familia:
+`columnDefinitions()` (cómo está declarada una columna) y `foreignKeyExists()` (que una FK existe
+**y apunta a donde se dice**, no solo que existe). Sin ellas, los controles de esquema tendrían que
+armar SQL contra `information_schema`, que es lo que el gate rechaza.
+
+Del lado de las pruebas: `tests/support/ScopeFixture.php` declara el alcance de un tramo de test y
+escribe la regla que importa — el alcance de una **aserción de aislamiento** es el de la obra que se
+observa, nunca el de la que se acaba de escribir; elegirlo al revés tapa justo la propiedad que la
+prueba existe para probar.
+
+Medición, misma suite y mismo stack sobre los dos árboles: `main` 24 fallos → rama **0 fallos**,
+**ningún fallo nuevo**. Se sumaron dos clases PHPUnit (`CarryoverAvanceSemanalTest`,
+`PgAvanceEdicionManualTest`, 9 errores) que ninguna medición previa había contado, porque el runner
+las reporta en una línea aparte de la de los scripts sueltos.
+
+No se relajó `ProjectSqlGuard`, no se marcó ningún test como saltado y no se movió el `// @requiere:`
+de ninguno.
+
+### Arreglado: los ocho fallos de producción que el gate de datos había destapado (2026-09-04)
+
+`ProjectSqlGuard` (`48e06072`, 2026-08-29) dejó 24 tests en rojo en `G_PHP_SUITE`. La clasificación
+del frente `guard-datos-suite` mostró que **ocho no eran tests perezosos: era código que no
+funcionaba para un usuario real**. Esos ocho quedan arreglados en el código de producción, no en el
+test que los detecta. Los 16 restantes son tests sin adaptar y siguen abiertos, que es la segunda
+mitad del frente.
+
+Lo que estaba roto, por lo que un usuario sufría:
+
+- **Panel de administración.** `create()`, `delete()` y `exportToSql()` de proyectos. El borrado era
+  el peor: la excepción del guard caía en un `catch` que solo escribía al log, así que las filas del
+  proyecto no se borraban y el panel reportaba éxito.
+- **Import SINCO del plan de compras.** Cargar el maestro de insumos terminaba en fatal.
+- **Import de cronograma del programa general.** Un `AND p.project_id = ?` repetido en el mismo
+  WHERE hacía que el guard leyera el `NOT` de un `NOT IN` vecino como negación del alcance.
+- **Consolidación de informes (CIC/CIP).** Siete consultas operaban sobre todas las obras a la vez.
+  La más grave: `deleteRowsNotInProcessedEntities()` recibía el `project_id` y no lo usaba, así que
+  **cada proyecto consolidado borraba el CIC/CIP de esa semana en todas las demás obras**. Además,
+  `MAX(Semana)` se calculaba global —cada proyecto se consolidaba en la semana de otro— y los
+  acumulados se escribían con `WHERE Id = ?` siendo `cic.Id` una secuencia *por proyecto*.
+- **Vistas BI.** Su comprobación de existencia no declaraba alcance.
+
+Añadido de paso: `Database::indexExists()`, cuarta puerta de metadatos, para que las migraciones
+idempotentes dejen de armar SQL contra `information_schema`. No cachea a propósito — quien pregunta
+por un índice está a punto de crearlo.
+
+**Corrección de una medición previa.** El goal daba por medir «cuáles de diez archivos usan
+`information_schema` a través de `Database::query()`». Medido: **ocho de los diez ya estaban
+migrados** y solo conservaban comentarios explicando por qué delegan en `Database`. Quedaba SQL real
+en dos: `admin/src/Models/Project.php` (cuatro consultas) y
+`admin/src/Controllers/DashboardController.php` (una, dentro de un `try/catch` que devuelve ceros —
+sigue abierta, ver `TASKS.md`).
+
+Verificado en el runtime aislado de CI reproducido en local: nivel `http` pasa de **24 fallos a 16**,
+sin un solo fallo nuevo; nivel `puro` 33/33 y PHPUnit 13 clases en verde; PHPStan `[OK] No errors`.
+
+
+### Arreglado: la deuda latente de los dos tests de BI que abrían la sesión del servidor (2026-09-04)
+
+`tests/test_bi_metric_endpoint.php` y `tests/test_bi_constraint_write.php` obtenían un dato de la
+sesión lanzando un subproceso PHP que hacía `session_id($sid); session_start();` sobre el archivo
+que crea Apache. Es el mismo mecanismo cuya causa raíz se midió el 2026-09-04 al cerrar la
+regresión solo-CI de los contratos del shell: `/tmp/sess_<sid>` es de `www-data` con modo 0600, el
+CLI corre como root, y en el kernel del runner de GitHub el `open()` devuelve «Permission denied
+(13)» pese al uid 0 — `/tmp` es sticky y de escritura para todos, y `fs.protected_regular` (activo
+en Ubuntu, en 0 en la VM de Docker Desktop) niega el acceso a un archivo de otro dueño. No se
+manifestaba porque ambos declaran `@requiere: datos-proyecto` y el CI solo llega a `--nivel=http`.
+
+- **Métricas**: la semana de aterrizaje se lee ahora por HTTP, del `navigation.bi.href` que
+  devuelve `GET /api/session`. Ya no abre la sesión desde otro proceso.
+- **Restricciones**: no hay vía HTTP posible. El único sitio que emite el form-key `ct_piloto` es
+  `BiViewController::renderCtPiloto()`, que solo se sirve con `CT_PILOTO=1` — bandera local, no
+  versionada y ausente en `docker-compose.ci.yml`, así que leerlo por HTTP cambiaría un fallo
+  latente en CI por un aborto seguro en CI. El subproceso corre ahora como el **dueño real** del
+  archivo de sesión (derivado con `fileowner()`, no fijado a mano), con lo que ni el modo 0600 ni
+  `fs.protected_regular` le aplican.
+### Arreglado: los dos tests de contrato CSRF que solo fallaban en CI (2026-09-04)
+
+`test_shell_week_administration_contract.php` y `test_shell_week_context_contract.php` fallaban por
+`CSRF_INVALID` en `design-system-runtime` (los dos temas, idéntico) y pasaban en cualquier
+reproducción local. La causa raíz, medida con instrumentación en CI: el helper de ambos tests
+generaba el token `shell_api` en un subproceso PHP que hacía `session_id($sid); session_start();`
+sobre la sesión ya autenticada. El archivo `/tmp/sess_<sid>` lo crea Apache como `www-data` con modo
+`0600`; el CLI corre como root, y en el kernel del runner de GitHub el `open()` devuelve
+«Permission denied (13)» **pese al uid 0** — `/tmp` es sticky y de escritura para todos, y el
+endurecimiento de archivos regulares del kernel (`fs.protected_regular`, activo en Ubuntu y en 0 en
+la VM de Docker Desktop) niega el acceso a un archivo de otro dueño. `session_start()` devolvía
+`false`, `session_id()` quedaba vacío y `CsrfTokenManager::generate()` emitía un token en una sesión
+fantasma que nadie persiste, mientras el servidor validaba contra el token real.
+
+El arreglo elimina el mecanismo entero: el token se toma por HTTP del
+`<meta name="lps-shell-csrf-token">` que emite `views/partials/shell_sidebar.php`, que es la misma
+vía del navegador (`public/js/core/ContextManager.js`). No toca `/tmp`, no necesita el SID y prueba
+el camino real del usuario. Nunca fue una vulnerabilidad: `ContextController` siempre validó CSRF
+correctamente.
 ### Arreglado: cambiar de semana estaba roto para usuarios reales en 16 vistas legacy (2026-09-03)
 
 `ContextController::setWeek()`/`clearWeek()` (T02) exige `X-CSRF-Token` (form-key `shell_api`) y
@@ -51,25 +242,6 @@ retira una entrada obsoleta del inventario: `login-brand-unified.css` (la vista 
 carga en `/login` desde que S01 movió esa ruta al shell React, y el gate lo reportaba como
 `stale-inventory-entry`.
 
-### Arreglado: los dos tests de contrato CSRF que solo fallaban en CI (2026-09-04)
-
-`test_shell_week_administration_contract.php` y `test_shell_week_context_contract.php` fallaban por
-`CSRF_INVALID` en `design-system-runtime` (los dos temas, idéntico) y pasaban en cualquier
-reproducción local. La causa raíz, medida con instrumentación en CI: el helper de ambos tests
-generaba el token `shell_api` en un subproceso PHP que hacía `session_id($sid); session_start();`
-sobre la sesión ya autenticada. El archivo `/tmp/sess_<sid>` lo crea Apache como `www-data` con modo
-`0600`; el CLI corre como root, y en el kernel del runner de GitHub el `open()` devuelve
-«Permission denied (13)» **pese al uid 0** — `/tmp` es sticky y de escritura para todos, y el
-endurecimiento de archivos regulares del kernel (`fs.protected_regular`, activo en Ubuntu y en 0 en
-la VM de Docker Desktop) niega el acceso a un archivo de otro dueño. `session_start()` devolvía
-`false`, `session_id()` quedaba vacío y `CsrfTokenManager::generate()` emitía un token en una sesión
-fantasma que nadie persiste, mientras el servidor validaba contra el token real.
-
-El arreglo elimina el mecanismo entero: el token se toma por HTTP del
-`<meta name="lps-shell-csrf-token">` que emite `views/partials/shell_sidebar.php`, que es la misma
-vía del navegador (`public/js/core/ContextManager.js`). No toca `/tmp`, no necesita el SID y prueba
-el camino real del usuario. Nunca fue una vulnerabilidad: `ContextController` siempre validó CSRF
-correctamente.
 
 ### Documentación: skill `datatables-to-handsontable` archivada en el repo (2026-09-03)
 

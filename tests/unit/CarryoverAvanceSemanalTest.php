@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
+use App\Security\DataScope\ProjectScope;
 use App\Services\WeeklyRealProgressCarryoverService;
 use Database;
 use PHPUnit\Framework\Attributes\Group;
@@ -40,6 +41,7 @@ final class CarryoverAvanceSemanalTest extends TestCase
     protected function setUp(): void
     {
         $this->db = Database::getInstance();
+        $this->abrirAlcance();
         $this->limpiar();
 
         $this->db->query(
@@ -89,7 +91,22 @@ final class CarryoverAvanceSemanalTest extends TestCase
     protected function tearDown(): void
     {
         $this->limpiar();
+        $this->db->dataScope()->clear();
     }
+
+    /**
+     * Estas pruebas hablan con la base directamente sobre una obra sintetica, y desde
+     * ProjectSqlGuard toda consulta a tablas de proyecto exige un alcance activo. Se declara el de
+     * esa obra —el mismo project_id que ya llevaban todas las consultas—, asi que el gate reescribe
+     * el WHERE al valor que la prueba ya pedia y no cambia lo que mide.
+     */
+    private function abrirAlcance(): void
+    {
+        $contexto = $this->db->dataScope();
+        $contexto->clear();
+        $contexto->bind(new ProjectScope(self::PROJECT_ID, 'test-phpunit', 'A'));
+    }
+
 
     private function limpiar(): void
     {

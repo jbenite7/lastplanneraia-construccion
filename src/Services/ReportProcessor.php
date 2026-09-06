@@ -96,7 +96,15 @@ class ReportProcessor
 
         $t = TableResolver::resolveByPrefix($dbName, 'programacion_semanal');
         $projectId = TableResolver::getProjectIdByPrefix($dbName);
-        $stmtMax = $this->db->queryWithProject("SELECT MAX(Semana) FROM {$t}", [], $projectId);
+        // `WHERE project_id = ?` desde el 2026-09-04. Sin él, bajo el SystemScope con que corre la
+        // consolidación esto devolvía el MAX(Semana) de TODAS las obras, y cada proyecto se
+        // consolidaba en la semana de otro: los que van más atrasados no encontraban ninguna fila
+        // en «su» semana y salían con cero registros, reportando «ok».
+        $stmtMax = $this->db->queryWithProject(
+            "SELECT MAX(Semana) FROM {$t} WHERE project_id = ?",
+            [$projectId],
+            $projectId,
+        );
         $semanaProyecto = $stmtMax->fetchColumn();
 
         return $semanaProyecto ? (int) $semanaProyecto : null;
@@ -768,7 +776,15 @@ class ReportProcessor
             }
             $this->reportSubprocess($warningLabel, $proyecto, 'Verificando tabla', 'ok', 'Tabla existe');
 
-            $stmtConteo = $this->db->query("SELECT COUNT(*) as conteo FROM {$tableName} WHERE Semana = ?", [$semanaProyecto]);
+            // Las dos consultas de este método llevan `project_id` desde el 2026-09-04. Sin él
+            // contaban y excluían entidades de TODOS los proyectos: como los nombres de
+            // subcontratista y profesional se repiten entre obras, un proveedor ya presente en otro
+            // proyecto entraba en `excludeEntities` y su CIC/CIP no se generaba nunca en el propio.
+            // La consolidación lo reportaba como «ok» y no escribía nada.
+            $stmtConteo = $this->db->query(
+                "SELECT COUNT(*) as conteo FROM {$tableName} WHERE project_id = ? AND Semana = ?",
+                [$projectId, $semanaProyecto],
+            );
             $conteo = (int) ($stmtConteo->fetchColumn() ?: 0);
             if ($conteo > 0) {
                 $this->reportSubprocess($warningLabel, $proyecto, 'Actualizando PAC existentes', 'running');
@@ -777,7 +793,10 @@ class ReportProcessor
             }
 
             $this->reportSubprocess($warningLabel, $proyecto, 'Generando registros faltantes', 'running');
-            $stmtExisting = $this->db->query("SELECT {$entityColumn} FROM {$tableName} WHERE Semana = ?", [$semanaProyecto]);
+            $stmtExisting = $this->db->query(
+                "SELECT {$entityColumn} FROM {$tableName} WHERE project_id = ? AND Semana = ?",
+                [$projectId, $semanaProyecto],
+            );
             $excludeEntities = $stmtExisting->fetchAll(\PDO::FETCH_COLUMN);
             call_user_func($generateCallback, $semanaProyecto, $dbName, $excludeEntities);
             $this->reportSubprocess($warningLabel, $proyecto, 'Generando registros faltantes', 'ok');
@@ -793,7 +812,11 @@ class ReportProcessor
             throw new Exception("Columna no permitida para consulta de entidades: {$columnName}");
         }
 
-        $params = [$semana];
+        // `project_id` explícito: bajo SystemScope —que es como corre la consolidación—
+        // `queryWithProject` degrada a una consulta sin filtro, así que el aislamiento tiene que
+        // estar en el SQL. Sin él, las entidades de todas las obras se mezclaban en una sola lista.
+        $projectId = $this->pid($dbName);
+        $params = [$projectId, $semana];
         $sqlExclude = "";
 
         if (!empty($exclude)) {
@@ -807,13 +830,13 @@ class ReportProcessor
 
         $query = "SELECT DISTINCT {$columnName}
                   FROM {$this->t($dbName, 'programacion_semanal')}
-                  WHERE Semana = ?
+                  WHERE project_id = ? AND Semana = ?
                     AND {$columnName} != ''
                     AND (Activa = '1' OR Activa = 'NA')
                     AND (PAC = '1' OR PAC = '0')
                     {$sqlExclude}";
 
-        $stmt = $this->db->queryWithProject($query, $params, $this->pid($dbName));
+        $stmt = $this->db->queryWithProject($query, $params, $projectId);
 
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
@@ -831,9 +854,10 @@ class ReportProcessor
                         ROUND((SUM(CASE WHEN (Activa = 1 OR Activa = 'NA') THEN PAC ELSE 0 END) /
                                COUNT(CASE WHEN (Activa = 1 OR Activa = 'NA') THEN 1 END)), 3) AS PAC
                        FROM {$this->t($dbName, 'programacion_semanal')}
-                       WHERE {$columnName} = ? AND Semana = ?";
+                       WHERE project_id = ? AND {$columnName} = ? AND Semana = ?";
 
-        $stmtStats = $this->db->queryWithProject($queryStats, [$entityValue, $semana], $this->pid($dbName));
+        $projectId = $this->pid($dbName);
+        $stmtStats = $this->db->queryWithProject($queryStats, [$projectId, $entityValue, $semana], $projectId);
         $stats = $stmtStats->fetch();
 
         return [
@@ -844,8 +868,16 @@ class ReportProcessor
 
     private function deleteRowsNotInProcessedEntities($tableName, $entityColumn, $semana, array $processedEntities, ?int $projectId = null)
     {
-        $sqlDelete = "DELETE FROM {$tableName} WHERE Semana = ?";
-        $deleteParams = [$semana];
+        // El `project_id` llegaba por parámetro y no se usaba: el DELETE decía sólo
+        // `WHERE Semana = ?`, así que bajo el SystemScope con que corre la consolidación **borraba
+        // las filas de esa semana en TODAS las obras**, no sólo en la que se estaba procesando.
+        // Cada proyecto consolidado se llevaba por delante el CIC/CIP de los demás.
+        if ($projectId === null) {
+            throw new Exception('deleteRowsNotInProcessedEntities exige un project_id: sin él el borrado cruza proyectos.');
+        }
+
+        $sqlDelete = "DELETE FROM {$tableName} WHERE project_id = ? AND Semana = ?";
+        $deleteParams = [$projectId, $semana];
 
         if (!empty($processedEntities)) {
             $placeholders = [];
@@ -865,7 +897,10 @@ class ReportProcessor
 
         foreach ($subcontratistas as $subcontratista) {
             // Check if record exists for this week
-            $check = $this->db->queryWithProject("SELECT COUNT(*) FROM {$this->t($dbName, 'cic')} WHERE Semana = ? AND subcontratista = ?", [$semana, $subcontratista], $this->pid($dbName))->fetchColumn();
+            // `project_id` en el WHERE: bajo SystemScope esta comprobación contaba las filas de
+            // TODAS las obras, y como los nombres de subcontratista se repiten entre proyectos,
+            // encontrar el proveedor en otro bastaba para no crearlo nunca en el propio.
+            $check = $this->db->queryWithProject("SELECT COUNT(*) FROM {$this->t($dbName, 'cic')} WHERE project_id = ? AND Semana = ? AND subcontratista = ?", [$this->pid($dbName) ?? 0, $semana, $subcontratista], $this->pid($dbName))->fetchColumn();
             if ($check == 0) {
                 // cic.Id no es auto_increment: es una secuencia por proyecto (mismo patrón que
                 // CicApiController); sin él, el INSERT muere en modo estricto.
@@ -886,7 +921,9 @@ class ReportProcessor
 
         foreach ($profesionales as $profesional) {
             // Check if record exists for this week
-            $check = $this->db->queryWithProject("SELECT COUNT(*) FROM {$this->t($dbName, 'cip')} WHERE Semana = ? AND profesional = ?", [$semana, $profesional], $this->pid($dbName))->fetchColumn();
+            // Mismo motivo que en generateSubcontratistas: sin `project_id` la comprobación mira
+            // todas las obras y un profesional homónimo en otra impide crear el registro aquí.
+            $check = $this->db->queryWithProject("SELECT COUNT(*) FROM {$this->t($dbName, 'cip')} WHERE project_id = ? AND Semana = ? AND profesional = ?", [$this->pid($dbName) ?? 0, $semana, $profesional], $this->pid($dbName))->fetchColumn();
             if ($check == 0) {
                 // cip.Id tampoco es auto_increment, y a diferencia de cic su PRIMARY KEY es
                 // global (solo Id, sin project_id): la secuencia se calcula sobre toda la tabla.
@@ -963,7 +1000,11 @@ class ReportProcessor
     private function updateIntegralSubcontratistas($semana, $dbName)
     {
         $projectId = $this->pid($dbName);
-        $stmtCic = $this->db->queryWithProject("SELECT Id, subcontratista, PAC, Calidad, ADM, GSA, SST FROM {$this->t($dbName, 'cic')} WHERE Semana = ?", [$semana], $projectId);
+        // `project_id` en el WHERE: bajo SystemScope este SELECT traía las filas de todas las obras,
+        // y el UPDATE de más abajo iba `WHERE Id = ?` — pero `cic.Id` es una secuencia POR PROYECTO,
+        // así que el mismo Id existe en varias obras y los acumulados de una se escribían encima de
+        // las filas homónimas de las demás.
+        $stmtCic = $this->db->queryWithProject("SELECT Id, subcontratista, PAC, Calidad, ADM, GSA, SST FROM {$this->t($dbName, 'cic')} WHERE project_id = ? AND Semana = ?", [$projectId ?? 0, $semana], $projectId);
         $cicRows = $stmtCic->fetchAll();
 
         foreach ($cicRows as $cic) {
@@ -976,8 +1017,7 @@ class ReportProcessor
                 (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Calidad), 3) END FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND project_id = ? AND Calidad NOT IN ('NA', 'NR')) AS Calidad_Acum,
                 (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(GSA), 3) END FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND project_id = ? AND GSA NOT IN ('NA', 'NR')) AS GSA_Acum,
                 (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(SST), 3) END FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND project_id = ? AND SST NOT IN ('NA', 'NR')) AS SST_Acum,
-                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(ADM), 3) END FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND project_id = ? AND ADM NOT IN ('NA', 'NR')) AS ADM_Acum
-                FROM DUAL";
+                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(ADM), 3) END FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND project_id = ? AND ADM NOT IN ('NA', 'NR')) AS ADM_Acum";
 
             // Params duplicated due to named placeholders limitation in raw copy-paste or simple positional mapping
             // Using positional params strictly
@@ -996,9 +1036,9 @@ class ReportProcessor
             $this->db->queryWithProject("UPDATE {$this->t($dbName, 'cic')} SET
                             PAC_Acum = ?, P_Completado_Acum = ?, Calidad_Acum = ?,
                             GSA_Acum = ?, SST_Acum = ?, ADM_Acum = ?
-                          WHERE Id = ?", [
+                          WHERE project_id = ? AND Id = ?", [
                 $acum['PAC_Acum'], $acum['P_Completado_Acum'], $acum['Calidad_Acum'],
-                $acum['GSA_Acum'], $acum['SST_Acum'], $acum['ADM_Acum'], $id,
+                $acum['GSA_Acum'], $acum['SST_Acum'], $acum['ADM_Acum'], $projectId ?? 0, $id,
             ], $projectId);
 
             $cal_integral = $this->calculateLogicaIntegral($cic['PAC'] ?? 'NA', $cic['Calidad'] ?? 'NA', $cic['SST'] ?? 'NA', $cic['GSA'] ?? 'NA', $cic['ADM'] ?? 'NA');
@@ -1010,8 +1050,8 @@ class ReportProcessor
             $cal_integral_str = $cal_integral_val ? number_format($cal_integral_val, 3, '.', '') : '0';
             $cal_integral_acum_str = $cal_integral_acum_val ? number_format($cal_integral_acum_val, 3, '.', '') : '0';
 
-            $this->db->queryWithProject("UPDATE {$this->t($dbName, 'cic')} SET Cal_Integral = ?, Cal_Integral_Acum = ? WHERE Id = ?", [
-                $cal_integral_str, $cal_integral_acum_str, $id,
+            $this->db->queryWithProject("UPDATE {$this->t($dbName, 'cic')} SET Cal_Integral = ?, Cal_Integral_Acum = ? WHERE project_id = ? AND Id = ?", [
+                $cal_integral_str, $cal_integral_acum_str, $projectId ?? 0, $id,
             ], $projectId);
         }
     }
@@ -1019,7 +1059,7 @@ class ReportProcessor
     private function updateIntegralProfesionales($semana, $dbName)
     {
         $projectId = $this->pid($dbName);
-        $stmtCip = $this->db->queryWithProject("SELECT profesional, PAC FROM {$this->t($dbName, 'cip')} WHERE Semana = ?", [$semana], $projectId);
+        $stmtCip = $this->db->queryWithProject("SELECT profesional, PAC FROM {$this->t($dbName, 'cip')} WHERE project_id = ? AND Semana = ?", [$projectId ?? 0, $semana], $projectId);
         $cipRows = $stmtCip->fetchAll();
 
         foreach ($cipRows as $cip) {
@@ -1031,8 +1071,7 @@ class ReportProcessor
                 (SELECT CASE WHEN COUNT(Critica) > 0 THEN ROUND(SUM(CASE WHEN PAC=1 THEN 1 ELSE 0 END)/COUNT(Critica), 3) ELSE 'NA' END
                  FROM {$this->t($dbName, 'programacion_semanal')} WHERE Semana = ? AND Responsable_AIA = ? AND project_id = ? AND (Activa = 1 OR Activa = 'NA') AND Critica = 0 AND Atrasada = 0) AS Act_No_Criticas_Cumplidas,
                 (SELECT CASE WHEN COUNT(Atrasada) > 0 THEN ROUND(SUM(CASE WHEN PAC=1 THEN 1 ELSE 0 END)/COUNT(Atrasada), 3) ELSE 'NA' END
-                 FROM {$this->t($dbName, 'programacion_semanal')} WHERE Semana = ? AND Responsable_AIA = ? AND project_id = ? AND Activa = 1 AND Atrasada = 1) AS Act_Atrasadas_Cumplidas
-                FROM DUAL";
+                 FROM {$this->t($dbName, 'programacion_semanal')} WHERE Semana = ? AND Responsable_AIA = ? AND project_id = ? AND Activa = 1 AND Atrasada = 1) AS Act_Atrasadas_Cumplidas";
 
             $stmtStats = $this->db->queryWithProject($queryStats, [
                 $semana, $profesional, $projectId,
@@ -1053,8 +1092,7 @@ class ReportProcessor
                 (SELECT ROUND(AVG(P_Completado), 3) FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND project_id = ? AND P_Completado != 'NA') AS P_Completado_Acum,
                 (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Act_Criticas_Cumplidas), 3) END FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND project_id = ? AND Act_Criticas_Cumplidas != 'NA') AS Act_Criticas_Acum,
                 (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Act_No_Criticas_Cumplidas), 3) END FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND project_id = ? AND Act_No_Criticas_Cumplidas != 'NA') AS Act_No_Criticas_Acum,
-                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Act_Atrasadas_Cumplidas), 3) END FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND project_id = ? AND Act_Atrasadas_Cumplidas != 'NA') AS Act_Atrasadas_Acum
-                FROM DUAL";
+                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Act_Atrasadas_Cumplidas), 3) END FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND project_id = ? AND Act_Atrasadas_Cumplidas != 'NA') AS Act_Atrasadas_Acum";
 
             $paramsAcum = [
                 $semana, $profesional, $projectId,

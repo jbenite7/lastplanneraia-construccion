@@ -31,10 +31,74 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 
 ## Gate de datos: lo que el guard destapó y sigue roto (2026-09-02)
 
-`ProjectSqlGuard` (2026-08-29, `48e06072`) rompió más que la herramienta de línea de comandos. Lo de
-la suite quedó arreglado en el frente `fix/suite-main-scope`; **estas dos son de producción y siguen
-vivas en `main`**, medidas con petición HTTP real contra el stack local:
+**Frente abierto el 2026-09-04 con su medición: [[goals/guard-datos-suite/goal|guard-datos-suite]].**
+Los 24 tests que `G_PHP_SUITE` reporta en rojo en cada corrida están ahí clasificados uno por uno —
+**8 destapan código de producción roto** (import SINCO del PDC, panel de administración, la
+consolidación de informes y las vistas BI) y **16 son tests que consultan sin declarar alcance**.
+La condición de hecho y lo que el frente tiene prohibido hacer viven en ese goal.
 
+**FRENTE CERRADO el 2026-09-04, las dos mitades.** El nivel `http` pasa de **24 fallos a 0**, sin
+ningún fallo nuevo, medido sobre los dos árboles con la misma suite y el mismo stack. La segunda
+mitad —los 16 tests sin adaptar— destapó **cuatro fallos de producción más** que estaban escondidos
+detrás de ellos: el catálogo de paquetes mutilado, las tres capas de sugerencia muertas y dos JOIN
+que unían tablas de proyecto sin relacionar `project_id`. Ver `CHANGELOG.md` › «el gate de datos
+vuelve a verde» y la sección `## Cierre` del goal.
+
+Dos cosas que la segunda mitad dejó medidas:
+
+- **Los 16 no eran 16.** Había además **dos clases PHPUnit** con la misma causa (9 errores):
+  `CarryoverAvanceSemanalTest` y `PgAvanceEdicionManualTest`. Ninguna medición previa las contó
+  porque `scripts/run-php-tests.php` reporta PHPUnit en una línea aparte de la de los scripts
+  sueltos, y quien lee «24 fallaron» se queda con esa. Al contar fallos de este runner, hay que
+  mirar **las dos** líneas `===`.
+- **La lectura entre obras del catálogo de paquetes quedó declarada, por decisión de Felipe del
+  2026-09-04**, no suprimida: pasa por `PaquetesService::leerCatalogoEntreObras()` y está
+  autorizada con su justificación en `test_project_scope_callsite_audit`.
+
+Tres cosas que esa mitad dejó medidas y cambian lo escrito más abajo:
+
+- **La consolidación de informes NO estaba muerta por el alias.** Estaba muerta por siete consultas
+  sin `project_id` que cruzaban obras, y la peor **borraba** el CIC/CIP de todas las demás. El
+  `FROM DUAL` se quitó (era decorativo). El alias ambiguo, que se daba por tercer problema, ya no
+  bloquea nada: el test de aislamiento pasa sin tocarlo.
+- **De los diez archivos con `information_schema`, ocho ya estaban migrados** y solo conservaban el
+  comentario que lo explica. La lista de «16 sitios del runtime servido» de más abajo está medida
+  sobre un árbol viejo: re-medir antes de usarla.
+- **Sigue abierto:** `admin/src/Controllers/DashboardController.php:~579` (`getDatabaseStats()`)
+  arma SQL contra `information_schema` dentro de un `try/catch` que devuelve ceros. No revienta:
+  **falla en silencio** y el panel muestra 0 MB y 0 tablas. Es el único uso real que queda.
+
+- [ ] **Hallazgo nuevo (2026-09-04): `nueva_semana.php` no puede activar un borrador de semana.**
+  Su `UPDATE ... AS dest INNER JOIN (SELECT ...) AS src` usa una tabla derivada, y el guard no
+  reconoce `src.project_id = dest.project_id` como relación válida: responde
+  «La tabla programa_consolidado no está relacionada por project_id con dest». Lo destapó
+  `test_schedule_update_draft_import` al llegar más lejos que antes. **Ese test pasa igual**, porque
+  su aserción mira el conteo de filas y no el payload, así que hoy nadie lo vigila. La reescritura
+  natural es cambiar la derivada por un self-join con las condiciones en el `ON`; es legado sin
+  cobertura propia, así que merece su propia tarea y no se hizo de paso.
+
+`ProjectSqlGuard` (2026-08-29, `48e06072`) rompió más que la herramienta de línea de comandos.
+~~Lo de la suite quedó arreglado en el frente `fix/suite-main-scope`~~ — **eso caducó: la suite
+sigue con 24 tests en rojo**, medidos el 2026-09-04 en dos corridas distintas (ver el goal enlazado
+arriba). Las dos de abajo son de producción y siguen vivas en `main`, medidas con petición HTTP real
+contra el stack local:
+
+- [ ] **`tests/test_bi_constraint_write.php` sigue muerto por el guard — la suite no quedó
+  arreglada del todo (medido el 2026-09-04).** El encabezado de arriba dice que «lo de la suite
+  quedó arreglado en el frente `fix/suite-main-scope`»; para este archivo no. Corriendo contra la
+  base de dev muere en su primer fixture con `MissingProjectScope: La consulta a tablas de proyecto
+  exige un ProjectScope activo` (`ProjectSqlGuard.php:57`, vía `Database::query()`), antes de
+  ejercitar una sola aserción. Son **cinco** consultas del archivo a tablas de proyecto sin scope, y
+  dos de ellas son la comprobación de persistencia, no fixtures: envolverlas exige criterio sobre
+  qué alcance corresponde en cada punto —`SystemScope` o el del proyecto 73— y hacerlo a ojo podría
+  tapar justo la propiedad de aislamiento que el test existe para probar. Por eso se dejó como está
+  al pasar por ahí el 2026-09-04. **Sigue abierto tras cerrar `guard-datos-suite`**, y a propósito:
+  es nivel `datos-proyecto`, fuera del CI, así que no bloquea `G_PHP_SUITE`. Lo que sí cambió es que
+  ahora existe la herramienta y, sobre todo, la regla escrita para hacerlo bien —
+  `tests/support/ScopeFixture.php`: el alcance de una aserción de aislamiento es el de la obra que
+  se **observa**, nunca el de la que se acaba de escribir. Su hermano `test_bi_metric_endpoint.php` sí pasa entero (39
+  aserciones): consulta `project_members`, que es tabla global. El mismo síntoma tienen los 24 tests
+  que `G_PHP_SUITE` reporta en rojo en cada corrida de CI.
 - [x] **Arreglado el 2026-09-02: el alias ambiguo de `semanas_activas`.** La misma consulta estaba
   copiada en dos sitios —`src/Legacy/datosGeneralesPagina.php` y `ProgramaGeneralController`— y
   nombraba la tabla dos veces sin alias, así que `/programacion-semanal` y `/programa-general`
@@ -498,6 +562,15 @@ continuación de la entrada de abajo. Dos correcciones a esa entrada, medidas al
   desde hace cinco días.** Establecerla puede exigir aprobar capturas o presupuestos nuevos — decisión
   de Felipe, no de esta sesión.
 
+  **Corregido el 2026-09-04, y la mitad de esta entrada era falsa.** De los dos, **solo
+  `G_RUNTIME_BUDGET_CHECK` era línea base.** `G_FULL_APP_FLOW` no tenía nada que aprobar: eran **tres
+  bugs de código**, cada uno dejando un módulo respondiendo error (CIC, indicadores y
+  auto-programación semanal). Se arreglaron en `fix/carril-visual-full-app-flow` y el gate quedó en
+  `13 passed`. La lección, que es lo que vale para la próxima: **«el gate lleva días sin correr» no
+  es lo mismo que «su línea base caducó»** — dar por caducado lo que no se ha reproducido deja bugs
+  vivos escondidos detrás de una excusa de proceso. Se reprodujeron en runtime aislado en la primera
+  corrida, con los mismos 3 fallos de 13 que la corrida `33895697935`.
+
 **2026-09-03 — Seis gates del carril visual están en rojo, y ninguno es de los frentes que los
 destaparon. → Merece frente propio: «poner el carril visual en verde».** El job
 `design-system-runtime` llevaba sin correr desde el 2026-08-29 (primero por el contrato del
@@ -675,12 +748,39 @@ estado por defecto mientras Felipe no reparta.
 
 ## Ahora
 
-- [ ] **CI · regenerar el presupuesto de runtime a la generación 0.5.0 — decisión de Felipe del
-  2026-08-28, con su método ya fijado.** El gate `runtime-budgets` está en rojo en el PR #18 por
+- [x] **CI · regenerar el presupuesto de runtime a la generación 0.5.0 — decisión de Felipe del
+  2026-08-28, con su método ya fijado.** **Hecho el 2026-09-04**, aprobado por Felipe ese día, en
+  la rama `runtime-budget-0.5.0`: artefacto propio para la medición (era el prerrequisito medido
+  abajo), tres corridas por `workflow_dispatch` sobre `70ae2922` en serie, mediana
+  `run-33934598207-1-dark` versionada como `0.5.0-measurement.json`, manifiesto, baseline con
+  tolerancias de 0.4.0, generación declarada, `check` apuntado, atribución al byte. Validación
+  local de forma y procedencia en verde y `static` en `RC=0`; el veredicto final es
+  `G_RUNTIME_BUDGET_CHECK` en Actions. Lo que sigue es el texto original de la entrada. El gate `runtime-budgets` está en rojo en el PR #18 por
   `cssGzipBytes`: **131.451 B medidos contra 128.266 + 2.048 de tolerancia** (+3.185 B, ~2,5 %). No
   es una regresión: es el CSS nuevo de la fase cero de temas y forma (24 tokens de estado claro,
   `gravity-flag.css`, tokens de forma/tabla/densidad, `--ds-color-surface-well-*`), todo ello
   posterior a la baseline 0.4.0.
+
+  **Remedido el 2026-09-04 sobre `main` (`aba2589d`, corrida `33895697935`): son 131.477 B**, 26 más
+  que en el PR #18, contra el mismo máximo de 130.314. Es **el único gate del carril visual que
+  sigue en rojo** tras arreglar `G_FULL_APP_FLOW`, y su atribución se confirmó por
+  `git diff --stat 13e692aa..HEAD -- public/css` (el `sourceRef` de la baseline 0.4.0): **846 líneas
+  añadidas en 15 hojas**, todas de trabajo legítimo — `theme-claro.css` (115), `tokens.css` (212),
+  `readiness-popover.css` (195), `readiness-squares.css`, `gravity-flag.css`,
+  `programacion-intermedia.css`. Nada duplicado ni indebido: no hay un arreglo que evite la
+  aprobación. **Sigue esperando decisión de Felipe.**
+
+  **Y la sospecha de esta entrada quedó confirmada, así que el trabajo previo existe:** «puede que
+  haya que añadir ese artefacto al job» — hay que añadirlo. Comprobado el 2026-09-04 sobre la corrida
+  `33901153624` (PR #31), que falla y por tanto dispara `Preserve failure evidence`: su artefacto
+  `design-system-failure-evidence-light` **no contiene** `test-output/design-system-runtime-budget.json`.
+  Solo trae los dos directorios del laboratorio de teclado y el `docker-compose.log`. La causa es la
+  ya conocida de `test-output/`: `Collect keyboard and reflow evidence` corre después de
+  `Measure runtime budgets` y pisa la carpeta — el mismo mecanismo que en 2026-08-28 dejó al piloto
+  sin capturas y que `ci.yml:424-431` documenta. O sea que **la medición de las seis métricas no
+  sobrevive hoy a ninguna corrida**, ni verde ni roja, y sin ella no se puede escribir
+  `0.5.0-measurement.json` con procedencia real. Primer paso de este pendiente: subir ese JSON como
+  artefacto propio, pegado a su paso de medición y antes de que nada pise la carpeta.
 
   **El método NO es negociable y está escrito en el propio script** (`scripts/design-system-runtime-budget.mjs`,
   comentario de la generación `0.4.0`): la baseline se mide **en el mismo entorno donde el gate la
@@ -930,8 +1030,19 @@ estado por defecto mientras Felipe no reparta.
   podrían dejar de serlo. Cuando se vuelva a tocar el flujo de contraseñas, decidir primero qué
   unidad manda y alinear las tres fuentes a ella.
 
-- [ ] 2026-08-28 — **El botón de colapsar el sidebar del laboratorio no responde a Enter por
-  teclado** (`design-system-lab-keyboard.mjs:83`, ambas patas del CI, tema claro y oscuro). El test
+- [x] 2026-08-28 — **El botón de colapsar el sidebar del laboratorio no responde a Enter por
+  teclado** (`design-system-lab-keyboard.mjs:83`, ambas patas del CI, tema claro y oscuro).
+  **Resuelto el 2026-09-05, y era el test, no el componente.** Reproducido en runtime aislado e
+  instrumentado en Playwright: la pulsación de Enter sobre el botón dispara
+  `keydown→keypress→click→keyup`, nadie hace `preventDefault`, y el `click` cambia el estado **una
+  sola vez** — igual que el click de ratón y Espacio. Lo que fallaba era el punto de partida: el
+  test nació el 2026-07-20 (`321b0951`) cuando el sidebar del laboratorio arrancaba expandido, y
+  `4bc75ef9` (2026-07-23) cambió el fixture a `'initialState' => 'collapsed'` a propósito. Enter
+  alterna, así que sobre un sidebar colapsado lo expandía y el assert esperaba lo contrario. El HTML
+  servido ya trae `data-sidebar-state="collapsed"` antes de cualquier JS. Arreglo en el test, sin
+  aflojar ningún assert: si arranca colapsado, se expande primero (y se afirma), y desde ahí se
+  prueban las dos transiciones que Escape necesita. `test:design-system:evidence` en `RC=0` claro y
+  oscuro, `static` en `RC=0`. Sigue siendo no bloqueante por contrato; no se ascendió. Texto original: El test
   enfoca `[data-sidebar-toggle]` y presiona Enter; `data-sidebar-state` se queda en `expanded` en
   vez de pasar a `collapsed`. El botón es nativo (`<button type="button">`,
   `src/View/Components/DesignSystemComponent.php:432`) y el listener solo escucha `click`
@@ -1023,8 +1134,12 @@ estado por defecto mientras Felipe no reparta.
   llegó a la pantalla del plan**. Es media hora de comprobación, no un despliegue. Trampa escrita en
   [[memoria/trampas/el-sha-de-partida-leido-como-estado-actual]].
 
-- [ ] 2026-08-25 — **`runtime-budgets-al-ci`: le falta media condición de hecho, y no es el cierre
-  de dos minutos que parecía.** Medido al pasar: los nueve gates de `closeout-evidence.json` están
+- [x] 2026-08-25 — **`runtime-budgets-al-ci`: le falta media condición de hecho, y no es el cierre
+  de dos minutos que parecía.** **Cerrado el 2026-09-04:** al final sí fue corto, pero solo porque
+  otro frente lo dejó maduro sin buscarlo — el PR #31 arregló los tres bugs que tenían a
+  `full-app-flow` en rojo, y la primera corrida verde de `main` (33902983755, `6d82bba2`) produjo
+  el recibo con procedencia real que faltaba. Bajado del artefacto y fijado en dos tiempos
+  (`15b075c2` recibo, `98dee120` índice), `static` en `RC=0`. Spec a `cerrado`. Texto original: Medido al pasar: los nueve gates de `closeout-evidence.json` están
   en `passed`, y `runtime-budgets` **sí** tiene procedencia de corrida real de Actions (32787664690).
   Pero la condición de hecho exige **dos** gates con esa procedencia, y `full-app-flow` lleva recibo
   **«regenerado localmente»** (`verifiedAt: 2026-08-14`, `sourceRef: 79debf28`). Un recibo local no

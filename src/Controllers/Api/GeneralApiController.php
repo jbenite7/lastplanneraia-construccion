@@ -962,7 +962,12 @@ class GeneralApiController extends BaseController
         }
 
         $placeholders = implode(',', array_fill(0, count($activeUniqueIds), '?'));
-        $params = array_merge([$projectId], $activeUniqueIds, [$projectId]);
+        $params = array_merge([$projectId], $activeUniqueIds);
+        // El `AND p.project_id = ?` iba repetido al final del WHERE. Era redundante —el alcance ya
+        // queda demostrado por el primero— y además rompía el borrado: ProjectSqlGuard lee el `NOT`
+        // de `unique_id NOT IN` como si negara la comparación de project_id que viene detrás, y
+        // rechazaba la consulta entera. Con una sola comparación, el alcance se demuestra igual y
+        // el falso positivo desaparece.
         $this->db->query(
             "DELETE p
              FROM programa p
@@ -970,8 +975,7 @@ class GeneralApiController extends BaseController
                ON pc.project_id = p.project_id AND pc.unique_id = p.unique_id
              WHERE p.project_id = ?
                AND p.unique_id NOT IN ({$placeholders})
-               AND pc.unique_id IS NULL
-               AND p.project_id = ?",
+               AND pc.unique_id IS NULL",
             $params,
         );
     }

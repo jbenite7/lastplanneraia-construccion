@@ -2,6 +2,7 @@
 
 namespace Admin\Models;
 
+use App\Security\DataScope\SystemScopeRunner;
 use Database;
 
 class Project
@@ -979,13 +980,7 @@ class Project
 
         foreach ($tableColumns as $tableName => $columns) {
             foreach ($columns as $col) {
-                $stmt = $this->db->query(
-                    "SELECT COUNT(*) FROM information_schema.COLUMNS
-                     WHERE TABLE_SCHEMA = DATABASE()
-                     AND TABLE_NAME = '{$tableName}'
-                     AND COLUMN_NAME = '{$col['name']}'"
-                );
-                if ($stmt->fetchColumn() == 0) {
+                if (!$this->db->columnExists($tableName, $col['name'])) {
                     $this->db->query(
                         "ALTER TABLE `{$tableName}` ADD COLUMN `{$col['name']}` {$col['def']}"
                     );
@@ -1003,13 +998,7 @@ class Project
 
         foreach ($tableIndexes as $tableName => $indexes) {
             foreach ($indexes as $idx) {
-                $stmt = $this->db->query(
-                    "SELECT COUNT(*) FROM information_schema.STATISTICS
-                     WHERE TABLE_SCHEMA = DATABASE()
-                     AND TABLE_NAME = '{$tableName}'
-                     AND INDEX_NAME = '{$idx['name']}'"
-                );
-                if ($stmt->fetchColumn() == 0) {
+                if (!$this->db->indexExists($tableName, $idx['name'])) {
                     $this->db->query(
                         "ALTER TABLE `{$tableName}` ADD INDEX `{$idx['name']}` {$idx['def']}"
                     );
@@ -1124,13 +1113,15 @@ class Project
             return false;
         }
 
-        foreach ($this->orderedGlobalProjectTables() as $tableName) {
-            try {
-                $this->db->query("DELETE FROM `{$tableName}` WHERE project_id = ?", [$id]);
-            } catch (\Exception $e) {
-                error_log("Error al limpiar tabla global {$tableName}: " . $e->getMessage());
+        $this->runAsSystem("admin:project-delete:{$id}", function () use ($id): void {
+            foreach ($this->orderedGlobalProjectTables() as $tableName) {
+                try {
+                    $this->db->query("DELETE FROM `{$tableName}` WHERE project_id = ?", [$id]);
+                } catch (\Exception $e) {
+                    error_log("Error al limpiar tabla global {$tableName}: " . $e->getMessage());
+                }
             }
-        }
+        });
 
         $this->db->query("DELETE FROM project_members WHERE project_id = ?", [$id]);
 
@@ -1171,13 +1162,21 @@ class Project
             $this->db->query("SELECT * FROM project_members WHERE project_id = ?", [$projectId])->fetchAll(\PDO::FETCH_ASSOC)
         );
 
-        foreach ($this->orderedGlobalProjectTables() as $table) {
-            $rows = $this->db->query(
-                "SELECT * FROM `{$table}` WHERE project_id = ?",
-                [$projectId]
-            )->fetchAll(\PDO::FETCH_ASSOC);
-            $output .= $this->buildInsertDump($table, $rows);
-        }
+        $output .= $this->runAsSystem(
+            "admin:project-export:{$projectId}",
+            function () use ($projectId): string {
+                $dump = '';
+                foreach ($this->orderedGlobalProjectTables() as $table) {
+                    $rows = $this->db->query(
+                        "SELECT * FROM `{$table}` WHERE project_id = ?",
+                        [$projectId]
+                    )->fetchAll(\PDO::FETCH_ASSOC);
+                    $dump .= $this->buildInsertDump($table, $rows);
+                }
+
+                return $dump;
+            },
+        );
 
         $output .= "SET FOREIGN_KEY_CHECKS=1;\n";
         return $output;
@@ -1189,10 +1188,7 @@ class Project
             return false;
         }
 
-        return (int) $this->db->query(
-            "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?",
-            [$table]
-        )->fetchColumn() > 0;
+        return $this->db->tableExists($table);
     }
 
     private function tableHasColumn(string $table, string $column): bool
@@ -1201,10 +1197,7 @@ class Project
             return false;
         }
 
-        return (int) $this->db->query(
-            "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?",
-            [$table, $column]
-        )->fetchColumn() > 0;
+        return $this->db->columnExists($table, $column);
     }
 
     private function orderedGlobalProjectTables(): array
@@ -1231,7 +1224,40 @@ class Project
         return $tables;
     }
 
+    /**
+     * Ejecuta una operación de administración que toca tablas de proyecto.
+     *
+     * Esas tablas exigen un alcance declarado desde que entró ProjectSqlGuard, y el panel de
+     * administración no tiene ninguno que resolver desde sesión: no trabaja «dentro» de un
+     * proyecto, sino sobre él —a veces sobre uno que acaba de nacer o que está por desaparecer—.
+     * La operación se declara entonces como mantenimiento del sistema, igual que la consolidación
+     * de DashboardController. El `project_id` sigue viajando explícito en cada consulta: el
+     * alcance no lo sustituye ni lo infiere.
+     *
+     * Si ya hay un alcance enlazado se respeta y no se abre otro: enlazar dos veces es un error, y
+     * si ese alcance fuera de otro proyecto el guard debe rechazar la operación, no dejarla pasar.
+     */
+    private function runAsSystem(string $reason, callable $operation): mixed
+    {
+        $context = $this->db->dataScope();
+        if ($context->current() !== null) {
+            return $operation();
+        }
+
+        return (new SystemScopeRunner($context))->run($reason, $operation);
+    }
+
     private function initializeProjectDefaults(int $projectId, array $data): void
+    {
+        $this->runAsSystem(
+            "admin:project-create:{$projectId}",
+            function () use ($projectId, $data): void {
+                $this->seedFirstWeek($projectId, $data);
+            },
+        );
+    }
+
+    private function seedFirstWeek(int $projectId, array $data): void
     {
         if (!$this->tableExists('semanas_activas')) {
             return;

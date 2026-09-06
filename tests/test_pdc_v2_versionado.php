@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/support/pdc_fixture_presupuesto.php';
+require_once __DIR__ . '/support/ScopeFixture.php';
 
 use App\Services\Pdc\PresupuestoExcelParser;
 use App\Services\Pdc\PresupuestoImportService;
@@ -23,11 +24,17 @@ $assert = static function (bool $c, string $m) use (&$failures): void {
 
 $db = Database::getInstance();
 $limpiar = static function () use ($db): void {
+    // Limpieza obra por obra, cada una bajo su propio alcance.
     foreach ([PDC_VER_A, PDC_VER_B] as $pid) {
-        $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$pid]);
+        ScopeFixture::enProyecto($db, $pid, static function () use ($db, $pid): void {
+            $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$pid]);
+        });
     }
 };
 $limpiar();
+
+// El test transcurre en la obra A; los tramos que miran a B abren su propio alcance.
+ScopeFixture::abrir($db, PDC_VER_A, 'test-pdc-versionado');
 
 // v2: mismas actividades pero un insumo cambia de precio (contenido distinto → nueva versión).
 $fixtureV2 = static function (string $path): void {
@@ -128,7 +135,11 @@ $assert($c4['ok'] === true && $c4['versionNumero'] === 3 && $c4['versionIdAnteri
 // --- versiones() incluye versionNumero; aislamiento por proyecto ---
 $vers = $service->versiones(PDC_VER_A);
 $assert(isset($vers[0]['versionNumero']) && $vers[0]['versionNumero'] === 3, 'versiones() trae versionNumero (la más reciente = 3).');
-$assert($service->versiones(PDC_VER_B) === [], 'Aislamiento: proyecto B sin versiones.');
+// Aserción de aislamiento: se mira desde el alcance de B, no desde el de A.
+$assert(
+    ScopeFixture::enProyecto($db, PDC_VER_B, static fn () => $service->versiones(PDC_VER_B)) === [],
+    'Aislamiento: proyecto B sin versiones.',
+);
 
 // --- Elegir a mano la versión oficial (f15-f19 de la revisión de UX) ---
 // Hasta ahora la marca «Activa» se la llevaba siempre la última importación, sin forma de volver
@@ -156,7 +167,7 @@ $rMismo = $service->activar(PDC_VER_A, $idV3);
 $assert(($rMismo['ok'] ?? false) === true, 'Activar la que ya estaba activa no rompe. Dio ' . var_export($rMismo, true));
 
 // Una versión de OTRO proyecto no se puede activar aquí.
-$rAjena = $service->activar(PDC_VER_B, $idV1);
+$rAjena = ScopeFixture::enProyecto($db, PDC_VER_B, static fn () => $service->activar(PDC_VER_B, $idV1));
 $assert(($rAjena['ok'] ?? true) === false && ($rAjena['code'] ?? '') === 'VERSION_INVALIDA',
     'Activar: una versión de otro proyecto se rechaza. Dio ' . var_export($rAjena, true));
 
@@ -174,12 +185,14 @@ $assert(($impacto['versionActual']['id'] ?? null) === $idV3,
     'Impacto: dice de qué versión se está saliendo. Dio ' . var_export($impacto['versionActual'] ?? null, true));
 
 // Un proyecto sin versión activa no rompe el aviso: informa cero y sin versión.
-$impactoVacio = $service->impactoDeCambiarVersion(PDC_VER_B);
+$impactoVacio = ScopeFixture::enProyecto($db, PDC_VER_B, static fn () => $service->impactoDeCambiarVersion(PDC_VER_B));
 // Ojo con `??` aquí: null es justo lo que se espera, y `?? 'x'` lo convertiría en 'x'.
 $assert(($impactoVacio['vinculosAfectados'] ?? -1) === 0 && $impactoVacio['versionActual'] === null,
     'Impacto: sin versión activa informa cero, no revienta. Dio ' . var_export($impactoVacio, true));
 
 $db->query('DELETE FROM pdc_insumo_vinculos WHERE project_id = ?', [PDC_VER_A]);
+
+ScopeFixture::cerrar($db);
 
 foreach ([$v1, $v1b, $v2, $v3] as $f) { @unlink($f); }
 $limpiar();
