@@ -7,6 +7,17 @@ use App\Security\DataScope\ProjectScopeResolver;
 class SessionMiddleware
 {
     private const IDLE_TIMEOUT_SECONDS = 3600;
+
+    /**
+     * Motivo cuando la sesión es temporal (`usuario_temp` + `must_change_password`,
+     * ver `AuthenticationService::beginPasswordChange()`): identidad aún no
+     * consolidada, sin `usuario`. Antes caía en `missing_session` porque
+     * `usuario` no está seteado — cierto pero impreciso: el bootstrap del shell
+     * necesita distinguir "nadie ha entrado" de "alguien entró y debe cambiar
+     * su clave" para enrutar a la pantalla correcta en vez de al login normal.
+     */
+    public const REASON_PASSWORD_CHANGE_REQUIRED = 'password_change_required';
+
     private static ?string $requestFailureReason = null;
 
     public static function idleTimeoutSeconds(): int
@@ -75,6 +86,10 @@ class SessionMiddleware
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
+        }
+
+        if (!empty($_SESSION['must_change_password'])) {
+            return self::REASON_PASSWORD_CHANGE_REQUIRED;
         }
 
         $usuario = $_SESSION['usuario'] ?? null;

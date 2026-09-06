@@ -10,6 +10,7 @@
     "test:design-system:preservation": "node scripts/design-system-worktree-preservation.mjs check goals/design-system-nucleo-gobernanza/worktree-preservation.json",
     "test:wiki": "node --test 'tests/wiki/*.test.mjs' && node scripts/wiki-lint.mjs --estricto",
     "test:design-system:static": "node scripts/design-system-static-suite.mjs",
+    "check:secret-not-in-bundle": "node scripts/check-secret-not-in-bundle.mjs",
     "test:design-system:consumers": "node scripts/design-system-consumer-contract.mjs",
     "test:design-system:phpstan": "node scripts/design-system-phpstan-baseline.mjs",
     "test:pi-ancho-presupuesto": "node tests/browser/pi-ancho-presupuesto.mjs",

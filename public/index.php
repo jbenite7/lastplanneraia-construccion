@@ -43,7 +43,7 @@ if (file_exists(PROJECT_ROOT . '/.env')) {
 }
 
 // 3.5 Verificar Sesión y Timeout (Protección Universal)
-$publicRoutes = ['/', '/login', '/login/cancelar', '/password/forgot', '/password/reset', '/password/update', '/api/session', '/api/auth/login', '/api/auth/logout', '/runtime/frontend-config.js', '/runtime/css/aia-design-system.css', '/runtime/css/design-system/lab-entrypoint.css', '/runtime/css/design-system/entrypoints/core.css', '/runtime/css/design-system/entrypoints/attach-jquery-ui.css', '/runtime/css/design-system/entrypoints/attach-anychart.css', '/runtime/css/design-system/entrypoints/attach-select2.css', '/runtime/css/design-system/entrypoints/attach-sweetalert2.css', '/runtime/css/design-system/entrypoints/attach-handsontable.css', MaintenanceMode::SECRET_PATH];
+$publicRoutes = ['/', '/login', '/login/cancelar', '/password/forgot', '/password/reset', '/password/update', '/api/session', '/api/auth/login', '/api/auth/logout', '/api/auth/password/change', '/api/auth/password/cancel', '/runtime/frontend-config.js', '/runtime/css/aia-design-system.css', '/runtime/css/design-system/lab-entrypoint.css', '/runtime/css/design-system/entrypoints/core.css', '/runtime/css/design-system/entrypoints/attach-jquery-ui.css', '/runtime/css/design-system/entrypoints/attach-anychart.css', '/runtime/css/design-system/entrypoints/attach-select2.css', '/runtime/css/design-system/entrypoints/attach-sweetalert2.css', '/runtime/css/design-system/entrypoints/attach-handsontable.css', MaintenanceMode::SECRET_PATH];
 
 // Puerta de servicio de desarrollo: solo existe si el candado triple lo permite
 // (APP_ENV development/testing + petición local + DEV_DOOR=1). Ver src/Core/DevDoor.php.
@@ -52,7 +52,8 @@ if ($devDoorIsOpen) {
     $publicRoutes[] = '/dev/entrar';
 }
 
-$routeRequiresAuthentication = !\App\Core\SpaRouter::sirveLaSpa($requestUri)
+$requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$routeRequiresAuthentication = !\App\Core\SpaRouter::sirveLaSpa($requestUri, $requestMethod)
     && !in_array($requestUri, $publicRoutes, true);
 $reason = \App\Core\SessionMiddleware::beginRequest($routeRequiresAuthentication);
 register_shutdown_function(static function (): void {
@@ -89,9 +90,14 @@ if (\App\Core\AppEnvironment::allowsInternalTools()) {
 
 // Root / Entry Points
 $router->get('/', [\App\Controllers\Auth\LoginController::class, 'index']);
+// HEAD junto a GET: son las dos rutas exactas migradas de SpaRouter (RUTAS_EXACTAS_MIGRADAS),
+// y su rollback (quitarlas de ese array) tiene que devolver ambos métodos al legado, no solo
+// GET — ver App\Core\Router::head().
+$router->head('/', [\App\Controllers\Auth\LoginController::class, 'index']);
 
 // Auth
 $router->get('/login', [\App\Controllers\Auth\LoginController::class, 'index']);
+$router->head('/login', [\App\Controllers\Auth\LoginController::class, 'index']);
 $router->post('/login', [\App\Controllers\Auth\LoginController::class, 'login']);
 $router->get('/password/forgot', [\App\Controllers\Auth\PasswordResetController::class, 'forgot']);
 $router->post('/password/forgot', [\App\Controllers\Auth\PasswordResetController::class, 'sendLink']);
@@ -159,6 +165,8 @@ $router->get('/control-cambios', [\App\Controllers\Integracion\ControlCambiosCon
 $router->get('/api/session', [\App\Controllers\Api\SessionApiController::class, 'show']);
 $router->post('/api/auth/login', [\App\Controllers\Api\AuthApiController::class, 'login']);
 $router->post('/api/auth/logout', [\App\Controllers\Api\AuthApiController::class, 'logout']);
+$router->post('/api/auth/password/change', [\App\Controllers\Api\AuthApiController::class, 'changePassword']);
+$router->post('/api/auth/password/cancel', [\App\Controllers\Api\AuthApiController::class, 'cancelPasswordChange']);
 $router->get('/api/proyectos', [\App\Controllers\Api\ProjectApiController::class, 'index']);
 $router->post('/api/proyectos/seleccionar', [\App\Controllers\Api\ProjectApiController::class, 'select']);
 
@@ -337,10 +345,13 @@ $router->post('/legacy/funciones_generales/php/buscadorTabla.php', function () {
     require_once PROJECT_ROOT . '/src/Legacy/buscadorTabla.php';
 });
 $router->post('/context/clear-week', [\App\Controllers\Core\ContextController::class, 'clearWeek']);
+$router->post('/api/context/weeks/create', [\App\Controllers\Api\WeekContextApiController::class, 'crear']);
+$router->post('/api/context/weeks/delete-last', [\App\Controllers\Api\WeekContextApiController::class, 'eliminarUltima']);
 
-// Maintenance Secret Access (ruta oculta para admins durante mantenimiento)
-$router->get(MaintenanceMode::SECRET_PATH, [\App\Controllers\Auth\LoginController::class, 'index']);
-$router->post(MaintenanceMode::SECRET_PATH, [\App\Controllers\Auth\LoginController::class, 'maintenanceLogin']);
+// Maintenance Secret Access (ruta oculta para admins durante mantenimiento, servida como
+// shell React desde la Tarea 12 de S01 — ver App\Core\SpaHostRenderer)
+$router->get(MaintenanceMode::SECRET_PATH, [\App\Controllers\Auth\MaintenanceLoginController::class, 'show']);
+$router->post(MaintenanceMode::SECRET_PATH, [\App\Controllers\Auth\MaintenanceLoginController::class, 'submit']);
 
 // --- BI Control Tower API ---
 $router->get('/api/bi/control-tower', [\App\Controllers\Api\BiControlTowerApiController::class, 'controlTower']);
@@ -381,9 +392,10 @@ $router->get('/bi/curva-s', [\App\Controllers\Bi\BiViewController::class, 'curva
 
 // 6. Despachar
 // La SPA maneja su propio enrutado en el navegador: cada ruta migrada devuelve
-// el mismo HTML y React decide qué pantalla mostrar.
-if (\App\Core\SpaRouter::sirveLaSpa($requestUri)) {
-    require PROJECT_ROOT . '/public/app/index.html';
+// el mismo HTML y React decide qué pantalla mostrar. Solo GET/HEAD cruzan aquí —
+// ver App\Core\SpaRouter::coincideConMapa().
+if (\App\Core\SpaRouter::sirveLaSpa($requestUri, $requestMethod)) {
+    \App\Core\SpaHostRenderer::render([], 200, $requestMethod);
     exit;
 }
 

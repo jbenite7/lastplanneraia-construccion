@@ -424,9 +424,17 @@ El target debe seguir activo. Éxito no obliga a una mutación local: React reca
 | 404 | `LPS_TARGET_NOT_FOUND` | target ajeno/inexistente indistinguible |
 | 409 | `LPS_TARGET_STALE` | alerta cerrada/cambio de contexto |
 | 409 | `PROFILE_REQUIRED` | actor incompatible |
+| 409 | `LPS_ESCALATION_TERMINAL` | nivel terminal (5) sin superior al que escalar — actor con capacidad y elegible, pero `notifyNext` cae por la jerarquía agotada, no por autorización |
 | 422 | `VALIDATION_FAILED` | input inválido |
 | 500 | `LPS_READ_FAILED` | lectura controlada |
 | 503 | `SERVICE_UNAVAILABLE` | recuperación manual |
+
+**`LPS_ESCALATION_TERMINAL` añadido en la Tarea 6** (T02-AC-121): esta tabla no traía código para
+"nivel terminal sin superior" cuando se implementó `POST /api/lps/crisis/register`. Sin uno
+dedicado, ese caso caía en `CAPABILITY_REQUIRED` (403) — un mensaje de "acción no autorizada" que
+le dice a alguien en medio de una crisis que le falta un permiso que en realidad tiene; lo que no
+existe es un nivel superior al que escalar. 409 porque es un conflicto de estado (misma categoría
+que `LPS_TARGET_STALE`/`PROFILE_REQUIRED`), no un problema de autorización del actor.
 
 Forma aditiva:
 

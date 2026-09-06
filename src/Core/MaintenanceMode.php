@@ -21,6 +21,15 @@ class MaintenanceMode
      */
     public static function isExemptRoute(string $uri): bool
     {
+        // El bundle del shell React (Tarea 12, S01) sirve la pantalla de la ruta oculta, pero
+        // sus assets (`/app/assets/*.js`, `.css`) son peticiones aparte, igual que el CSS del
+        // design system arriba: sin esta exención el segundo <script>/<link> del host oculto
+        // caería en el cartel de mantenimiento. Solo el prefijo de assets — `/app` en sí sigue
+        // cerrado, la SPA completa no se abre por esta vía.
+        if (str_starts_with($uri, '/app/assets/')) {
+            return true;
+        }
+
         $exentas = array_merge(
             [
                 '/runtime/frontend-config.js',

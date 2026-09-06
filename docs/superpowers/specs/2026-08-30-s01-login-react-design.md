@@ -303,7 +303,11 @@ registran, persisten, inspeccionan ni adjuntan contraseñas.
 
 ### 10.1 Temas
 
-- Oscuro inicia cuando no hay preferencia; claro y oscuro son completos.
+**Corregido el 2026-09-03 (§16):** esta línea decía «oscuro inicia cuando no hay preferencia»,
+contradiciendo `AGENTS.md` y el manifiesto de diseño. Cedió la spec: es **claro** el que inicia sin
+preferencia guardada.
+
+- Claro inicia cuando no hay preferencia; claro y oscuro son completos.
 - El conmutador T01 está disponible antes de autenticarse.
 - Marca, inputs, avisos, modal y estados usan `public/css/tokens.css`; cero hex/rgba locales.
 - Cambiar tema no borra campos ni reinicia una petición.
@@ -435,9 +439,18 @@ No se escriben credenciales en logs, screenshots, trazas ni repositorio.
 
 ## 16. Preguntas abiertas
 
-No quedan decisiones funcionales abiertas. El host oculto debe volver al mismo acceso React con un
-error genérico ante cualquier rechazo; la prueba HTTP debe fijar ese resultado sin debilitar
-mantenimiento para simplificar el montaje React.
+Al aprobarse no quedaba ninguna decisión funcional abierta. El host oculto debe volver al mismo
+acceso React con un error genérico ante cualquier rechazo; la prueba HTTP debe fijar ese resultado sin
+debilitar mantenimiento para simplificar el montaje React.
+
+**Resuelta el 2026-09-03, de producto, no técnica.** §10.1 y el plan original fijaban «oscuro inicia
+cuando no hay preferencia», contra `docs/design-system/manifests/auth.json` («claro por defecto sin
+flash») y `AGENTS.md» («claro es la cara del producto y el tema de entrada»). Cedió esta spec, no la
+documentación: `frontend/src/shell/tema.ts` (`TEMA_FALLBACK = 'claro'`) y el script de arranque de
+`frontend/index.html` ya arrancan en claro sin preferencia guardada. Los ocho goldens de
+`login-react.visual.mjs` no cambiaron —cada captura fija su propio tema por `localStorage`, ajeno al
+fallback—, verificado byte a byte contra el build reconstruido. Detalle de la verificación en
+`TASKS.md`.
 
 ## 17. Gate siguiente
 
@@ -445,3 +458,10 @@ Felipe aprobó esta spec el 2026-08-30. Se invocó `superpowers:writing-plans` p
 `docs/superpowers/plans/2026-08-30-s01-login-react.md`, incluyendo únicamente el incremento T01 que
 login necesita. El plan requiere revisión propia antes de ejecución; esta aprobación de diseño no
 autoriza implementación, commit, publicación ni cambios de datos.
+
+**Estado al 2026-09-02.** El plan se ejecutó: S01 está `CODE_COMPLETE` desde el 2026-09-01 en la rama
+`shell-minimo-react`, con PR #20 abierto contra `main`. Los pasos 1–5 de §12 están hechos; los pasos
+6–7 (promover rutas canónicas y retirar VIEW-01, tabla de §13) **no**, porque la ventana de rollback
+no ha empezado a correr: el corte no está en producción. El detalle —commits, rulings que cambiaron el
+plan, defectos encontrados, goldens aprobados y lo que bloquea el merge— vive en la sección `## Cierre`
+del plan.

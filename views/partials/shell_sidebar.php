@@ -36,6 +36,12 @@ $shellCanDelete = $shellRbac->can('lps.semana.eliminar', $shellRol);
 $shellEsAdmin = $shellRol === 'A';
 $shellDb = (string) ($_SESSION['db'] ?? '');
 $shellWeekCsrf = \App\Security\CsrfTokenManager::generate('lps_week_admin');
+// El shell React (T02) y ContextController usan el form-key `shell_api`; ninguna vista legacy lo
+// emitía todavía (`public/js/core/ContextManager.js` mandaba /context/week sin token y con el
+// contrato viejo {success,message}, así que la puerta de servicio quedaba rota para cualquier
+// página que incluyera este sidebar). Se emite aquí, en el único parcial que incluyen las 16
+// vistas, en vez de en cada controlador.
+$shellApiCsrfToken = \App\Security\CsrfTokenManager::generate('shell_api');
 $shellMaxSemana = 0;
 $shellUltimaSemana = null;
 foreach ($shellWeeks as $shellW) {
@@ -117,6 +123,7 @@ $shellGroups = array_values(array_filter([
     $shellCompras !== [] ? ['id' => 'compras', 'label' => 'Compras', 'items' => $shellCompras] : null,
 ]));
 ?>
+<meta name="lps-shell-csrf-token" content="<?php echo htmlspecialchars($shellApiCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
 <div data-sidebar-persist>
 <?= \App\View\Components\DesignSystemComponent::navigation([
     'id' => 'app-shell',

@@ -1,3 +1,20 @@
+/**
+ * TRAMPA PARA QUIEN EDITE ESTE ARCHIVO (T02 Tarea 9, 2026-08-31):
+ *
+ * `markAsRead()` de abajo hace `fetch('/api/notifications/read', ...)` SIN token CSRF. Hoy eso no
+ * rompe nada porque `initNotifications()` corta en la línea `if (!badgeDesk && !badgeMob) return;`
+ * — el sidebar rollout quitó `#notificationBadge`/`#notificationList` del DOM en todas las vistas
+ * (`grep -rln "notificationBadge\|notificationList" views/` no encuentra nada), así que ese fetch
+ * nunca se ejecuta en la práctica actual.
+ *
+ * Pero el servidor SÍ cambió: `NotificationController::markAsRead()` (`src/Controllers/Core/
+ * NotificationController.php`) ahora EXIGE el header `X-CSRF-Token` con el token `shell_api` (el
+ * mismo que usa el shell React, no uno nuevo) — si vuelves a renderizar esos IDs y reactivas este
+ * flujo, el POST de aquí abajo empezará a responder 403 `CSRF_INVALID` de inmediato. Antes de
+ * reactivarlo: añade `X-CSRF-Token` con el valor de `shell_api` (expuesto hoy vía `/api/session` al
+ * shell React; esta vista legacy tendría que emitirlo aparte, p. ej. en un `<meta>` como hace
+ * `lps-drawer-csrf-token`).
+ */
 (function() {
     function handleSessionExpiry(payload) {
         var redirectUrl = (payload && payload.redirect) || '/logout?timeout=1';

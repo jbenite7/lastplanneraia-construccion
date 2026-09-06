@@ -27,6 +27,23 @@ class Router
         $this->add('POST', $route, $handler);
     }
 
+    /**
+     * Registro explícito de HEAD. `nikic/fast-route` (versión instalada aquí) ya hace fallback
+     * de HEAD a GET para rutas estáticas sin parámetros (`vendor/nikic/fast-route/src/
+     * Dispatcher/RegexBasedAbstract.php:35-47`) — así que en la práctica una ruta con solo
+     * `get()` registrado ya responde a HEAD, y `head()` no es estrictamente necesario para
+     * `/` o `/login` (ver `tests/unit/RouterHeadRegistrationTest.php`, que deja evidencia de
+     * ambos comportamientos). Se añade de todos modos para que el rollback de
+     * `App\Core\SpaRouter` (quitar una ruta exacta migrada, como `/login`, de
+     * `RUTAS_EXACTAS_MIGRADAS`) no dependa de un detalle interno de una librería de terceros
+     * que podría cambiar en una versión futura — la intención queda explícita en el código,
+     * no implícita en el comportamiento de fallback de FastRoute.
+     */
+    public function head($route, $handler)
+    {
+        $this->add('HEAD', $route, $handler);
+    }
+
     public function dispatch()
     {
         $this->dispatcher = simpleDispatcher(function (RouteCollector $r) {

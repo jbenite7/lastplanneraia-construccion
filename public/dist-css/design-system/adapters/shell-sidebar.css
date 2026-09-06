@@ -262,6 +262,10 @@
   body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] .aia-sidebar__footer {
     padding-block: var(--ds-space-2) !important;
   }
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"]#app-shell-nav .aia-sidebar__nav {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
   body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] .aia-sidebar__group ul {
     gap: 2px;
   }
@@ -281,6 +285,9 @@
     grid-column: 1;
     min-width: 0;
     gap: var(--ds-space-2);
+  }
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="expanded"] .aia-sidebar__week {
+    grid-column: 1 / -1;
   }
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="expanded"] .aia-sidebar__toggle {
     grid-column: 2;

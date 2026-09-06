@@ -61,6 +61,11 @@ comprobar(
 comprobar('la ruta oculta sigue exenta', MaintenanceMode::isExemptRoute(MaintenanceMode::SECRET_PATH));
 comprobar('frontend-config.js sigue exento', MaintenanceMode::isExemptRoute('/runtime/frontend-config.js'));
 
+// Tarea 12 (S01): el shell React de la ruta oculta necesita su propio bundle exento, sin
+// abrir la SPA completa — solo el prefijo de assets, nunca `/app` en si.
+comprobar('un asset del bundle del shell queda exento', MaintenanceMode::isExemptRoute('/app/assets/app.js'));
+comprobar('app sigue cerrada en mantenimiento', !MaintenanceMode::isExemptRoute('/app'));
+
 // La exencion no puede abrir el sitio: cualquier ruta de aplicacion sigue cerrada.
 foreach (['/', '/login', '/plan-compras', '/programacion-intermedia', '/indicadores'] as $cerrada) {
     comprobar("sigue cerrada: $cerrada", !MaintenanceMode::isExemptRoute($cerrada));

@@ -88,23 +88,28 @@ export async function loginAndSelectProject(
 }
 
 export async function changeWeek(page, week, destination = '/programa-general') {
+  // ContextController::setWeek() (T02) exige X-CSRF-Token (form-key shell_api) y devuelve
+  // {ok, week} / {ok:false, error:{code,message}} -no el {success,message} original-. El token
+  // lo emite la vista anfitriona en <meta name="lps-shell-csrf-token"> (mismo patrón que
+  // lps_drawer.js y public/js/core/ContextManager.js).
   const response = await page.evaluate(
     async ({ selectedWeek, redirectTo }) => {
+      const csrfToken = document.querySelector('meta[name="lps-shell-csrf-token"]')?.content || '';
       const res = await fetch('/context/week', {
         method: 'POST',
         credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
         body: JSON.stringify({ semana: selectedWeek }),
       });
       const payload = await res.json().catch(() => ({}));
-      if (payload.success) window.location.href = redirectTo;
+      if (payload.ok) window.location.href = redirectTo;
       return { ok: res.ok, status: res.status, payload };
     },
     { selectedWeek: week, redirectTo: destination },
   );
 
   expect(response.ok, JSON.stringify(response)).toBe(true);
-  expect(response.payload.success, JSON.stringify(response)).toBe(true);
+  expect(response.payload.ok, JSON.stringify(response)).toBe(true);
   await page.waitForURL(`**${destination}`, { timeout: 45000 });
   await expect(page.locator('#semana, #semana_PHP').first()).toHaveValue(String(week), { timeout: 45000 });
 }

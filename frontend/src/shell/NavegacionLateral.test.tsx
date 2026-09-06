@@ -1,43 +1,87 @@
 import { render, screen } from '@testing-library/react';
-import { expect, test } from 'vitest';
+import { afterEach, expect, test } from 'vitest';
 import type { Sesion } from '../lib/api/esquemas/sesion';
 import { NavegacionLateral } from './NavegacionLateral';
 
 const csrfToken = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 
-const sesionAdmin: Sesion = {
-  authenticated: true,
-  user: { username: 'test.A', displayName: 'Ana', role: 'A' },
-  project: { id: 1, name: 'Da Porto' },
-  capabilities: { canManageWeeks: true, canManageGeneralProgram: true },
-  navigation: { bi: { visible: true, href: '/bi/control-tower?project_id=1&semana=8' } },
-  csrfToken,
-};
+/**
+ * Fixtures deliberadamente mínimas: representan lo que el servidor ya autorizó, nunca lo que
+ * React debería inferir. Ningún caso aquí depende de `sesion.user.role` para decidir qué se
+ * ve — eso es justo lo que esta tarea retira del cliente (spec T01 §10.2).
+ */
+function sesionConGrupos(
+  groups: Sesion['navigation']['groups'],
+  overrides: Partial<Sesion> = {},
+): Sesion {
+  return {
+    authenticated: true,
+    user: { username: 'test.A', displayName: 'Ana', role: 'A' },
+    project: { id: 1, name: 'Da Porto', area: 'Construccion' },
+    capabilities: {},
+    navigation: { bi: { visible: false, href: null }, groups },
+    csrfToken,
+    ...overrides,
+  };
+}
 
-const sesionVisualizador: Sesion = {
-  ...sesionAdmin,
-  user: { username: 'test.V', displayName: 'Víctor', role: 'V' },
-  capabilities: { canManageWeeks: false, canManageGeneralProgram: false },
-  navigation: { bi: { visible: false, href: null } },
-};
+afterEach(() => {
+  window.history.pushState({}, '', '/');
+});
 
 test('es un landmark de navegación y muestra el proyecto y usuario activos', () => {
-  render(<NavegacionLateral sesion={sesionAdmin} />);
+  render(<NavegacionLateral sesion={sesionConGrupos([])} />);
 
   expect(screen.getByRole('navigation', { name: /navegación del proyecto/i })).toBeInTheDocument();
   expect(screen.getByText('Da Porto')).toBeInTheDocument();
   expect(screen.getByText('Ana')).toBeInTheDocument();
 });
 
-test('los módulos aún no migrados enlazan al sitio PHP', () => {
-  render(<NavegacionLateral sesion={sesionAdmin} />);
+test('renderiza exactamente los grupos y entradas que trae el manifiesto del servidor, en su orden', () => {
+  const sesion = sesionConGrupos([
+    {
+      id: 'informacion',
+      label: 'Información',
+      items: [
+        { id: 'semanas-proyecto', label: 'Semanas del Proyecto', href: null, icon: 'calendar', action: true },
+        { id: 'profesionales', label: 'Profesionales', href: '/profesionales', icon: 'user', action: false },
+      ],
+    },
+    {
+      id: 'obra',
+      label: 'Obra',
+      items: [
+        { id: 'programa-general', label: 'Programa General', href: '/programa-general', icon: 'program', action: false },
+      ],
+    },
+  ]);
 
+  render(<NavegacionLateral sesion={sesion} />);
+
+  expect(screen.getByRole('heading', { name: 'Información' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Obra' })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /profesionales/i })).toHaveAttribute('href', '/profesionales');
   expect(screen.getByRole('link', { name: /programa general/i })).toHaveAttribute('href', '/programa-general');
-  expect(screen.getByRole('link', { name: /plan de compras/i })).toHaveAttribute('href', '/plan-compras');
+  expect(screen.getByRole('button', { name: /semanas del proyecto/i })).toBeDisabled();
+
+  // No hay grupo "Compras" ni nada relacionado con plan de compras: el manifiesto nunca lo
+  // trajo, y React no rellena huecos que el servidor dejó vacíos.
+  expect(screen.queryByRole('heading', { name: 'Compras' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: /plan de compras/i })).not.toBeInTheDocument();
 });
 
-test('usa exclusivamente el destino BI autorizado por el servidor', () => {
-  render(<NavegacionLateral sesion={sesionAdmin} />);
+test('usa exclusivamente el href que el servidor entrega, incluido el destino BI ya autorizado', () => {
+  const sesion = sesionConGrupos([
+    {
+      id: 'informacion',
+      label: 'Información',
+      items: [
+        { id: 'control-tower', label: 'Control Tower - Informes', href: '/bi/control-tower?project_id=1&semana=8', icon: 'chart', action: false },
+      ],
+    },
+  ]);
+
+  render(<NavegacionLateral sesion={sesion} />);
 
   expect(screen.getByRole('link', { name: /control tower/i })).toHaveAttribute(
     'href',
@@ -45,23 +89,59 @@ test('usa exclusivamente el destino BI autorizado por el servidor', () => {
   );
 });
 
-test('preserva módulos de consulta para V y oculta las entradas legacy restringidas', () => {
-  render(<NavegacionLateral sesion={sesionVisualizador} />);
+test('un ítem denegado por el servidor simplemente no aparece, sin importar el rol en sesión', () => {
+  // El rol es 'G', que hoy hace que profesionales/programa-general estén vetados — pero el
+  // componente no debe saberlo: si el manifiesto no trae el ítem, no aparece, punto. Si
+  // trajera el ítem igual (porque el servidor decidió mostrarlo), React lo pintaría.
+  const sesion = sesionConGrupos(
+    [
+      {
+        id: 'informacion',
+        label: 'Información',
+        items: [
+          { id: 'indicadores', label: 'Indicadores LPS', href: '/indicadores', icon: 'overview', action: false },
+        ],
+      },
+    ],
+    { user: { username: 'test.G', displayName: 'Gerencia', role: 'G' } },
+  );
 
-  expect(screen.getByRole('link', { name: /programa general/i })).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: /programación intermedia/i })).toBeInTheDocument();
-  expect(screen.queryByRole('link', { name: /actualizar cronograma/i })).not.toBeInTheDocument();
-  expect(screen.queryByRole('link', { name: /control de cambios/i })).not.toBeInTheDocument();
+  render(<NavegacionLateral sesion={sesion} />);
+
+  expect(screen.getByRole('link', { name: /indicadores/i })).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: /profesionales/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: /programa general/i })).not.toBeInTheDocument();
 });
 
-test('oculta el conjunto histórico para roles G sin deducirlo de las capacidades', () => {
-  render(<NavegacionLateral sesion={{
-    ...sesionAdmin,
-    user: { username: 'test.G', displayName: 'Gerencia', role: 'G' },
-    capabilities: { canManageGeneralProgram: true },
-  }} />);
+test('marca aria-current="page" solo en la entrada cuyo href coincide exactamente con la URL actual', () => {
+  window.history.pushState({}, '', '/programa-general');
 
-  expect(screen.queryByRole('link', { name: /programa general/i })).not.toBeInTheDocument();
-  expect(screen.queryByRole('link', { name: /profesionales/i })).not.toBeInTheDocument();
-  expect(screen.getByRole('link', { name: /programación semanal/i })).toBeInTheDocument();
+  const sesion = sesionConGrupos([
+    {
+      id: 'obra',
+      label: 'Obra',
+      items: [
+        { id: 'programa-general', label: 'Programa General', href: '/programa-general', icon: 'program', action: false },
+        { id: 'programacion-intermedia', label: 'Programación Intermedia', href: '/programacion-intermedia', icon: 'tasks', action: false },
+      ],
+    },
+  ]);
+
+  render(<NavegacionLateral sesion={sesion} />);
+
+  expect(screen.getByRole('link', { name: /programa general/i })).toHaveAttribute('aria-current', 'page');
+  expect(screen.getByRole('link', { name: /programación intermedia/i })).not.toHaveAttribute('aria-current');
+});
+
+test('el código fuente no contiene ninguna matriz de autorización propia', async () => {
+  const fuente = await import('./NavegacionLateral.tsx?raw').catch(() => null);
+  // Si el bundler de Vitest no soporta el sufijo ?raw en este entorno, el resto de pruebas
+  // de esta suite ya ejercitan el contrato de comportamiento; el escaneo de fuente
+  // persistido y exhaustivo vive en tests/design-system/shell-navigation-authority.test.mjs.
+  if (fuente === null) return;
+
+  const texto = (fuente as { default: string }).default;
+  expect(texto).not.toMatch(/ocultasPorRol/);
+  expect(texto).not.toMatch(/role\s*===\s*['"]/);
+  expect(texto).not.toMatch(/user\?\.role/);
 });

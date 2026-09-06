@@ -128,6 +128,12 @@ jobs:
         run: npm run test:design-system:static
       - name: Enforce Programa General pilot contract
         run: node tests/test_programa_general_sprint_contract.mjs
+      # La ruta oculta de mantenimiento es un secreto operativo: si se publica en el
+      # bundle, cualquiera que abra las herramientas del navegador la encuentra, y un
+      # bundle ya servido no se puede des-publicar. El candado corre aquí, no solo en
+      # local, porque una comprobación que nadie ejecuta no es un candado (S01 T12).
+      - name: Enforce hidden maintenance path not in published bundle
+        run: npm run check:secret-not-in-bundle
 
   design-system-runtime:
     runs-on: ubuntu-latest

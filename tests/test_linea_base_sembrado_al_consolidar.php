@@ -1,36 +1,62 @@
 <?php
-// @requiere: db
+// @requiere: puro
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$fuente = file_get_contents(__DIR__ . '/../src/Legacy/nueva_semana.php');
-
-// Se compara sobre el CÓDIGO, no sobre el texto: `str_contains` sobre el fuente crudo pasa
-// igual con la línea comentada, y una asercion que pasa con el codigo desactivado no vigila
-// nada. `token_get_all` marca los comentarios como T_COMMENT/T_DOC_COMMENT y aquí se tiran.
-$codigo = '';
-foreach (token_get_all($fuente) as $token) {
-    if (is_array($token)) {
-        if ($token[0] === T_COMMENT || $token[0] === T_DOC_COMMENT) {
+/**
+ * Corregido en Tarea 5 (T01): el sembrado de línea base ya no vive en `nueva_semana.php` — se
+ * extrajo a `WeekAdministrationService::crear()`, que delega la ejecución en
+ * `App\Contracts\Shell\WeekAdministrationRepository::sembrarLineaBaseSiFalta()` (implementado por
+ * `DatabaseWeekAdministrationRepository`, que a su vez llama `LineaBaseContractualService::
+ * sembrarSiFalta()`). Este archivo ahora escanea esos tres puntos en vez del script legado, que
+ * quedó como llamador de compatibilidad sin lógica propia (AGENTS.md: "no dupliques reglas de
+ * negocio en el legado").
+ */
+function codigoSinComentarios(string $ruta): string
+{
+    $codigo = '';
+    foreach (token_get_all(file_get_contents($ruta)) as $token) {
+        if (is_array($token)) {
+            if ($token[0] === T_COMMENT || $token[0] === T_DOC_COMMENT) {
+                continue;
+            }
+            $codigo .= $token[1];
             continue;
         }
-        $codigo .= $token[1];
-        continue;
+        $codigo .= $token;
     }
-    $codigo .= $token;
+
+    return $codigo;
 }
 
 $fallos = [];
 
-if (!str_contains($codigo, 'LineaBaseContractualService')) {
-    $fallos[] = 'nueva_semana.php no invoca el sembrado de la linea base';
+$nuevaSemana = codigoSinComentarios(__DIR__ . '/../src/Legacy/nueva_semana.php');
+if (!str_contains($nuevaSemana, 'WeekAdministrationService')) {
+    $fallos[] = 'nueva_semana.php ya no delega en WeekAdministrationService';
 }
-if (!str_contains($codigo, 'sembrarSiFalta')) {
-    $fallos[] = 'nueva_semana.php no llama a sembrarSiFalta';
-}
-// El legado se toca lo minimo: una sola invocacion, no logica.
-if (substr_count($codigo, 'sembrarSiFalta') > 1) {
-    $fallos[] = 'el sembrado aparece mas de una vez: la logica debe vivir en el servicio';
+if (str_contains($nuevaSemana, 'LineaBaseContractualService') || str_contains($nuevaSemana, 'sembrarSiFalta')) {
+    $fallos[] = 'nueva_semana.php volvió a acoplarse directo a la línea base — debe pasar por el servicio';
 }
 
-if ($fallos) { foreach ($fallos as $f) { echo "FAIL: $f\n"; } exit(1); }
-echo "OK: la consolidacion de semana siembra la linea base\n";
+$servicio = codigoSinComentarios(__DIR__ . '/../src/Services/Shell/WeekAdministrationService.php');
+if (!str_contains($servicio, 'sembrarLineaBaseSiFalta')) {
+    $fallos[] = 'WeekAdministrationService no invoca el sembrado de la línea base';
+}
+// El sembrado solo aplica a semanas >= 2 (conteo > 0): no hay "semana anterior" que arrastrar en
+// la primera. Una sola invocación dentro de esa rama, no dos.
+if (substr_count($servicio, 'sembrarLineaBaseSiFalta') !== 1) {
+    $fallos[] = 'sembrarLineaBaseSiFalta debe aparecer exactamente una vez en el servicio';
+}
+
+$repositorio = codigoSinComentarios(__DIR__ . '/../src/Services/Shell/DatabaseWeekAdministrationRepository.php');
+if (!str_contains($repositorio, 'LineaBaseContractualService') || !str_contains($repositorio, 'sembrarSiFalta')) {
+    $fallos[] = 'DatabaseWeekAdministrationRepository no delega en LineaBaseContractualService::sembrarSiFalta()';
+}
+
+if ($fallos) {
+    foreach ($fallos as $f) {
+        echo "FAIL: $f\n";
+    }
+    exit(1);
+}
+echo "OK: la consolidacion de semana siembra la linea base (vía WeekAdministrationService)\n";

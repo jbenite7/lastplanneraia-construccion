@@ -132,6 +132,10 @@ async function runFixture(mutate, { copyScreenshots = false } = {}) {
   symlinkSync(path.join(root, 'database'), path.join(fixtureRoot, 'database'), 'dir');
   symlinkSync(path.join(root, 'pdc-app'), path.join(fixtureRoot, 'pdc-app'), 'dir');
   symlinkSync(path.join(root, 'ct-app'), path.join(fixtureRoot, 'ct-app'), 'dir');
+  // Tarea 11 (S01): auth.json es el primer manifiesto con `sources` bajo `frontend/`
+  // (login React) -- sin este symlink el fixture no tiene ese directorio y el gate
+  // marca cada fuente React como "missing source", aunque exista en el repo real.
+  symlinkSync(path.join(root, 'frontend'), path.join(fixtureRoot, 'frontend'), 'dir');
   for (const file of referencedTestFiles()) {
     const source = path.join(root, file);
     if (!existsSync(source)) continue;

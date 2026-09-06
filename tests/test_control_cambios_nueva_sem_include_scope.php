@@ -12,7 +12,22 @@
 // corre con las dos variables indefinidas.
 //
 // Este test fija: (1) qué ocurre de verdad en ese ámbito, (2) que el controlador no vuelva a
-// requerirlo, y (3) que el llamador legítimo siga estableciendo el contrato.
+// requerirlo, y (3) — corregido en Tarea 5 (T01) — que `nueva_semana.php` YA NO dependa de ese
+// contrato de ámbito en absoluto.
+//
+// Tarea 5 extrajo las reglas de crear/eliminar semana a `WeekAdministrationService` y movió lo que
+// hacía `modificar_sem_estado.php` a `DatabaseWeekAdministrationRepository::finalizarEstadoSemana()`,
+// invocado como método normal (con parámetros tipados, nunca variables de ámbito adivinadas) desde
+// dentro del propio servicio — y solo tras un resultado exitoso, nunca en un camino bloqueado. El
+// riesgo que la sección 3 fijaba (TypeError con `$dbName`/`$semana` indefinidas en una salida
+// temprana) ya no puede ocurrir por construcción: el camino bloqueado de `WeekAdministrationService`
+// devuelve antes de que exista oportunidad de llamar `finalizarEstadoSemana()`, y esa llamada nunca
+// depende de variables puestas por otro archivo. Las secciones 1 y 2 siguen vigentes: 1 prueba el
+// `modificar_sem_estado.php` legado en aislamiento — el archivo no se borró ni es código muerto:
+// `GeneralApiController.php` (import de cronograma) todavía lo `require`ea directamente, con su
+// propio ámbito, sin relación con `nueva_semana.php`. No se toca nada de ese archivo ni de ese otro
+// llamador en esta tarea. La sección 2 confirma que `ControlCambiosApiController` nunca lo requirió
+// por su cuenta.
 
 define('PROJECT_ROOT', dirname(__DIR__));
 
@@ -71,18 +86,18 @@ $check(
     'ControlCambiosApiController sigue delegando en nueva_semana.php',
 );
 
-// --- 3. El llamador legítimo mantiene el contrato ----------------------------------------------
+// --- 3. Tarea 5 (T01): nueva_semana.php ya no depende de ese contrato de ámbito ----------------
+// Extraído a `WeekAdministrationService`/`DatabaseWeekAdministrationRepository::
+// finalizarEstadoSemana()`. Sin ese `include`, el riesgo que las secciones 1-2 documentan (variables
+// de ámbito indefinidas en una salida temprana) deja de aplicar a este archivo por construcción.
 $nuevaSemana = file_get_contents(PROJECT_ROOT . '/src/Legacy/nueva_semana.php');
-$posInclude = strpos($nuevaSemana, 'modificar_sem_estado.php');
-$antesDelInclude = $posInclude === false ? '' : substr($nuevaSemana, 0, $posInclude);
-$check($posInclude !== false, 'nueva_semana.php sigue incluyendo modificar_sem_estado.php');
 $check(
-    str_contains($antesDelInclude, '$semana = $semana_crear;'),
-    'nueva_semana.php asigna $semana antes de incluirlo',
+    !preg_match('/require(_once)?\s+__DIR__\s*\.\s*[\'"]\/modificar_sem_estado\.php/', $nuevaSemana),
+    'nueva_semana.php ya NO incluye modificar_sem_estado.php (Tarea 5: extraído al servicio)',
 );
 $check(
-    str_contains($antesDelInclude, '$dbName = $db;'),
-    'nueva_semana.php asigna $dbName antes de incluirlo',
+    str_contains($nuevaSemana, 'WeekAdministrationService'),
+    'nueva_semana.php delega en WeekAdministrationService',
 );
 
 echo $fails === 0

@@ -29,6 +29,9 @@ export function createCloseoutFixture() {
   symlinkSync(path.join(repositoryRoot, 'views'), path.join(fixtureRoot, 'views'), 'dir');
   symlinkSync(path.join(repositoryRoot, 'pdc-app'), path.join(fixtureRoot, 'pdc-app'), 'dir');
   symlinkSync(path.join(repositoryRoot, 'ct-app'), path.join(fixtureRoot, 'ct-app'), 'dir');
+  // Tarea 11 (S01): auth.json es el primer manifiesto con `sources` bajo `frontend/`
+  // (login React); sin este symlink el fixture no tiene ese directorio.
+  symlinkSync(path.join(repositoryRoot, 'frontend'), path.join(fixtureRoot, 'frontend'), 'dir');
   for (const file of referencedTestFiles()) {
     const source = path.join(repositoryRoot, file);
     const dest = path.join(fixtureRoot, file);

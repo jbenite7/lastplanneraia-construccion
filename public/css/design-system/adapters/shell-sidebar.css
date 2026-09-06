@@ -389,6 +389,26 @@
     padding-block: var(--ds-space-2) !important;
   }
 
+  /* El shell React (`#app-shell-nav`, id por defecto de `NavegacionLateral`) no tiene el flyout
+     de semana del legado (`.shell-week-flyout`, disparado por `li.shell-has-week-menu` DENTRO
+     del nav) que obligó al `overflow: visible` de arriba — su contexto de semana vive en el
+     encabezado, no en el nav, así que nada se escapa del nav hacia la derecha. Sin ese motivo,
+     React recupera el scroll propio canónico (`overflow-y: auto`, ya definido en
+     navigation.css junto con `min-height: 0`, que es lo que permite al nav encogerse dentro del
+     aside de altura fija en vez de desbordar). El id da especificidad suficiente para ganarle al
+     `overflow: visible` de arriba sin tocarlo — el legado nunca emite `#app-shell-nav`, así que
+     esta regla es inerte ahí.
+     Por qué hace falta: el número de ítems del menú depende del rol y del proyecto (`
+     $shellHiddenByRole` en `shell_sidebar.php`), así que el "presupuesto cero-scroll" de arriba
+     —calibrado para el legado, sin el bloque de semana que la Tarea 5 T01 le agregó a React— no
+     puede garantizarse fijo. Sin este scroll propio, un rol con más módulos de los que ese
+     presupuesto contempla pinta el menú encima del pie — medido 2026-08-31
+     (fix-sidebar-header, hallazgo de la coordinadora en 1180×820 con `test.R`). */
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"]#app-shell-nav .aia-sidebar__nav {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
 
   body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] .aia-sidebar__group ul {
     gap: 2px;
@@ -421,6 +441,15 @@
     grid-column: 1;
     min-width: 0; /* permite que el nombre use todo el 1fr sin desbordar el grid */
     gap: var(--ds-space-2);
+  }
+
+  /* Selector semanal (Tarea 5, T01 — solo el shell React lo mete en el header;
+     el legado no emite `.aia-sidebar__week`, así que esta regla es inocua ahí).
+     Ocupa las dos columnas en su propia fila: si quedara auto-colocado como
+     `.aia-sidebar__context`, el algoritmo de grid lo metería en la col 2 de la
+     fila 2, robándole ancho a la col 1 y colapsando nombre/contexto a 0px. */
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="expanded"] .aia-sidebar__week {
+    grid-column: 1 / -1;
   }
 
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="expanded"] .aia-sidebar__toggle {

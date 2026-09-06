@@ -1,0 +1,62 @@
+import { useCallback, useRef, type MouseEvent, type ReactNode } from 'react';
+import { ConmutadorTema } from '../ConmutadorTema';
+
+const ID_CONTENIDO_ACCESO = 'contenido-acceso';
+
+type PropiedadesMarcoAcceso = {
+  titulo: string;
+  /**
+   * Id opcional para el `h1`. Lo usa `CambioClaveObligatorio` (Tarea 9) para que el
+   * `<dialog>` que envuelve enlace `aria-labelledby` al mismo título de la página en
+   * vez de duplicar un segundo `h1` — la regla de "un único `h1` por pantalla" (spec
+   * T01 §14) sigue intacta porque el título del diálogo y el de la página son el
+   * mismo nodo.
+   */
+  idTitulo?: string;
+  children: ReactNode;
+};
+
+/**
+ * Envoltorio compartido de las pantallas públicas de acceso (Tarea 8, S01): login y,
+ * más adelante, el cambio de clave obligatorio. Aporta el único `h1` de la página,
+ * el skip link (mismo patrón de foco explícito que `AppShell`, ver su comentario),
+ * la marca, el `ConmutadorTema` y el pie — nunca más de un `<main>` ni de un `<h1>`
+ * por pantalla.
+ *
+ * `aia-auth`/`aia-auth__layout` (Tarea 11) son clases **añadidas**, nunca sustitutas,
+ * de las primitivas `aia-shell`/`aia-page`: acotan la hoja `public/css/auth-react.css`
+ * a esta pantalla, porque `frontend/index.html` es el documento de toda la SPA y sin
+ * ese scope la disposición de dos paneles se filtraría a pantallas no relacionadas.
+ */
+export function MarcoAcceso({ titulo, idTitulo, children }: PropiedadesMarcoAcceso) {
+  const contenidoRef = useRef<HTMLElement>(null);
+
+  const alSaltarAlContenido = useCallback((evento: MouseEvent<HTMLAnchorElement>) => {
+    evento.preventDefault();
+    contenidoRef.current?.focus();
+  }, []);
+
+  return (
+    <div className="aia-shell aia-auth">
+      <a className="aia-skip-link" href={`#${ID_CONTENIDO_ACCESO}`} onClick={alSaltarAlContenido}>
+        Saltar al contenido
+      </a>
+
+      <header className="aia-page">
+        <span className="aia-title">Last Planner AIA</span>
+        <ConmutadorTema />
+      </header>
+
+      <main id={ID_CONTENIDO_ACCESO} ref={contenidoRef} className="aia-page aia-auth__layout" tabIndex={-1}>
+        <section className="aia-card">
+          <h1 id={idTitulo}>{titulo}</h1>
+          {children}
+        </section>
+      </main>
+
+      <footer className="aia-page">
+        <p className="aia-copy">© Last Planner AIA</p>
+      </footer>
+    </div>
+  );
+}

@@ -1,5 +1,7 @@
 <?php
 
+// @requiere: puro
+
 declare(strict_types=1);
 // @requiere: puro
 

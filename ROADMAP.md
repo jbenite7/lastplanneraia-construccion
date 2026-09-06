@@ -10,7 +10,7 @@ resumen: Visión unificada y plan de adopción metodológica de Last Planner Sys
 project: lps-aia
 type: roadmap
 status: activo
-updated: 2026-08-24
+updated: 2026-09-02
 ---
 
 # Roadmap
@@ -30,6 +30,7 @@ El detalle vivo, con su orden y sus dependencias, está en [[TASKS]]. Esta tabla
 | 1. Programa Design System | Cuatro fases F0–F3: definir, implementar y controlar | en curso |
 | 2. Cierre hasta producción | Cinco fases | pendiente |
 | 3. Móvil, tablet y tema claro | Siete fases | pendiente |
+| 4. Migración a React, por entregas verticales | Spec maestra [[docs/superpowers/specs/2026-08-28-migracion-react-typescript-design]], Entregas 0–11. **Entrega 0** (plataforma del shell): T01-A, T02-A y S01 hechos en rama, sin integrar a `main` (PR #20); S02–S04 pendientes | en curso |
 
 ## Decisiones de rumbo
 
