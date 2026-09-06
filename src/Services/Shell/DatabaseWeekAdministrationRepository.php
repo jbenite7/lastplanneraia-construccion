@@ -273,7 +273,6 @@ final class DatabaseWeekAdministrationRepository implements WeekAdministrationRe
         );
 
         foreach ($stmt->fetchAll() as $fila) {
-            // @phpstan-ignore-next-line función definida en estado_programa_general.php
             $estado = pg_calculate_status(
                 $fila['Titulo'] ?? 0,
                 $fila['Ejecutado'] ?? 0,
