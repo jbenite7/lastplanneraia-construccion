@@ -321,7 +321,8 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   Arreglo: el token se toma por HTTP del `<meta name="lps-shell-csrf-token">` del sidebar, la misma
   vía del navegador. Mecanismo reproducido en local corriendo el subproceso como `nobody`, con los
   dos mismos avisos y `session_id()` vacío.
-- [x] **PR #20 — integrado con `main` el 2026-09-06 y re-verificado después de integrar.** Merge
+- [x] **PR #20 — mergeado en `main` el 2026-09-06 (`ec57dd46`), con el CI del PR en verde en los tres
+  carriles (corrida 34038836110 sobre `65ccff2f`: static, runtime claro y runtime oscuro).** Merge
   `1a553bac` (19 commits de `main` contra 64 de la rama); dos conflictos, los dos de documentación
   (`CHANGELOG.md`, `TASKS.md`). Verificado sobre el árbol integrado en contenedor efímero
   (`LPS_CODE_ROOT` al worktree, mount comprobado): `run-php-tests.php --nivel=puro` → 36/36 y
@@ -332,7 +333,7 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   separado — es el caso exacto para el que existe la regla «re-verificar después de integrar». La
   suite estática no se corrió en local a propósito: con el contenedor compartido arriba,
   `foundation.test.mjs` ejecuta PHP en el árbol de la raíz, no en el de la rama, y un verde ahí no
-  mediría nada; la mide el CI del PR. El merge queda sujeto a ese CI en verde. Texto original del
+  mediría nada; la mide el CI del PR. Texto original del
   2026-09-04: PR #20 no puede mergearse todavía, y ya no es por la regresión de CSRF. Medido en la
   corrida 33880761753 (2026-09-04, sha 2114a8f2): los dos tests del shell pasan en los dos temas,
   y el conjunto de gates en rojo es **idéntico** al de la corrida anterior al arreglo (33827872388):
