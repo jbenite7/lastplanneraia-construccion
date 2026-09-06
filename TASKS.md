@@ -321,7 +321,19 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   Arreglo: el token se toma por HTTP del `<meta name="lps-shell-csrf-token">` del sidebar, la misma
   vía del navegador. Mecanismo reproducido en local corriendo el subproceso como `nobody`, con los
   dos mismos avisos y `session_id()` vacío.
-- [ ] **PR #20 no puede mergearse todavía, y ya no es por la regresión de CSRF.** Medido en la
+- [x] **PR #20 — integrado con `main` el 2026-09-06 y re-verificado después de integrar.** Merge
+  `1a553bac` (19 commits de `main` contra 64 de la rama); dos conflictos, los dos de documentación
+  (`CHANGELOG.md`, `TASKS.md`). Verificado sobre el árbol integrado en contenedor efímero
+  (`LPS_CODE_ROOT` al worktree, mount comprobado): `run-php-tests.php --nivel=puro` → 36/36 y
+  PHPUnit 27 clases en verde; `phpstan analyse src admin/src` → `[OK] No errors`, **después** de
+  retirar un `@phpstan-ignore-next-line` que la integración dejó caducado
+  (`DatabaseWeekAdministrationRepository.php:277`: `main` ya resuelve `pg_calculate_status()`, y un
+  ignore sin error que ignorar es él mismo el error). Ninguno de los dos lados lo tenía por
+  separado — es el caso exacto para el que existe la regla «re-verificar después de integrar». La
+  suite estática no se corrió en local a propósito: con el contenedor compartido arriba,
+  `foundation.test.mjs` ejecuta PHP en el árbol de la raíz, no en el de la rama, y un verde ahí no
+  mediría nada; la mide el CI del PR. El merge queda sujeto a ese CI en verde. Texto original del
+  2026-09-04: PR #20 no puede mergearse todavía, y ya no es por la regresión de CSRF. Medido en la
   corrida 33880761753 (2026-09-04, sha 2114a8f2): los dos tests del shell pasan en los dos temas,
   y el conjunto de gates en rojo es **idéntico** al de la corrida anterior al arreglo (33827872388):
   `G_PHPSTAN_BASELINE`, `G_PHP_SUITE`, `G_FULL_APP_FLOW`, `G_RUNTIME_BUDGET_CHECK` y
