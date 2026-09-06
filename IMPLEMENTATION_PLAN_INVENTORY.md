@@ -41,7 +41,13 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_177 trabajos · 83 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_178 trabajos · 83 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+
+### septiembre de 2026
+
+| Trabajo | Documentos | Archivado |
+|---|---|---|
+| Bloqueo del tema claro | [[docs/superpowers/plans/2026-09-06-bloqueo-tema-claro|plan]] | — |
 
 ### agosto de 2026
 
