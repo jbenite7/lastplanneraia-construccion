@@ -77,6 +77,49 @@ no por push directo.** El flujo:
    rojo no se mergea; se arregla o se cierra, nunca se fuerza.
 5. Merge del PR → el push a `main` dispara el CI de rama como confirmación posterior.
 
+**Quién mergea, y con qué condición — decisión de Felipe del 2026-09-07.** Tres casos, no dos:
+
+| El CI del PR | Quién mergea |
+|---|---|
+| **verde** | la propia sesión, sin pedir turno, con las dos condiciones de abajo |
+| **rojo** | Felipe, en el chat, caso por caso — es una excepción |
+| **no corre** | depende del archivo: ver el párrafo «PR que no disparan CI» |
+
+Las dos condiciones, y no son formalidades:
+
+- **El PR declaró su condición de hecho ANTES de correr el CI**, en su propio cuerpo. Declararla
+  después es elegir el criterio sabiendo el resultado, que es lo contrario de un gate.
+- **El verde se lee de las variables `G_*` del paso «Summarize gate results»**, no del color del
+  tablero ni del `conclusion` del job. Los pasos llevan `continue-on-error` y muestran «✓» aunque
+  fallen: leer el color es leer un adorno. Medido el 2026-09-04, cuando un job en `failure` tenía
+  once de doce gates en verde y otro en `success` los tenía todos — el color no distingue esos dos
+  casos y la tabla sí.
+
+**PR que no disparan CI — decisión de Felipe del 2026-09-07, el mismo día y por el mismo PR.**
+`.github/workflows/ci.yml` lleva `paths-ignore: ['memoria/**', '*.md']`, así que un PR que solo
+toca documentación de la raíz **no tiene checks**: `gh pr checks` responde `no checks reported` y
+GitHub lo marca `CLEAN`, que ahí no significa «pasó» sino «no había nada que pasar». No confundir
+los dos. En ese caso decide **el archivo**, no el color:
+
+- **`AGENTS.md` y `CLAUDE.md` los ordena Felipe**, sin excepción. Son las reglas de trabajo: un
+  cambio ahí no altera el producto, altera cómo se decide todo lo demás, y eso pesa más que la
+  mayoría del código.
+- **El resto de la documentación la mergea la sesión** con su verificación local (`npm run
+  test:wiki` en `RC=0` como mínimo, más lo que el cambio toque).
+
+Se descubrió estrenando esta misma regla: el PR que la escribe (#35) cayó en el hueco, porque toca
+`AGENTS.md` y el CI no corrió. **Y el PR había declarado como condición de hecho un
+`design-system-static` verde que era imposible** — condición escrita sin comprobar antes si el
+workflow corría para ese cambio, que es el mismo defecto contra el que la primera condición
+previene. Por eso la comprobación es parte de declararla, no un paso posterior.
+
+**Por qué la sesión y no Felipe.** Porque el punto 4 ya dice que el CI en verde es el gate: si un
+verde además necesitara su visto, el gate sería él y esa frase sería decoración. Lo que hoy frena
+al repo no son revisiones que falten sino decisiones represadas, y meter cada merge en esa cola la
+agranda sin comprar seguridad. **Lo que esta regla NO dice** es que un verde pruebe que el cambio
+era el correcto: prueba que no rompió nada. Si el trabajo hecho no era el pedido, eso se ve en la
+revisión del PR, no en el CI, y para eso está el cuerpo del PR contando qué se verificó.
+
 Lo que esta política **no** cambia: el deploy a producción sigue exigiendo autorización explícita de
 Felipe, siempre — «CD» aquí es el pipeline de verificación, no un despliegue automático a la obra.
 Tampoco cambia la verificación local previa: el CI confirma, no sustituye.

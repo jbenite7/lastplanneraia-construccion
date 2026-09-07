@@ -53,5 +53,10 @@ que mezcle lectura de archivos en Node con ejecución en el contenedor.
   equivocó**: es que están midiendo cosas distintas. Buscar la diferencia de entorno antes de buscar
   el error.
 
+**La otra mitad de esta trampa es el tiempo**, y está en
+[[un-verde-caduca-y-a-veces-no-existe]] (2026-09-07): un verde no solo vale para el árbol donde se
+midió, sino para el **momento** en que se midió — y a veces lo que parece un verde es que nadie
+midió nada.
+
 Relacionado: [[suite-estatica-miente-en-worktree-secundario]],
 [[gate-solo-cuenta-elementos-no-los-lee]], [[suite-estatico-mide-dos-arboles]].
