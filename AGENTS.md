@@ -77,6 +77,27 @@ no por push directo.** El flujo:
    rojo no se mergea; se arregla o se cierra, nunca se fuerza.
 5. Merge del PR → el push a `main` dispara el CI de rama como confirmación posterior.
 
+**Quién mergea, y con qué condición — decisión de Felipe del 2026-09-07.** Con el CI en verde
+**mergea la propia sesión, sin pedir turno**, siempre que se cumplan las dos condiciones de abajo.
+Con el CI en rojo el merge es una excepción y la autoriza Felipe en el chat, caso por caso.
+
+Las dos condiciones, y no son formalidades:
+
+- **El PR declaró su condición de hecho ANTES de correr el CI**, en su propio cuerpo. Declararla
+  después es elegir el criterio sabiendo el resultado, que es lo contrario de un gate.
+- **El verde se lee de las variables `G_*` del paso «Summarize gate results»**, no del color del
+  tablero ni del `conclusion` del job. Los pasos llevan `continue-on-error` y muestran «✓» aunque
+  fallen: leer el color es leer un adorno. Medido el 2026-09-04, cuando un job en `failure` tenía
+  once de doce gates en verde y otro en `success` los tenía todos — el color no distingue esos dos
+  casos y la tabla sí.
+
+**Por qué la sesión y no Felipe.** Porque el punto 4 ya dice que el CI en verde es el gate: si un
+verde además necesitara su visto, el gate sería él y esa frase sería decoración. Lo que hoy frena
+al repo no son revisiones que falten sino decisiones represadas, y meter cada merge en esa cola la
+agranda sin comprar seguridad. **Lo que esta regla NO dice** es que un verde pruebe que el cambio
+era el correcto: prueba que no rompió nada. Si el trabajo hecho no era el pedido, eso se ve en la
+revisión del PR, no en el CI, y para eso está el cuerpo del PR contando qué se verificó.
+
 Lo que esta política **no** cambia: el deploy a producción sigue exigiendo autorización explícita de
 Felipe, siempre — «CD» aquí es el pipeline de verificación, no un despliegue automático a la obra.
 Tampoco cambia la verificación local previa: el CI confirma, no sustituye.
