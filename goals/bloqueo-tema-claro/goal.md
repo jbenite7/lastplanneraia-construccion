@@ -24,6 +24,12 @@ Que toda pantalla servida por PHP y el laboratorio del design system honren el t
 carril visual del CI mida el laboratorio en los dos temas (D16) con goldens claros aprobados.
 
 ## Lo que se midió antes de declararlo (2026-09-06, sobre `main` en `30794901`)
+
+> **Al ejecutarlo aparecieron TRES, no dos.** La tercera —el vocabulario de estado leído en
+> crudo, sin pasar por `--ds-active-*`— no se veía desde donde se midió, y es la que Felipe
+> señaló al rechazar la primera galería de goldens. Está medida y explicada en el `## Cierre`.
+> Las dos de abajo se conservan tal como se escribieron: eran correctas, solo incompletas.
+
 Dos causas, no una, y la segunda no estaba en `TASKS.md`:
 
 1. **`public/js/modules/aia_ui/theme.js` fuerza `data-aia-theme="dark"` sin condición** después
@@ -60,6 +66,16 @@ código de producto** (`grep` en `public/js`, `pdc-app/src`, `ct-app/src`, `fron
 5. El frente entra a `main` por Pull Request. Producción fuera de alcance.
 
 ## Posture
+
+> **Ampliada el 2026-09-07 por decisión de Felipe** («quiero que el color se resuelva ahora,
+> dentro de este mismo frente»), tras rechazar la primera galería porque el sidebar y el botón
+> crítico seguían oscuros. La primera regla de abajo queda **superada en parte**: el frente sí
+> tocó cuatro componentes compartidos —etiqueta, aviso, botón crítico y marca de severidad—
+> aunque **sin migrar ningún módulo**, porque el arreglo re-vincula los tokens en la hoja clara
+> en vez de recablear a sus 302 consumidores. El resto de la Posture se cumplió entera: ningún
+> golden oscuro se regeneró, ningún assert se aflojó, y `admin/`, `ct-app/` y el contenedor
+> compartido quedaron intactos.
+
 - No migrar ningún módulo al claro: este frente **destraba**; el primer módulo (Programa General,
   D23) tiene su propio plan.
 - No regenerar goldens oscuros. Si un golden oscuro cambia, es hallazgo, no ajuste.
@@ -113,10 +129,15 @@ ya rindiendo en claro, y es la que Felipe señaló al rechazar la primera galer�
 - **Dirección B (tinte suave + tinta oscura)** para los cuatro niveles de estado, elegida sobre
   una comparación pintada en blanco frente a la dirección sólida. Contrastes texto/fondo:
   éxito 9,78:1 · advertencia 6,20:1 · crítico 6,77:1 · información 8,42:1.
-- **Sidebar en verde de marca** en tema claro, derogando la entrada 23 que lo anclaba al casi
-  negro en ambos temas citando a Linear/Stripe/Raycast. Sin color nuevo: `--ds-nav-bg` ya
-  existía como la otra variante del mismo token. El guard no se borró: se reescribió para
-  afirmar la decisión nueva, y sigue protegiendo lo mismo (anclas fijas, nunca `--ds-active-*`).
+- **Sidebar en verde de marca** en tema claro. **Corrección de lo que esta sesión afirmó
+  primero:** no deroga la entrada 23 del piloto — eso ya lo hizo **D9** de la spec de temas el
+  2026-08-28 («Nav y sidebar cambian con el tema», revirtiendo el patrón Linear/Stripe). Lo que
+  hace este frente es **afinar D9 en el valor**: su dirección se cumple entera (la nav cambia con
+  el tema, `--ds-active-nav-*` deja de apuntar a `-dark`, la nav gana goldens dobles), pero D9
+  pedía nav *clara* y Felipe eligió el verde de marca al verla renderizada el 2026-09-07. Sin
+  color nuevo: `--ds-nav-bg` ya existía como la otra variante del mismo token. El guard no se
+  borró: se reescribió para afirmar la decisión nueva, y sigue protegiendo lo mismo (anclas
+  fijas, nunca `--ds-active-*`).
 - **Resolver el color dentro de este frente**, ampliando su alcance frente a la Posture
   original («no migrar ningún módulo al claro»). Queda escrito aquí para que el cambio de
   alcance sea auditable.

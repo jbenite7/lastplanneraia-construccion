@@ -52,8 +52,12 @@ al revisar el laboratorio ya en claro:
    especificidad. Dirección **tinte suave + tinta oscura**, decidida por Felipe sobre la
    comparación pintada en blanco; contrastes 6,20:1 a 9,78:1, todos sobre el 4,5:1 de AA.
 
-El **sidebar** pasa al verde de marca en tema claro, derogando la entrada 23 que lo anclaba al
-casi negro en ambos temas. Sin color nuevo: `--ds-nav-bg` ya existía. El oscuro no cambia.
+El **sidebar** pasa al verde de marca en tema claro. **Corrección sobre lo que este mismo
+registro dijo primero:** no deroga la entrada 23 del piloto —eso ya lo había hecho **D9** de la
+spec de temas el 2026-08-28—, sino que **afina D9 en el valor**: su dirección (la nav cambia con
+el tema, sus tokens dejan de apuntar a `-dark`, gana goldens dobles) se cumple entera; lo que
+cambia es que pedía nav *clara* y Felipe eligió el verde de marca al verla el 2026-09-07. Sin
+color nuevo: `--ds-nav-bg` ya existía. El oscuro no cambia.
 
 Los tests que daban el oscuro por sentado **materializan el tema que afirman**; ningún assert
 se aflojó y los que decían «in dark» y ahora miden el claro se renombraron. Cuatro contratos

@@ -658,3 +658,55 @@ primero, D23, con plan propio); `admin/` (D24); `ct-app/src/lib/theme.ts` y su c
 `ct-piloto-theme` (se anota como pendiente del cierre de la Torre); el conmutador D13 en las
 vistas (`theme-toggle.js` existe y nadie lo carga: tarea del plan de fase de estreno); extender
 los bucles de `design-system-compliance` al claro.
+
+---
+
+## Ejecución (2026-09-07) — en qué se apartó de lo planeado y por qué
+
+El plan se escribió mirando el código, no corriendo los gates, y ahí están sus cuatro fallos.
+Ninguno grave por separado; juntos son la lección para el próximo plan de este repo: **correr
+los gates antes de dar por buenos los pasos.**
+
+1. **El import de la hoja clara no va a `theme-overrides.css`** (tarea 2, paso 5), sino a
+   `entrypoints/core.css`. El gate de partición exige que el texto de `theme-overrides.css` sea
+   idéntico al bloque inline del agregador, y un `@import` ahí lo rompía; ponerlo solo en el
+   agregador daba `missing-from-partition`.
+2. **El presupuesto de peticiones del laboratorio** (`laboratory-hardening.test.mjs`) estaba
+   clavado en 18 y la hoja clara lo sube a 19. Se subió el tope con el porqué escrito; el tope
+   sigue siendo tope.
+3. **La tarea 3 no censó `design-system-lab.mjs`.** Dos de sus tests afirman valores oscuros
+   congelados y **sí los corre el CI** (`test:design-system:runtime`), a diferencia de
+   `design-system-compliance.mjs` y `operational-fixtures.mjs`, que el plan sí listó y el CI no
+   corre. Materializan el oscuro en vez de heredarlo.
+4. **La tarea 1 se contradice a sí misma:** el comentario que prescribe para `theme.js` nombra
+   `AiaDesignSystem`, y su propio test prohíbe esa cadena en todo el archivo. Se reescribió el
+   comentario, no se aflojó el assert.
+
+### La tercera causa, que el plan no podía prever
+
+El vocabulario de estado (`--ds-color-state-{nivel}-{bg,text}`) se lee en **302 puntos de 22
+hojas sin pasar por `--ds-active-*`**. Ninguna hoja de tema podía alcanzarlo, así que en claro
+salía con el tinte calibrado para fondo oscuro. La medición del goal preguntó quién *pisaba* el
+tema y quién *no cargaba* la hoja clara; un componente que escribe su color en crudo no aparece
+en ninguna de las dos búsquedas.
+
+Se arregló re-vinculando los tokens en la propia hoja clara —no recableando a los 302
+consumidores, que sería migrar módulos— aprovechando que `tokens.css` vive en la misma
+`@layer theme` y ahí manda la especificidad.
+
+### Cambio de alcance, con su autorización
+
+Felipe autorizó el 2026-09-07, en el chat, resolver el color dentro de este frente en vez de
+abrirle uno propio: «quiero que el color se resuelva ahora, dentro de este mismo frente.
+Muéstrame propuestas de los colores claros de estado antes de aplicarlos». Eligió la dirección
+**tinte suave + tinta oscura** sobre la sólida, y el **verde de marca** para el sidebar, ambas
+sobre comparaciones renderizadas. Eso amplía la Posture original del goal, que decía no migrar
+módulos; queda anotado en el goal y aquí para que el cambio sea auditable.
+
+### Enmienda a la tarea 4
+
+Son **18 escenarios claros, no 20**, y el censo queda `{ dark: 10, light: 9 }`.
+`states-feedback` sale del spec visual antes de llegar a `toHaveScreenshot`, así que no tiene
+captura clara que aprobar. Su golden **oscuro** mide 1102×1649 frente a los 1180×820 del resto:
+peso muerto de otra época de captura que nadie compara. **No se regeneró** — un golden oscuro
+que cambia es hallazgo, no ajuste (D18).

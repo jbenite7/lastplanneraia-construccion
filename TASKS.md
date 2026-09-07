@@ -679,7 +679,8 @@ Y había una **tercera causa** que ninguna nota registraba: el vocabulario de es
 había mirado, porque la búsqueda original preguntaba quién *pisaba* el tema, no quién *nunca
 lo consulta*. Se re-vinculó en la hoja clara en vez de recablear a los 302 consumidores.
 Dirección tinte suave, decidida por Felipe sobre la comparación pintada en blanco. El sidebar
-pasó al verde de marca, derogando la entrada 23.
+pasó al verde de marca, afinando **D9** de la spec de temas (que ya había derogado la entrada 23
+el 2026-08-28, pero pedía la nav *clara*).
 
 Detalle completo en `CHANGELOG.md` (2026-09-07) y en el `## Cierre` de
 `goals/bloqueo-tema-claro/goal.md`.

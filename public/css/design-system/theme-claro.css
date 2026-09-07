@@ -127,10 +127,11 @@
 
     /* La nav/sidebar sigue sin ser una superficie clara, pero desde el 2026-09-07
        su ancla en tema claro es el VERDE DE MARCA, no el casi negro (decision de
-       Felipe, frente `bloqueo-tema-claro`). Deroga la entrada 23, que la anclaba
-       a los -dark en ambos temas citando a Linear/Stripe/Raycast: el argumento de
-       aquella —que el ancla del producto no dependa del tema elegido— se cumple
-       igual con el verde, y ademas pone la marca donde siempre se ve. No hay color
+       Felipe, frente `bloqueo-tema-claro`). Afina D9 de la spec de temas
+       (2026-08-28), que es quien derogo la entrada 23 del piloto: D9 pedia la nav
+       CLARA, y su direccion se cumple entera —la nav cambia con el tema y estos
+       tokens dejan de apuntar a los -dark—; lo que cambia es el valor, que Felipe
+       eligio verde al verla renderizada el 2026-09-07. No hay color
        nuevo: `--ds-nav-bg` ya existia como la variante de marca del mismo token.
        Sigue apuntando a tokens sin sufijo `-active`, que cambiarian de valor
        dentro de este mismo bloque. El OSCURO no se toca: conserva el casi negro. */
