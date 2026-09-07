@@ -1,11 +1,6 @@
 (() => {
-  // El laboratorio solo carga theme-bootstrap.js (atributo/clase dark inline
-  // en <head>), no el runtime completo theme.js: por eso sigue siendo este
-  // modulo quien expone window.AiaDesignSystem.getTheme() en esta pagina. La
-  // conmutacion (setTheme/toggleTheme) se retiro en F0/Task 8: no hay otro
-  // tema al que alternar.
-  window.AiaDesignSystem = window.AiaDesignSystem || {};
-  window.AiaDesignSystem.getTheme = () => "dark";
+  // El tema lo aplica theme-bootstrap.js en <head>; este módulo no publica ningún
+  // global de tema desde el 2026-09-06 (no tenía consumidores).
 
   function boot() {
     var root = document.querySelector(".ds-lab");

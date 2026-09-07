@@ -96,21 +96,15 @@ for (const r of ALL_ROUTES) {
   await page.goto(`${BASE_URL}${r.route}`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('[data-shell-pattern="sidebar"]', { timeout: 20000 });
 
-  // 0) Regresion CT-Final: aia-theme=linen heredado no debe devolver la ruta a claro.
-  // theme.js se inyecta dinamicamente (async=false, encolado detras de sweetalert2)
-  // en las rutas no-BI: un script insertado asi no bloquea domcontentloaded, asi que
-  // leer data-aia-theme justo despues de domcontentloaded solo es determinista en las
-  // 8 rutas /bi/* (carga sincrona via views/bi/_layout.php:97). En el resto se corre
-  // el riesgo de leer el atributo "dark" estatico del <html> del SSR antes de que
-  // theme.js haya tenido oportunidad de aplicar un tema obsoleto. window.AiaDesignSystem
-  // se define y el atributo se aplica dentro del mismo bloque sincrono top-level del
-  // IIFE de theme.js (sin await/setTimeout entre medio), asi que esperar a que el
-  // global exista es equivalente a esperar a que theme.js haya terminado de ejecutarse
-  // por completo, incluida la escritura del atributo.
-  await page.waitForFunction(() => window.AiaDesignSystem);
+  // 0) Regresión CT-Final: un `aia-theme=linen` heredado no es un tema válido y cae al
+  // default. Hasta el 2026-09-06 el default era el oscuro que theme.js fijaba a pelo y
+  // este check esperaba `dark`; desde D12 (spec temas 2026-08-28) el default es el
+  // claro que theme-bootstrap.js aplica en <head>, de forma síncrona, así que a
+  // domcontentloaded el atributo ya está escrito y no hay global que esperar.
+  await page.waitForFunction(() => document.documentElement.getAttribute('data-aia-theme') !== null);
   const themeWithStaleLinen = await page.evaluate(() => document.documentElement.getAttribute('data-aia-theme'));
-  check(`[${r.label}] aia-theme=linen heredado no vuelve a claro`,
-    themeWithStaleLinen === 'dark', `data-aia-theme=${themeWithStaleLinen}`);
+  check(`[${r.label}] aia-theme=linen heredado cae al default claro (D12)`,
+    themeWithStaleLinen === 'light', `data-aia-theme=${themeWithStaleLinen}`);
 
   // Robustez: limpiar estado persistido para que el check de "default colapsado"
   // sea genuino, no un remanente de una ruta anterior en el mismo contexto.
