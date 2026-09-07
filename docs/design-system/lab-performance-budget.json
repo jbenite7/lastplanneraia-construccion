@@ -18,9 +18,12 @@
     "maxLongTaskMs": 250,
     "totalLongTaskMs": 500,
     "resourceCount": 28,
-    "cssRequestCount": 20,
+    "cssRequestCount": 21,
     "cssTransferBytes": 80000,
     "cssDecodedBytes": 180000
+  },
+  "budgetNotes": {
+    "cssRequestCount": "20 -> 21 el 2026-09-07 (frente bloqueo-tema-claro): theme-claro.css entra al grafo del laboratorio como default del sistema (D12). Sube exactamente una hoja, la del tema que el laboratorio pasa a rendir; el resto de presupuestos no se tocan."
   },
   "historicalReference": {
     "status": "summary-only",

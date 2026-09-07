@@ -610,6 +610,14 @@ test('toolbar tablet muestra texto comprensible sin overflow', async ({ page }) 
 // La semana se deriva y se pasa explícita: la máxima de Da Porto es hoy la semana vacía sembrada
 // para el caso de arriba, y sin filas no hay tarjeta que medir.
 test('superficies dark en tablet, con la tarjeta dentro', async ({ page }) => {
+  // Este test mide el OSCURO —lo dice su nombre y su umbral de luminosidad—, y hasta el
+  // 2026-09-06 lo heredaba porque `theme.js` forzaba `data-aia-theme="dark"` en esta ruta.
+  // Desde D12 el default es el claro, así que materializa el tema que afirma en vez de darlo
+  // por hecho (misma vía que theme-bootstrap.js: la preferencia por aparato de D14).
+  // El umbral no se tocó: sigue exigiendo superficies bajo 140 de media.
+  await page.addInitScript(() => {
+    try { localStorage.setItem('aia-theme', 'dark'); } catch (_) { /* privado/bloqueado */ }
+  });
   await openProgrammingWeek(page, ROLE_CASES[0], { width: 787, height: 750 });
   const week = await resolveWeekWithActivities(page, DA_PORTO);
   await changeWeek(page, week, '/programacion-semanal');
