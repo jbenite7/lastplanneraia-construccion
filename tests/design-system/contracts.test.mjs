@@ -200,7 +200,22 @@ test('homologation covers every governed visual family', async () => {
     assert.match(family.label, /^[A-ZÁÉÍÓÚÑ]/, `${family.id} needs a human label`);
     assert.ok(family.description?.length >= 24, `${family.id} needs a description`);
     assert.ok(family.candidates.length >= 1, family.id);
-    assert.deepEqual(family.themes, ['dark'], family.id);
+    // Hasta el 2026-09-07 esto era `deepEqual(family.themes, ['dark'])`: el candado
+    // contractual de un solo tema. Lo abre el frente `bloqueo-tema-claro` porque D16
+    // exige medir los dos. El candado NO se retira, se afina: `dark` sigue siendo
+    // obligatorio en todas, `light` es el unico tema adicional admitido, y ninguna
+    // familia puede declarar otra cosa.
+    assert.ok(family.themes.includes('dark'), `${family.id} debe declarar el tema dark`);
+    assert.deepEqual(
+      family.themes.filter((theme) => theme !== 'dark' && theme !== 'light'),
+      [],
+      `${family.id} declara un tema fuera de {dark, light}`,
+    );
+    // `states-feedback` es la unica que sigue sin claro, y por una razon medida: el
+    // spec visual sale antes de capturarla, asi que no tiene golden claro que aprobar.
+    if (family.id === 'states-feedback') {
+      assert.deepEqual(family.themes, ['dark'], 'states-feedback no entra al claro (ver visual-ci-contract.test.mjs)');
+    }
     const requiredViewports = ['1180x820', '1440x900'];
     const supportedViewports = [...requiredViewports, '390x844'];
     for (const viewport of requiredViewports) {
@@ -405,9 +420,19 @@ test('manifests declare the complete deterministic visual matrix', async () => {
   const viewportsOf = (familyId) => homologation.families
     .find(({ id }) => id === familyId)?.viewports || [];
   const laboratoryFamilies = [...new Set(laboratory.scenarios.map(({ family }) => family))];
+  // Desde el 2026-09-07 la matriz es familia x viewport x TEMA: el laboratorio
+  // rinde tambien en claro (frente `bloqueo-tema-claro`, D16). Hasta esa fecha
+  // este calculo multiplicaba solo por viewports porque solo habia un tema, y
+  // ese `1` implicito era el candado que habia que abrir. `themes` sale de
+  // homologation.json igual que `viewports`, asi que sigue sin escribirse a mano.
+  const themesOf = (familyId) => homologation.families
+    .find(({ id }) => id === familyId)?.themes || [];
   assert.equal(
     laboratory.scenarios.length,
-    laboratoryFamilies.reduce((total, family) => total + viewportsOf(family).length, 0),
+    laboratoryFamilies.reduce(
+      (total, family) => total + (viewportsOf(family).length * themesOf(family).length),
+      0,
+    ),
   );
   // El piloto no declara familia (family: null), asi que su matriz esperada es
   // la union de viewports exigida por homologation, la misma que aplica el

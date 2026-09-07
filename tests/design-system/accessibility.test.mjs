@@ -84,7 +84,18 @@ test('approved accessibility scenarios cover every theme and required viewport',
   ]);
   for (const family of [...new Set(scenarios.map(({ family }) => family))]) {
     const familyScenarios = scenarios.filter((scenario) => scenario.family === family);
-    assert.deepEqual([...new Set(familyScenarios.map(({ theme }) => theme))], ['dark']);
+    // Los escenarios se derivan de homologation.json, asi que sus temas son los que
+    // esa fuente declara. Hasta el 2026-09-07 aqui habia un `['dark']` clavado —el
+    // mismo candado de un solo tema que se abrio en contracts.test.mjs por D16—.
+    // La aprobacion firmada de family-approvals.json compara VIEWPORTS, no temas, asi
+    // que declarar el claro no invalida ninguna firma existente.
+    const temasDeLaFamilia = [...new Set(familyScenarios.map(({ theme }) => theme))].sort();
+    assert.ok(temasDeLaFamilia.includes('dark'), `${family} debe cubrir el tema dark`);
+    assert.deepEqual(
+      temasDeLaFamilia.filter((theme) => theme !== 'dark' && theme !== 'light'),
+      [],
+      `${family} cubre un tema fuera de {dark, light}`,
+    );
 
     // homologation.json declara los viewports de la familia; family-approvals.json declara los
     // viewports que cubrio la aprobacion humana firmada de esa familia. Son dos archivos
