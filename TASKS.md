@@ -666,6 +666,38 @@ ponerse verdes. La cadena completa, en la entrada del `CHANGELOG`. Lo que queda 
 reporte es el primer bloqueante de esta sección: la cola del mismo defecto en `admin/` y en las
 pruebas.
 
+**Resuelto el 2026-09-07 (frente `bloqueo-tema-claro`).** La entrada de abajo se queda como
+está porque su diagnóstico era correcto pero incompleto en dos puntos que costaron trabajo:
+eran **19 vistas**, no 7 (12 más cargan `theme.js` dinámicamente vía `linksComunesHead2.js`),
+y el «gate del shell» que según el comentario de `views/plan-compras/app.view.php:40` dependía
+de `window.AiaDesignSystem` **no existe**: ningún código de producto consumía ese global, solo
+un test lo esperaba. El comentario era la única fuente de esa creencia y se corrigió.
+
+Y había una **tercera causa** que ninguna nota registraba: el vocabulario de estado
+(`--ds-color-state-{nivel}-{bg,text}`) se lee en 302 puntos de 22 hojas **sin pasar por
+`--ds-active-*`**, así que ninguna hoja de tema podía alcanzarlo. No se veía desde donde se
+había mirado, porque la búsqueda original preguntaba quién *pisaba* el tema, no quién *nunca
+lo consulta*. Se re-vinculó en la hoja clara en vez de recablear a los 302 consumidores.
+Dirección tinte suave, decidida por Felipe sobre la comparación pintada en blanco. El sidebar
+pasó al verde de marca, derogando la entrada 23.
+
+Detalle completo en `CHANGELOG.md` (2026-09-07) y en el `## Cierre` de
+`goals/bloqueo-tema-claro/goal.md`.
+
+**Pendientes que este frente destapó y NO arregló:**
+- El golden oscuro de `states-feedback` mide 1102×1649 frente a los 1180×820 del resto y el
+  spec visual sale antes de compararlo: peso muerto de otra época de captura. No se regeneró
+  —un golden oscuro que cambia es hallazgo, no ajuste (D18)— y por eso el claro tiene 18
+  escenarios y no 20.
+- `/login` lo sirve el shell React desde el PR #20, pero
+  `tests/browser/design-system-compliance.mjs` sigue buscando `entrypoints/core.css` en esa
+  ruta y falla. El CI no corre ese spec, así que su rojo no bloquea nada hoy; decidir si
+  debería es parte de la tarea.
+- La familia `actions` del laboratorio tiene cero elementos `[data-operational-fixture]` donde
+  `tests/browser/operational-fixtures.mjs` espera uno. Tampoco lo corre el CI.
+- `ct-app/src/lib/theme.ts` conserva su clave propia `ct-piloto-theme`, fuera del contrato de
+  `aia-theme`. Queda para el cierre de la Torre (D23).
+
 **2026-08-28 — `theme.js` deshace el claro de entrada (D12) en 7 páginas reales; bloquea el
 arranque del plan de Programa General, no la fase cero actual.** Destapado ejecutando el goal
 [[goals/temas-y-forma-fase-cero/goal]] (Task 6): `public/js/modules/aia_ui/theme.js` es un

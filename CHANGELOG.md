@@ -28,6 +28,47 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Arreglado: el tema claro llega a las pantallas PHP y al laboratorio (2026-09-07)
+
+Frente `bloqueo-tema-claro`. El claro es el tema de entrada desde D12, pero no llegaba a
+ninguna parte. La medición del goal daba dos causas; **eran tres**, y la tercera solo se vio
+al revisar el laboratorio ya en claro:
+
+1. `public/js/modules/aia_ui/theme.js` forzaba `data-aia-theme="dark"` sin condición después
+   de que `theme-bootstrap.js` hubiera aplicado el tema elegido, en **19 vistas** (7 lo cargan
+   a mano, 12 vía `linksComunesHead2.js`) — no las 7 que decía `TASKS.md`. Queda reducido al
+   movimiento reducido; conserva su ruta porque esas vistas y tres contratos la nombran. El
+   global `window.AiaDesignSystem` que publicaba no lo consumía ningún código de producto.
+2. `public/css/design-system/theme-claro.css` no la importaba ningún entrypoint, y los tres
+   bloques oscuros ataban los tokens a `:root`. Ahora la hoja clara estrena el selector negado
+   `:root:not([data-aia-theme="dark"]):not(.aia-theme-dark)` y es el default del sistema; los
+   bloques oscuros solo aplican por atributo o clase. Con selectores mutuamente excluyentes el
+   orden entre ambos deja de importar.
+3. **La tercera, no declarada:** el vocabulario de estado (`--ds-color-state-{nivel}-{bg,text}`)
+   se lee en **302 puntos de 22 hojas sin pasar por `--ds-active-*`**, así que ninguna hoja de
+   tema podía alcanzarlo y en claro salía con el tinte calibrado para fondo oscuro. Se
+   re-vincula en la propia hoja clara —no se recablean los 302 consumidores, que sería migrar
+   módulos— aprovechando que `tokens.css` vive en la misma `@layer theme` y ahí manda la
+   especificidad. Dirección **tinte suave + tinta oscura**, decidida por Felipe sobre la
+   comparación pintada en blanco; contrastes 6,20:1 a 9,78:1, todos sobre el 4,5:1 de AA.
+
+El **sidebar** pasa al verde de marca en tema claro, derogando la entrada 23 que lo anclaba al
+casi negro en ambos temas. Sin color nuevo: `--ds-nav-bg` ya existía. El oscuro no cambia.
+
+Los tests que daban el oscuro por sentado **materializan el tema que afirman**; ningún assert
+se aflojó y los que decían «in dark» y ahora miden el claro se renombraron. Cuatro contratos
+codificaban un solo tema y se afinaron: `dark` sigue siendo obligatorio, `light` es el único
+tema adicional admitido. `homologation.json` declara el claro en nueve familias, y de ahí lo
+derivan los gates. Ningún golden oscuro cambió.
+
+**Hallazgos anotados, no arreglados aquí:** el golden oscuro de `states-feedback` mide
+1102×1649 frente a los 1180×820 del resto y no lo compara nadie desde hace tiempo — es peso
+muerto de otra época de captura y regenerarlo habría borrado la evidencia (D18). `/login` lo
+sirve el shell React desde el PR #20 y su prueba de cumplimiento sigue buscando la hoja del
+PHP migrado. La familia `actions` del laboratorio tiene cero fixtures operativos donde su spec
+espera uno.
+
+
 ### Arreglado: la evidencia de teclado del laboratorio vuelve a verde — era el test (2026-09-05)
 
 Frente `fix/gate-teclado-sidebar`. `G_KEYBOARD_REFLOW_EVIDENCE` llevaba en rojo desde el

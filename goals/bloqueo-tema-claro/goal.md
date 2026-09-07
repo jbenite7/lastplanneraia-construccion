@@ -81,3 +81,76 @@ código de producto** (`grep` en `public/js`, `pdc-app/src`, `ct-app/src`, `fron
 - [[goals/bloqueo-tema-claro/goal]] — este archivo
 - [[docs/superpowers/plans/2026-09-06-bloqueo-tema-claro]] — el plan
 - [[memoria/goals/estado]] — estado de todos los goals
+
+## Cierre
+
+**Ejecutado el 2026-09-07**, rama `fix/bloqueo-tema-claro`, worktree
+`.claude/worktrees/shell-minimo-react`. Integrado `origin/main` (`21de7804`) al arrancar y
+re-verificado sobre el árbol integrado.
+
+### La medición del 2026-09-06 daba dos causas. Eran tres.
+
+Las dos declaradas eran reales y están arregladas. La tercera apareció al mirar el laboratorio
+ya rindiendo en claro, y es la que Felipe señaló al rechazar la primera galería de goldens:
+
+3. **El vocabulario de estado se lee en crudo.** `--ds-color-state-{nivel}-{bg,text}` lo
+   consumen 302 puntos en 22 hojas **sin pasar por `--ds-active-*`**, así que ninguna hoja de
+   tema podía alcanzarlo: en claro salía con el tinte calibrado para fondo oscuro. Sus gemelos
+   `-light` se habían retirado el 2026-08-28 (D17) por no tener consumidor.
+
+   **Por qué no se vio antes:** la medición preguntó quién *pisaba* el tema (`theme.js`) y
+   quién *no cargaba* la hoja clara (los entrypoints). Un componente que escribe su color en
+   crudo no aparece en ninguna de las dos búsquedas. El mismo punto ciego va a reaparecer en
+   cada módulo que se migre al claro.
+
+   **Arreglo:** re-vincular los tokens en la propia hoja clara, no recablear a los 302
+   consumidores —eso sería migrar módulos, que la Posture prohíbe—. Funciona porque
+   `tokens.css` también vive en `@layer theme` y ahí manda la especificidad:
+   `:root:not(...):not(...)` (0,3,0) gana a `:root` (0,1,0).
+
+### Decisiones de Felipe tomadas durante la ejecución
+
+- **Dirección B (tinte suave + tinta oscura)** para los cuatro niveles de estado, elegida sobre
+  una comparación pintada en blanco frente a la dirección sólida. Contrastes texto/fondo:
+  éxito 9,78:1 · advertencia 6,20:1 · crítico 6,77:1 · información 8,42:1.
+- **Sidebar en verde de marca** en tema claro, derogando la entrada 23 que lo anclaba al casi
+  negro en ambos temas citando a Linear/Stripe/Raycast. Sin color nuevo: `--ds-nav-bg` ya
+  existía como la otra variante del mismo token. El guard no se borró: se reescribió para
+  afirmar la decisión nueva, y sigue protegiendo lo mismo (anclas fijas, nunca `--ds-active-*`).
+- **Resolver el color dentro de este frente**, ampliando su alcance frente a la Posture
+  original («no migrar ningún módulo al claro»). Queda escrito aquí para que el cambio de
+  alcance sea auditable.
+
+### Desvíos del plan, con su porqué medido
+
+- El import de la hoja clara va a `entrypoints/core.css`, no a `theme-overrides.css` como decía
+  el paso 5 de la tarea 2: el gate de partición exige que el texto de `theme-overrides.css` sea
+  idéntico al bloque inline del agregador, y un `@import` ahí lo rompía.
+- El presupuesto de peticiones del laboratorio sube de 18 a 19 (`laboratory-hardening`): entra
+  la hoja clara. El tope sigue siendo tope.
+- Dos specs de `design-system-lab.mjs` que el plan no había censado afirmaban valores oscuros
+  congelados y sí los corre el CI. Materializan el oscuro en vez de heredarlo.
+- **18 escenarios claros, no 20.** `states-feedback` sale del spec visual antes de llegar a
+  `toHaveScreenshot`, así que no tiene captura clara que aprobar. Su golden oscuro mide
+  1102×1649 frente a los 1180×820 del resto: peso muerto de otra época de captura. **No se
+  regeneró** — un golden oscuro que cambia es hallazgo, no ajuste (D18).
+
+### Condición de hecho
+
+1. **Cumplida.** Medido en navegador contra la pila aislada, con la imagen construida en el sha
+   exacto del árbol (`docker inspect` → `aia.ci.git-sha`, sin mounts). Sin preferencia guardada:
+   `/proyectos`, `/programa-general`, `/plan-compras`, `/programacion-semanal`, `/login` y
+   `/internal/design-system` arrancan en `data-aia-theme="light"` con `--ds-active-bg-page`
+   `#ffffff` y `color-scheme: light`. Con `aia-theme = "dark"` guardado, `/programa-general`
+   vuelve a `dark` con `#111a15`. Antes del frente esa misma ruta daba
+   `{"attr":"dark","stored":"light","bg":"rgb(17, 26, 21)"}`.
+2. **Cumplida.** `npm run test:design-system:static` en `RC=0` (8/8 gates), que incluye los seis
+   archivos de la condición y `test_foundation_shell_contract.mjs`.
+3. **Cumplida con enmienda.** `laboratory.json` declara **18** escenarios `light` con golden y
+   `sha256`, aprobados por Felipe sobre la segunda galería; `visual-ci-contract.test.mjs` exige
+   `light: 9`. La enmienda de 20 a 18 es la de `states-feedback`, arriba.
+4. **Pendiente de medir al cierre de esta sesión.** El almacenamiento de Docker Desktop pasó a
+   solo lectura a mitad de sesión (`read-only file system` al recrear contenedores) y se llevó
+   la base por delante. Falta correr la pata clara de accesibilidad y volver a pasar el visual
+   en ambos temas contra la pila aislada, más el CI del PR.
+5. Entra a `main` por Pull Request. Producción fuera de alcance.
