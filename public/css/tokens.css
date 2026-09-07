@@ -314,6 +314,34 @@
     --ds-color-cell-success-bg: #2e7b4d;
     --ds-color-cell-info-bg: #207a6e;
 
+    /* VUELVEN el 2026-09-07, y esta vez CON consumidor (frente `bloqueo-tema-claro`,
+       decision de Felipe sobre la comparacion pintada en blanco: direccion B, tinte
+       suave + tinta oscura). Los re-vincula `theme-claro.css` sobre
+       `--ds-color-state-{nivel}-{bg,text}`, que 302 puntos en 22 hojas leen EN CRUDO
+       —sin pasar por `--ds-active-*`—, y por eso ninguna hoja de tema podia
+       alcanzarlos: en tema claro salian con el tinte calibrado para fondo oscuro.
+       Re-vincular el token en vez de recablear a los 302 consumidores es lo que
+       permite arreglarlo sin migrar ni un modulo.
+
+       Fondos: tono `muy_claro` de la rampa del manual que corresponde a cada matiz
+       (corporativo para success, inmobiliario para info); amber y rojo no son linea
+       de negocio, asi que salen del rojo de alerta del manual (`--aia-alert-critical`,
+       #9a1f1f) y del ambar de advertencia (#a0731a) bajados a tinta legible.
+       Contraste texto/fondo medido: success 9,78:1 · warning 6,20:1 · critical 6,77:1
+       · info 8,42:1 — todos sobre el 4,5:1 de AA. El filete de 3:1 que WCAG 1.4.11
+       pide a un componente pequeno lo da el borde, que es `currentColor` (la tinta).
+
+       El OSCURO no cambia un pixel: sigue tomando los valores sin sufijo de arriba,
+       y `theme-overrides.css` no menciona este vocabulario. */
+    --ds-color-state-success-bg-light: #ddefe6;
+    --ds-color-state-success-text-light: #14402a;
+    --ds-color-state-warning-bg-light: #faedd2;
+    --ds-color-state-warning-text-light: #7a4e07;
+    --ds-color-state-critical-bg-light: #fbe6e4;
+    --ds-color-state-critical-text-light: #9a1f1f;
+    --ds-color-state-info-bg-light: #e3f9f7;
+    --ds-color-state-info-text-light: #00514a;
+
     /* Retirados 2026-08-28 (Task 7, temas-y-forma-fase-cero, D17): existian
        aqui `--ds-color-state-{success,warning,critical,info}-{bg,text}-light`,
        una "RESERVA SIN CABLEAR" que un grep literal (2026-08-03) creyo sin

@@ -107,12 +107,35 @@
     --ds-active-data-plan: #00948a;
     --ds-active-data-executed: var(--ds-color-domain-corporate);
 
-    /* La nav/sidebar NO tiene modo claro propio (decision del controlador,
-       entrada 23): se ancla a sus valores oscuros fijos en ambos temas, mismo
-       patron que Linear/Stripe/Raycast. Por eso apunta a los -dark, nunca a
-       --ds-active-* (que cambiaria de valor dentro de este mismo bloque). */
-    --ds-active-nav-bg: var(--ds-nav-bg-dark);
-    --ds-active-nav-border: var(--ds-nav-border-color-dark);
+    /* Vocabulario de estado (tercera causa del bloqueo, medida el 2026-09-07).
+       Estos cuatro niveles los leen 302 puntos en 22 hojas SIN pasar por
+       `--ds-active-*`, asi que se re-vinculan aqui, en el propio token: alcanza a
+       todos de una vez y no obliga a migrar ni un modulo (que este frente tiene
+       prohibido). Funciona porque `tokens.css` tambien vive en `@layer theme`, de
+       modo que dentro de la misma capa manda la especificidad y
+       `:root:not(...):not(...)` (0,3,0) gana a `:root` (0,1,0).
+       Direccion B —tinte suave con tinta oscura— aprobada por Felipe sobre la
+       comparacion pintada en blanco; el porque de cada hex esta en tokens.css. */
+    --ds-color-state-success-bg: var(--ds-color-state-success-bg-light);
+    --ds-color-state-success-text: var(--ds-color-state-success-text-light);
+    --ds-color-state-warning-bg: var(--ds-color-state-warning-bg-light);
+    --ds-color-state-warning-text: var(--ds-color-state-warning-text-light);
+    --ds-color-state-critical-bg: var(--ds-color-state-critical-bg-light);
+    --ds-color-state-critical-text: var(--ds-color-state-critical-text-light);
+    --ds-color-state-info-bg: var(--ds-color-state-info-bg-light);
+    --ds-color-state-info-text: var(--ds-color-state-info-text-light);
+
+    /* La nav/sidebar sigue sin ser una superficie clara, pero desde el 2026-09-07
+       su ancla en tema claro es el VERDE DE MARCA, no el casi negro (decision de
+       Felipe, frente `bloqueo-tema-claro`). Deroga la entrada 23, que la anclaba
+       a los -dark en ambos temas citando a Linear/Stripe/Raycast: el argumento de
+       aquella —que el ancla del producto no dependa del tema elegido— se cumple
+       igual con el verde, y ademas pone la marca donde siempre se ve. No hay color
+       nuevo: `--ds-nav-bg` ya existia como la variante de marca del mismo token.
+       Sigue apuntando a tokens sin sufijo `-active`, que cambiarian de valor
+       dentro de este mismo bloque. El OSCURO no se toca: conserva el casi negro. */
+    --ds-active-nav-bg: var(--ds-nav-bg);
+    --ds-active-nav-border: var(--ds-nav-border-color);
     --ds-active-nav-text: var(--ds-color-text-primary-dark);
     --ds-active-nav-text-muted: var(--ds-color-text-secondary-dark);
     --ds-active-nav-mark-filter: invert(1) brightness(1.15);

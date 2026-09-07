@@ -56,8 +56,16 @@
     --ds-active-domain-construction-text: var(--ds-color-text-inverse);
     --ds-active-data-plan: #00948a;
     --ds-active-data-executed: var(--ds-color-domain-corporate);
-    --ds-active-nav-bg: var(--ds-nav-bg-dark);
-    --ds-active-nav-border: var(--ds-nav-border-color-dark);
+    --ds-color-state-success-bg: var(--ds-color-state-success-bg-light);
+    --ds-color-state-success-text: var(--ds-color-state-success-text-light);
+    --ds-color-state-warning-bg: var(--ds-color-state-warning-bg-light);
+    --ds-color-state-warning-text: var(--ds-color-state-warning-text-light);
+    --ds-color-state-critical-bg: var(--ds-color-state-critical-bg-light);
+    --ds-color-state-critical-text: var(--ds-color-state-critical-text-light);
+    --ds-color-state-info-bg: var(--ds-color-state-info-bg-light);
+    --ds-color-state-info-text: var(--ds-color-state-info-text-light);
+    --ds-active-nav-bg: var(--ds-nav-bg);
+    --ds-active-nav-border: var(--ds-nav-border-color);
     --ds-active-nav-text: var(--ds-color-text-primary-dark);
     --ds-active-nav-text-muted: var(--ds-color-text-secondary-dark);
     --ds-active-nav-mark-filter: invert(1) brightness(1.15);
