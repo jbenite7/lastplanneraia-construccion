@@ -13,6 +13,11 @@
    no se tocan desde aquí. */
 
 @layer theme {
+  /* D12 (2026-09-06): el claro es el default del sistema. El primer selector aplica a
+     todo documento que no haya pedido el oscuro por atributo o clase; por eso el orden
+     entre esta hoja y el bloque dark de los entrypoints no importa: nunca compiten
+     sobre el mismo <html>. Los otros dos selectores conservan el gancho explícito. */
+  :root:not([data-aia-theme="dark"]):not(.aia-theme-dark),
   [data-aia-theme="light"],
   .aia-theme-light {
     color-scheme: light;

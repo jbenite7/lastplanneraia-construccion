@@ -1,4 +1,5 @@
 @layer theme {
+  :root:not([data-aia-theme="dark"]):not(.aia-theme-dark),
   [data-aia-theme="light"],
   .aia-theme-light {
     color-scheme: light;
