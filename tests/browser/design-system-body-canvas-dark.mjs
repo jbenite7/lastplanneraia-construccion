@@ -90,6 +90,11 @@ const EXPECTED_STATE_TOKEN = {
 
 test('el body de cada ruta de la Tarea 3 usa su fondo oscuro, no el fallback claro', async ({ page }) => {
   test.skip(!project, 'Construction project required');
+  // Este spec mide el OSCURO; desde D12 (2026-09-06) el default es el claro, así que
+  // materializa el tema que afirma en vez de darlo por hecho (misma vía que theme-bootstrap.js).
+  await page.addInitScript(() => {
+    try { localStorage.setItem('aia-theme', 'dark'); } catch (_) { /* privado/bloqueado */ }
+  });
   await page.setViewportSize(VIEWPORT);
   await loginAndSelectProject(page, project, CI_ADMIN);
   try {
@@ -157,6 +162,11 @@ const EXPECTED_GRID_SURFACE_BACKGROUND = {
 
 test('la superficie de la grilla Handsontable (no el body) usa fondo oscuro en cada ruta', async ({ page }) => {
   test.skip(!project, 'Construction project required');
+  // Mismo motivo que el test de arriba: este spec mide el OSCURO y desde D12 el
+  // default es el claro, así que materializa el tema que afirma.
+  await page.addInitScript(() => {
+    try { localStorage.setItem('aia-theme', 'dark'); } catch (_) { /* privado/bloqueado */ }
+  });
   await page.setViewportSize(VIEWPORT);
   await loginAndSelectProject(page, project, CI_ADMIN);
   try {
