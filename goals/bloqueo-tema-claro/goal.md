@@ -170,8 +170,20 @@ ya rindiendo en claro, y es la que Felipe señaló al rechazar la primera galer�
 3. **Cumplida con enmienda.** `laboratory.json` declara **18** escenarios `light` con golden y
    `sha256`, aprobados por Felipe sobre la segunda galería; `visual-ci-contract.test.mjs` exige
    `light: 9`. La enmienda de 20 a 18 es la de `states-feedback`, arriba.
-4. **Pendiente de medir al cierre de esta sesión.** El almacenamiento de Docker Desktop pasó a
-   solo lectura a mitad de sesión (`read-only file system` al recrear contenedores) y se llevó
-   la base por delante. Falta correr la pata clara de accesibilidad y volver a pasar el visual
-   en ambos temas contra la pila aislada, más el CI del PR.
+4. **Medido en local; falta el CI del PR.** Docker Desktop se puso en solo lectura a mitad de
+   sesión (`read-only file system` al recrear contenedores) y se llevó la base por delante;
+   reiniciado con autorización de Felipe, la pila se reconstruyó sobre `5ad97319` y el paso 0
+   dio `MOUNTS=[]` con `aia.ci.git-sha` igual al árbol. Sobre esa pila:
+   - `design-system-lab.a11y.mjs` — `RC=0` en **claro** y en **oscuro** (1 passed cada uno).
+   - `design-system-lab.visual.mjs` — `RC=0`: **18 passed** en claro, **20 passed** en oscuro.
+   - Carril de runtime del CI (`lab` + `body-canvas-dark` + `unlayered-delivery` +
+     `table-contract.runtime`) — `RC=0`: **31 passed** en cada tema.
+   - `git status --porcelain tests/browser/__screenshots__ | grep -- '-dark-'` vacío tras cada
+     pase: **ningún golden oscuro se movió** (D18).
+   - `npm run test:design-system:static` `RC=0` (8/8) y los seis archivos de la condición 2 más
+     `test_foundation_shell_contract.mjs` en `RC=0` (98/98).
+
+   Queda por confirmar el CI del PR sobre los tres jobs. **Al leerlo, el veredicto está en las
+   variables `G_*` del paso «Summarize gate results», no en el color del job:** los pasos llevan
+   `continue-on-error` y muestran «✓» aunque su gate falle.
 5. Entra a `main` por Pull Request. Producción fuera de alcance.
