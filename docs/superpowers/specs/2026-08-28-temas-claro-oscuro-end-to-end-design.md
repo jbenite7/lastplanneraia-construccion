@@ -157,6 +157,17 @@ pieza más compartida (estados, foco, hover, tratamiento del logo — el filtro
 `invert(1) brightness(1.15)` del mark deja de aplicar), los tokens `--ds-active-nav-*` de
 `theme-claro.css` dejan de apuntar a `-dark`, y la nav gana goldens dobles.
 
+**Afinada el 2026-09-07 en el VALOR, no en la dirección** (frente `bloqueo-tema-claro`,
+decisión de Felipe al verla renderizada). Todo lo de arriba se cumple: la nav cambia con el
+tema, `--ds-active-nav-*` deja de apuntar a `-dark`, y gana goldens dobles. Lo que cambia es
+qué color es «la cara clara» de la nav: **no clara, sino el verde de marca**
+(`--ds-nav-bg`, que ya existía). El argumento de la entrada 23 —que el ancla del producto no
+dependa del tema elegido— se cumple igual con el verde, y además pone la marca donde siempre
+se ve. Consecuencia que decae: el filtro `invert(1) brightness(1.15)` del mark **sigue
+aplicando** en claro, porque el fondo sigue siendo oscuro. Guard:
+`tests/design-system/theme-claro-tokens.test.mjs`, test «la nav/sidebar se ancla a tokens
+FIJOS en claro, y su fondo es el verde de marca».
+
 ### D10. Vidrio solo flotante en claro; sombras de tinta
 
 Cards, paneles y toolbars **sólidos** en claro (borde fino + sombra de tinta suave); el

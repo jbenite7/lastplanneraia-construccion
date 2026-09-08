@@ -29,7 +29,8 @@
       "label": "Fundamentos de marca",
       "description": "Colores, tipografías y escalas base que dan identidad y consistencia a AIA.",
       "themes": [
-        "dark"
+        "dark",
+        "light"
       ],
       "viewports": [
         "1180x820",
@@ -54,7 +55,8 @@
       "label": "Navegación y estructura global",
       "description": "Cabecera, navegación principal y acceso contextual entre áreas.",
       "themes": [
-        "dark"
+        "dark",
+        "light"
       ],
       "viewports": [
         "1180x820",
@@ -79,7 +81,8 @@
       "label": "Estructura de página",
       "description": "Jerarquía y distribución canónica del contenido de cada pantalla.",
       "themes": [
-        "dark"
+        "dark",
+        "light"
       ],
       "viewports": [
         "1180x820",
@@ -103,7 +106,8 @@
       "label": "Acciones",
       "description": "Botones y controles que permiten ejecutar operaciones con claridad.",
       "themes": [
-        "dark"
+        "dark",
+        "light"
       ],
       "viewports": [
         "1180x820",
@@ -133,7 +137,8 @@
       "label": "Formularios y filtros",
       "description": "Captura, validación y refinamiento de información operativa.",
       "themes": [
-        "dark"
+        "dark",
+        "light"
       ],
       "viewports": [
         "1180x820",
@@ -186,7 +191,8 @@
       "label": "Presentación de datos",
       "description": "Tablas, tarjetas y resúmenes para consultar información con precisión.",
       "themes": [
-        "dark"
+        "dark",
+        "light"
       ],
       "viewports": [
         "1180x820",
@@ -205,7 +211,8 @@
       "label": "Capas y diálogos",
       "description": "Modales y paneles temporales para tareas que requieren atención.",
       "themes": [
-        "dark"
+        "dark",
+        "light"
       ],
       "viewports": [
         "1180x820",
@@ -224,7 +231,8 @@
       "label": "Adaptadores de terceros",
       "description": "Integraciones externas alineadas visualmente con el núcleo AIA.",
       "themes": [
-        "dark"
+        "dark",
+        "light"
       ],
       "viewports": [
         "1180x820",
@@ -243,7 +251,8 @@
       "label": "Elementos de analítica",
       "description": "Gráficos e indicadores accesibles para análisis y toma de decisiones.",
       "themes": [
-        "dark"
+        "dark",
+        "light"
       ],
       "viewports": [
         "1180x820",

@@ -388,24 +388,34 @@ test('data-plan-light usa #00948a (inmobiliario oscurecido), no el principal #00
   assert.ok(rCanvasOriginal < 3, `#00a499 sobre canvas da ${rCanvasOriginal.toFixed(2)}:1 — se esperaba <3:1 (por eso se oscureció a #00948a)`);
 });
 
-test('la nav/sidebar se mantiene con sus valores OSCUROS en ambos temas (ancla de identidad)', { skip: !temaClaroExiste && 'theme-claro.css no existe' }, () => {
-  // Decisión del controlador (entrada 23): la nav no tiene modo claro propio --
-  // mismo patrón que Linear/Stripe/Raycast (chrome oscuro incluso en apps claras).
-  // Por eso apunta a los tokens -dark FIJOS, nunca a --ds-active-* (que cambiaría
-  // de valor dentro del propio bloque light).
-  const NAV_FIJOS_A_DARK = {
-    '--ds-active-nav-bg': '--ds-nav-bg-dark',
-    '--ds-active-nav-border': '--ds-nav-border-color-dark',
+test('la nav/sidebar se ancla a tokens FIJOS en claro, y su fondo es el verde de marca', { skip: !temaClaroExiste && 'theme-claro.css no existe' }, () => {
+  // Lo que este test protege NO cambió: la nav se ancla a tokens fijos, nunca a
+  // --ds-active-* (que cambiaría de valor dentro del propio bloque light).
+  //
+  // Lo que SÍ cambió, el 2026-09-07, es a CUÁL fijo. La entrada 23 la ancló al
+  // casi negro en ambos temas citando a Linear/Stripe/Raycast; Felipe derogó esa
+  // decisión al revisar el laboratorio en claro (frente `bloqueo-tema-claro`) y
+  // el fondo pasa al verde de marca `--ds-nav-bg`, que ya existía como la otra
+  // variante del mismo token — no hay color nuevo. El argumento de la entrada 23
+  // —que el ancla del producto no dependa del tema— se cumple igual.
+  // El OSCURO no se toca: conserva el casi negro.
+  // El fondo es `--ds-color-brand-primary` (#1a5633, el verde corporativo del manual) y
+  // NO `--ds-nav-bg`, que encadena a `--ds-color-brand-primary-dark` (#1a3c2a): esa es la
+  // variante oscura del verde, esta a 1,4:1 del casi negro del tema oscuro y a ojo no se
+  // distingue de el. Medido y rechazado por Felipe el 2026-09-07 sobre las capturas.
+  const NAV_FIJOS = {
+    '--ds-active-nav-bg': '--ds-nav-bg-light',
+    '--ds-active-nav-border': '--ds-nav-border-color',
     '--ds-active-nav-text': '--ds-color-text-primary-dark',
     '--ds-active-nav-text-muted': '--ds-color-text-secondary-dark',
   };
-  for (const [activo, esperadoDark] of Object.entries(NAV_FIJOS_A_DARK)) {
+  for (const [activo, esperadoFijo] of Object.entries(NAV_FIJOS)) {
     const crudo = valorDeclarado(temaClaroCss, activo);
     assert.ok(crudo, `${activo} no se declara en el bloque light de theme-claro.css`);
     assert.match(
       crudo,
-      new RegExp(`^var\\(${esperadoDark}\\)$`),
-      `${activo} debería apuntar a var(${esperadoDark}) (fijo, no al --ds-active-* que cambia con el tema) y vale: ${crudo}`,
+      new RegExp(`^var\\(${esperadoFijo}\\)$`),
+      `${activo} debería apuntar a var(${esperadoFijo}) (fijo, no al --ds-active-* que cambia con el tema) y vale: ${crudo}`,
     );
   }
   const filtro = valorDeclarado(temaClaroCss, '--ds-active-nav-mark-filter');
@@ -479,4 +489,89 @@ test('theme-overrides ancla los --ds-active-state-* oscuros a los valores vigent
   const css = readFileSync('public/css/design-system/entrypoints/theme-overrides.css', 'utf8');
   assert.match(css, /--ds-active-state-tint-red\s*:\s*var\(--ds-state-tint-red\)/);
   assert.match(css, /--ds-active-state-solid-red\s*:\s*var\(--ds-state-solid-red\)/);
+});
+
+// ---------------------------------------------------------------------------
+// Tercera causa del bloqueo del tema claro (frente `bloqueo-tema-claro`,
+// 2026-09-07). El vocabulario de estado —`--ds-color-state-{nivel}-{bg,text}`—
+// lo leen 302 puntos en 22 hojas SIN pasar por `--ds-active-*`, así que ninguna
+// hoja de tema podía alcanzarlos y salían con el color calibrado para fondo
+// oscuro. Sus gemelos `-light` se habían retirado el 2026-08-28 (D17) por no
+// tener consumidor; ahora lo tienen.
+//
+// El arreglo NO recablea a los 302 consumidores —eso sería migrar módulos, que
+// este frente tiene prohibido—: re-vincula los tokens en la propia hoja clara.
+// Funciona porque `tokens.css` también vive en `@layer theme`, así que dentro de
+// la misma capa manda la especificidad, y `:root:not(...):not(...)` (0,3,0) gana
+// a `:root` (0,1,0). Dirección B (tinte suave + tinta oscura), aprobada por
+// Felipe el 2026-09-07 sobre la comparación pintada en blanco.
+const NIVELES_ESTADO = ['success', 'warning', 'critical', 'info'];
+
+test('D12: la hoja clara re-vincula el vocabulario de estado a sus valores claros', () => {
+  const claro = readFileSync(RUTA_TEMA_CLARO, 'utf8');
+  for (const nivel of NIVELES_ESTADO) {
+    for (const canal of ['bg', 'text']) {
+      const prop = `--ds-color-state-${nivel}-${canal}`;
+      assert.match(
+        claro,
+        new RegExp(`${prop}:\\s*var\\(${prop}-light\\);`),
+        `theme-claro.css no re-vincula ${prop} a su gemelo claro`,
+      );
+    }
+  }
+});
+
+test('los ocho valores claros de estado existen en tokens.css', () => {
+  const tokens = readFileSync(RUTA_TOKENS, 'utf8');
+  for (const nivel of NIVELES_ESTADO) {
+    for (const canal of ['bg', 'text']) {
+      assert.match(
+        tokens,
+        new RegExp(`--ds-color-state-${nivel}-${canal}-light:\\s*#[0-9a-f]{6};`),
+        `falta --ds-color-state-${nivel}-${canal}-light en tokens.css`,
+      );
+    }
+  }
+});
+
+test('el oscuro no se toca: theme-overrides.css no menciona el vocabulario de estado', () => {
+  const oscuro = readFileSync(RUTA_OVERRIDES, 'utf8');
+  for (const nivel of NIVELES_ESTADO) {
+    assert.equal(
+      oscuro.includes(`--ds-color-state-${nivel}-`), false,
+      `theme-overrides.css re-vincula ${nivel}: el oscuro debe seguir tomándolo de tokens.css`,
+    );
+  }
+});
+
+test('el sidebar usa el verde AIA corporativo en claro, no un verde que se lee negro', () => {
+  const claro = readFileSync(RUTA_TEMA_CLARO, 'utf8');
+  assert.match(claro, /--ds-active-nav-bg:\s*var\(--ds-nav-bg-light\);/,
+    'el sidebar claro debe anclarse a --ds-nav-bg-light, que lleva el hex del manual');
+  // Y ese token debe llevar el HEX, no encadenar al token de marca: `--aia-green-primary`
+  // declara oklch(32% 0.07 148.5), que rinde #153c1e y no el #1a5633 de su comentario.
+  const tokens = readFileSync(RUTA_TOKENS, 'utf8');
+  assert.match(tokens, /--ds-nav-bg-light:\s*#1a5633;/);
+  // Los dos que NO valen, y por razones distintas: `-dark` es el casi negro del tema
+  // oscuro; `--ds-nav-bg` encadena a `--ds-color-brand-primary-dark` (#1a3c2a), que esta
+  // a 1,4:1 de ese casi negro y por eso Felipe lo rechazo al verlo renderizado.
+  assert.doesNotMatch(claro, /--ds-active-nav-bg:\s*var\(--ds-nav-bg-dark\);/);
+  assert.doesNotMatch(claro, /--ds-active-nav-bg:\s*var\(--ds-nav-bg\);/);
+});
+
+// Los ítems del rail del sidebar no pueden heredar el fondo del navegador
+// (2026-09-08). Diez de los once son <a>, que nace sin fondo; el único <button>
+// se llevaba `buttonface` porque ninguna regla declaraba `background` para
+// `.aia-sidebar__link`. En penumbra ese gris pasaba por un realce; con el tema
+// claro es una pastilla #efefef con el texto claro del sidebar encima, ilegible.
+test('el rail del sidebar declara su fondo y no hereda el del navegador', () => {
+  const hoja = readFileSync(
+    join(raiz, 'public/css/design-system/adapters/shell-sidebar.css'), 'utf8',
+  );
+  const bloque = hoja.match(
+    /body\.aia-shell--sidebar \.aia-sidebar__link \{[^}]*\}/,
+  );
+  assert.ok(bloque, 'falta la regla base de .aia-sidebar__link con su fondo');
+  assert.match(bloque[0], /background:\s*transparent;/,
+    '.aia-sidebar__link debe declarar background: transparent para no heredar buttonface');
 });

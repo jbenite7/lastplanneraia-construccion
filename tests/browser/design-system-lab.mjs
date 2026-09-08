@@ -525,6 +525,10 @@ test('approved page structure freezes the integrated header with bounded content
   await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   await selectFamily(page, 'page-structure');
+  // El color de título que este test congela es el del OSCURO. Hasta el 2026-09-06 lo
+  // heredaba del default; desde D12 el default es el claro, así que materializa el tema
+  // que mide. No se afloja el valor congelado: se materializa el tema al que pertenece.
+  await forceTheme(page, 'dark');
   const candidates = page.locator('[data-page-structure-candidate]');
   await expect(candidates).toHaveCount(1);
   await expect(candidates).toHaveAttribute('data-page-structure-candidate', 'inline-header');
@@ -765,6 +769,9 @@ test('SweetAlert2 title and action remain legible in dark mode', async ({ page }
   await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   await selectFamily(page, 'vendor-adapters');
+  // Ídem: este test dice «in dark mode» y afirma tokens oscuros; desde D12 el default
+  // es el claro, así que pide el oscuro en vez de darlo por sentado.
+  await forceTheme(page, 'dark');
   const popup = page.locator('[data-vendor-fixture="sweetalert2"] .aia-glass-popup');
   const titleColors = await popup.locator('.swal2-title').evaluate((element) => ({
     foreground: getComputedStyle(element).color,

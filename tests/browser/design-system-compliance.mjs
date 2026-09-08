@@ -181,7 +181,7 @@ test.describe('Design system foundation', () => {
     }
   });
 
-  test('authenticated shell loads AIA design system in dark', async ({ page }) => {
+  test('authenticated shell loads AIA design system in the default light theme', async ({ page }) => {
     const project = PROJECTS[0];
     await loginAndSelectProject(page, project);
     await page.goto('/programa-general', { waitUntil: 'networkidle', timeout: 30000 });
@@ -196,12 +196,12 @@ test.describe('Design system foundation', () => {
 
     expect(state.hasTokens).toBe(true);
     expect(state.hasDesignSystem).toBe(true);
-    expect(state.initialTheme).toBe('dark');
+    expect(state.initialTheme).toBe('light'); // D12: claro de entrada
     expect(state.minTarget).toBe('44px');
     expect(state.fontBody).toContain('Inter');
   });
 
-  test('login follows migrated design system contract in dark', async ({ page }) => {
+  test('login follows migrated design system contract in the default light theme', async ({ page }) => {
     for (const viewport of [
       { width: 1180, height: 820 },
       { width: 1440, height: 900 },
@@ -245,7 +245,7 @@ test.describe('Design system foundation', () => {
       expect(state.resolvedCanvas).not.toBe('');
       expect(state.hasShellClass).toBe(true);
       expect(state.hasCard).toBe(true);
-      expect(state.appliedTheme).toBe('dark');
+      expect(state.appliedTheme).toBe('light'); // D12
       expect(state.horizontalOverflow).toBeLessThanOrEqual(1);
       expect(state.submitMinHeight).toBeGreaterThanOrEqual(44);
       expect(state.inputMinHeight).toBeGreaterThanOrEqual(44);
@@ -255,7 +255,7 @@ test.describe('Design system foundation', () => {
     }
   });
 
-  test('project selector follows migrated design system contract in dark', async ({ page }) => {
+  test('project selector follows migrated design system contract in the default light theme', async ({ page }) => {
     await login(page);
 
     for (const viewport of [
@@ -300,7 +300,7 @@ test.describe('Design system foundation', () => {
       expect(state.hasShellClass).toBe(true);
       expect(state.hasProjectPageClass).toBe(true);
       expect(state.hasCard).toBe(true);
-      expect(state.appliedTheme).toBe('dark');
+      expect(state.appliedTheme).toBe('light'); // D12
       expect(state.horizontalOverflow).toBeLessThanOrEqual(1);
       expect(state.buttonMinHeight).toBeGreaterThanOrEqual(44);
       expect(state.searchMinHeight).toBeGreaterThanOrEqual(44);
@@ -321,6 +321,13 @@ test.describe('Design system foundation', () => {
           await waitForDesignSystemGrid(page);
 
           for (const theme of ['dark']) {
+            // D12 (2026-09-06): el default es el claro, así que el bucle materializa el
+            // tema que va a medir en vez de heredarlo. Sigue midiendo solo `dark`:
+            // extenderlo al claro es trabajo del plan de cada módulo, no de este.
+            await page.evaluate((t) => {
+              document.documentElement.setAttribute('data-aia-theme', t);
+              document.documentElement.classList.toggle('aia-theme-dark', t === 'dark');
+            }, theme);
             const state = await readGridContract(page);
 
           expect(state.hasTokens, `${route.label} must load tokens`).toBe(true);
@@ -357,6 +364,11 @@ test.describe('Design system foundation', () => {
           await waitForDesignSystemTable(page);
 
           for (const theme of ['dark']) {
+            // Ídem: materializa el tema que afirma (D12).
+            await page.evaluate((t) => {
+              document.documentElement.setAttribute('data-aia-theme', t);
+              document.documentElement.classList.toggle('aia-theme-dark', t === 'dark');
+            }, theme);
             const state = await readTableContract(page);
 
           expect(state.hasTokens, `${route.label} must load tokens`).toBe(true);

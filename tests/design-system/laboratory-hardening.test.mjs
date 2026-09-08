@@ -52,8 +52,11 @@ test('the laboratory owns a dark-only lightweight entrypoint', async () => {
   ]) {
     assert.doesNotMatch(entrypoint, new RegExp(forbidden.replaceAll('.', '\\.')));
   }
+  // 18 → 19 el 2026-09-06: `theme-claro.css` entra al grafo del laboratorio como
+  // default del sistema (D12). El presupuesto sigue siendo un tope, no un adorno:
+  // sube exactamente una hoja, la del tema que el laboratorio pasa a rendir.
   assert.ok(
-    [...entrypoint.matchAll(/@import\s+url\(/g)].length <= 18,
+    [...entrypoint.matchAll(/@import\s+url\(/g)].length <= 19,
     'the laboratory CSS request fanout must remain bounded',
   );
 });

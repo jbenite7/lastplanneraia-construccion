@@ -1,6 +1,12 @@
 import { expect, test } from '@playwright/test';
 import { login } from './support/session.mjs';
 
+// D16: la matriz corre ambos temas; el laboratorio materializa el de la corrida antes de medir.
+const THEME = process.env.E2E_THEME === 'dark' ? 'dark' : 'light';
+const materializarTema = (page) => page.addInitScript((t) => {
+  try { localStorage.setItem('aia-theme', t); } catch (_) { /* privado/bloqueado */ }
+}, THEME);
+
 const ADMIN = { username: 'test.A', password: 'aia2026' };
 const FIXTURES_BY_FAMILY = {
   'page-structure': 1,
@@ -12,14 +18,15 @@ const FIXTURES_BY_FAMILY = {
   'bi-primitives': 1,
 };
 
-test('P1 and P2 operational fixtures stay contained in the dark desktop laboratory', async ({ page }) => {
+test('P1 and P2 operational fixtures stay contained in the desktop laboratory, in the run theme', async ({ page }) => {
   await page.setViewportSize({ width: 1180, height: 820 });
+  await materializarTema(page);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await login(page, ADMIN);
 
   for (const [family, count] of Object.entries(FIXTURES_BY_FAMILY)) {
     await page.goto(`/internal/design-system?family=${family}`, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
+    await expect(page.locator('html')).toHaveAttribute('data-aia-theme', THEME);
     await expect(page.locator(`[data-family="${family}"] [data-operational-fixture]`)).toHaveCount(count);
     const overflow = await page.evaluate(() => (
       document.documentElement.scrollWidth - document.documentElement.clientWidth
@@ -30,9 +37,10 @@ test('P1 and P2 operational fixtures stay contained in the dark desktop laborato
 
 test('vendor fixtures announce observable P1 and P2 state changes', async ({ page }) => {
   await page.setViewportSize({ width: 1180, height: 820 });
+  await materializarTema(page);
   await login(page, ADMIN);
   await page.goto('/internal/design-system?family=vendor-adapters', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
+  await expect(page.locator('html')).toHaveAttribute('data-aia-theme', THEME);
 
   const grid = page.locator('[data-operational-fixture="editable-grid"]');
   await grid.getByRole('button', { name: 'Guardar cambios' }).click();
@@ -55,9 +63,10 @@ test('vendor fixtures announce observable P1 and P2 state changes', async ({ pag
 
 test('vendor adapter previews expose their full operational affordances', async ({ page }) => {
   await page.setViewportSize({ width: 1180, height: 820 });
+  await materializarTema(page);
   await login(page, ADMIN);
   await page.goto('/internal/design-system?family=vendor-adapters', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
+  await expect(page.locator('html')).toHaveAttribute('data-aia-theme', THEME);
 
   const handsontable = page.locator('[data-vendor-fixture="handsontable"]');
   await handsontable.getByRole('button', { name: 'Añadir actividad' }).click();

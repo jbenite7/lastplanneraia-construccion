@@ -14,7 +14,7 @@
  */
 ?>
 <!DOCTYPE html>
-<html lang="es" data-aia-theme="dark">
+<html lang="es">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -37,9 +37,9 @@
 		window.__AIA_SHELL_SIDEBAR__ = true;
 	</script>
 	<?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
-	<?php /* theme.js es el que publica `window.AiaDesignSystem` y conserva el tema elegido; sin él
-	         el gate del shell se queda esperando ese global y la página no comparte el conmutador
-	         de tema con el resto de módulos. */ ?>
+	<?php /* theme.js solo aplica el movimiento reducido; el tema lo decide theme-bootstrap.js en
+	         <head>. El global window.AiaDesignSystem que este comentario citaba se retiró el
+	         2026-09-06: no lo consumía nadie. */ ?>
 	<?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/theme.js') ?>
 	<script type="module" src="/pdc-app/assets/pdc.js?v=<?php echo (int) $assetVersion; ?>"></script>
 </body>

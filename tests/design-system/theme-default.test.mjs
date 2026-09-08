@@ -9,7 +9,7 @@ const THEME_ENTRYPOINTS = [
   'public/css/design-system/entrypoints/theme-overrides.css',
 ];
 
-const DARK_SELECTOR = ':root,';
+const DARK_SELECTOR = '[data-aia-theme="dark"],';
 
 // Mapeo completo y explicito de las 22 declaraciones del grupo :root/dark.
 // Escrito a mano a partir del CSS commiteado en 7770ea2 (no derivado del
@@ -137,36 +137,71 @@ const assertFullMapping = (body, declarations, label) => {
   );
 };
 
+const LIGHT_SHEET = 'public/css/design-system/theme-claro.css';
+const LIGHT_IMPORT = /@import url\("\/css\/design-system\/theme-claro\.css\?v=[0-9.]+"\);/;
+const LIGHT_DEFAULT_SELECTOR = ':root:not([data-aia-theme="dark"]):not(.aia-theme-dark),';
+
 for (const entrypoint of THEME_ENTRYPOINTS) {
-  test(`${entrypoint}: :root/dark mapea cada --ds-active-* a su token dark (mapeo completo)`, async () => {
+  test(`${entrypoint}: el grupo dark mapea cada --ds-active-* a su token dark (mapeo completo)`, async () => {
     const css = await read(entrypoint);
-    const body = blockBody(css, DARK_SELECTOR, entrypoint);
-    assertFullMapping(body, EXPECTED_DARK_DECLARATIONS, `${entrypoint} (dark)`);
+    assertFullMapping(blockBody(css, DARK_SELECTOR, entrypoint), EXPECTED_DARK_DECLARATIONS, entrypoint);
   });
 
-  test(`${entrypoint}: :root se agrupa con el selector dark, no con linen`, async () => {
+  // D12 (2026-09-06): el default del sistema es el claro. `:root` ya no forma parte del
+  // grupo dark; el dark solo aplica cuando el documento lo pide por atributo o clase.
+  test(`${entrypoint}: :root no está atado al grupo dark`, async () => {
     const css = await read(entrypoint);
-    const root = css.slice(css.indexOf(':root,'), css.indexOf('{', css.indexOf(':root,')));
-    assert.match(root, /\[data-aia-theme="dark"\]/);
-    assert.equal(/linen/.test(root), false, ':root sigue agrupado con linen');
+    const body = layerThemeBody(css, entrypoint);
+    assert.equal(/:root\s*,/.test(body), false, `${entrypoint}: @layer theme ata :root al oscuro`);
+    assert.match(body, /\[data-aia-theme="dark"\],\s*\.aia-theme-dark\s*\{/);
   });
 
-  // F0/Task 7 retiro el grupo linen: ya no hay dos grupos cuyo orden de
-  // fuente importe, asi que "el grupo dark precede a linen" queda sin
-  // objeto. La proteccion equivalente ahora es que solo sobreviva un grupo
-  // de selectores dentro de @layer theme — si alguien reintrodujera un
-  // segundo tema, esta asercion lo detecta.
   test(`${entrypoint}: @layer theme contiene exactamente un grupo de selectores`, async () => {
     const css = await read(entrypoint);
     const body = layerThemeBody(css, entrypoint);
     const groupCount = (body.match(/{/g) || []).length;
-    assert.equal(
-      groupCount,
-      1,
-      `${entrypoint}: @layer theme declara ${groupCount} grupos de selectores, se esperaba 1 (linen se retiro en F0/Task 7; un segundo grupo indicaria que se reintrodujo otro tema)`,
-    );
+    assert.equal(groupCount, 1, `${entrypoint}: @layer theme declara ${groupCount} grupos; el claro vive en theme-claro.css importada, no aquí`);
   });
 }
+
+// La hoja clara llega por las dos rutas de entrega, pero no por el mismo archivo en
+// cada una: el agregador la lista él mismo (es plano por diseño) y la ruta segmentada
+// la recibe de `entrypoints/core.css`, que es quien importa `theme-overrides.css`.
+// `theme-overrides.css` NO la importa: el gate de partición exige que su texto sea
+// idéntico al bloque inline del agregador, y un @import ahí lo rompería.
+test('las dos rutas de entrega reciben theme-claro.css antes del bloque dark (D12)', async () => {
+  const aggregator = await read('public/css/aia-design-system.css');
+  const aggregatorImport = aggregator.search(LIGHT_IMPORT);
+  assert.notEqual(aggregatorImport, -1, 'el agregador no importa theme-claro.css');
+  assert.ok(aggregatorImport < aggregator.indexOf('@layer theme {'),
+    'el agregador importa theme-claro.css después de su bloque dark inline');
+
+  const core = await read('public/css/design-system/entrypoints/core.css');
+  const coreImport = core.search(LIGHT_IMPORT);
+  assert.notEqual(coreImport, -1, 'entrypoints/core.css no importa theme-claro.css');
+  assert.ok(coreImport < core.indexOf('/css/design-system/entrypoints/theme-overrides.css'),
+    'theme-claro.css debe importarse antes que theme-overrides.css');
+
+  const overrides = await read('public/css/design-system/entrypoints/theme-overrides.css');
+  assert.equal(/@import/.test(overrides), false,
+    'theme-overrides.css no puede llevar imports: el gate de partición exige identidad textual con el bloque inline del agregador');
+});
+
+test('theme-claro.css declara el claro como default con el selector negado (D12)', async () => {
+  const css = await read(LIGHT_SHEET);
+  const body = blockBody(css, LIGHT_DEFAULT_SELECTOR, LIGHT_SHEET);
+  assert.match(body, /color-scheme:\s*light;/);
+  assert.match(css, /\[data-aia-theme="light"\],\s*\.aia-theme-light\s*\{/);
+});
+
+test('el laboratorio no ata dark a :root e importa theme-claro.css antes de su fundación', async () => {
+  const foundation = await read('public/css/design-system/laboratory-foundation.css');
+  assert.equal(/:root\s*,/.test(layerThemeBody(foundation, 'laboratory-foundation.css')), false);
+  const entry = await read('public/css/design-system/lab-entrypoint.css');
+  const importIndex = entry.search(LIGHT_IMPORT);
+  assert.notEqual(importIndex, -1, 'lab-entrypoint.css no importa theme-claro.css');
+  assert.ok(importIndex < entry.indexOf('laboratory-foundation.css'), 'theme-claro.css debe importarse antes que laboratory-foundation.css');
+});
 
 test('los dos entrypoints declaran bloques de tema equivalentes', async () => {
   const [aggregator, segmented] = await Promise.all(THEME_ENTRYPOINTS.map(read));

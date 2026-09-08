@@ -43,21 +43,20 @@ const viewportKey = ({ width, height }) => `${width}x${height}`;
 // Los dos bloqueos son de producto, no de este carril, y cada uno se comprobo
 // contra el codigo y contra una captura real:
 //
-//   · LABORATORIO (`/internal/design-system`). No es un empate de
-//     especificidad: `theme-claro.css` NO SE CARGA en esta pagina en
-//     absoluto (verificado en `DesignSystemHeadComponent::renderLaboratory()`
-//     y en los ~19 `@import` de `lab-entrypoint.css`, ninguno hacia
-//     `theme-claro.css`). `laboratory-foundation.css` es la UNICA fuente de
-//     `--ds-active-*` ahi, atada a `:root` dentro de `@layer theme` sin
-//     condicionar. Por eso el arreglo NO es solo condicionar ese bloque a
-//     `[data-aia-theme="dark"]` -- hecho asi solo, el laboratorio se queda
-//     sin tokens claros declarados (se rompe, no se aclara). Hace falta
-//     ADEMAS enlazar `theme-claro.css` en `lab-entrypoint.css`. Medido: de 18
-//     capturas claras, 9 salieron byte a byte identicas a su gemela oscura y las
-//     otras 9 solo diferian por deriva ajena al tema. (De paso: `theme-claro.css`
-//     tambien ofrece el gancho `.aia-theme-light`, pero `theme-bootstrap.js` solo
-//     conmuta la clase `aia-theme-dark` y nunca anade esa otra, asi que ese
-//     segundo camino tampoco entra.)
+//   · LABORATORIO: bloqueo levantado el 2026-09-07. Fueron TRES causas, no dos:
+//     theme.js forzaba el oscuro, theme-claro.css no la importaba ningun entrypoint,
+//     y el vocabulario de estado se leia en crudo sin pasar por --ds-active-*. Los 18
+//     goldens claros los aprobo Felipe sobre la galeria de esa fecha, con la direccion
+//     B (tinte suave) y el sidebar en verde de marca.
+//     Son 18 y no 20 porque `states-feedback` no llega a `toHaveScreenshot` en el spec
+//     visual —sale antes, tras su comprobacion propia— asi que no tiene captura clara
+//     que aprobar. Su golden OSCURO tampoco se compara desde hace tiempo y mide
+//     1102x1649 frente a los 1180x820 del resto, y eso NO es un descuido: es una excepcion
+//     revisada a mano en `evidence-exceptions.json` (elementCaptureAllowlist), porque la familia
+//     es un mosaico que crece mas alla del pliegue y su golden recorta el ELEMENTO. Medido el
+//     2026-09-08 en tema OSCURO, ese recorte da hoy 860x2362: lleva desalineado desde antes de
+//     este frente y nadie podia verlo porque el spec sale antes de compararlo. NO se regenero
+//     (D18); el hallazgo esta en TASKS.md con su propia tarea.
 //
 //   · PROGRAMA GENERAL (`/programa-general`). Es una pagina legada que carga
 //     `public/js/linksComunesHead2.js`, y ese cargador trae
@@ -70,7 +69,7 @@ const viewportKey = ({ width, height }) => `${width}x${height}`;
 // empieza a exigir esa cobertura. Mientras tanto el guard sigue siendo estricto
 // —el conjunto de temas y la cifra por viewport son exactos—, pero no miente
 // diciendo que el claro ya esta cubierto.
-const LABORATORY_SCENARIOS_PER_VIEWPORT = { dark: 10 };
+const LABORATORY_SCENARIOS_PER_VIEWPORT = { dark: 10, light: 9 };
 const PILOT_SCENARIOS_PER_VIEWPORT = { dark: 1 };
 
 // `expectedPerViewport` es un mapa tema -> cuantos escenarios por viewport. Sus

@@ -146,6 +146,14 @@
     --ds-color-cell-warning-bg: #71711d;
     --ds-color-cell-success-bg: #2e7b4d;
     --ds-color-cell-info-bg: #207a6e;
+    --ds-color-state-success-bg-light: #ddefe6;
+    --ds-color-state-success-text-light: #14402a;
+    --ds-color-state-warning-bg-light: #faedd2;
+    --ds-color-state-warning-text-light: #7a4e07;
+    --ds-color-state-critical-bg-light: #fbe6e4;
+    --ds-color-state-critical-text-light: #9a1f1f;
+    --ds-color-state-info-bg-light: #e3f9f7;
+    --ds-color-state-info-text-light: #00514a;
     --ds-state-tint-violet: #33204a;
     --ds-state-tint-red: #431414;
     --ds-state-tint-orange: #452a0d;
@@ -367,6 +375,7 @@
     --ds-nav-bg: var(--ds-color-brand-primary-dark);
     --ds-color-nav-dark: var(--aia-text-primary);
     --ds-nav-bg-dark: var(--ds-color-nav-dark);
+    --ds-nav-bg-light: #1a5633;
     --ds-nav-backdrop-blur: 12px;
     --ds-nav-border-color: color-mix(in srgb, var(--ds-color-text-inverse) 12%, transparent);
     --ds-nav-border-color-dark: color-mix(in srgb, var(--aia-separators) 18%, transparent);

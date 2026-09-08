@@ -666,6 +666,82 @@ ponerse verdes. La cadena completa, en la entrada del `CHANGELOG`. Lo que queda 
 reporte es el primer bloqueante de esta sección: la cola del mismo defecto en `admin/` y en las
 pruebas.
 
+**Resuelto el 2026-09-07 (frente `bloqueo-tema-claro`).** La entrada de abajo se queda como
+está porque su diagnóstico era correcto pero incompleto en dos puntos que costaron trabajo:
+eran **19 vistas**, no 7 (12 más cargan `theme.js` dinámicamente vía `linksComunesHead2.js`),
+y el «gate del shell» que según el comentario de `views/plan-compras/app.view.php:40` dependía
+de `window.AiaDesignSystem` **no existe**: ningún código de producto consumía ese global, solo
+un test lo esperaba. El comentario era la única fuente de esa creencia y se corrigió.
+
+Y había una **tercera causa** que ninguna nota registraba: el vocabulario de estado
+(`--ds-color-state-{nivel}-{bg,text}`) se lee en 302 puntos de 22 hojas **sin pasar por
+`--ds-active-*`**, así que ninguna hoja de tema podía alcanzarlo. No se veía desde donde se
+había mirado, porque la búsqueda original preguntaba quién *pisaba* el tema, no quién *nunca
+lo consulta*. Se re-vinculó en la hoja clara en vez de recablear a los 302 consumidores.
+Dirección tinte suave, decidida por Felipe sobre la comparación pintada en blanco. El sidebar
+pasó al verde de marca, afinando **D9** de la spec de temas (que ya había derogado la entrada 23
+el 2026-08-28, pero pedía la nav *clara*).
+
+Detalle completo en `CHANGELOG.md` (2026-09-07) y en el `## Cierre` de
+`goals/bloqueo-tema-claro/goal.md`.
+
+**Una excepción autorizada, la única del frente.** Felipe autorizó el 2026-09-08 actualizar los
+dos goldens oscuros de `programa-general` y sus gemelos Linux. No es una regresión ni un ajuste
+de conveniencia: el arreglo de `.aia-sidebar__link` retira el `buttonface` que el navegador ponía
+en el único `<button>` del rail, un gris que existía también en penumbra y que el golden había
+congelado como si fuera diseño. Un golden no distingue «así debe verse» de «así se ve». Medido:
+3.971 píxeles en 47×285 al borde izquierdo, idéntico en las dos plataformas. Ningún otro golden
+oscuro se movió en todo el frente.
+
+**Pendientes que este frente destapó y NO arregló:**
+- **La paleta de marca miente en dos entradas, y eso afecta a todo consumidor.** Medido el
+  2026-09-08 convirtiendo OKLCH a sRGB y leyendo el píxel de un golden:
+  `--aia-green-primary: oklch(32% 0.07 148.5)` rinde **#153c1e** con el comentario `#1a5633`,
+  y `--aia-green-dark: oklch(27.8% 0.05 147.1)` rinde **#162f19** con el comentario `#1a3c2a`.
+  El verde corporativo del manual, `#1a5633`, es en realidad `oklch(40.5% 0.085 154.1)`: los
+  tokens están unos 8 puntos de luminosidad por debajo, así que salen apagados y casi negros.
+  Los botones se salvan por casualidad, porque `--ds-color-action-primary-bg-light` lleva el
+  hex literal en vez de encadenar al token. **Costó dos rechazos de Felipe sobre el sidebar**,
+  porque las dos veces se eligió el token por su nombre y no por lo que pinta.
+  **Condición de salida, explícita:** cuando se corrijan los `--aia-green-*`, el hex literal de
+  `--ds-nav-bg-light` (`public/css/tokens.css`) **vuelve a encadenar al token de marca**. Ese
+  hex es deuda con fecha, no una decisión de diseño; sin esta frase, dentro de unos meses
+  parecerá lo segundo.
+- **El gate visual es medio ciego a los cambios de color sutiles.** `toHaveScreenshot` daba por
+  iguales el verde viejo (#162f19) y el nuevo (#1a5633) —caen bajo su tolerancia por píxel— así
+  que `--update-snapshots` **no reescribía las capturas** y el CI habría quedado verde con el
+  color viejo dentro. Hubo que borrar los PNG claros para forzar la regeneración. Mientras siga
+  así, un cambio de color que no mueva mucha luminancia puede colarse sin que ningún gate avise:
+  al tocar color, comprobar el píxel de la captura, no el verde del job.
+
+- El golden oscuro de `states-feedback` mide 1102×1649 frente a los 1180×820 del resto y el
+  spec visual sale antes de compararlo. **Corrección del 2026-09-08:** esta sesión lo llamó
+  primero «peso muerto de otra época» y era falso. Es una **excepción revisada a mano**,
+  declarada en `docs/design-system/evidence-exceptions.json` (`elementCaptureAllowlist`): esa
+  familia es un mosaico de avisos que crece por scroll más allá del pliegue, así que su golden
+  recorta el ELEMENTO y no el viewport, con las dimensiones clavadas para que un cambio de
+  tamaño falle el gate. Lo dedujo de dos indicios ciertos —tamaño distinto, nadie lo compara—
+  sin buscar si alguien lo había justificado; la justificación existía y estaba firmada.
+  No se regeneró —un golden oscuro que cambia es hallazgo, no ajuste (D18)— y por eso el claro
+  tiene 18 escenarios y no 20.
+- **El recorte de `states-feedback` lleva desalineado desde antes de este frente, y nadie podía
+  verlo.** Medido el 2026-09-08 al capturar el elemento como manda su excepción: hoy da
+  **860×2362**, y su golden y la lista blanca declaran **1102×1649**. Medido **en tema oscuro**,
+  que este frente no tocó, así que no lo causó el claro: el panel cambió de forma —más estrecho
+  y mucho más alto— en algún momento anterior. Nadie se enteró porque el spec visual sale antes
+  de compararlo, así que la familia con la única excepción de captura revisada a mano es también
+  la única sin vigilancia real. **No se fijó un golden nuevo a ojo**: no se sabe si 860×2362 es
+  la forma correcta o el síntoma de otra rotura, y clavarlo ahora congelaría un tamaño quizá
+  equivocado. Requiere su propia tarea, con revisión humana de la excepción.
+- `/login` lo sirve el shell React desde el PR #20, pero
+  `tests/browser/design-system-compliance.mjs` sigue buscando `entrypoints/core.css` en esa
+  ruta y falla. El CI no corre ese spec, así que su rojo no bloquea nada hoy; decidir si
+  debería es parte de la tarea.
+- La familia `actions` del laboratorio tiene cero elementos `[data-operational-fixture]` donde
+  `tests/browser/operational-fixtures.mjs` espera uno. Tampoco lo corre el CI.
+- `ct-app/src/lib/theme.ts` conserva su clave propia `ct-piloto-theme`, fuera del contrato de
+  `aia-theme`. Queda para el cierre de la Torre (D23).
+
 **2026-08-28 — `theme.js` deshace el claro de entrada (D12) en 7 páginas reales; bloquea el
 arranque del plan de Programa General, no la fase cero actual.** Destapado ejecutando el goal
 [[goals/temas-y-forma-fase-cero/goal]] (Task 6): `public/js/modules/aia_ui/theme.js` es un
