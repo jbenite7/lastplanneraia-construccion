@@ -131,11 +131,20 @@
        (2026-08-28), que es quien derogo la entrada 23 del piloto: D9 pedia la nav
        CLARA, y su direccion se cumple entera —la nav cambia con el tema y estos
        tokens dejan de apuntar a los -dark—; lo que cambia es el valor, que Felipe
-       eligio verde al verla renderizada el 2026-09-07. No hay color
+       eligio verde al verla renderizada el 2026-09-07.
+
+       CORREGIDO el mismo dia: la primera version apuntaba a `--ds-nav-bg`, que
+       encadena a `--ds-color-brand-primary-dark` = #1a3c2a. Ese es la variante
+       OSCURA del verde y esta a 1,4:1 del casi negro que usa el tema oscuro: a
+       ojo es negro verdoso, no verde de marca, y Felipe lo rechazo por eso al
+       ver las capturas. El verde corporativo del manual es
+       `--ds-color-brand-primary` = #1a5633 ("Corporativo principal"), que da
+       8,25:1 al texto primario, 5,66:1 al atenuado y 8,67:1 contra la pagina
+       blanca. No hay color
        nuevo: `--ds-nav-bg` ya existia como la variante de marca del mismo token.
        Sigue apuntando a tokens sin sufijo `-active`, que cambiarian de valor
        dentro de este mismo bloque. El OSCURO no se toca: conserva el casi negro. */
-    --ds-active-nav-bg: var(--ds-nav-bg);
+    --ds-active-nav-bg: var(--ds-color-brand-primary);
     --ds-active-nav-border: var(--ds-nav-border-color);
     --ds-active-nav-text: var(--ds-color-text-primary-dark);
     --ds-active-nav-text-muted: var(--ds-color-text-secondary-dark);

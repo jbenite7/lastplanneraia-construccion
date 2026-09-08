@@ -64,7 +64,7 @@
     --ds-color-state-critical-text: var(--ds-color-state-critical-text-light);
     --ds-color-state-info-bg: var(--ds-color-state-info-bg-light);
     --ds-color-state-info-text: var(--ds-color-state-info-text-light);
-    --ds-active-nav-bg: var(--ds-nav-bg);
+    --ds-active-nav-bg: var(--ds-color-brand-primary);
     --ds-active-nav-border: var(--ds-nav-border-color);
     --ds-active-nav-text: var(--ds-color-text-primary-dark);
     --ds-active-nav-text-muted: var(--ds-color-text-secondary-dark);

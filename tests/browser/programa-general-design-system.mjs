@@ -16,6 +16,14 @@ test.beforeEach(async ({ page }) => {
 for (const viewport of VIEWPORTS) {
   for (const theme of ['dark']) {
     test(`${viewport.name} ${theme} consume el núcleo aprobado`, async ({ page }, testInfo) => {
+      // Este bucle mide el OSCURO, y lo heredaba porque `theme.js` lo forzaba en esta ruta.
+      // Desde D12 (2026-09-06) el default es el claro, así que materializa el tema que afirma
+      // — igual que los demás specs que miden el oscuro. Programa General NO se migra al claro
+      // en este frente: su migración es D23 y tiene plan propio, así que el bucle sigue
+      // recorriendo solo `dark` y ninguna aserción cambia.
+      await page.addInitScript((t) => {
+        try { localStorage.setItem('aia-theme', t); } catch (_) { /* privado/bloqueado */ }
+      }, theme);
       await page.setViewportSize(viewport);
       await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
       await page.waitForFunction(() => Boolean(document.querySelector('#hot-container .handsontable')));

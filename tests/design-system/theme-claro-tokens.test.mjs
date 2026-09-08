@@ -399,8 +399,12 @@ test('la nav/sidebar se ancla a tokens FIJOS en claro, y su fondo es el verde de
   // variante del mismo token — no hay color nuevo. El argumento de la entrada 23
   // —que el ancla del producto no dependa del tema— se cumple igual.
   // El OSCURO no se toca: conserva el casi negro.
+  // El fondo es `--ds-color-brand-primary` (#1a5633, el verde corporativo del manual) y
+  // NO `--ds-nav-bg`, que encadena a `--ds-color-brand-primary-dark` (#1a3c2a): esa es la
+  // variante oscura del verde, esta a 1,4:1 del casi negro del tema oscuro y a ojo no se
+  // distingue de el. Medido y rechazado por Felipe el 2026-09-07 sobre las capturas.
   const NAV_FIJOS = {
-    '--ds-active-nav-bg': '--ds-nav-bg',
+    '--ds-active-nav-bg': '--ds-color-brand-primary',
     '--ds-active-nav-border': '--ds-nav-border-color',
     '--ds-active-nav-text': '--ds-color-text-primary-dark',
     '--ds-active-nav-text-muted': '--ds-color-text-secondary-dark',
@@ -540,9 +544,13 @@ test('el oscuro no se toca: theme-overrides.css no menciona el vocabulario de es
   }
 });
 
-test('el sidebar usa el verde AIA en claro, no el casi negro (decisión 2026-09-07)', () => {
+test('el sidebar usa el verde AIA corporativo en claro, no un verde que se lee negro', () => {
   const claro = readFileSync(RUTA_TEMA_CLARO, 'utf8');
-  assert.match(claro, /--ds-active-nav-bg:\s*var\(--ds-nav-bg\);/,
-    'el sidebar claro debe anclarse a --ds-nav-bg (verde de marca), no a --ds-nav-bg-dark');
+  assert.match(claro, /--ds-active-nav-bg:\s*var\(--ds-color-brand-primary\);/,
+    'el sidebar claro debe anclarse al verde corporativo #1a5633');
+  // Los dos que NO valen, y por razones distintas: `-dark` es el casi negro del tema
+  // oscuro; `--ds-nav-bg` encadena a `--ds-color-brand-primary-dark` (#1a3c2a), que esta
+  // a 1,4:1 de ese casi negro y por eso Felipe lo rechazo al verlo renderizado.
   assert.doesNotMatch(claro, /--ds-active-nav-bg:\s*var\(--ds-nav-bg-dark\);/);
+  assert.doesNotMatch(claro, /--ds-active-nav-bg:\s*var\(--ds-nav-bg\);/);
 });
