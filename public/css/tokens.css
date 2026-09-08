@@ -777,6 +777,15 @@
     --ds-nav-bg: var(--ds-color-brand-primary-dark);
     --ds-color-nav-dark: var(--aia-text-primary);
     --ds-nav-bg-dark: var(--ds-color-nav-dark);
+    /* Hermano claro del de arriba, 2026-09-08. Va con el HEX LITERAL del manual y no
+       encadena a `--aia-green-primary`, y esa es la unica razon por la que existe:
+       ese token declara `oklch(32% 0.07 148.5)` con el comentario `#1a5633`, pero esa
+       coordenada rinde #153c1e — mucho mas oscuro y apagado que el verde corporativo.
+       El verde del manual es en realidad `oklch(40.5% 0.085 154.1)`. Anclar la nav al
+       token de marca daba un panel que a ojo no se distingue del casi negro, y Felipe
+       lo rechazo dos veces por eso. El desfase de los `--aia-green-*` queda anotado en
+       TASKS.md: es de la paleta y afecta a todo consumidor, no solo a la nav. */
+    --ds-nav-bg-light: #1a5633;
     --ds-nav-backdrop-blur: 12px;
     --ds-nav-border-color: color-mix(in srgb, var(--ds-color-text-inverse) 12%, transparent);
     --ds-nav-border-color-dark: color-mix(in srgb, var(--aia-separators) 18%, transparent);

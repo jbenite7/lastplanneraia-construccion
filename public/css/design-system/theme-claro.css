@@ -144,7 +144,7 @@
        nuevo: `--ds-nav-bg` ya existia como la variante de marca del mismo token.
        Sigue apuntando a tokens sin sufijo `-active`, que cambiarian de valor
        dentro de este mismo bloque. El OSCURO no se toca: conserva el casi negro. */
-    --ds-active-nav-bg: var(--ds-color-brand-primary);
+    --ds-active-nav-bg: var(--ds-nav-bg-light);
     --ds-active-nav-border: var(--ds-nav-border-color);
     --ds-active-nav-text: var(--ds-color-text-primary-dark);
     --ds-active-nav-text-muted: var(--ds-color-text-secondary-dark);

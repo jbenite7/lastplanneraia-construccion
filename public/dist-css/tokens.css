@@ -375,6 +375,7 @@
     --ds-nav-bg: var(--ds-color-brand-primary-dark);
     --ds-color-nav-dark: var(--aia-text-primary);
     --ds-nav-bg-dark: var(--ds-color-nav-dark);
+    --ds-nav-bg-light: #1a5633;
     --ds-nav-backdrop-blur: 12px;
     --ds-nav-border-color: color-mix(in srgb, var(--ds-color-text-inverse) 12%, transparent);
     --ds-nav-border-color-dark: color-mix(in srgb, var(--aia-separators) 18%, transparent);

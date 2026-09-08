@@ -404,7 +404,7 @@ test('la nav/sidebar se ancla a tokens FIJOS en claro, y su fondo es el verde de
   // variante oscura del verde, esta a 1,4:1 del casi negro del tema oscuro y a ojo no se
   // distingue de el. Medido y rechazado por Felipe el 2026-09-07 sobre las capturas.
   const NAV_FIJOS = {
-    '--ds-active-nav-bg': '--ds-color-brand-primary',
+    '--ds-active-nav-bg': '--ds-nav-bg-light',
     '--ds-active-nav-border': '--ds-nav-border-color',
     '--ds-active-nav-text': '--ds-color-text-primary-dark',
     '--ds-active-nav-text-muted': '--ds-color-text-secondary-dark',
@@ -546,8 +546,12 @@ test('el oscuro no se toca: theme-overrides.css no menciona el vocabulario de es
 
 test('el sidebar usa el verde AIA corporativo en claro, no un verde que se lee negro', () => {
   const claro = readFileSync(RUTA_TEMA_CLARO, 'utf8');
-  assert.match(claro, /--ds-active-nav-bg:\s*var\(--ds-color-brand-primary\);/,
-    'el sidebar claro debe anclarse al verde corporativo #1a5633');
+  assert.match(claro, /--ds-active-nav-bg:\s*var\(--ds-nav-bg-light\);/,
+    'el sidebar claro debe anclarse a --ds-nav-bg-light, que lleva el hex del manual');
+  // Y ese token debe llevar el HEX, no encadenar al token de marca: `--aia-green-primary`
+  // declara oklch(32% 0.07 148.5), que rinde #153c1e y no el #1a5633 de su comentario.
+  const tokens = readFileSync(RUTA_TOKENS, 'utf8');
+  assert.match(tokens, /--ds-nav-bg-light:\s*#1a5633;/);
   // Los dos que NO valen, y por razones distintas: `-dark` es el casi negro del tema
   // oscuro; `--ds-nav-bg` encadena a `--ds-color-brand-primary-dark` (#1a3c2a), que esta
   // a 1,4:1 de ese casi negro y por eso Felipe lo rechazo al verlo renderizado.
