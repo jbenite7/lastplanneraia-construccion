@@ -685,6 +685,14 @@ el 2026-08-28, pero pedía la nav *clara*).
 Detalle completo en `CHANGELOG.md` (2026-09-07) y en el `## Cierre` de
 `goals/bloqueo-tema-claro/goal.md`.
 
+**Una excepción autorizada, la única del frente.** Felipe autorizó el 2026-09-08 actualizar los
+dos goldens oscuros de `programa-general` y sus gemelos Linux. No es una regresión ni un ajuste
+de conveniencia: el arreglo de `.aia-sidebar__link` retira el `buttonface` que el navegador ponía
+en el único `<button>` del rail, un gris que existía también en penumbra y que el golden había
+congelado como si fuera diseño. Un golden no distingue «así debe verse» de «así se ve». Medido:
+3.971 píxeles en 47×285 al borde izquierdo, idéntico en las dos plataformas. Ningún otro golden
+oscuro se movió en todo el frente.
+
 **Pendientes que este frente destapó y NO arregló:**
 - **La paleta de marca miente en dos entradas, y eso afecta a todo consumidor.** Medido el
   2026-09-08 convirtiendo OKLCH a sRGB y leyendo el píxel de un golden:

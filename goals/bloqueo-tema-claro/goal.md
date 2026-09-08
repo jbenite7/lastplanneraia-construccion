@@ -79,6 +79,14 @@ código de producto** (`grep` en `public/js`, `pdc-app/src`, `ct-app/src`, `fron
 - No migrar ningún módulo al claro: este frente **destraba**; el primer módulo (Programa General,
   D23) tiene su propio plan.
 - No regenerar goldens oscuros. Si un golden oscuro cambia, es hallazgo, no ajuste.
+  **Excepción autorizada por Felipe el 2026-09-08**, la única del frente y con su porqué medido:
+  los dos goldens oscuros de `programa-general` (más sus gemelos Linux) se actualizaron porque el
+  arreglo de `.aia-sidebar__link` retira una pastilla gris que **el navegador** ponía por defecto
+  —`buttonface`— en el único `<button>` del rail. Ese gris existía también en penumbra, donde
+  pasaba por un realce deliberado, así que el golden lo tenía congelado como si fuera diseño.
+  Diferencia medida: **3.971 píxeles** en una franja de 47×285 pegada al borde izquierdo, de
+  grises `#1e1e1f`/`#434444`/`#535353` al fondo del panel `#090a0b`, **idéntica en macOS y en
+  Linux**. Ningún otro golden oscuro se movió; se comprobó tras cada pase.
 - Los goldens claros nuevos solo se commitean con el visto de Felipe sobre la galería.
 - No tocar `admin/` (D24 tiene su vía) ni `ct-app/src/lib/theme.ts` (clave propia
   `ct-piloto-theme`; se anota como pendiente para el cierre de la Torre, D23).
