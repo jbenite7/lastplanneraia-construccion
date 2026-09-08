@@ -558,3 +558,20 @@ test('el sidebar usa el verde AIA corporativo en claro, no un verde que se lee n
   assert.doesNotMatch(claro, /--ds-active-nav-bg:\s*var\(--ds-nav-bg-dark\);/);
   assert.doesNotMatch(claro, /--ds-active-nav-bg:\s*var\(--ds-nav-bg\);/);
 });
+
+// Los ítems del rail del sidebar no pueden heredar el fondo del navegador
+// (2026-09-08). Diez de los once son <a>, que nace sin fondo; el único <button>
+// se llevaba `buttonface` porque ninguna regla declaraba `background` para
+// `.aia-sidebar__link`. En penumbra ese gris pasaba por un realce; con el tema
+// claro es una pastilla #efefef con el texto claro del sidebar encima, ilegible.
+test('el rail del sidebar declara su fondo y no hereda el del navegador', () => {
+  const hoja = readFileSync(
+    join(raiz, 'public/css/design-system/adapters/shell-sidebar.css'), 'utf8',
+  );
+  const bloque = hoja.match(
+    /body\.aia-shell--sidebar \.aia-sidebar__link \{[^}]*\}/,
+  );
+  assert.ok(bloque, 'falta la regla base de .aia-sidebar__link con su fondo');
+  assert.match(bloque[0], /background:\s*transparent;/,
+    '.aia-sidebar__link debe declarar background: transparent para no heredar buttonface');
+});

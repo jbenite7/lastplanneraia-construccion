@@ -263,6 +263,20 @@
     width: 100%;
   }
 
+  /* Y tampoco NACE sin fondo como ellos. De los once ítems del rail, diez son
+     <a> —sin fondo por defecto— y uno solo es <button>, que se lleva el
+     `buttonface` del navegador porque ninguna regla de esta hoja declara
+     `background` para `.aia-sidebar__link`. En penumbra ese gris salía
+     rgb(107,107,107) y pasaba por un realce; con el tema claro (D12) sale
+     #efefef, o sea una pastilla clara con el texto claro del sidebar encima:
+     ilegible. Lo reportó Felipe el 2026-09-08 señalando el ítem en la app.
+     Se declara para AMBOS elementos, no solo para el botón: la próxima vez que
+     un ítem del rail nazca como <button> no vuelve a heredar el fondo del
+     navegador. Guard: tests/design-system/theme-claro-tokens.test.mjs. */
+  body.aia-shell--sidebar .aia-sidebar__link {
+    background: transparent;
+  }
+
   .shell-week-dialog__copy,
   .shell-week-dialog__preview {
     margin-block: var(--ds-space-2) var(--ds-space-3);
