@@ -708,5 +708,7 @@ módulos; queda anotado en el goal y aquí para que el cambio sea auditable.
 Son **18 escenarios claros, no 20**, y el censo queda `{ dark: 10, light: 9 }`.
 `states-feedback` sale del spec visual antes de llegar a `toHaveScreenshot`, así que no tiene
 captura clara que aprobar. Su golden **oscuro** mide 1102×1649 frente a los 1180×820 del resto:
-peso muerto de otra época de captura que nadie compara. **No se regeneró** — un golden oscuro
-que cambia es hallazgo, no ajuste (D18).
+una **excepción de captura revisada a mano** que recorta el elemento en vez del viewport, no el
+«peso muerto» que la primera redacción afirmó. Al capturarlo como manda esa excepción da hoy
+860×2362 contra los 1102×1649 declarados, medido en oscuro. **No se regeneró** — un golden
+oscuro que cambia es hallazgo, no ajuste (D18).

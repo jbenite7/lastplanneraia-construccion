@@ -194,6 +194,9 @@
   body.aia-shell--sidebar .aia-sidebar__link[data-sidebar-action] {
     width: 100%;
   }
+  body.aia-shell--sidebar .aia-sidebar__link {
+    background: transparent;
+  }
   .shell-week-dialog__copy,
   .shell-week-dialog__preview {
     margin-block: var(--ds-space-2) var(--ds-space-3);

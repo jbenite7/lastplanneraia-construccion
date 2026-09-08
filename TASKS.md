@@ -707,9 +707,24 @@ Detalle completo en `CHANGELOG.md` (2026-09-07) y en el `## Cierre` de
   al tocar color, comprobar el píxel de la captura, no el verde del job.
 
 - El golden oscuro de `states-feedback` mide 1102×1649 frente a los 1180×820 del resto y el
-  spec visual sale antes de compararlo: peso muerto de otra época de captura. No se regeneró
-  —un golden oscuro que cambia es hallazgo, no ajuste (D18)— y por eso el claro tiene 18
-  escenarios y no 20.
+  spec visual sale antes de compararlo. **Corrección del 2026-09-08:** esta sesión lo llamó
+  primero «peso muerto de otra época» y era falso. Es una **excepción revisada a mano**,
+  declarada en `docs/design-system/evidence-exceptions.json` (`elementCaptureAllowlist`): esa
+  familia es un mosaico de avisos que crece por scroll más allá del pliegue, así que su golden
+  recorta el ELEMENTO y no el viewport, con las dimensiones clavadas para que un cambio de
+  tamaño falle el gate. Lo dedujo de dos indicios ciertos —tamaño distinto, nadie lo compara—
+  sin buscar si alguien lo había justificado; la justificación existía y estaba firmada.
+  No se regeneró —un golden oscuro que cambia es hallazgo, no ajuste (D18)— y por eso el claro
+  tiene 18 escenarios y no 20.
+- **El recorte de `states-feedback` lleva desalineado desde antes de este frente, y nadie podía
+  verlo.** Medido el 2026-09-08 al capturar el elemento como manda su excepción: hoy da
+  **860×2362**, y su golden y la lista blanca declaran **1102×1649**. Medido **en tema oscuro**,
+  que este frente no tocó, así que no lo causó el claro: el panel cambió de forma —más estrecho
+  y mucho más alto— en algún momento anterior. Nadie se enteró porque el spec visual sale antes
+  de compararlo, así que la familia con la única excepción de captura revisada a mano es también
+  la única sin vigilancia real. **No se fijó un golden nuevo a ojo**: no se sabe si 860×2362 es
+  la forma correcta o el síntoma de otra rotura, y clavarlo ahora congelaría un tamaño quizá
+  equivocado. Requiere su propia tarea, con revisión humana de la excepción.
 - `/login` lo sirve el shell React desde el PR #20, pero
   `tests/browser/design-system-compliance.mjs` sigue buscando `entrypoints/core.css` en esa
   ruta y falla. El CI no corre ese spec, así que su rojo no bloquea nada hoy; decidir si

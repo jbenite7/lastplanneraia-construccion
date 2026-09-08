@@ -67,7 +67,11 @@ derivan los gates. Ningún golden oscuro cambió.
 
 **Hallazgos anotados, no arreglados aquí:** el golden oscuro de `states-feedback` mide
 1102×1649 frente a los 1180×820 del resto y no lo compara nadie desde hace tiempo — es peso
-muerto de otra época de captura y regenerarlo habría borrado la evidencia (D18). `/login` lo
+una **excepción de captura revisada a mano** —recorta el elemento, no el viewport, porque el
+mosaico crece más allá del pliegue— y no el «peso muerto» que este registro dijo primero. Al
+capturarlo como manda esa excepción da hoy 860×2362 contra los 1102×1649 declarados, **medido en
+oscuro**: el recorte lleva desalineado desde antes de este frente y nadie podía verlo. No se
+regeneró (D18) y queda en `TASKS.md` con su propia tarea. `/login` lo
 sirve el shell React desde el PR #20 y su prueba de cumplimiento sigue buscando la hoja del
 PHP migrado. La familia `actions` del laboratorio tiene cero fixtures operativos donde su spec
 espera uno.

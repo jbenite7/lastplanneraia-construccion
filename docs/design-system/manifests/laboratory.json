@@ -855,7 +855,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-light-1180x820.png",
-      "sha256": "efd7c2cbd370b25c277fbf394ab7e2e8c2a825153ee1125811260be8c95e29b9",
+      "sha256": "99df92b729780d012fe9a51aa2900ea44ffdbd4cc1cc95440fe6c96e3a13d69c",
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/shell-navigation-light-1180x820.png",
@@ -877,7 +877,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-light-1440x900.png",
-      "sha256": "b0e0a4f97975255f36b3177effdbd3586b2cdc9da1fa407dfeecef90d62e7144",
+      "sha256": "54ed3350926444f04a6a1ad2b9e5e6e6c95e3190ef7cafc766dcdc5d154d4335",
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/shell-navigation-light-1440x900.png",
@@ -921,7 +921,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-light-1440x900.png",
-      "sha256": "a19a2ca5be652cf5edc48df92eda2d7b97407268a1f5a3bf0ffd439bdbdf7a63",
+      "sha256": "517d6eba6e64f7ad6ba8d11cab7311b3da2b140170716d62e947910a3c99def7",
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/vendor-adapters-light-1440x900.png",

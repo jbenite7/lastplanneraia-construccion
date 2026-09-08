@@ -51,8 +51,12 @@ const viewportKey = ({ width, height }) => `${width}x${height}`;
 //     Son 18 y no 20 porque `states-feedback` no llega a `toHaveScreenshot` en el spec
 //     visual —sale antes, tras su comprobacion propia— asi que no tiene captura clara
 //     que aprobar. Su golden OSCURO tampoco se compara desde hace tiempo y mide
-//     1102x1649 frente a los 1180x820 del resto: peso muerto de otra epoca de captura,
-//     anotado como hallazgo y NO regenerado (D18).
+//     1102x1649 frente a los 1180x820 del resto, y eso NO es un descuido: es una excepcion
+//     revisada a mano en `evidence-exceptions.json` (elementCaptureAllowlist), porque la familia
+//     es un mosaico que crece mas alla del pliegue y su golden recorta el ELEMENTO. Medido el
+//     2026-09-08 en tema OSCURO, ese recorte da hoy 860x2362: lleva desalineado desde antes de
+//     este frente y nadie podia verlo porque el spec sale antes de compararlo. NO se regenero
+//     (D18); el hallazgo esta en TASKS.md con su propia tarea.
 //
 //   · PROGRAMA GENERAL (`/programa-general`). Es una pagina legada que carga
 //     `public/js/linksComunesHead2.js`, y ese cargador trae

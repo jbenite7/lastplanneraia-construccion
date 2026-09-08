@@ -153,8 +153,12 @@ ya rindiendo en claro, y es la que Felipe señaló al rechazar la primera galer�
   congelados y sí los corre el CI. Materializan el oscuro en vez de heredarlo.
 - **18 escenarios claros, no 20.** `states-feedback` sale del spec visual antes de llegar a
   `toHaveScreenshot`, así que no tiene captura clara que aprobar. Su golden oscuro mide
-  1102×1649 frente a los 1180×820 del resto: peso muerto de otra época de captura. **No se
-  regeneró** — un golden oscuro que cambia es hallazgo, no ajuste (D18).
+  1102×1649 frente a los 1180×820 del resto. **Corregido el 2026-09-08:** no es peso muerto sino
+  una **excepción revisada a mano** (`evidence-exceptions.json`, `elementCaptureAllowlist`) — la
+  familia es un mosaico que crece más allá del pliegue, así que su golden recorta el elemento.
+  Al capturarlo como manda esa excepción da hoy **860×2362**, medido **en oscuro**: el recorte
+  lleva desalineado desde antes del frente. **No se regeneró** — un golden oscuro que cambia es
+  hallazgo, no ajuste (D18) — y el hallazgo queda en `TASKS.md`.
 
 ### Condición de hecho
 
