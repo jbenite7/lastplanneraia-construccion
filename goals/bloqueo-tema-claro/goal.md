@@ -63,7 +63,10 @@ código de producto** (`grep` en `public/js`, `pdc-app/src`, `ct-app/src`, `fron
    `light: 10`.
 4. El CI del PR en verde: `design-system-static`, `design-system-runtime (light)` y
    `design-system-runtime (dark)`.
-5. El frente entra a `main` por Pull Request. Producción fuera de alcance.
+5. **Cumplida.** [PR #37](https://github.com/jbenite7/lastplanneraia-construccion/pull/37)
+   mergeado en `main` el 2026-09-08 (`b2305c7b`), con los **trece gates en `success` en las dos
+   patas** de la corrida `34245832586` — leídos en las variables `G_*` del paso «Summarize gate
+   results», no en el color del job. Producción fuera de alcance, como estaba declarado.
 
 ## Posture
 
