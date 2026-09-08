@@ -686,6 +686,26 @@ Detalle completo en `CHANGELOG.md` (2026-09-07) y en el `## Cierre` de
 `goals/bloqueo-tema-claro/goal.md`.
 
 **Pendientes que este frente destapó y NO arregló:**
+- **La paleta de marca miente en dos entradas, y eso afecta a todo consumidor.** Medido el
+  2026-09-08 convirtiendo OKLCH a sRGB y leyendo el píxel de un golden:
+  `--aia-green-primary: oklch(32% 0.07 148.5)` rinde **#153c1e** con el comentario `#1a5633`,
+  y `--aia-green-dark: oklch(27.8% 0.05 147.1)` rinde **#162f19** con el comentario `#1a3c2a`.
+  El verde corporativo del manual, `#1a5633`, es en realidad `oklch(40.5% 0.085 154.1)`: los
+  tokens están unos 8 puntos de luminosidad por debajo, así que salen apagados y casi negros.
+  Los botones se salvan por casualidad, porque `--ds-color-action-primary-bg-light` lleva el
+  hex literal en vez de encadenar al token. **Costó dos rechazos de Felipe sobre el sidebar**,
+  porque las dos veces se eligió el token por su nombre y no por lo que pinta.
+  **Condición de salida, explícita:** cuando se corrijan los `--aia-green-*`, el hex literal de
+  `--ds-nav-bg-light` (`public/css/tokens.css`) **vuelve a encadenar al token de marca**. Ese
+  hex es deuda con fecha, no una decisión de diseño; sin esta frase, dentro de unos meses
+  parecerá lo segundo.
+- **El gate visual es medio ciego a los cambios de color sutiles.** `toHaveScreenshot` daba por
+  iguales el verde viejo (#162f19) y el nuevo (#1a5633) —caen bajo su tolerancia por píxel— así
+  que `--update-snapshots` **no reescribía las capturas** y el CI habría quedado verde con el
+  color viejo dentro. Hubo que borrar los PNG claros para forzar la regeneración. Mientras siga
+  así, un cambio de color que no mueva mucha luminancia puede colarse sin que ningún gate avise:
+  al tocar color, comprobar el píxel de la captura, no el verde del job.
+
 - El golden oscuro de `states-feedback` mide 1102×1649 frente a los 1180×820 del resto y el
   spec visual sale antes de compararlo: peso muerto de otra época de captura. No se regeneró
   —un golden oscuro que cambia es hallazgo, no ajuste (D18)— y por eso el claro tiene 18
