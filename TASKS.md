@@ -861,8 +861,9 @@ estado por defecto mientras Felipe no reparta.
   superficies de la migración (`docs/superpowers/plans/2026-08-30-s01…s27`) **funciona en React
   con el legado todavía disponible como respaldo**; **no** exige `MIGRATION_COMPLETE` (retirar el
   legado ni cerrar la ventana de reversión). Estado medido el 2026-09-16 leyendo la sección
-  `## Cierre` de cada plan: **S01 cumple** (`CODE_COMPLETE`, legado de `/login` conservado a
-  propósito); **S02–S27 no están implementadas**, sus cierres lo dicen expresamente.
+  `## Cierre` de cada plan: **S01 no cumple desde el 2026-09-16**: Felipe fijó que la
+  paridad **incluye lo visual** y el login React no la tiene (marca, íconos y pie de legado); se
+  reabre en `docs/superpowers/plans/2026-09-16-s01-paridad-visual.md`; **S02–S27 no están implementadas**, sus cierres lo dicen expresamente.
   `pdc-app/` y `ct-app/` ya son React pero van por fuera de esa serie, así que cuentan solo cuando
   su plan S lo acepte. Consecuencia: producción sigue en `fix/pdc-duraciones-pasos` hasta entonces,
   y cualquier urgencia de producción es un hotfix sobre esa rama que después se trae a `main`.
