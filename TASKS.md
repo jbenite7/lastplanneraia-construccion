@@ -837,6 +837,24 @@ estado por defecto mientras Felipe no reparta.
 
 ## Ahora
 
+- [ ] **Color · los chips de leyenda en cero NO se atenúan en tema claro, en los tres módulos con
+  leyenda.** Medido el 2026-09-08 contra la pila aislada de CI, en `/programacion-intermedia`, misma
+  pantalla y mismos datos en los dos temas: en **oscuro**, cero chips de leyenda saturados; en
+  **claro**, **siete** a plena saturación —`#57b083`, `#5ec9bd`, `#5f9fdd`, `#ffca28` (sat 0,843),
+  `#e87722` (sat 0,853), `#e15a52`, `#9485d6`— todos con **contador cero**.
+  **La causa está en el selector, no en el color:** las tres reglas que atenúan el chip vacío están
+  escritas como `html.aia-theme-dark …` y por eso no existen en claro —
+  `public/css/programacion-intermedia.css:1765`, `public/css/programa-general.css:697`,
+  `public/css/programacion-semanal.css:3605`. Es el mismo punto ciego que ya cobró el frente
+  `bloqueo-tema-claro`: reglas escritas cuando oscuro era el único tema, invisibles hasta que el
+  claro existió. **El color en sí no es el defecto y no debe tocarse:** la leyenda usa la familia
+  sólida por contrato (`tests/design-system/legend-solid-contract.test.mjs`), porque debe pintar lo
+  mismo que los chips que describe — cambiarla a tintes reintroduce el defecto que Felipe reportó
+  con captura el 2026-08-21. Lo que falta es apagar la categoría vacía, que es intención ya escrita
+  en el código (C-24, `programacion_intermedia/hot.js:3245`) y que hoy solo se cumple en penumbra.
+  Destapado al responder una pregunta de Felipe sobre PI durante el frente `states-feedback-claro`,
+  que **no lo arregló** por estar los tres módulos fuera de sus rutas.
+
 - [x] **CI · regenerar el presupuesto de runtime a la generación 0.5.0 — decisión de Felipe del
   2026-08-28, con su método ya fijado.** **Hecho el 2026-09-04**, aprobado por Felipe ese día, en
   la rama `runtime-budget-0.5.0`: artefacto propio para la medición (era el prerrequisito medido

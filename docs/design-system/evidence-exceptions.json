@@ -4,18 +4,34 @@
     {
       "moduleId": "laboratory",
       "scenarioId": "states-feedback-dark-1180x820",
-      "width": 1102,
-      "height": 1649,
+      "width": 860,
+      "height": 2362,
       "owner": "design-system",
-      "reason": "states-feedback es un mosaico de banners/toasts/inline-alerts que crece por scroll vertical mas alla del pliegue del viewport; un recorte a viewport completo lo trunca. capture: \"element\" es una excepcion al contrato de alto (que exige que el golden mida exactamente el viewport) y solo se habilita para este escenario tras revision humana explicita, con las dimensiones exactas del recorte fijadas para que un golden que crezca o encoja sin que nadie lo mire falle aqui."
+      "reason": "states-feedback es un mosaico de banners/toasts/inline-alerts que crece por scroll vertical mas alla del pliegue del viewport: mide 2737 px de alto sobre un viewport de 820, asi que una captura de pantalla completa dejaria fuera 2037 px -el 74% de lo que esta familia homologa-. capture: \"element\" es una excepcion al contrato de alto (que exige que el golden mida exactamente el viewport) y solo se habilita para estos escenarios tras revision humana explicita, con las dimensiones exactas del recorte fijadas para que un golden que crezca o encoja sin que nadie lo mire falle aqui. Las dimensiones son 375 px menores que el alto del panel en vivo porque prepareSnapshot() pliega el <details> del inventario antes de capturar. CORREGIDO 2026-09-08: declaraba 1102x1649, que era la forma del panel el 2026-07-15, cuando TODOS los escenarios capturaban el elemento; f55fd94b migro el resto a captura de pagina cuatro dias despues y este quedo fuera porque un `return` lo sacaba de la comparacion. Dos meses de deriva que ningun gate podia ver. El `return` se retiro y la familia vuelve a compararse."
+    },
+    {
+      "moduleId": "laboratory",
+      "scenarioId": "states-feedback-light-1180x820",
+      "width": 860,
+      "height": 2362,
+      "owner": "design-system",
+      "reason": "states-feedback es un mosaico de banners/toasts/inline-alerts que crece por scroll vertical mas alla del pliegue del viewport: mide 2737 px de alto sobre un viewport de 820, asi que una captura de pantalla completa dejaria fuera 2037 px -el 74% de lo que esta familia homologa-. capture: \"element\" es una excepcion al contrato de alto (que exige que el golden mida exactamente el viewport) y solo se habilita para estos escenarios tras revision humana explicita, con las dimensiones exactas del recorte fijadas para que un golden que crezca o encoja sin que nadie lo mire falle aqui. Las dimensiones son 375 px menores que el alto del panel en vivo porque prepareSnapshot() pliega el <details> del inventario antes de capturar. CORREGIDO 2026-09-08: declaraba 1102x1649, que era la forma del panel el 2026-07-15, cuando TODOS los escenarios capturaban el elemento; f55fd94b migro el resto a captura de pagina cuatro dias despues y este quedo fuera porque un `return` lo sacaba de la comparacion. Dos meses de deriva que ningun gate podia ver. El `return` se retiro y la familia vuelve a compararse."
     },
     {
       "moduleId": "laboratory",
       "scenarioId": "states-feedback-dark-1440x900",
-      "width": 1362,
-      "height": 1577,
+      "width": 1120,
+      "height": 2103,
       "owner": "design-system",
-      "reason": "Misma excepcion que states-feedback-dark-1180x820, para el viewport requerido 1440x900: el mosaico de estados excede el alto del viewport y su cobertura visual real es el recorte al elemento, no a la pantalla completa."
+      "reason": "Misma excepcion que states-feedback-1180x820, para el viewport requerido 1440x900: el mosaico mide 2479 px sobre un viewport de 900 y su cobertura visual real es el recorte al elemento, no a la pantalla completa. Dimensiones corregidas el 2026-09-08 por la misma razon."
+    },
+    {
+      "moduleId": "laboratory",
+      "scenarioId": "states-feedback-light-1440x900",
+      "width": 1120,
+      "height": 2103,
+      "owner": "design-system",
+      "reason": "Misma excepcion que states-feedback-1180x820, para el viewport requerido 1440x900: el mosaico mide 2479 px sobre un viewport de 900 y su cobertura visual real es el recorte al elemento, no a la pantalla completa. Dimensiones corregidas el 2026-09-08 por la misma razon."
     }
   ],
   "visualEvidenceDelegationAllowlist": [

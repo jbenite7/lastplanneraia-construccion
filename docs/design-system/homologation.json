@@ -162,7 +162,8 @@
       "label": "Estados y retroalimentación",
       "description": "Mensajes y estados que comunican resultados, alertas y progreso.",
       "themes": [
-        "dark"
+        "dark",
+        "light"
       ],
       "viewports": [
         "1180x820",

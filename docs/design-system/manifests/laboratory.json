@@ -457,12 +457,12 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-dark-1180x820.png",
-      "sha256": "277f7921d5e6acdce89b8c2f3c7732a7009e231d3b0e6ddbd8d9db13a4db6483",
+      "sha256": "e875ae32a4ff771164d4c5d5094efa52823150958119409fe660f337602b6c2a",
       "capture": "element",
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/states-feedback-dark-1180x820.png",
-          "sha256": "277f7921d5e6acdce89b8c2f3c7732a7009e231d3b0e6ddbd8d9db13a4db6483"
+          "sha256": "e875ae32a4ff771164d4c5d5094efa52823150958119409fe660f337602b6c2a"
         }
       }
     },
@@ -480,12 +480,58 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-dark-1440x900.png",
-      "sha256": "c26420f0fd75c8ec64ac2cfd104805d52a62a43d301ddc5264ab651b440a8ef7",
+      "sha256": "7cb308c6815d62a746b5828004ec9da593a5a6e26286d17fc3fff4d08b07219f",
       "capture": "element",
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/states-feedback-dark-1440x900.png",
-          "sha256": "c26420f0fd75c8ec64ac2cfd104805d52a62a43d301ddc5264ab651b440a8ef7"
+          "sha256": "7cb308c6815d62a746b5828004ec9da593a5a6e26286d17fc3fff4d08b07219f"
+        }
+      }
+    },
+    {
+      "id": "states-feedback-light-1180x820",
+      "family": "states-feedback",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "light",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-light-1180x820.png",
+      "sha256": "61fc310b66a30fb114e794c70d2d1c02e14655f1cef00c925d9d25ae652e2662",
+      "capture": "element",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/states-feedback-light-1180x820.png",
+          "sha256": "61fc310b66a30fb114e794c70d2d1c02e14655f1cef00c925d9d25ae652e2662"
+        }
+      }
+    },
+    {
+      "id": "states-feedback-light-1440x900",
+      "family": "states-feedback",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-light-1440x900.png",
+      "sha256": "a908218ddcafd81da4e82a80555716fda4705406c728239ebc98aae3c63da2dd",
+      "capture": "element",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/states-feedback-light-1440x900.png",
+          "sha256": "a908218ddcafd81da4e82a80555716fda4705406c728239ebc98aae3c63da2dd"
         }
       }
     },
