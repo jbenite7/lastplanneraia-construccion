@@ -134,7 +134,7 @@ function RutasSegunSesion() {
   // hace `setCargando(true)` + `setArranque(null)` ANTES de pedir el bootstrap nuevo, así que
   // entre el cambio de clave y el login hay siempre un commit intermedio. Medido en navegador
   // con un observador de mutaciones sobre `#root`:
-  //   h1=Actualiza tu contraseña → h1=null status=Cargando… → h1=Entrar (foco en BODY)
+  //   h1=Actualiza tu contraseña → h1=null status=Cargando… → h1=Bienvenido a Last Planner AIA (foco en BODY)
   // Con la versión anterior ese commit intermedio entraba por la última línea y ponía el ref en
   // `false` (porque `cargando` !== `cambio_clave_requerido`), así que al llegar `anonimo` la
   // condición ya no se cumplía y el foco NUNCA volvía al campo de usuario. Ninguna prueba lo

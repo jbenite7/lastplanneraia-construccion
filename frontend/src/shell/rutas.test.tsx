@@ -31,7 +31,7 @@ test('sin sesión (anonymous/missing_session) muestra el login', async () => {
 
   render(<Rutas />);
 
-  await waitFor(() => expect(screen.getByRole('heading', { name: /entrar/i })).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByRole('heading', { name: /bienvenido a last planner aia/i })).toBeInTheDocument());
 });
 
 test('una sesión expirada (timeout) también vuelve al login, no a una pantalla operativa', async () => {
@@ -49,7 +49,7 @@ test('una sesión expirada (timeout) también vuelve al login, no a una pantalla
 
   render(<Rutas />);
 
-  await waitFor(() => expect(screen.getByRole('heading', { name: /entrar/i })).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByRole('heading', { name: /bienvenido a last planner aia/i })).toBeInTheDocument());
 });
 
 test('un bootstrap con cambio de clave pendiente muestra el panel, sin login, selector, sidebar ni identidad', async () => {
@@ -68,7 +68,7 @@ test('un bootstrap con cambio de clave pendiente muestra el panel, sin login, se
   render(<Rutas />);
 
   expect(await screen.findByRole('button', { name: 'Actualizar y continuar' })).toBeInTheDocument();
-  expect(screen.queryByRole('heading', { name: /entrar/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /bienvenido a last planner aia/i })).not.toBeInTheDocument();
   expect(screen.queryByRole('heading', { name: /proyecto/i })).not.toBeInTheDocument();
   expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
   expect(screen.queryByLabelText('Usuario')).not.toBeInTheDocument();
@@ -118,7 +118,7 @@ test('un error de sesión muestra alerta y permite reintentar sin mostrar el log
   render(<Rutas />);
 
   expect(await screen.findByRole('alert')).toHaveTextContent(/no pudimos conectar/i);
-  expect(screen.queryByRole('heading', { name: /entrar/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /bienvenido a last planner aia/i })).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole('button', { name: /reintentar/i }));
 
@@ -141,7 +141,7 @@ test('un 5xx en el bootstrap cae en el estado recuperable, nunca en el login por
   render(<Rutas />);
 
   expect(await screen.findByRole('alert')).toHaveTextContent(/no pudimos conectar/i);
-  expect(screen.queryByRole('heading', { name: /entrar/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /bienvenido a last planner aia/i })).not.toBeInTheDocument();
 });
 
 test('mientras el bootstrap está en vuelo se ve "Cargando…", nunca el login por descarte', async () => {
@@ -155,11 +155,11 @@ test('mientras el bootstrap está en vuelo se ve "Cargando…", nunca el login p
   render(<Rutas />);
 
   expect(screen.getByRole('status')).toHaveTextContent(/cargando/i);
-  expect(screen.queryByRole('heading', { name: /entrar/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /bienvenido a last planner aia/i })).not.toBeInTheDocument();
   expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
   resolverSesion(new Response(JSON.stringify(ANONIMA_MISSING_SESSION), { status: 200 }));
-  await waitFor(() => expect(screen.getByRole('heading', { name: /entrar/i })).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByRole('heading', { name: /bienvenido a last planner aia/i })).toBeInTheDocument());
 });
 
 // --- avisos consumibles una vez (ronda de arreglos 1) --------------------------
@@ -194,7 +194,7 @@ test('/app?reset=1 muestra el aviso una vez y limpia la URL', async () => {
 
   render(<Rutas />);
 
-  await screen.findByRole('heading', { name: /entrar/i });
+  await screen.findByRole('heading', { name: /bienvenido a last planner aia/i });
   expect(await screen.findByText(/restablecida correctamente/i)).toBeInTheDocument();
   await waitFor(() => expect(window.location.search).toBe(''));
 });
@@ -232,7 +232,7 @@ test('tras un ciclo de logout en el mismo montaje, el aviso de reset ya consumid
   render(<Rutas />);
 
   // 1) primera visita: el aviso de reset aparece y la URL se limpia.
-  await screen.findByRole('heading', { name: /entrar/i });
+  await screen.findByRole('heading', { name: /bienvenido a last planner aia/i });
   expect(await screen.findByText(/restablecida correctamente/i)).toBeInTheDocument();
   await waitFor(() => expect(window.location.search).toBe(''));
 
@@ -247,7 +247,7 @@ test('tras un ciclo de logout en el mismo montaje, el aviso de reset ya consumid
   await usuario.click(screen.getByRole('menuitem', { name: /cerrar sesión/i }));
 
   // 4) de vuelta al login: el aviso de reset, ya consumido en el paso 1, no reaparece.
-  await waitFor(() => expect(screen.getByRole('heading', { name: /entrar/i })).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByRole('heading', { name: /bienvenido a last planner aia/i })).toBeInTheDocument());
   expect(screen.queryByRole('status')).not.toBeInTheDocument();
 });
 
@@ -286,7 +286,7 @@ test('login exitoso seguido de un fallo de arranque muestra el error recuperable
   const usuario = userEvent.setup();
   render(<Rutas />);
 
-  await screen.findByRole('heading', { name: /entrar/i });
+  await screen.findByRole('heading', { name: /bienvenido a last planner aia/i });
 
   await usuario.type(screen.getByLabelText('Usuario'), 'test.A');
   await usuario.type(screen.getByLabelText('Contraseña'), 'clave-valida');
@@ -295,7 +295,7 @@ test('login exitoso seguido de un fallo de arranque muestra el error recuperable
   // El fallo del bootstrap posterior al login se ve como error recuperable, nunca como el
   // formulario de login "por descarte" — el riesgo capital de esta tarea.
   expect(await screen.findByRole('alert')).toHaveTextContent(/no pudimos conectar/i);
-  expect(screen.queryByRole('heading', { name: /entrar/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /bienvenido a last planner aia/i })).not.toBeInTheDocument();
 
   // Ni la propia recuperación (botón "Reintentar") ni ningún otro camino reenvía credenciales:
   // `alResolver`/`recargar` solo hablan con `GET /api/session`.
@@ -321,7 +321,7 @@ test('con configuracionRuntime de mantenimiento (anonymous) se ve el login sin l
     />,
   );
 
-  expect(await screen.findByRole('heading', { name: /entrar/i })).toBeInTheDocument();
+  expect(await screen.findByRole('heading', { name: /bienvenido a last planner aia/i })).toBeInTheDocument();
   expect(fetchEspia).not.toHaveBeenCalled();
 
   const formulario = screen.getByRole('button', { name: 'Entrar' }).closest('form');

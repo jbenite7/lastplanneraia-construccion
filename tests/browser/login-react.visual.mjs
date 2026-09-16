@@ -48,7 +48,7 @@ async function prepararPantallaDeAcceso(page, tema, viewport) {
   await fijarTema(page, tema);
   await simularSesion(page, [arranqueAnonimo()]);
   await page.goto('/login');
-  await expect(page.getByRole('heading', { level: 1, name: /^Entrar$/ })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: /^Bienvenido a Last Planner AIA$/ })).toBeVisible();
   // El foco por defecto queda en el `<body>`; sin esto, una captura podría llevar el anillo de
   // foco de la navegación anterior y las ocho imágenes no serían comparables entre sí.
   await page.evaluate(() => document.activeElement?.blur?.());

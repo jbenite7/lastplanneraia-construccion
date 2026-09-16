@@ -38,6 +38,7 @@ test('el diálogo vive dentro de MarcoAcceso: un único h1, marca, tema y pie', 
   expect(screen.getByText('Last Planner AIA')).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /cambiar a tema/i })).toBeInTheDocument();
   expect(screen.getByText('© 2026 Arquitectos e Ingenieros Asociados')).toBeInTheDocument();
+  expect(screen.queryByText('Ingresa tus credenciales para continuar')).not.toBeInTheDocument();
 });
 
 test('el diálogo queda anunciado como modal y asociado al título de la página', () => {

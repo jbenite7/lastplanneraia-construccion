@@ -103,6 +103,18 @@
     white-space: nowrap;
   }
 
+  /* Bienvenida y subtítulo (paridad visual con el legado, 2026-09-16). */
+  .aia-auth__layout > .aia-card > h1 {
+    text-align: center;
+    font-family: var(--ds-font-display);
+  }
+
+  .aia-auth__subtitulo {
+    margin-block: 0 var(--ds-space-4);
+    text-align: center;
+    color: var(--ds-active-text-secondary);
+  }
+
   .aia-auth__pie .aia-copy {
     display: flex;
     flex-direction: column;

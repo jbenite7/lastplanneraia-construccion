@@ -39,7 +39,9 @@ test('S01-UX-01: MarcoAcceso trae un único h1, la marca en la tarjeta, tema y e
   const { container } = render(<PantallaLogin {...propiedades()} />);
 
   expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
-  expect(screen.getByRole('heading', { level: 1, name: 'Entrar' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 1, name: 'Bienvenido a Last Planner AIA' })).toBeInTheDocument();
+  expect(screen.getByText('Ingresa tus credenciales para continuar')).toHaveClass('aia-auth__subtitulo');
+  expect(screen.queryByRole('heading', { name: 'Entrar' })).not.toBeInTheDocument();
 
   // Paridad visual (2026-09-16): la marca vive DENTRO de la tarjeta, antes del h1, y una sola vez.
   const tarjeta = container.querySelector('.aia-auth__layout > .aia-card');
@@ -328,6 +330,17 @@ test('en modo mantenimiento, error=false no muestra ninguna alerta', () => {
   );
 
   expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+});
+
+test('paridad visual: el modo mantenimiento lleva la misma bienvenida y subtítulo', () => {
+  render(
+    <PantallaLogin
+      {...propiedades()}
+      modo={{ tipo: 'mantenimiento', action: '/oculta', error: false, csrfToken }}
+    />,
+  );
+  expect(screen.getByRole('heading', { level: 1, name: 'Bienvenido a Last Planner AIA' })).toBeInTheDocument();
+  expect(screen.getByText('Ingresa tus credenciales para continuar')).toBeInTheDocument();
 });
 
 // --- paridad visual: íconos (Tarea 3, S01) --------------------------------------

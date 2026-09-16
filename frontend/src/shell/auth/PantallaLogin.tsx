@@ -94,7 +94,7 @@ export function PantallaLogin({ csrfToken, aviso, alResolver, alRevalidar, modo 
     // vuelve a servir este mismo host con una configuración de runtime nueva; esta pantalla
     // no interpreta ni retiene nada entre envíos.
     return (
-      <MarcoAcceso titulo="Entrar">
+      <MarcoAcceso titulo="Bienvenido a Last Planner AIA" subtitulo="Ingresa tus credenciales para continuar">
         {modo.error && (
           <p role="alert" className="aia-alert">
             {MENSAJE_CREDENCIALES}
@@ -178,7 +178,7 @@ export function PantallaLogin({ csrfToken, aviso, alResolver, alRevalidar, modo 
   const errorClave = error?.tipo === 'campos' ? (error.campos.password ?? null) : null;
 
   return (
-    <MarcoAcceso titulo="Entrar">
+    <MarcoAcceso titulo="Bienvenido a Last Planner AIA" subtitulo="Ingresa tus credenciales para continuar">
       {aviso && (
         <p role="status" className="aia-alert">
           {aviso.mensaje}
