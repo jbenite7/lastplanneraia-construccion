@@ -423,6 +423,15 @@
     gap: var(--ds-space-2);
   }
 
+  /* Selector semanal (Tarea 5, T01 — solo el shell React lo mete en el header;
+     el legado no emite `.aia-sidebar__week`, así que esta regla es inocua ahí).
+     Ocupa las dos columnas en su propia fila: si quedara auto-colocado como
+     `.aia-sidebar__context`, el algoritmo de grid lo metería en la col 2 de la
+     fila 2, robándole ancho a la col 1 y colapsando nombre/contexto a 0px. */
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="expanded"] .aia-sidebar__week {
+    grid-column: 1 / -1;
+  }
+
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="expanded"] .aia-sidebar__toggle {
     grid-column: 2;
     grid-row: 1;
