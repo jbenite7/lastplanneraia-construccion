@@ -458,13 +458,7 @@
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-dark-1180x820.png",
       "sha256": "e875ae32a4ff771164d4c5d5094efa52823150958119409fe660f337602b6c2a",
-      "capture": "element",
-      "goldenPlatforms": {
-        "linux": {
-          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/states-feedback-dark-1180x820.png",
-          "sha256": "e875ae32a4ff771164d4c5d5094efa52823150958119409fe660f337602b6c2a"
-        }
-      }
+      "capture": "element"
     },
     {
       "id": "states-feedback-dark-1440x900",
@@ -481,13 +475,7 @@
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-dark-1440x900.png",
       "sha256": "7cb308c6815d62a746b5828004ec9da593a5a6e26286d17fc3fff4d08b07219f",
-      "capture": "element",
-      "goldenPlatforms": {
-        "linux": {
-          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/states-feedback-dark-1440x900.png",
-          "sha256": "7cb308c6815d62a746b5828004ec9da593a5a6e26286d17fc3fff4d08b07219f"
-        }
-      }
+      "capture": "element"
     },
     {
       "id": "states-feedback-light-1180x820",
@@ -504,13 +492,7 @@
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-light-1180x820.png",
       "sha256": "61fc310b66a30fb114e794c70d2d1c02e14655f1cef00c925d9d25ae652e2662",
-      "capture": "element",
-      "goldenPlatforms": {
-        "linux": {
-          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/states-feedback-light-1180x820.png",
-          "sha256": "61fc310b66a30fb114e794c70d2d1c02e14655f1cef00c925d9d25ae652e2662"
-        }
-      }
+      "capture": "element"
     },
     {
       "id": "states-feedback-light-1440x900",
@@ -527,13 +509,7 @@
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-light-1440x900.png",
       "sha256": "a908218ddcafd81da4e82a80555716fda4705406c728239ebc98aae3c63da2dd",
-      "capture": "element",
-      "goldenPlatforms": {
-        "linux": {
-          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/states-feedback-light-1440x900.png",
-          "sha256": "a908218ddcafd81da4e82a80555716fda4705406c728239ebc98aae3c63da2dd"
-        }
-      }
+      "capture": "element"
     },
     {
       "id": "vendor-adapters-dark-1180x820",
