@@ -64,8 +64,11 @@ gate hay que auditarlo con el mismo rigor que lo que vigila.
    PHP en el contenedor medían el árbol compartido. **Medido:** el script dio los tres verdes desde un
    worktree en `06627082` mientras el contenedor servía el principal en `081a33c8` — commits distintos.
    Un gate obligatorio que avala con evidencia ajena es peor que no tener gate. Hoy exporta
-   `LPS_CODE_ROOT="$PWD"` y un `COMPOSE_PROJECT_NAME` propio derivado del SHA; comprobado que tras el
-   arreglo el conteo del audit responde al árbol local (4.078 → 4.081 al mutarlo).
+   `LPS_CODE_ROOT="$PWD"` y **comprueba que el contenedor `app` monte el árbol verificado**; si no,
+   deniega (`scripts/publicar.sh:41` y `:49-78`). El primer arreglo, un `COMPOSE_PROJECT_NAME` propio
+   derivado del SHA, se retiró el mismo 2026-08-19: ese proyecto nacía sin contenedores y
+   `node-tests` agotaba su tope de 180 s (`scripts/publicar.sh:28-40`). El invariante se comprueba en
+   vez de fabricarse. *(Corregido en el pase de veracidad del 2026-09-16.)*
 
 **Entregado con su mutación, ejecutada**, como exige la regla del repo: con el árbol sucio →
 `DENEGADO` y `RC=1`, leído sin tubería. (Leerlo *con* tubería devolvió 0 y por un momento pareció que

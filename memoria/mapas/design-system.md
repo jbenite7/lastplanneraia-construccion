@@ -20,8 +20,9 @@ resumen: "Tokens, capas CSS, gates y baselines del design system — y las tramp
 - [[docs/design-system/README]] — la autoridad ejecutable. Junto a `contracts/`, `manifests/` y
   `decisions.md` forma la capa contractual, distinta de `docs/brand/`, que solo aporta insumos
   visuales.
-- [[AGENTS]] — fija el alcance: dark es el tema por defecto y el viewport canónico de validación
-  es 1180×820. El 2026-08-07 cayeron las prohibiciones de móvil, tablet y tema claro; lo que queda
+- [[AGENTS]] — fija el alcance: **los dos temas son contractuales** y el claro es el tema de entrada
+  (spec 2026-08-28, D12; hasta entonces dark era el tema por defecto); el viewport canónico de
+  validación sigue siendo 1180×820. El 2026-08-07 cayeron las prohibiciones de móvil, tablet y tema claro; lo que queda
   es un hecho del código, no un veto: `linen` se retiró en DS-030 y habría que reconstruirlo.
 
 Los tres contratos que cuelgan de esa autoridad, cada uno con su ámbito:

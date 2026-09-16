@@ -37,19 +37,10 @@ primitivas BI compartidas).
 
 **Los dos selladores del cierre**, hermanos de esta familia:
 
-- `closeout-evidence.json` — las **nueve gates de cierre** (quince hasta el 2026-08-11, ocho hasta el 2026-08-14, nueve desde que entró `semanal-roles-phases`), cada
-  una `blocking`, con fecha y evidencia. Es lo que activa la garantía 1.0.0 (ver
-  [[madurez-y-api-estable]]). Ojo: el gate que las lee
-  (`tests/design-system/release-governance.test.mjs:79-80`) comprueba `gates.length === 8`,
-  `blocking === true` y `evidence.length > 0`, **nunca el contenido** del array — corregido el
-  2026-08-10 tras medir que 14 de los recibos eran stubs de dos claves. Y **ya no exige
-  `status: 'passed'`**: `D-F1b-5` retiró ese acoplamiento el 2026-08-11 y hoy uno de los ocho está
-  `blocked` sin romper el contrato (ver [[gate-solo-cuenta-elementos-no-los-lee]]). La garantía es de
-  forma, no de contenido.
 - `closeout-evidence.json` — los **nueve gates de cierre** (quince hasta el Frente 1b, ocho hasta el 2026-08-14), cada
   uno `blocking` y con evidencia. Es lo que activa la garantía 1.0.0 (ver
   [[madurez-y-api-estable]]). El gate que los cuenta
-  (`tests/design-system/release-governance.test.mjs:79-80`) exige la lista completa y bloqueante,
+  (`tests/design-system/release-governance.test.mjs:79`, `closeout.gates.length === closeoutGateIds.length`) exige la lista completa y bloqueante,
   **ya sin `passed` obligatorio** (D-F1b-5, 2026-08-11), y el contenido de cada recibo lo abre
   `tests/design-system/gate-receipt-content.test.mjs` — el hueco de los 14 stubs medido el
   2026-08-10 está cerrado; ver [[gate-solo-cuenta-elementos-no-los-lee]].

@@ -51,7 +51,7 @@ Task 6 del Frente 0 (2026-08-10). Ver [[estado|Estado de los goals]] y el Frente
 **Corrección del pase del 2026-08-12:** ese diagnóstico se pagó. Hoy son **nueve** gates, no quince —bajaron a ocho el 2026-08-11 y subieron a nueve el 2026-08-14 al entrar `semanal-roles-phases`—,
 sus ocho recibos traen `command`, `exitCode`, `durationMs` y `outputTail` (ya no son stubs), y el
 contrato **dejó de exigir `status: 'passed'`** — `D-F1b-5`, 2026-08-11, porque exigirlo empujaba a
-declarar aprobado lo que no lo estaba. Uno de los ocho está hoy `blocked` y eso es legítimo. Lo que
+declarar aprobado lo que no lo estaba. Llegó a haber uno `blocked` (`runtime-budgets`) y era legítimo; medido el 2026-09-16, los nueve están `passed`. Lo que
 sigue siendo cierto es la forma del gate: cuenta elementos, no los lee
 (ver [[gate-solo-cuenta-elementos-no-los-lee]]).
 `tests/design-system/release-governance.test.mjs:79-80` exige que los **nueve gates de cierre** de
@@ -59,7 +59,7 @@ sigue siendo cierto es la forma del gate: cuenta elementos, no los lee
 `status: 'passed'` en todos**: D-F1b-5 (2026-08-11) retiró ese acoplamiento porque, con la versión
 ya estable, exigirlo obligaba a declarar aprobados gates que no lo estaban — fue el incentivo que
 produjo quince recibos `passed` sin ejecutar (el comentario de `release-governance.test.mjs:68-74`
-lo documenta). Hoy `runtime-budgets` está `blocked` y el gate pasa, porque dice la verdad.
+lo documenta). `runtime-budgets` estuvo `blocked` con el gate en verde, porque decía la verdad; desde el 2026-09-04 (generación 0.5.0) está `passed` y los nueve lo están.
 
 **Corrección del pase de veracidad del 2026-08-10, cerrada el 2026-08-12:** aquel
 `evidence.length > 0` comprobaba forma, no contenido, y dejó pasar 14 recibos stub de dos claves

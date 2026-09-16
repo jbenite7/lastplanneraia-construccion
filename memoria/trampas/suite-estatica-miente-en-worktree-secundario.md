@@ -36,7 +36,7 @@ COMPOSE_PROJECT_NAME=<nombre-propio> LPS_CODE_ROOT="$PWD" npm run test:design-sy
 
 `COMPOSE_PROJECT_NAME` resuelve **a qué contenedor** vas, pero no **qué árbol monta ese contenedor**:
 `docker-compose.override.yml:26-28` hace el bind desde
-`${LPS_CODE_ROOT:-/Volumes/Crucial X6/Developer/lps-aia}`, una **ruta absoluta al checkout principal
+`${LPS_CODE_ROOT:-/Users/felipebenitez/Developer/lps-aia}` (era `/Volumes/Crucial X6/…` hasta la mudanza del 2026-08-18), una **ruta absoluta al checkout principal
 como valor por defecto**. Sin `LPS_CODE_ROOT`, el contenedor efímero es tuyo pero sigue sirviendo el
 árbol de otro, y la aserción vuelve a comparar dos árboles — el mismo síntoma exacto, por un segundo
 camino.

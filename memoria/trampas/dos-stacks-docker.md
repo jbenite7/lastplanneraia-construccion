@@ -15,6 +15,14 @@ Conviven **dos stacks Docker** con su propio MySQL, y el `docker-compose.yml` ll
 | `lps-aia-pdc` | `lps-aia-pdc_default` | **3308** | 8091 | `/Volumes/Crucial X6/Developer/lps-aia-pdc` |
 | `last-planner-aia` | `last-planner-aia_default` | 3307 | — | `/Volumes/Crucial X6/Developer/lps-aia` |
 
+> **Re-medido el 2026-09-16 (pase de veracidad), con `docker compose ls -a` y `docker ps`:** la tabla de
+> arriba es del 2026-07-28 y ya no describe la máquina. El stack `lps-aia-pdc` **no existe**. Hoy los
+> dos stacks con MySQL propio de este repo son `last-planner-aia` (db en **3307**, app en 8081, desde
+> `/Users/felipebenitez/Developer/lps-aia`) y **`lps-espejo-prod`** (db en **3308**, app en 8083,
+> `docker-compose.espejo.yml` del worktree `.claude/worktrees/produccion`, base `${ESPEJO_DB_NAME}`).
+> La trampa sigue en pie con otro par: antes de conectarte, el puerto publicado dice a cuál vas. Que
+> la base del espejo se llame igual que la de desarrollo **no se verificó** (vive en `.env`).
+
 **Por qué importa:** las dos bases se llaman `lastplanneraia_dev`. Un `docker run --network last-planner-aia_default` desde el worktree del PDC conecta sin error a la base equivocada — la de otras sesiones — y falla con `Table 'pdc_...' doesn't exist`, que parece un problema de migraciones y no lo es. Si la tabla sí existiera en ambas, escribiría datos en la base de otra sesión sin avisar.
 
 **Cómo comprobarlo:** `docker ps --format '{{.Names}}\t{{.Ports}}' | grep mysql` — el puerto publicado desanda la ambigüedad.
