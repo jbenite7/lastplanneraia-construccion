@@ -854,6 +854,18 @@ estado por defecto mientras Felipe no reparta.
   funcionalidad — pero es un deploy completo de `main` (shell React, cortes de `/login`, dos
   migraciones más) y se decide aparte, con la rutina de `docs/siteground-deploy-routine.md`.
   Hasta entonces, `git pull --ff-only origin main` en el servidor va a fallar por diseño.
+  (Corrección del 2026-09-16: «este `main` ya integra ese frente por cherry-pick» no era cierto
+  cuando se escribió; entró de verdad con el PR #39, merge `85e14acf`.)
+- **Criterio de deploy: no se despliega `main` a producción hasta que haya paridad legado vs
+  React** (decisión de Felipe, 2026-09-16). **Paridad** significa que cada una de las 27
+  superficies de la migración (`docs/superpowers/plans/2026-08-30-s01…s27`) **funciona en React
+  con el legado todavía disponible como respaldo**; **no** exige `MIGRATION_COMPLETE` (retirar el
+  legado ni cerrar la ventana de reversión). Estado medido el 2026-09-16 leyendo la sección
+  `## Cierre` de cada plan: **S01 cumple** (`CODE_COMPLETE`, legado de `/login` conservado a
+  propósito); **S02–S27 no están implementadas**, sus cierres lo dicen expresamente.
+  `pdc-app/` y `ct-app/` ya son React pero van por fuera de esa serie, así que cuentan solo cuando
+  su plan S lo acepte. Consecuencia: producción sigue en `fix/pdc-duraciones-pasos` hasta entonces,
+  y cualquier urgencia de producción es un hotfix sobre esa rama que después se trae a `main`.
 - **Gobierno del catálogo de duraciones desde `/admin/`** (decisión de Felipe, 2026-09-01):
   frente propio. Contexto: `docs/superpowers/specs/2026-09-01-duraciones-por-obra-design.md` §3.2.
 - **Diferidos del triaje final de duraciones por obra**, ninguno bloqueante: e2e con paso
