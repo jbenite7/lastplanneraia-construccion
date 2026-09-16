@@ -329,3 +329,37 @@ test('en modo mantenimiento, error=false no muestra ninguna alerta', () => {
 
   expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });
+
+// --- paridad visual: íconos (Tarea 3, S01) --------------------------------------
+
+test('paridad visual: usuario con ícono, alternador de ícono con nombre accesible y botón con flecha', async () => {
+  const user = userEvent.setup();
+  render(<PantallaLogin {...propiedades()} />);
+
+  const usuario = screen.getByLabelText('Usuario');
+  expect(usuario.closest('.aia-auth__campo-icono')?.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+
+  const alternador = screen.getByRole('button', { name: 'Mostrar contraseña' });
+  expect(alternador).toHaveAttribute('aria-pressed', 'false');
+  expect(alternador.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+  expect(alternador).not.toHaveTextContent(/\S/);
+
+  await user.click(alternador);
+  expect(screen.getByRole('button', { name: 'Ocultar contraseña' })).toHaveAttribute('aria-pressed', 'true');
+
+  const entrar = screen.getByRole('button', { name: 'Entrar' });
+  expect(entrar.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+});
+
+test('paridad visual: el formulario de mantenimiento lleva los mismos íconos', () => {
+  render(
+    <PantallaLogin
+      {...propiedades()}
+      modo={{ tipo: 'mantenimiento', action: '/oculta', error: false, csrfToken }}
+    />,
+  );
+
+  expect(screen.getByLabelText('Usuario').closest('.aia-auth__campo-icono')).not.toBeNull();
+  expect(screen.getByRole('button', { name: 'Mostrar contraseña' }).querySelector('svg')).not.toBeNull();
+  expect(screen.getByRole('button', { name: 'Entrar' }).querySelector('svg')).not.toBeNull();
+});

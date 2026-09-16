@@ -139,37 +139,62 @@
     justify-content: center;
   }
 
-  /* Campo de contraseña y su alternador. Reemplaza al `input-group` de Bootstrap, que no
-     llegaba a colocar el botón junto al campo: caía debajo y a ancho casi completo, con
-     aspecto de acción principal. El alternador es ahora texto discreto a la derecha,
-     conservando su alto de objetivo táctil. */
-  .aia-auth__clave {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: var(--ds-space-1);
+  /* Campo con ícono a la derecha (paridad visual con el legado, 2026-09-16). El ícono de
+     usuario es adorno; el de contraseña es el alternador y conserva objetivo táctil. */
+  .aia-auth__campo-icono {
+    position: relative;
   }
 
-  .aia-auth__clave > .aia-input {
+  .aia-auth__campo-icono > .aia-input {
     inline-size: 100%;
+    padding-inline-end: calc(var(--ds-target-min) + var(--ds-space-1));
+  }
+
+  .aia-auth__campo-adorno,
+  .aia-auth__clave-toggle {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    inline-size: var(--ds-target-min);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ds-active-text-secondary);
+  }
+
+  .aia-auth__campo-adorno {
+    pointer-events: none;
   }
 
   .aia-auth__clave-toggle {
     min-block-size: var(--ds-target-min);
-    display: inline-flex;
-    align-items: center;
-    padding-inline: var(--ds-space-2);
+    padding: 0;
     border: 0;
     background: none;
-    color: var(--ds-active-action-primary);
-    text-decoration: underline;
     cursor: pointer;
-    font: inherit;
   }
 
   .aia-auth__clave-toggle:disabled {
     cursor: not-allowed;
     opacity: var(--ds-opacity-disabled, 0.6);
+  }
+
+  .aia-auth__icono {
+    inline-size: 1.125rem;
+    block-size: 1.125rem;
+    flex: 0 0 auto;
+  }
+
+  .aia-auth__acciones > .aia-btn {
+    gap: var(--ds-space-2);
+  }
+
+  /* El conmutador reutiliza `aia-sidebar__utility`, pensado para la barra lateral. Sobre el
+     lienzo claro del acceso medía rgb(199,212,204) sobre rgb(250,250,250) ≈ 1,5:1 (2026-09-16):
+     ilegible. En esta pantalla toma el texto secundario del tema activo. */
+  .aia-auth__cabecera .aia-sidebar__utility,
+  .aia-auth__cabecera .aia-sidebar__label {
+    color: var(--ds-active-text-secondary);
   }
 
   /* Objetivos táctiles de la superficie de acceso: el core ya los aplica a

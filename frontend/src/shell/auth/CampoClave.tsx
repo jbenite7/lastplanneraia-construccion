@@ -1,4 +1,5 @@
 import { useState, type ChangeEvent } from 'react';
+import { IconoOjo, IconoOjoTachado } from './iconos';
 
 type PropiedadesCampoClave = {
   id: string;
@@ -39,13 +40,10 @@ export function CampoClave({
         {label}
       </label>
 
-      {/* `aia-auth__clave` reemplaza al `input-group` de Bootstrap (Tarea 14): esa clase del
-          vendor no llegaba a colocar el botón junto al campo —caía debajo, a ancho casi
-          completo— y con `aia-btn--secondary` competía visualmente con el botón de envío.
-          Ahora el alternador es una acción textual discreta alineada a la derecha; conserva
-          `aria-pressed`, su alto de objetivo táctil y el contraste, que es lo que lo hace
-          accesible. Lo que cambia es la presentación, no la semántica. */}
-      <div className="aia-auth__clave">
+      {/* Paridad visual (2026-09-16): el alternador vuelve a ser un ícono DENTRO del campo, como
+          en el legado. El texto pasa a `aria-label`, así que el nombre accesible no cambia
+          («Mostrar contraseña» / «Ocultar contraseña») y `aria-pressed` sigue diciendo el estado. */}
+      <div className="aia-auth__campo-icono">
         <input
           id={id}
           name={name}
@@ -63,11 +61,12 @@ export function CampoClave({
         <button
           type="button"
           className="aia-auth__clave-toggle"
+          aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           aria-pressed={visible}
           disabled={disabled}
           onClick={() => setVisible((valor) => !valor)}
         >
-          {visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          {visible ? <IconoOjoTachado /> : <IconoOjo />}
         </button>
       </div>
 
