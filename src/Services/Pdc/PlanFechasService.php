@@ -1305,6 +1305,8 @@ class PlanFechasService
      *
      * @param list<array{pasoId:?int,clave:string,nombre:string,colLegacy:?string,diasFijos:?int,peso:?float}> $pasos
      * @param array<string, int> $medianas
+     * @param array<int, array<string,int>> $excepciones duracionRef => [columna => días], las
+     *        correcciones de ESTA obra. Se anteponen al catálogo global.
      * @return array{arranque:string,total:int,dias:list<int>,provisional:bool,duracionRef:?int}|null
      *         null si el paquete está inactivo o su modalidad ya no genera proceso de contratación
      */
@@ -1314,6 +1316,10 @@ class PlanFechasService
         array $pasos,
         array $medianas,
         string $selectCols,
+        // Sin valor por defecto A PROPÓSITO: un tercer llamador que lo omitiera no fallaría, solo
+        // produciría un plan que ignora en silencio todas las correcciones de la obra. Que rompa en
+        // compilación es la única señal que nadie puede pasar por alto.
+        array $excepciones,
         ?string $modalidadDestino = null,
     ): ?array {
         // Cuando el destino es un LOTE, la modalidad que decide si hay proceso es la suya y no la del
@@ -1336,6 +1342,21 @@ class PlanFechasService
         )->fetch(\PDO::FETCH_ASSOC);
         if ($paq === false) {
             return null;
+        }
+
+        // La obra corrige; la empresa es el valor por defecto. Va ANTES del cálculo de
+        // `$desgloseCompleto` a propósito: una obra debe poder dar un número donde el catálogo tiene
+        // NULL, y ese es justamente uno de los casos útiles. Aplicada después, el paquete ya se
+        // habría marcado provisional y la corrección no serviría de nada.
+        $ref = $paq['duracion_ref'] === null ? null : (int) $paq['duracion_ref'];
+        if ($ref !== null && isset($excepciones[$ref])) {
+            foreach ($excepciones[$ref] as $col => $dias) {
+                // Solo columnas que esta consulta trajo: `$selectCols` pide únicamente las que la
+                // obra usa, y escribir una clave que no vino inventaría una columna en el array.
+                if (array_key_exists($col, $paq)) {
+                    $paq[$col] = $dias;
+                }
+            }
         }
 
         // «Sin duración» se decide por las columnas del desglose que ESTA obra usa, no por
@@ -1409,6 +1430,8 @@ class PlanFechasService
         $modalidadPorLote = $this->modalidadPorLote($projectId);
         $medianas = $this->medianasPorTipo();
         $pasos = $this->pasos->deProyecto($projectId);
+        // Una sola consulta por obra, fuera del bucle: `proyectar()` consulta por paquete.
+        $excepciones = (new DuracionesObraService($this->db))->deProyecto($projectId);
         // Las columnas legacy que ESTA obra necesita, no las siete siempre. `columnasLegacy()` es la
         // lista blanca: `colLegacy` viene de la base y aquí se interpola como nombre de columna.
         $cols = [];
@@ -1435,6 +1458,7 @@ class PlanFechasService
                 $pasos,
                 $medianas,
                 $selectCols,
+                $excepciones,
                 $modalidadPorLote[$subpaqueteId] ?? null,
             );
             if ($pr === null) {
@@ -1773,6 +1797,7 @@ class PlanFechasService
       *     fechaArranque: string,
       *     diasTotales: int,
       *     duracionProvisional: bool,
+      *     paquetesConMismaDuracion: int,
       *     responsableUserId: int|null,
       *     responsableNombre: string,
       *     responsableCargo: string,
@@ -1792,7 +1817,7 @@ class PlanFechasService
     {
         $rows = $this->db->query(
             "SELECT pp.paquete_id, pp.subpaquete_id, pp.unique_id, pp.fecha_ancla, pp.fecha_arranque,
-                    pp.dias_totales,
+                    pp.dias_totales, pp.duracion_ref,
                     pp.duracion_provisional, pp.responsable_user_id, p.nombre, p.tipo_negociacion,
                     p.modalidad_contratacion, f.frente_nombre,
                     s.nombre AS lote_nombre, s.modalidad_contratacion AS lote_modalidad, s.es_resto,
@@ -1825,6 +1850,35 @@ class PlanFechasService
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         $hoyStr = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $excepciones = (new DuracionesObraService($this->db))->deProyecto($projectId);
+        // paquete_id:subpaquete_id → duracion_ref, para saber qué excepción mira cada paso.
+        $refPorDestino = [];
+        // Y si ese destino quedó PROVISIONAL en el último cálculo. Hace falta para el origen: un
+        // paquete provisional saca sus días del reparto de la mediana, no de las columnas, así que
+        // la corrección de la obra existe pero NO se está usando. Marcarlo 'obra' pondría tres
+        // señales a contar historias distintas —el número escrito, los días mostrados y la etiqueta.
+        $provisionalPorDestino = [];
+        // Cuántos DESTINOS de esta obra cuelgan de cada fila del catálogo. Una corrección no es del
+        // paquete que se está mirando: es de la fila, así que mueve a todos los destinos de la obra
+        // que la usen —lotes incluidos—. El aviso de la pantalla lo dice con este número; sin él
+        // prometía un alcance más pequeño del real. Se cuenta sobre las filas ya traídas: ninguna
+        // consulta nueva.
+        $destinosPorRef = [];
+        foreach ($rows as $r) {
+            $clave = (int) $r['paquete_id'] . ':' . (int) $r['subpaquete_id'];
+            $refPorDestino[$clave] = $r['duracion_ref'] === null ? null : (int) $r['duracion_ref'];
+            $provisionalPorDestino[$clave] = (int) $r['duracion_provisional'] === 1;
+            if ($r['duracion_ref'] !== null) {
+                $ref = (int) $r['duracion_ref'];
+                $destinosPorRef[$ref] = ($destinosPorRef[$ref] ?? 0) + 1;
+            }
+        }
+        // clave del paso → columna legacy. Se casa por CLAVE y no por nombre porque la obra puede
+        // haber renombrado el paso con su alias.
+        $colPorClave = [];
+        foreach (self::PASOS as $pp) {
+            $colPorClave[$pp['clave']] = $pp['col'];
+        }
         $pasos = [];
         foreach ($this->db->query(
             'SELECT pp.paquete_id, pp.subpaquete_id, pp.orden, pp.paso, pp.dias, pp.fecha_inicio,
@@ -1844,6 +1898,20 @@ class PlanFechasService
                 // La identidad del paso, para que el consumidor no tenga que casar por nombre —que la
                 // obra puede haber renombrado con su alias.
                 'clave' => (string) ($p['clave'] ?? ''),
+                'colLegacy' => $colPorClave[(string) ($p['clave'] ?? '')] ?? null,
+                // De dónde sale el número. La pantalla lo muestra para que nadie corrija el estándar
+                // de la empresa creyendo que corrige solo su obra, ni al revés.
+                'origen' => (function () use ($p, $colPorClave, $refPorDestino, $provisionalPorDestino, $excepciones): string {
+                    $col = $colPorClave[(string) ($p['clave'] ?? '')] ?? null;
+                    $clave = (int) $p['paquete_id'] . ':' . (int) $p['subpaquete_id'];
+                    $ref = $refPorDestino[$clave] ?? null;
+                    // La existencia de la excepción no basta: si el destino quedó provisional, sus
+                    // días vienen del reparto de la mediana y el número de la obra no se usó.
+                    if (($provisionalPorDestino[$clave] ?? false) === true) {
+                        return 'empresa';
+                    }
+                    return $col !== null && $ref !== null && isset($excepciones[$ref][$col]) ? 'obra' : 'empresa';
+                })(),
                 'fechaReal' => $fechaReal,
                 // El semáforo lo resuelve la MISMA función que el tablero de vencimientos. Es lo único
                 // que garantiza que el color de esta tabla y la lista de la pestaña no se contradigan:
@@ -1881,6 +1949,12 @@ class PlanFechasService
                 'fechaAncla' => (string) $r['fecha_ancla'],
                 'fechaArranque' => (string) $r['fecha_arranque'],
                 'diasTotales' => (int) $r['dias_totales'],
+                'duracionRef' => $r['duracion_ref'] === null ? null : (int) $r['duracion_ref'],
+                // Cuántos destinos de ESTA obra se mueven si se corrige la duración de esta fila.
+                // Sin fila del catálogo no hay corrección posible, así que la respuesta es «solo yo».
+                'paquetesConMismaDuracion' => $r['duracion_ref'] === null
+                    ? 1
+                    : ($destinosPorRef[(int) $r['duracion_ref']] ?? 1),
                 'duracionProvisional' => (int) $r['duracion_provisional'] === 1,
                 'responsableUserId' => $r['responsable_user_id'] === null ? null : (int) $r['responsable_user_id'],
                 'responsableNombre' => (string) ($r['responsable_nombre'] ?? ''),
@@ -2062,6 +2136,7 @@ class PlanFechasService
 
         $medianas = $this->medianasPorTipo();
         $pasos = $this->pasos->deProyecto($projectId);
+        $excepciones = (new DuracionesObraService($this->db))->deProyecto($projectId);
         self::exigirIdentidad($pasos);
         $cols = [];
         foreach ($pasos as $p) {
@@ -2085,7 +2160,7 @@ class PlanFechasService
                 ];
                 continue;
             }
-            $pr = $this->proyectar($d['paqueteId'], $d['fechaActual'], $pasos, $medianas, $selectCols);
+            $pr = $this->proyectar($d['paqueteId'], $d['fechaActual'], $pasos, $medianas, $selectCols, $excepciones);
             if ($pr === null) {
                 // Inactivo o sin proceso de contratación: `calcular()` tampoco lo tocaría, así que
                 // prometer un delta que luego no se aplicaría sería mentir en pantalla.
