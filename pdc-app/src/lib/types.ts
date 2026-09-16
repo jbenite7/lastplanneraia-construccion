@@ -460,6 +460,14 @@ export type PasoPlan = {
   fechaFin: string
   fechaReal: string | null
   vencimiento: string
+  /**
+   * De qué columna del catálogo legacy salen los días de este paso. `null` = paso de días fijos,
+   * que la obra ya configura en la pantalla de Pasos: aquí no se edita para no abrir un segundo
+   * camino al mismo dato.
+   */
+  colLegacy: string | null
+  /** `'obra'` cuando esta obra corrigió el número; `'empresa'` cuando es el del catálogo. */
+  origen: 'empresa' | 'obra'
 }
 
 export type FilaPlan = {
@@ -482,6 +490,17 @@ export type FilaPlan = {
   responsableCargo: string
   responsableHuerfano: boolean
   diasRetraso: number
+  /**
+   * La fila del catálogo de duraciones de la que cuelga este paquete. `null` = el paquete no tiene
+   * respaldo en el catálogo, así que no hay a qué colgarle una corrección de la obra.
+   */
+  duracionRef: number | null
+  /**
+   * Cuántos destinos de ESTA obra cuelgan de la misma `duracionRef` —lotes incluidos—. Corregir la
+   * duración los mueve a todos, porque la corrección es de la fila del catálogo y no del paquete
+   * que se está mirando. El aviso del panel lo dice con este número.
+   */
+  paquetesConMismaDuracion: number
   pasos: PasoPlan[]
 }
 
@@ -616,6 +635,13 @@ export type PlanResultado = {
   destinos: DestinoContratable[]
   /** Qué destinos ya tienen frente, por paquete Y lote. */
   amarresDestino: { paqueteId: number; subpaqueteId: number }[]
+  /**
+   * Si este usuario puede corregir la duración de un paso para esta obra
+   * (`lps.paquetes_contratacion.editar`). Opcional a propósito: un bundle servido desde una caché
+   * vieja puede hablar con un servidor que aún no lo manda, y sin dato se asume que NO puede —
+   * el campo se ve deshabilitado y el servidor sigue siendo quien decide de verdad.
+   */
+  puedeCorregirDuraciones?: boolean
 }
 
 /**

@@ -39,15 +39,23 @@ node scripts/wiki-registro.mjs              # comprueba si la zona quedó desfas
 node scripts/wiki-registro.mjs --escribir   # la actualiza
 ```
 
+**Estado fuera del catálogo.** La tabla de abajo la genera un script y solo sabe qué documentos
+existen, no en qué punto está cada trabajo. Lo que no se deduce del disco se anota aquí:
+
+| Plan | Estado | Nota |
+|---|---|---|
+| [[docs/superpowers/plans/2026-09-01-duraciones-por-obra\|Duraciones de contratación por obra]] | **ejecutado** | Ejecutado en `fix/pdc-duraciones-pasos` (sale del commit desplegado en producción), desplegado a producción el 2026-09-02 e integrado a `main` por cherry-pick. Exige aplicar `database/migrations/20260901_pdc_v2_duraciones_por_obra.php` antes de publicar el código. |
+
 <!-- generado:inicio -->
 
-_178 trabajos · 83 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_179 trabajos · 84 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### septiembre de 2026
 
 | Trabajo | Documentos | Archivado |
 |---|---|---|
 | Bloqueo del tema claro | [[docs/superpowers/plans/2026-09-06-bloqueo-tema-claro|plan]] | — |
+| Duraciones de contratación por obra — diseño v1.0 | [[docs/superpowers/specs/2026-09-01-duraciones-por-obra-design|spec]] · [[docs/superpowers/plans/2026-09-01-duraciones-por-obra|plan]] | — |
 
 ### agosto de 2026
 
@@ -272,7 +280,7 @@ Las tres primeras, con la evidencia que lo prueba:
 | Spec | Antes | Ahora | Evidencia |
 |---|---|---|---|
 | `organizar-la-casa` | **pendiente** | ejecutada | Existe `goals/organizar-la-casa/`, los vistos ya no están en `.claude/vistos/` sino versionados en `decisiones/vistos/`, y `docs/coordinacion-sesiones.md` es la reescritura del 2026-08-20 con las siete reglas. Los **tres** criterios con que el informe la declaró «sin rastro de ejecución» están hoy invertidos |
-| `runtime-budgets-al-ci` | parcial (`initializationMs` rojo, D-11) | ejecutada | `docs/design-system/closeout-evidence.json` pasa de 8/9 con un `blocked` a **9/9 `passed`**. La salvedad medida el 2026-08-25 —`full-app-flow` con recibo local mientras la condición exigía corrida real para los dos gates— **se cerró el 2026-09-04**: recibo bajado de la corrida de Actions 33902983755 (`main` en `6d82bba2`), fijado en `98dee120`, `static` en `RC=0`. Spec en `cerrado`; el goal y la spec ya coinciden |
+| `runtime-budgets-al-ci` | parcial (`initializationMs` rojo, D-11) | ejecutada **con salvedad** | `docs/design-system/closeout-evidence.json` pasa de 8/9 con un `blocked` a **9/9 `passed`**. **Salvedad medida el 2026-08-25:** la procedencia de corrida real la tiene `runtime-budgets` (Actions 32787664690), pero **no `full-app-flow`**, cuyo recibo dice «regenerado localmente» — y la condición de hecho de la spec exige los dos. Por eso su spec sigue `vigente` mientras su goal ya declara `## Cierre`: el goal se adelantó. Ver el `## Estado verificado` de la spec |
 | `estados-severidad-contrato` | parcial (sin publicar; chocaba con `ds-f1a-estado`) | ejecutada | La colisión de 3 vs 4 niveles la resolvió Felipe a favor del contrato de 3 niveles; el frente se adaptó y publicó (`8418449a`), verificado en pantalla |
 
 Siete más, movidas en la misma sesión. Las tres primeras eran las decisiones de bajo esfuerzo que
@@ -365,29 +373,3 @@ not implement, commit, push, publish or deploy»).
 
 No hay estado intermedio que registrar: no es que falte marcar «ejecutado» en algunos, es que
 ninguno de los 29 lo está.
-
-## Lote de migración a React — actualización del 2026-09-02
-
-La auditoría de arriba («las 29 son propuesto») dejó de ser cierta el mismo día en que se escribió.
-Medido contra las secciones `## Cierre` de los planes y `git log` sobre la rama `shell-minimo-react`:
-
-| Plan | Estado | Evidencia |
-|---|---|---|
-| T01 — Shell y runtime React | **ejecutado (T01-A)**, retiro T01-R diferido | `## Cierre` del plan, cerrado 2026-08-31; 9 commits `385e1242`→`5ec9cb3b` |
-| T02 — Contexto LPS, drawer y notificaciones | **ejecutado (T02-A)**, retiro T02-R diferido | `## Cierre` del plan, cerrado 2026-08-31; 17 commits `9205de16`→`2e59e1f3` |
-| S01 — Login React | **ejecutado, `CODE_COMPLETE`** (2026-09-01); `MIGRATION_COMPLETE` pendiente | `## Cierre` del plan; commits `ce7ee550`…`30d00078`; **PR #20** abierto contra `main` |
-| S02–S27, T03 | propuesto | sin commits de código sobre sus archivos |
-
-Tres cosas que conviene leer junto a esa tabla:
-
-- **Los tres «ejecutado» comparten patrón: la parte constructiva está hecha y el retiro del legado
-  no.** T01-R, T02-R y la segunda mitad de la Tarea 14 de S01 se difirieron por la misma razón —el
-  censo de consumidores da distinto de cero, o la ventana de rollback no ha corrido— y esa razón está
-  escrita en cada plan. No es trabajo a medias: es la condición que cada plan puso para no borrar.
-- **Nada de esto está en `main` todavía.** El PR #20 lleva los tres frentes (51 commits). Su CI
-  estático pasa; el de runtime falla por una contradicción de configuración ajena
-  (`48e06072` fija `DB_USER=lps_runtime_ci`, `design-system-ci-compose-contract.mjs` exige `root`)
-  que además revela que **el job de gates visuales no se ejecuta en `main` desde el 2026-08-29**.
-  Detalle y ruling en [[TASKS]] › Bloqueantes.
-- **La lectura de las casillas sigue sin valer** (regla de `AGENTS.md`): los tres planes ejecutados
-  tienen sus `- [ ]` vacías. El estado se lee de `## Cierre` y de git, como aquí.
