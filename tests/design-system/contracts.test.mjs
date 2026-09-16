@@ -878,7 +878,8 @@ test('un valor de capture fuera del enum del esquema no cae en la rama por defec
 // el escenario autorizado podia presentar cualquier PNG que cupiera a lo ancho.
 // Sustituir el golden de states-feedback-dark-1180x820 (1102x1649 reales) por
 // uno de 390x844 pasaba en verde -- el agujero original, abierto *dentro* de la
-// lista blanca.
+// lista blanca. Desde el 2026-09-16 (frente `states-feedback-claro`) la lista
+// blanca declara 860x2362, el recorte real medido; el guard no cambia.
 test('un escenario autorizado a capture "element" no puede cambiar las dimensiones de su recorte', async () => {
   const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/laboratory.json');
@@ -893,7 +894,7 @@ test('un escenario autorizado a capture "element" no puede cambiar las dimension
   assert.notEqual(result.status, 0);
   assert.match(
     result.stderr,
-    /laboratory\/states-feedback-dark-1180x820: golden mide 390x844 px, pero la lista blanca de capture "element" declara 1102x1649/,
+    /laboratory\/states-feedback-dark-1180x820: golden mide 390x844 px, pero la lista blanca de capture "element" declara 860x2362/,
   );
 });
 
