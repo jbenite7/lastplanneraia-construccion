@@ -56,7 +56,7 @@ Y devolverlo a la raíz al terminar, que es lo que espera cualquier otra sesión
 
 Segunda trampa del mismo escenario, y contradice a medias lo que dice `CLAUDE.md`. Ese archivo manda
 **enlazar** el `.env` en el worktree —con razón: las copias envejecen en silencio—. Pero cuando el
-contenedor monta **el worktree**, el enlace apunta a `/Volumes/Crucial X6/Developer/lps-aia/.env`,
+contenedor monta **el worktree**, el enlace apunta a `/Users/felipebenitez/Developer/lps-aia/.env` (era `/Volumes/Crucial X6/…` antes de la mudanza del 2026-08-18),
 una ruta **del host** que dentro del contenedor no existe. El enlace queda colgando.
 
 Síntoma medido: `GET /dev/entrar?u=test.R&p=Prueba` responde `302` a `/login` y la puerta de

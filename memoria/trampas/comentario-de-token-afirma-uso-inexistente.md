@@ -1,12 +1,14 @@
 ---
 capa: wiki
 tipo: trampa
-estado: vigente
+estado: derogada
 fecha: 2026-08-03
 areas: [design-system, qa]
 fuente: sesion
-resumen: "Un comentario de tokens.css afirmaba un uso que el consumidor real nunca ejerció: el exportador a Excel existe pero montó su propia paleta en paralelo"
+resumen: "Derogada: los ocho tokens se retiraron el 2026-08-28 y sí tenían consumidor por interpolación. Un comentario de tokens.css afirmaba un uso que el consumidor real nunca ejerció: el exportador a Excel existe pero montó su propia paleta en paralelo"
 ---
+> **Derogada el 2026-09-16 (pase de veracidad):** los ocho tokens ya no existen. Se retiraron el 2026-08-28 (Task 7 de `temas-y-forma-fase-cero`, D17), y el comentario que deja su rastro en `public/css/tokens.css:344-356` corrige a esta página: **sí tenían consumidor**, `tests/design-system/theme-claro-tokens.test.mjs`, que armaba el nombre por interpolación (`--ds-color-state-${nivel}-${canal}-light`) y por eso el grep literal de abajo no lo vio. La lección se invierte: un grep que no encuentra consumidores no prueba que no los haya. Tampoco sigue en pie «dark-only por contrato»: desde la spec del 2026-08-28 los dos temas son contractuales. Lo de abajo se conserva como historia.
+
 `public/css/tokens.css:263` rotula ocho tokens (los ocho, en `:273-280`) como «Valores de soporte para impresos /
 XLSX»:
 

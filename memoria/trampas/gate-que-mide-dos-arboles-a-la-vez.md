@@ -17,7 +17,7 @@ un invariante real: la versión de caché del entrypoint CSS debe ser **igual o 
 Hasta el 2026-08-18 lo medía **cruzando dos copias del repositorio**:
 
 - la versión la calculaba PHP **dentro del contenedor**, que monta
-  `${LPS_CODE_ROOT:-/Volumes/Crucial X6/Developer/lps-aia}` — el checkout principal;
+  `${LPS_CODE_ROOT:-/Users/felipebenitez/Developer/lps-aia}` (era `/Volumes/Crucial X6/…` hasta la mudanza del 2026-08-18) — el checkout principal;
 - el `tokens.css` lo leía con `statSync` **desde el worktree que lanza la suite**.
 
 Cuando ambos son el mismo árbol no se nota. Desde un worktree, no lo son. Medido ese día:

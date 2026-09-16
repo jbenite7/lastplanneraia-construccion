@@ -10,7 +10,7 @@ resumen: en la semanal la autorización vive en dos capas —el candado de seman
 Al revisar por qué el cliente deja editar `Ejecutado_Real` en una semana histórica, se leyó
 `LpsWeekEditPolicy::allows()` (`src/Security/LpsWeekEditPolicy.php:16-45`) y se concluyó —mal—
 que había una brecha: el guard autoriza por **semana y rol**, sin mirar qué campo se modifica,
-y `SemanalApiController.php:156-158` lo invoca con `$qualification = true` para toda la opción
+y `SemanalApiController.php:158-159` lo invoca con `$qualification = true` para toda la opción
 `modificar`. De ahí salía la sospecha de que por API se podría cambiar `Compromiso` en una
 semana ya cerrada.
 
@@ -19,7 +19,7 @@ semana ya cerrada.
 | Capa | Dónde | Qué decide |
 |---|---|---|
 | Candado de semana | `LpsWeekEditPolicy::allows()` | Si este rol puede tocar **esta semana**. Con `$qualification = true`, abre la histórica **confirmada** a quien puede calificar (A/D/R/DCV). |
-| Separación de fases | `SemanalApiController.php:309-315` | Si **este campo** se puede tocar en la fase actual. Con la semana confirmada, devuelve **409** ante compromiso, responsables o planificación; solo pasa el avance real. |
+| Separación de fases | `SemanalApiController.php:310-317` | Si **este campo** se puede tocar en la fase actual. Con la semana confirmada, devuelve **409** ante compromiso, responsables o planificación; solo pasa el avance real. |
 
 La segunda es la que acota por campo, y dibuja exactamente la misma frontera que la interfaz.
 Ya estaba cubierta de extremo a extremo por

@@ -71,6 +71,8 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 | POST | `/plan-compras/api/plan/correspondencias` | `App\Controllers\Api\PlanComprasPlanController::guardarCorrespondencia` |
 | POST | `/plan-compras/api/plan/desamarrar` | `App\Controllers\Api\PlanComprasPlanController::desamarrar` |
 | GET | `/plan-compras/api/plan/desfases` | `App\Controllers\Api\PlanComprasPlanController::desfases` |
+| POST | `/plan-compras/api/plan/duraciones/obra/borrar` | `App\Controllers\Api\PlanComprasPlanController::borrarDuracionObra` |
+| POST | `/plan-compras/api/plan/duraciones/obra` | `App\Controllers\Api\PlanComprasPlanController::guardarDuracionObra` |
 | GET | `/plan-compras/api/plan/duraciones` | `App\Controllers\Api\PlanComprasPlanController::duraciones` |
 | POST | `/plan-compras/api/plan/duraciones` | `App\Controllers\Api\PlanComprasPlanController::guardarDuracion` |
 | GET | `/plan-compras/api/plan/frentes` | `App\Controllers\Api\PlanComprasPlanController::frentes` |
@@ -122,6 +124,7 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 
 ### Servicios
 - `DuracionesCatalogoService`
+- `DuracionesObraService`
 - `FlujoCajaService`
 - `MaestroInsumosService`
 - `MaestroSincoImportService`
@@ -155,6 +158,7 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 - `pdc_presupuesto_apu_insumos`
 - `pdc_presupuesto_items`
 - `pdc_presupuesto_versiones`
+- `pdc_proyecto_duraciones`
 - `pdc_proyecto_pasos`
 - `pdc_proyecto_pasos_historial`
 - `pdc_rama_frente`

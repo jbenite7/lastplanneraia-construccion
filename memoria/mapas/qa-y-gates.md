@@ -34,7 +34,7 @@ devuelve).
   `scripts/lib/php-test-lane-manifest.php:8-17` la define con peso 4 y `select()` exige que el nivel
   pedido sea exactamente el declarado— y existe para los fixtures que crean y borran tablas legacy
   con un admin efímero (`LPS_ADMIN_DB_LANE=1`; el CI la corre en su propio paso,
-  `.github/workflows/ci.yml:279-285`):
+  `.github/workflows/ci.yml:284-291`):
 
   | Nivel | Necesita | Cuántos | Lo corre el CI |
   |---|---|---|---|

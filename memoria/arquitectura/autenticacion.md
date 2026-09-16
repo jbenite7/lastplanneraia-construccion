@@ -30,10 +30,12 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 ### Rutas
 | Verbo | Ruta | Destino |
 | --- | --- | --- |
-| GET | `/_aia/operacion/7f3c9b` | `App\Controllers\Auth\LoginController::index` |
-| POST | `/_aia/operacion/7f3c9b` | `App\Controllers\Auth\LoginController::maintenanceLogin` |
+| GET | `/_aia/operacion/7f3c9b` | `App\Controllers\Auth\MaintenanceLoginController::show` |
+| POST | `/_aia/operacion/7f3c9b` | `App\Controllers\Auth\MaintenanceLoginController::submit` |
 | POST | `/api/auth/login` | `App\Controllers\Api\AuthApiController::login` |
 | POST | `/api/auth/logout` | `App\Controllers\Api\AuthApiController::logout` |
+| POST | `/api/auth/password/cancel` | `App\Controllers\Api\AuthApiController::cancelPasswordChange` |
+| POST | `/api/auth/password/change` | `App\Controllers\Api\AuthApiController::changePassword` |
 | GET | `/api/session` | `App\Controllers\Api\SessionApiController::show` |
 | GET | `/dev/entrar` | `App\Controllers\Core\DevDoorController::enter` |
 | GET | `/` | `App\Controllers\Auth\LoginController::index` |
@@ -51,14 +53,19 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 - `App\Controllers\Api\AuthApiController`
 - `App\Controllers\Api\SessionApiController`
 - `App\Controllers\Auth\LoginController`
+- `App\Controllers\Auth\MaintenanceLoginController`
 - `App\Controllers\Auth\PasswordResetController`
 - `App\Controllers\Core\DevDoorController`
 
 ### Servicios
 - `AuthenticationService`
+- `DatabaseWeekAdministrationRepository`
+- `ForcedPasswordChangeService`
 - `PasswordResetService`
 - `ProjectAccessService`
+- `ShellNavigationService`
 - `UserPasswordService`
+- `WeekContextService`
 
 ### Tablas
 - `general_proyectos_procesos`

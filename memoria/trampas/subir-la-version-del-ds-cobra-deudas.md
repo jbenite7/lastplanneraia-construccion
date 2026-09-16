@@ -5,18 +5,19 @@ estado: vigente
 fecha: 2026-08-04
 areas: [design-system]
 fuente: scripts/design-system-audit.mjs, docs/design-system/exceptions.json, scripts/design-system-contracts.mjs, scripts/design-system-activation-git.mjs
-resumen: "Subir version.json no es editar un número: 39 excepciones de exceptions.json vencen en 1.1.0, los manifiestos exigen designSystemVersion sincronizado y dos gates comprueban 1.0.0 literal"
+resumen: "Subir version.json no es editar un número: las excepciones de exceptions.json que vencen en esa versión se vuelven exigibles (39 al subir a 1.1.0), los manifiestos exigen designSystemVersion sincronizado y dos gates comprueban 1.0.0 literal"
 ---
 # Subir la versión del design system cobra deudas, no solo cambia un número
 
 Se intentó subir `version.json` de `1.0.0` a `1.1.0` para acompañar una entrada nueva del
 changelog, y la suite estática se puso en rojo por tres frentes a la vez:
 
-1. **Excepciones con vencimiento por versión.** `scripts/design-system-audit.mjs:167-170` compara
+1. **Excepciones con vencimiento por versión.** `scripts/design-system-audit.mjs:173-175` compara
    `expiresAtVersion` de cada excepción de `docs/design-system/exceptions.json` contra la versión
    viva con `compareSemVer(...) >= 0`. Hay **39 excepciones que vencen en `1.1.0`** (eran 38 el
    2026-08-04; el número sube con cada excepción nueva —
-   `grep -c '"expiresAtVersion": "1.1.0"' docs/design-system/exceptions.json`): declarar esa
+   `grep -c '"expiresAtVersion": "1.1.0"' docs/design-system/exceptions.json`, que hoy da **0**: se
+   pagaron o re-vencieron a `1.2.0`, ver «Desenlace»): declarar esa
    versión las hace exigibles y el gate `audit` falla. (Ojo: no es `a11y-exceptions.json`, que usa
    `expiresAt` por fecha; el vencimiento por versión vive en `exceptions.json`.)
 2. **Manifiestos sincronizados.** `design-system-contracts.mjs` exige que `designSystemVersion`
@@ -43,7 +44,7 @@ anotan en el changelog bajo «Sin publicar (candidato a 1.1.0)», como quedó el
 
 Estos tres frentes eran reales, pero **no eran todos**: el bump destapó otros tres, con una causa
 raíz distinta que tiene nota propia — [[version-escrita-a-mano-rompe-el-bump]]. Súmale que el audit
-exige una **aprobación de baseline para la versión viva** (`design-system-audit.mjs:135-148`): si el
+exige una **aprobación de baseline para la versión viva** (`design-system-audit.mjs:140-153`): si el
 baseline no cambia basta un arrastre con `beforeHash === afterHash`, como
 `baseline-approvals/1.1.0-carry-forward.json`, que **no es** una regeneración —esa seguiría pidiendo
 aprobación explícita del usuario.
