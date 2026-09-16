@@ -37,7 +37,7 @@ test('el diálogo vive dentro de MarcoAcceso: un único h1, marca, tema y pie', 
   expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
   expect(screen.getByText('Last Planner AIA')).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /cambiar a tema/i })).toBeInTheDocument();
-  expect(screen.getByText('© Last Planner AIA')).toBeInTheDocument();
+  expect(screen.getByText('© 2026 Arquitectos e Ingenieros Asociados')).toBeInTheDocument();
 });
 
 test('el diálogo queda anunciado como modal y asociado al título de la página', () => {

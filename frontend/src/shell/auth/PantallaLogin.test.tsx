@@ -35,14 +35,23 @@ afterEach(() => {
 
 // --- marco, marca y tema -----------------------------------------------------
 
-test('S01-UX-01: MarcoAcceso trae un único h1, marca, tema y pie', () => {
-  render(<PantallaLogin {...propiedades()} />);
+test('S01-UX-01: MarcoAcceso trae un único h1, la marca en la tarjeta, tema y el pie corporativo', () => {
+  const { container } = render(<PantallaLogin {...propiedades()} />);
 
   expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
   expect(screen.getByRole('heading', { level: 1, name: 'Entrar' })).toBeInTheDocument();
-  expect(screen.getByText('Last Planner AIA')).toBeInTheDocument();
+
+  // Paridad visual (2026-09-16): la marca vive DENTRO de la tarjeta, antes del h1, y una sola vez.
+  const tarjeta = container.querySelector('.aia-auth__layout > .aia-card');
+  const marca = screen.getByText('Last Planner AIA');
+  expect(tarjeta).toContainElement(marca);
+  expect(screen.getAllByText('Last Planner AIA')).toHaveLength(1);
+  expect(tarjeta?.firstElementChild).toHaveClass('aia-auth__marca');
+
   expect(screen.getByRole('button', { name: /cambiar a tema/i })).toBeInTheDocument();
-  expect(screen.getByText('© Last Planner AIA')).toBeInTheDocument();
+  expect(screen.getByText('© 2026 Arquitectos e Ingenieros Asociados')).toBeInTheDocument();
+  expect(screen.getByText('+CERTEZA')).toBeInTheDocument();
+  expect(screen.queryByText('© Last Planner AIA')).not.toBeInTheDocument();
   expect(screen.getByRole('link', { name: /saltar al contenido/i })).toHaveAttribute(
     'href',
     '#contenido-acceso',
