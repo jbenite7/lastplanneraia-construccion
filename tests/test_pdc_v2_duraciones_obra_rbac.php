@@ -7,7 +7,9 @@
 // controlador, con sesión, CSRF y cuerpo JSON simulados, y comprueba el efecto sobre
 // pdc_proyecto_duraciones.
 declare(strict_types=1);
-// @requiere: db
+// @requiere: datos-proyecto
+// (No `db`: calcula el plan, y eso exige el catálogo general_pasos_contratacion poblado, igual que
+// sus hermanas test_pdc_v2_plan_fechas.php y test_pdc_v2_rbac_pasos.php.)
 
 namespace App\Controllers\Api {
     // Sustituye file_get_contents() SOLO dentro de este namespace: PlanComprasPlanController::body()
