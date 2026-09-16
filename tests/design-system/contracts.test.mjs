@@ -211,11 +211,11 @@ test('homologation covers every governed visual family', async () => {
       [],
       `${family.id} declara un tema fuera de {dark, light}`,
     );
-    // `states-feedback` es la unica que sigue sin claro, y por una razon medida: el
-    // spec visual sale antes de capturarla, asi que no tiene golden claro que aprobar.
-    if (family.id === 'states-feedback') {
-      assert.deepEqual(family.themes, ['dark'], 'states-feedback no entra al claro (ver visual-ci-contract.test.mjs)');
-    }
+    // Hasta el 2026-09-16 `states-feedback` era la unica familia sin claro, porque el
+    // spec visual salia antes de capturarla y no habia golden claro que aprobar. El
+    // frente `states-feedback-claro` retiro ese `return` y la capturo en los dos temas,
+    // asi que el candado se invierte: ninguna familia gobernada queda sin claro.
+    assert.ok(family.themes.includes('light'), `${family.id} debe declarar el tema light`);
     const requiredViewports = ['1180x820', '1440x900'];
     const supportedViewports = [...requiredViewports, '390x844'];
     for (const viewport of requiredViewports) {
@@ -878,7 +878,8 @@ test('un valor de capture fuera del enum del esquema no cae en la rama por defec
 // el escenario autorizado podia presentar cualquier PNG que cupiera a lo ancho.
 // Sustituir el golden de states-feedback-dark-1180x820 (1102x1649 reales) por
 // uno de 390x844 pasaba en verde -- el agujero original, abierto *dentro* de la
-// lista blanca.
+// lista blanca. Desde el 2026-09-16 (frente `states-feedback-claro`) la lista
+// blanca declara 860x2362, el recorte real medido; el guard no cambia.
 test('un escenario autorizado a capture "element" no puede cambiar las dimensiones de su recorte', async () => {
   const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/laboratory.json');
@@ -893,7 +894,7 @@ test('un escenario autorizado a capture "element" no puede cambiar las dimension
   assert.notEqual(result.status, 0);
   assert.match(
     result.stderr,
-    /laboratory\/states-feedback-dark-1180x820: golden mide 390x844 px, pero la lista blanca de capture "element" declara 1102x1649/,
+    /laboratory\/states-feedback-dark-1180x820: golden mide 390x844 px, pero la lista blanca de capture "element" declara 860x2362/,
   );
 });
 

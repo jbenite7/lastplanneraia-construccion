@@ -199,6 +199,28 @@ for (const scenario of VISUAL_SCENARIOS) {
     if (scenario.family === STATES_FEEDBACK_FAMILY) {
       await assertStatesFeedbackVisualContract(page, panel);
       await captureEvidence(page, scenario);
+      // Esta familia SI compara golden, y lo hace contra el ELEMENTO.
+      //
+      // Aqui habia un `return` que salia antes de `toHaveScreenshot`, asi que
+      // el escenario corria su contrato propio y su golden no se comparaba con
+      // nada. Se introdujo el 2026-07-15 (`8d71d22c`), cuando TODOS los
+      // escenarios capturaban `expect(panel)`; cuatro dias despues `f55fd94b`
+      // migro el resto a `expect(page)` y regenero sus goldens, y este quedo
+      // fuera de esa migracion precisamente porque ya no se comparaba. De ahi
+      // que su golden midiera 1102x1649 —la forma del panel en julio— mientras
+      // el panel real media 860x2738: dos meses de deriva que ningun gate podia
+      // ver. La excepcion de `elementCaptureAllowlist` describia ese recorte
+      // como una decision de la familia, y en realidad era el metodo que en su
+      // dia compartian todas.
+      //
+      // Se captura el ELEMENTO y no la pagina porque aqui si hay una razon
+      // propia, medida: el mosaico mide 2737 px de alto en un viewport de 820,
+      // asi que una captura de pantalla dejaria fuera 2037 px —el 74% de lo que
+      // esta familia homologa—. La pagina entera si lo cubriria, pero arrastra
+      // el rail y la cabecera del laboratorio, y cualquier retoque a esa
+      // navegacion movería el golden de esta familia sin que ella cambie.
+      await prepareSnapshot(panel);
+      await expect(panel).toHaveScreenshot(path.basename(scenario.golden));
       return;
     }
     await prepareSnapshot(panel);

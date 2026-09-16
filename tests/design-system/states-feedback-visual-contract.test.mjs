@@ -17,19 +17,27 @@ test('states feedback keeps a canonical spinner contract without rewriting legac
     /data-ui-group="loading-spinner"[^>]*role="status"[^>]*aria-live="polite"/g,
   );
 
-  assert.equal(feedbackScenarios.length, 2);
-  // states-feedback sigue siendo la UNICA familia que no entra al claro: el spec
-  // visual sale antes de capturarla, asi que no hay golden claro que aprobar
-  // (frente `bloqueo-tema-claro`, 2026-09-07). Ese es el invariante; se afirma
-  // en vez de deducirse del conteo.
-  assert.deepEqual([...new Set(feedbackScenarios.map(({ theme }) => theme))], ['dark']);
-  // El resto se DERIVA de homologation.json. Aqui vivia un `18` a mano que era el
-  // mismo candado de un solo tema que ya se abrio en laboratory-hardening: al
-  // entrar el claro paso a 36 y el numero desnudo no decia por que.
-  const esperadoResto = homologation.families
-    .filter(({ id }) => id !== 'states-feedback')
+  // Hasta el 2026-09-16 esta familia era la UNICA sin claro: el spec visual salia
+  // antes de capturarla y no habia golden claro que aprobar (frente
+  // `bloqueo-tema-claro`, 2026-09-07). El frente `states-feedback-claro` retiro ese
+  // `return`, asi que el invariante se invierte y se sigue afirmando, no deduciendo:
+  // la familia declara EXACTAMENTE lo que homologation.json le pide, en los dos temas.
+  const familia = homologation.families.find(({ id }) => id === 'states-feedback');
+  assert.deepEqual([...familia.themes].sort(), ['dark', 'light']);
+  assert.deepEqual(
+    [...new Set(feedbackScenarios.map(({ theme }) => theme))].sort(),
+    ['dark', 'light'],
+  );
+  assert.equal(feedbackScenarios.length, familia.themes.length * familia.viewports.length);
+  // Y el total del manifiesto se DERIVA de homologation.json para todas las familias,
+  // sin excepciones: un `18` o un `2` a mano era el candado de un solo tema escondido
+  // en un numero.
+  const esperadoTotal = homologation.families
     .reduce((total, { themes, viewports }) => total + (themes.length * viewports.length), 0);
-  assert.equal(manifest.scenarios.length - feedbackScenarios.length, esperadoResto);
+  assert.equal(manifest.scenarios.length, esperadoTotal);
+  // La familia se compara contra su golden, recortando el ELEMENTO (excepcion de
+  // `elementCaptureAllowlist`): ya no hay un `return` antes de `toHaveScreenshot`.
+  assert.match(source, /await expect\(panel\)\.toHaveScreenshot\(path\.basename\(scenario\.golden\)\);\s*return;/);
   assert.equal(canonicalSpinner?.length, 1);
   assert.match(source, /async function assertStatesFeedbackVisualContract/);
   assert.match(source, /scenario\.family === STATES_FEEDBACK_FAMILY/);
