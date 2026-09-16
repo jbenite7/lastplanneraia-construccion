@@ -23,12 +23,12 @@ gate no prueba que el golden esté al día.
 > **Corregido en el pase de veracidad del 2026-08-25.** Esta nota citaba
 > `programa-general.visual.mjs:95` y `programacion-intermedia.visual.mjs:95` como specs que
 > heredaban esa tolerancia. **Ninguno de los dos usa `maxDiffPixelRatio`**: los dos fijan un tope
-> **absoluto** de `maxDiffPixels: 100` (`programa-general.visual.mjs:106`,
+> **absoluto** de `maxDiffPixels: 100` (`programa-general.visual.mjs:130`,
 > `programacion-intermedia.visual.mjs:134`), que es otra política y con otra historia. El ratio
 > `0.002` vive solo en la configuración global.
 
 **Medido el 2026-08-06: 0.002 ya está cerca del suelo de ruido, no sobra margen.** El comentario de
-`playwright.config.mjs:44-47` afirma que «con la tolerancia en 0, tres corridas seguidas sin tocar
+`playwright.config.mjs:47-49` afirma que «con la tolerancia en 0, tres corridas seguidas sin tocar
 nada no produjeron ni un pixel de diferencia». Se comprobó bajando el piso a `0` y corriendo dos
 veces `design-system-lab.visual.mjs` + `lps-drawer-design-system.mjs`: **dos escenarios sí difieren
 sin que nadie toque el código** — `data-display-dark-1180x820` con 141 px (ratio 0,000146) y

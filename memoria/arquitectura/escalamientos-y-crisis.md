@@ -43,14 +43,32 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 - `App\Controllers\Core\NotificationController`
 
 ### Servicios
+- `LpsActionPolicy`
+- `LpsActorEligibility`
+- `LpsApiError`
+- `LpsCrisisService`
+- `LpsCrisisTrigger`
+- `LpsLegacyActorCompatibilityChecker`
+- `LpsLegacyAlertRepository`
+- `LpsLegacyCrisisRepository`
+- `LpsLegacyGeneralActivityAdapter`
+- `LpsLegacyIntermediateActivityAdapter`
+- `LpsLegacyThreadRepository`
+- `LpsLegacyWeeklyActivityAdapter`
 - `LpsService`
-- `NotificationService`
+- `LpsTarget`
+- `LpsTargetException`
+- `LpsTargetRequest`
+- `LpsTargetResolver`
+- `LpsThreadPresenter`
+- `LpsThreadService`
+- `NotificationInboxService`
+- `NotificationRepository`
 - `ProjectLandingService`
 
 ### Tablas
 - `general_proyectos_procesos`
 - `general_usuarios`
-- `project_members`
 - `system_notifications`
 
 ### Quién puede

@@ -42,6 +42,8 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 ### Rutas
 | Verbo | Ruta | Destino |
 | --- | --- | --- |
+| POST | `/api/context/weeks/create` | `App\Controllers\Api\WeekContextApiController::crear` |
+| POST | `/api/context/weeks/delete-last` | `App\Controllers\Api\WeekContextApiController::eliminarUltima` |
 | POST | `/context/clear-week` | `App\Controllers\Core\ContextController::clearWeek` |
 | POST | `/context/week` | `App\Controllers\Core\ContextController::setWeek` |
 | GET | `/runtime/css/aia-design-system.css` | `App\Controllers\Core\DesignSystemAssetController::main` |
@@ -56,16 +58,25 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 | POST | `/session/touch` | `App\Controllers\Core\SessionController::touch` |
 
 ### Controladores
+- `App\Controllers\Api\WeekContextApiController`
 - `App\Controllers\Core\ContextController`
 - `App\Controllers\Core\DesignSystemAssetController`
 - `App\Controllers\Core\FrontendConfigController`
 - `App\Controllers\Core\SessionController`
 
 ### Servicios
+- `CrearSemanaComando`
+- `DatabaseWeekAdministrationRepository`
+- `EliminarSemanaComando`
 - `FeatureFlagService`
+- `RestrictionConfigResolver`
+- `ResultadoCreacionSemana`
+- `ResultadoEliminacionSemana`
+- `WeekAdministrationService`
+- `WeekContextService`
 
 ### Tablas
-_indeterminado_
+- `general_proyectos_procesos`
 
 ### Quién puede
 _Sin capacidad propia: la ruta exige sesión y proyecto, no una capacidad específica._

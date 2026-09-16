@@ -3,11 +3,11 @@ capa: wiki
 tipo: trampa
 estado: vigente
 fecha: 2026-07-28
-verificado: 2026-08-12
+verificado: 2026-09-16
 areas: [qa, design-system]
 fuente: memoria-claude
 origen: lps-aia-visual-baselines-estado-real
-resumen: Las baselines visuales del lab están todas rojas y las de states-feedback ni siquiera se comparan; medir el delta antes de culpar a tu cambio
+resumen: Un recibo visual verde vale solo para la plataforma que lo midió; medir el delta contra el árbol limpio antes de culpar a tu cambio. states-feedback se compara desde el 2026-09-16
 ---
 Medido el 2026-07-27 sobre `main`. Antes de aceptar que un cambio de CSS rompió una baseline visual, revierte tu archivo y vuelve a correr: casi siempre el rojo es previo.
 
@@ -41,13 +41,14 @@ Medido el 2026-07-27 sobre `main`. Antes de aceptar que un cambio de CSS rompió
 > antes de culpar a tu cambio conviene medir el delta contra el árbol limpio.
 
 - **`design-system-lab.visual.mjs`: todas las familias fallan** (actions, bi-primitives, data-display, forms-filters, foundations, overlays…). `actions-dark-1180x820` da 68.014 px con el árbol limpio. No es tu cambio.
-- **`states-feedback-dark-*.png` no se compara nunca.** En `design-system-lab.visual.mjs`, la rama `if (scenario.family === STATES_FEEDBACK_FAMILY)` hace `return` tras `assertStatesFeedbackVisualContract` + `captureEvidence`, **antes** de `toHaveScreenshot`. Los golden existen en `__screenshots__` pero están muertos: tocar esa familia no requiere aprobación visual.
+- ~~**`states-feedback-dark-*.png` no se compara nunca.**~~ — **Ya no es cierto desde el 2026-09-16** (PR #38, frente `states-feedback-claro`, merge `792dd575`). El `return` que salía antes de `toHaveScreenshot` se retiró: hoy la rama `if (scenario.family === STATES_FEEDBACK_FAMILY)` recorta el elemento y compara (`tests/browser/design-system-lab.visual.mjs:223`), en claro y en oscuro, con goldens de macOS y de Linux anclados en `docs/design-system/manifests/laboratory.json`. **Tocar esa familia vuelve a exigir aprobación visual.** Lo que se aprendió mientras estuvo muerta: su golden declaraba 1102×1649 y el recorte real era 860×2362, dos meses de deriva que ningún gate podía ver.
 - **`programa-general.visual.mjs` y `programacion-intermedia.visual.mjs` 1180×820** están rojas por un reflow ajeno (la leyenda ocupa una fila en la baseline y dos en el render): 43.973 px y 30.812 px respectivamente con el árbol limpio. `programacion-intermedia` 1440×900 sí está verde.
 - ~~**`test:design-system:static` da 323 pass / 1 fail**~~ — **medido de nuevo el 2026-08-07: la suite estática corre verde en sus ocho gates** desde el árbol principal y con el índice limpio. Sigue siendo cierto que `contracts.test.mjs` exige `worktree and index must be clean`, así que un árbol sucio la pone en rojo sin que haya regresión.
 - **biome no es un gate verde**: **859 errores, 2.610 avisos y 397 infos** en `check:frontend` (eran 879 errores el 2026-07-27) y `check:design-system:biome` también sale en rojo; todos de formato preexistente. Reformatear un archivo para «arreglarlo» genera diffs de ~1000 líneas ajenos a la tarea.
 
-**Lo que este pase NO reverificó** (exige Playwright y stack servido, no lectura): las cifras de
-píxeles de las baselines visuales del laboratorio y de las dos rejillas, y el `return` temprano de
-`states-feedback`. Se dejan como estaban, medidas el 2026-07-27.
+**Lo que el pase del 2026-08-12 NO reverificó** (exige Playwright y stack servido, no lectura): las
+cifras de píxeles de las baselines visuales del laboratorio y de las dos rejillas, y el `return`
+temprano de `states-feedback`. Se dejaron como estaban, medidas el 2026-07-27. El `return` se
+resolvió después, con evidencia de CI y no de lectura (ver el punto de arriba).
 
 **Cómo medir el delta real:** copia tu archivo al scratchpad, `git checkout -- <archivo>`, corre la baseline, restaura. Solo toca los tuyos — el worktree suele tener archivos de sesiones paralelas.

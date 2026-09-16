@@ -175,7 +175,7 @@ export const MODULOS = [
     titulo: 'Núcleo, sesión y runtime',
     areas: ['arquitectura', 'design-system'],
     flujo: null,
-    rutas: ['/session', '/context', '/runtime'],
+    rutas: ['/session', '/context', '/api/context', '/runtime'],
     capacidades: [],
     nota: '',
   },
