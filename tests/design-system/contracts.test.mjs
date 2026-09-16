@@ -211,11 +211,11 @@ test('homologation covers every governed visual family', async () => {
       [],
       `${family.id} declara un tema fuera de {dark, light}`,
     );
-    // `states-feedback` es la unica que sigue sin claro, y por una razon medida: el
-    // spec visual sale antes de capturarla, asi que no tiene golden claro que aprobar.
-    if (family.id === 'states-feedback') {
-      assert.deepEqual(family.themes, ['dark'], 'states-feedback no entra al claro (ver visual-ci-contract.test.mjs)');
-    }
+    // Hasta el 2026-09-16 `states-feedback` era la unica familia sin claro, porque el
+    // spec visual salia antes de capturarla y no habia golden claro que aprobar. El
+    // frente `states-feedback-claro` retiro ese `return` y la capturo en los dos temas,
+    // asi que el candado se invierte: ninguna familia gobernada queda sin claro.
+    assert.ok(family.themes.includes('light'), `${family.id} debe declarar el tema light`);
     const requiredViewports = ['1180x820', '1440x900'];
     const supportedViewports = [...requiredViewports, '390x844'];
     for (const viewport of requiredViewports) {

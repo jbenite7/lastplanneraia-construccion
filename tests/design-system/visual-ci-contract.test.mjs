@@ -57,6 +57,9 @@ const viewportKey = ({ width, height }) => `${width}x${height}`;
 //     2026-09-08 en tema OSCURO, ese recorte da hoy 860x2362: lleva desalineado desde antes de
 //     este frente y nadie podia verlo porque el spec sale antes de compararlo. NO se regenero
 //     (D18); el hallazgo esta en TASKS.md con su propia tarea.
+//     ACTUALIZADO 2026-09-16, frente `states-feedback-claro`: el `return` se retiro, la
+//     familia se compara en los dos temas con su recorte corregido a 860x2362 y 1120x2103, y
+//     el censo del laboratorio pasa a { dark: 10, light: 10 }. Lo de arriba queda como historia.
 //
 //   · PROGRAMA GENERAL (`/programa-general`). Es una pagina legada que carga
 //     `public/js/linksComunesHead2.js`, y ese cargador trae
@@ -69,7 +72,7 @@ const viewportKey = ({ width, height }) => `${width}x${height}`;
 // empieza a exigir esa cobertura. Mientras tanto el guard sigue siendo estricto
 // —el conjunto de temas y la cifra por viewport son exactos—, pero no miente
 // diciendo que el claro ya esta cubierto.
-const LABORATORY_SCENARIOS_PER_VIEWPORT = { dark: 10, light: 9 };
+const LABORATORY_SCENARIOS_PER_VIEWPORT = { dark: 10, light: 10 };
 const PILOT_SCENARIOS_PER_VIEWPORT = { dark: 1 };
 
 // `expectedPerViewport` es un mapa tema -> cuantos escenarios por viewport. Sus
