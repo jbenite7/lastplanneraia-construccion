@@ -301,6 +301,18 @@ CREATE TABLE IF NOT EXISTS `pdc_presupuesto_versiones` (
   KEY `idx_pdcpv_project_created` (`project_id`,`created_at`),
   KEY `idx_pdcpv_project_hash` (`project_id`,`archivo_hash`)
 ) ENGINE=InnoDB AUTO_INCREMENT=665 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS `pdc_proyecto_duraciones` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `project_id` int NOT NULL,
+  `duracion_ref` int NOT NULL,
+  `columna` varchar(64) NOT NULL,
+  `dias` int NOT NULL,
+  `actualizado_por` int DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_ppd_obra_ref_col` (`project_id`,`duracion_ref`,`columna`),
+  KEY `ix_ppd_obra` (`project_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `pdc_proyecto_pasos` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `project_id` int NOT NULL,
