@@ -37,7 +37,7 @@ primitivas BI compartidas).
 
 **Los dos selladores del cierre**, hermanos de esta familia:
 
-- `closeout-evidence.json` — los **nueve gates de cierre** (quince hasta el Frente 1b, ocho hasta el 2026-08-14), cada
+- `closeout-evidence.json` — los **nueve gates de cierre** (ocho hasta el 2026-08-14; los «quince» del Frente 1b eran recibos `passed` declarados, no gates, ver [[gate-solo-cuenta-elementos-no-los-lee]]), cada
   uno `blocking` y con evidencia. Es lo que activa la garantía 1.0.0 (ver
   [[madurez-y-api-estable]]). El gate que los cuenta
   (`tests/design-system/release-governance.test.mjs:79`, `closeout.gates.length === closeoutGateIds.length`) exige la lista completa y bloqueante,

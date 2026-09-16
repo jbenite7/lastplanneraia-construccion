@@ -11,7 +11,7 @@ En lps-aia, un golden solo existe para los gates si **un manifiesto lo declara**
 recorre `docs/design-system/manifests/`, valida `golden` + `sha256` de cada escenario y comprueba
 que la ruta caiga bajo `GOLDEN_ROOTS` (`tests/browser/__screenshots__/`, `:986`). Nunca lista el
 directorio para preguntar lo contrario: **qué PNG hay ahí que nadie declare**. La suite visual va en
-el mismo sentido — `tests/browser/design-system-lab.visual.mjs:167` captura escenario por escenario
+el mismo sentido — `tests/browser/design-system-lab.visual.mjs:170` captura escenario por escenario
 desde el manifiesto.
 
 La consecuencia es que **un golden huérfano es invisible en las dos direcciones**: no lo compara

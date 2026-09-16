@@ -12,7 +12,7 @@ resumen: "Un componente candidate vive solo en el catálogo; stable además est�
 Un componente del design system declara su madurez en
 `docs/design-system/component-catalog.json`, con cuatro valores posibles:
 `stable`, `candidate`, `compatibility` y `deprecated`
-(`scripts/design-system-contracts.mjs:73`).
+(`scripts/design-system-contracts.mjs:108-115`).
 
 La diferencia que importa es qué implica cada uno:
 
@@ -24,7 +24,7 @@ La diferencia que importa es qué implica cada uno:
 | Garantía SemVer | ninguna | sí |
 
 **Lo que hace real esa diferencia es un gate, no una convención.**
-`scripts/design-system-contracts.mjs:95` filtra del catálogo los componentes con
+`scripts/design-system-contracts.mjs:130` filtra del catálogo los componentes con
 `maturity === 'stable'` y los contrasta contra la API publicada. Si un componente aparece en
 `stable-api-1.0.0.json` sin estar catalogado como `stable`, el gate falla con
 `stable API <id>: catalog maturity must be stable` (`:119-124`). También compara `family`, `api` y

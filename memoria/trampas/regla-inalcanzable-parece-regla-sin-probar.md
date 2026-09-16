@@ -17,7 +17,7 @@ La causa medida no son los datos. El listado del servidor filtra `Titulo = 0`
 cabecera es exactamente `Titulo != 0` (`public/js/modules/programacion_intermedia/stateMachine.js:161-167`).
 En la base local hay 24 cabeceras en `programa` para ese proyecto: existen, pero **no
 pueden llegar a la grilla**. La rama `meta.isHeader` de `buildPICellProperties()`
-(`hot.js:1226-1229`) es, desde esta vista, código inalcanzable.
+(`programacion_intermedia/hot.js:1225-1232`) es, desde esta vista, código inalcanzable.
 
 La diferencia importa porque las dos situaciones piden cosas opuestas:
 

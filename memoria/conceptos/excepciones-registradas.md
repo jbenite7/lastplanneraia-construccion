@@ -18,7 +18,7 @@ Los cuatro inventarios, cada uno con su gate verificado:
 
 | Archivo | Qué tolera | Quién lo exige |
 |---|---|---|
-| `a11y-exceptions.json` | Un hallazgo axe concreto, identificado por fingerprint, con `owner`, `reason`, `milestone` y `expiresAt` | `tests/design-system/accessibility.test.mjs:176-222` |
+| `a11y-exceptions.json` | Un hallazgo axe concreto, identificado por fingerprint, con `owner`, `reason`, `milestone` y `expiresAt` | `tests/design-system/accessibility.test.mjs:186-243` |
 | `state-token-exceptions.json` | Un «medio par» de tokens de estado (`-bg` sin `-text` o viceversa), con `kind` y `reason` de al menos 80 caracteres | `tests/design-system/state-token-pairing.test.mjs:30,37` |
 | `state-tint-exceptions.json` | Un fondo `--ds-state-tint-*` sin color de texto en el mismo selector | `tests/design-system/state-tint-pairing.test.mjs:155` |
 | `legacy-aliases.json` | Un selector legado vivo, mapeado a su componente canónico (`legacySelector` → `catalogId`) | `scripts/design-system-contracts.mjs:287-294` |
