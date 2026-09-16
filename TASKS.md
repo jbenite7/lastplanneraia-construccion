@@ -837,6 +837,17 @@ estado por defecto mientras Felipe no reparta.
 
 ## Ahora
 
+- [ ] **Laboratorio · la barra flotante tapa el panel de `states-feedback` en sus goldens.** Visto
+  el 2026-09-16 al aprobar los goldens linux del frente `states-feedback-claro` (PR #38), y
+  presente también en los de macOS: la barra de densidad («Compacta / Touch» y «…stos para
+  validar.») queda encima de la parte alta del panel, corta el texto bajo «Estados con fondo
+  tenue» y medio chip «Pendiente de aprobación del responsable». Causa probable: la captura
+  recorta el ELEMENTO (`expect(panel).toHaveScreenshot`, excepción `capture: "element"`) mientras
+  la cabecera sticky del laboratorio sigue pintada encima. Felipe aprobó los goldens con el solape
+  incluido para cerrar el PR (opción 1); arreglarlo —ocultar o despegar la cabecera en
+  `prepareSnapshot()`— cambia los cuatro goldens de la familia en las dos plataformas y pide su
+  propia aprobación visual.
+
 - **Producción corre `fix/pdc-duraciones-pasos` en `6db7d790`, no `main`** (deploy del
   2026-09-02, con la tabla `pdc_proyecto_duraciones` ya creada allí y en pruebas). Este `main` ya
   integra ese frente por cherry-pick, así que volver el servidor a `main` no pierde la
