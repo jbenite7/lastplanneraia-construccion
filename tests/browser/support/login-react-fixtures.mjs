@@ -125,11 +125,13 @@ export async function simularMutacion(page, ruta, responder) {
 }
 
 /**
- * Cuerpo de error tal como lo emite `AuthApiController` tras el ruling de la Tarea 5: claves
- * planas para los consumidores legados MÁS el bloque `error` anidado, que es el único que
- * `cliente.ts` sabe leer. Emitir solo la forma plana haría que la pantalla mostrara el mensaje
- * genérico "<ruta> respondió 401" en vez del texto del servidor — el desalineamiento que ese
- * ruling existe para cerrar.
+ * Cuerpo de error tal como lo emite `AuthApiController::respondError()`: claves planas para los
+ * consumidores legados MÁS el bloque `error` anidado, que es el único que `cliente.ts` sabe leer.
+ * **Lo vacío se omite** (plan 2026-09-17): sin errores de campo no hay `fieldErrors` ni
+ * `error.campos`, y nunca hay `redirect` ni `correlationId` en `null` — cualquiera de esos invalida
+ * el cuerpo entero en `EsquemaCuerpoErrorApi`. Esta función no es la fuente de la forma: lo es
+ * `tests/fixtures/api-auth-error-bodies.json`, capturado del servidor, y
+ * `auth-errores-contrato.spec.mjs` exige que ambos coincidan.
  */
 export function cuerpoError({ code, message, fieldErrors = null }) {
   return {

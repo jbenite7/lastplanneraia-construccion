@@ -36,7 +36,7 @@ if ($galletas === false) {
 /**
  * @param array<string, mixed>|null $cuerpo
  * @param list<string> $headers
- * @return array{codigo:int,json:array<string,mixed>|null}
+ * @return array{codigo:int,json:array<string,mixed>|null,raw:string}
  */
 function requestJson(string $url, string $galletas, ?array $cuerpo = null, array $headers = []): array
 {
@@ -64,6 +64,7 @@ function requestJson(string $url, string $galletas, ?array $cuerpo = null, array
     return [
         'codigo' => $codigo,
         'json' => json_decode((string) $respuesta, true),
+        'raw' => (string) $respuesta,
     ];
 }
 
@@ -72,7 +73,7 @@ function requestJson(string $url, string $galletas, ?array $cuerpo = null, array
  * archivo): la usan los escenarios con sesión pendiente/completa forjada más abajo.
  *
  * @param array<string, mixed>|null $cuerpo
- * @return array{codigo:int,json:array<string,mixed>|null,cookies:string}
+ * @return array{codigo:int,json:array<string,mixed>|null,cookies:string,raw:string}
  */
 function requestJsonConCookie(string $url, string $cookie, ?array $cuerpo = null, array $headers = []): array
 {
@@ -105,6 +106,7 @@ function requestJsonConCookie(string $url, string $cookie, ?array $cuerpo = null
         'codigo' => $codigo,
         'json' => json_decode($cuerpoRespuesta, true),
         'cookies' => $cabeceras,
+        'raw' => $cuerpoRespuesta,
     ];
 }
 
@@ -136,6 +138,49 @@ PHP;
     return "PHPSESSID={$sessionId}";
 }
 
+/**
+ * Contrato entre PHP y Zod: los cuerpos de error REALES de `/api/auth/*` quedan versionados en
+ * `tests/fixtures/api-auth-error-bodies.json`, y `frontend/src/lib/api/esquemas/error.contrato.test.ts`
+ * los pasa por `pedir()`. Se comparan desde el texto crudo decodificado como objetos (no arrays
+ * asociativos): así un `[]` de PHP y un `{}` siguen siendo distintos, que es justo la divergencia
+ * que el contrato vigila. Se regenera solo con `LPS_REGENERAR_CUERPOS=1`; sin flag y sin archivo,
+ * falla — no se autocrea.
+ *
+ * @param array<string, array{ruta:string,codigo:int,raw:string}> $capturas
+ */
+function contrastarCuerposDeError(array $capturas): void
+{
+    $archivo = __DIR__ . '/fixtures/api-auth-error-bodies.json';
+    $opciones = JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
+    $actual = new stdClass();
+    foreach ($capturas as $caso => $captura) {
+        $actual->{$caso} = (object) [
+            'ruta' => $captura['ruta'],
+            'status' => $captura['codigo'],
+            'cuerpo' => json_decode($captura['raw'], false, 512, JSON_THROW_ON_ERROR),
+        ];
+    }
+    $serializado = json_encode($actual, $opciones | JSON_THROW_ON_ERROR) . "\n";
+
+    if (getenv('LPS_REGENERAR_CUERPOS') === '1') {
+        if (!is_dir(dirname($archivo))) {
+            mkdir(dirname($archivo), 0775, true);
+        }
+        file_put_contents($archivo, $serializado);
+        echo "REGENERADO: {$archivo}\n";
+    }
+
+    $guardado = is_file($archivo) ? (string) file_get_contents($archivo) : null;
+    $normalizado = $guardado === null
+        ? null
+        : json_encode(json_decode($guardado, false, 512, JSON_THROW_ON_ERROR), $opciones | JSON_THROW_ON_ERROR) . "\n";
+    comprobar(
+        'los cuerpos de error reales coinciden con tests/fixtures/api-auth-error-bodies.json'
+            . ' (regenerar con LPS_REGENERAR_CUERPOS=1 si el cambio es intencional)',
+        $normalizado !== null && $normalizado === $serializado,
+    );
+}
+
 function comprobar(string $descripcion, bool $condicion): void
 {
     global $fallos;
@@ -162,10 +207,16 @@ try {
             && $csrf !== '',
     );
 
+    /** @var array<string, array{ruta:string,codigo:int,raw:string}> $capturas */
+    $capturas = [];
+
     // Cada mutación rechaza tanto la ausencia como un token ajeno antes de
     // intentar autenticar, cambiar contraseña o cancelar.
     foreach (['/api/auth/login', '/api/auth/password/change', '/api/auth/password/cancel'] as $ruta) {
         $sinToken = requestJson("{$base}{$ruta}", $galletas, []);
+        if ($ruta === '/api/auth/login') {
+            $capturas['403_csrf_invalid'] = ['ruta' => $ruta] + $sinToken;
+        }
         comprobar(
             "POST {$ruta} sin CSRF responde 403 con code=csrf_invalid",
             $sinToken['codigo'] === 403
@@ -186,6 +237,7 @@ try {
 
     // Forma inválida: los dos campos obligatorios ausentes deben listarse en fieldErrors.
     $vacio = requestJson("{$base}/api/auth/login", $galletas, [], $headersCsrf);
+    $capturas['422_login_validation_error'] = ['ruta' => '/api/auth/login'] + $vacio;
     comprobar(
         'POST /api/auth/login con forma inválida responde 422 validation_error',
         $vacio['codigo'] === 422
@@ -218,6 +270,7 @@ try {
         'username' => 'test.A',
         'password' => bin2hex(random_bytes(24)),
     ], $headersCsrf);
+    $capturas['401_invalid_credentials'] = ['ruta' => '/api/auth/login'] + $inexistente;
     comprobar(
         'credenciales inválidas responden 401 invalid_credentials y no enumeran cuentas',
         $inexistente['codigo'] === 401
@@ -280,6 +333,30 @@ try {
             && isset($cambioInvalido['json']['fieldErrors']['password'])
             && is_string($cambioInvalido['json']['fieldErrors']['password']),
     );
+    $capturas['422_password_change_validation_error'] = ['ruta' => '/api/auth/password/change'] + $cambioInvalido;
+
+    // Lo vacío se omite (plan 2026-09-17): ningún error de /api/auth emite `redirect` ni
+    // `correlationId` en null, y sin errores de campo no hay `fieldErrors` ni `error.campos`
+    // (un `[]` de PHP invalida el cuerpo entero en el esquema del cliente).
+    foreach ($capturas as $caso => $captura) {
+        $cuerpo = $captura['json'] ?? [];
+        $conCampos = str_starts_with($caso, '422_');
+        comprobar(
+            "{$caso}: sin redirect ni correlationId en null"
+                . ($conCampos ? ', con campos como objeto' : ', sin fieldErrors ni error.campos'),
+            is_array($cuerpo)
+                && !array_key_exists('redirect', $cuerpo)
+                && !array_key_exists('correlationId', $cuerpo)
+                && ($conCampos
+                    ? str_contains($captura['raw'], '"campos":{')
+                        && ($cuerpo['error']['campos'] ?? null) === ($cuerpo['fieldErrors'] ?? null)
+                    : !array_key_exists('fieldErrors', $cuerpo)
+                        && is_array($cuerpo['error'] ?? null)
+                        && !array_key_exists('campos', $cuerpo['error'])),
+        );
+    }
+
+    contrastarCuerposDeError($capturas);
 
     // Una sesión ya completa (forjada, sin login real) no debe ser destruida por cancelar el
     // cambio de contraseña: cancelar sobre una sesión completa es no-op.
