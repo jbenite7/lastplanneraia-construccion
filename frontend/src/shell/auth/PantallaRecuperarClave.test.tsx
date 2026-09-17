@@ -24,7 +24,7 @@ afterEach(() => {
 });
 
 test('presenta el formulario completo y accesible', () => {
-  render(<PantallaRecuperarClave {...propiedades()} />);
+  const { container } = render(<PantallaRecuperarClave {...propiedades()} />);
 
   expect(screen.getByRole('heading', { name: 'Restablecer contraseña' })).toBeVisible();
   expect(
@@ -34,6 +34,38 @@ test('presenta el formulario completo y accesible', () => {
   expect(screen.getByLabelText('Correo electrónico')).toHaveAttribute('placeholder', 'nombre@empresa.com');
   expect(screen.getByRole('button', { name: 'Enviar enlace' })).toBeEnabled();
   expect(screen.getByRole('link', { name: 'Volver al inicio de sesión' })).toHaveAttribute('href', '/login');
+
+  // El formulario declara `aria-busy` desde el arranque (spec §9) y las clases
+  // contractuales de objetivo táctil e ícono (S01) en vez de inventar unas propias.
+  expect(container.querySelector('form')).toHaveAttribute('aria-busy', 'false');
+  expect(container.querySelector('.aia-auth__campo-icono')).not.toBeNull();
+  expect(container.querySelector('.aia-auth__acciones')).not.toBeNull();
+  expect(container.querySelector('.aia-auth__boton-flecha')).not.toBeNull();
+});
+
+test('mientras envía, el formulario queda aria-busy y el aviso de éxito y el de error nunca coexisten', async () => {
+  let resolver: (valor: { success: true; message: string }) => void = () => {};
+  vi.mocked(solicitarRecuperacion).mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        resolver = resolve;
+      }),
+  );
+  const user = userEvent.setup();
+  const { container } = render(<PantallaRecuperarClave {...propiedades()} />);
+
+  await user.type(screen.getByLabelText('Correo electrónico'), 'persona@empresa.com');
+  await user.click(screen.getByRole('button', { name: 'Enviar enlace' }));
+
+  expect(container.querySelector('form')).toHaveAttribute('aria-busy', 'true');
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+  resolver({ success: true, message: 'ok' });
+  await screen.findByRole('status');
+
+  expect(container.querySelector('form')).toHaveAttribute('aria-busy', 'false');
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });
 
 test('un email vacío no llama al gateway y avisa sobre el campo', async () => {
