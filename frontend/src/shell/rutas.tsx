@@ -5,6 +5,7 @@ import { AppShell } from './AppShell';
 import { CambioClaveObligatorio } from './auth/CambioClaveObligatorio';
 import { limpiarParametrosAviso, resolverAvisoAcceso } from './auth/avisos';
 import { PantallaLogin } from './auth/PantallaLogin';
+import { PantallaRecuperarClave } from './auth/PantallaRecuperarClave';
 import { SelectorProyecto } from './SelectorProyecto';
 import { SesionProvider, useSesion } from './SesionProvider';
 
@@ -86,20 +87,7 @@ function RutaRecuperacion() {
     return <ErrorArranqueRecuperable logoutSinConfirmar={logoutSinConfirmar} recargar={recargar} />;
   }
 
-  return <MarcadorRecuperarClave csrfToken={arranque?.csrfToken ?? ''} alRevalidar={recargar} />;
-}
-
-/**
- * Marcador provisional (Tarea 4): la Tarea 5 lo sustituye por `PantallaRecuperarClave`, con la
- * misma firma `{csrfToken, alRevalidar}`. Solo existe para que el enrutado sea verificable.
- */
-function MarcadorRecuperarClave(_props: { csrfToken: string; alRevalidar: () => Promise<void> }) {
-  return (
-    <main>
-      <h1>Restablecer contraseña</h1>
-      <a href="/login">Volver al inicio de sesión</a>
-    </main>
-  );
+  return <PantallaRecuperarClave csrfToken={arranque?.csrfToken ?? ''} alRevalidar={recargar} />;
 }
 
 /**
