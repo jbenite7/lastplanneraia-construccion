@@ -868,8 +868,10 @@ estado por defecto mientras Felipe no reparta.
   `pdc-app/` y `ct-app/` ya son React pero van por fuera de esa serie, así que cuentan solo cuando
   su plan S lo acepte. Consecuencia: producción sigue en `fix/pdc-duraciones-pasos` hasta entonces,
   y cualquier urgencia de producción es un hotfix sobre esa rama que después se trae a `main`.
-- **Decisión abierta (2026-09-16):** si el respaldo legado de `/login` debe poder activarse sin
-  deploy — hoy exige quitar `'/login'` de `SpaRouter::RUTAS_EXACTAS_MIGRADAS` y publicar.
+- **Resuelto el 2026-09-16 (decisión de Felipe): el login legado NO necesita poder activarse como
+  respaldo.** «Si React ya funciona igual, no es necesario mantenerlo.» Aplica al acceso de S01; si la
+  cláusula «con el legado disponible como respaldo» del criterio de deploy cae también para las demás
+  superficies se le pregunta aparte, no se infiere de esta respuesta.
 - **Gobierno del catálogo de duraciones desde `/admin/`** (decisión de Felipe, 2026-09-01):
   frente propio. Contexto: `docs/superpowers/specs/2026-09-01-duraciones-por-obra-design.md` §3.2.
 - **Diferidos del triaje final de duraciones por obra**, ninguno bloqueante: e2e con paso

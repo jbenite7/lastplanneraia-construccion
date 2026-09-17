@@ -721,8 +721,8 @@ goldens congelados; falta publicar.
 - `.aia-auth__acciones > .aia-btn` declarado dos veces en `auth-react.css` (Task 3).
 - `.aia-auth__boton-flecha` sin reglas propias, solo marcador estructural (Task 3).
 
-**Decisión abierta de Felipe:** si el respaldo legado debe poder activarse sin deploy — hoy exige
-quitar `'/login'` de `SpaRouter::RUTAS_EXACTAS_MIGRADAS` y publicar.
+**Decisión de Felipe (2026-09-16, después del merge):** el respaldo legado del login **no** necesita
+poder activarse; si React funciona igual, no hace falta mantenerlo. Registrado en `TASKS.md`.
 
 **Golden huérfano:** `tests/browser/__screenshots__/auth/login-dark-1180x820.png` sigue sin
 consumidor (fuera de alcance de este plan).
