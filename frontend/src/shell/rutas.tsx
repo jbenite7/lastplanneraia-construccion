@@ -6,7 +6,8 @@ import { CambioClaveObligatorio } from './auth/CambioClaveObligatorio';
 import { limpiarParametrosAviso, resolverAvisoAcceso } from './auth/avisos';
 import { PantallaLogin } from './auth/PantallaLogin';
 import { PantallaRecuperarClave } from './auth/PantallaRecuperarClave';
-import { type EnlaceReset, leerTokenReset } from './auth/tokenReset';
+import { PantallaRestablecerClave } from './auth/PantallaRestablecerClave';
+import { leerTokenReset } from './auth/tokenReset';
 import { SelectorProyecto } from './SelectorProyecto';
 import { SesionProvider, useSesion } from './SesionProvider';
 
@@ -159,27 +160,7 @@ function RutaRecuperacion() {
 function RutaRestablecimiento() {
   const { search } = useLocation();
   const enlace = useMemo(() => leerTokenReset(search), [search]);
-  return <RutaPublicaAcceso pintar={(props) => <MarcadorRestablecerClave enlace={enlace} {...props} />} />;
-}
-
-/**
- * Marcador temporal de la Tarea 4: la pantalla completa (`PantallaRestablecerClave`, que llamará a
- * `validarEnlaceReset` solo con `enlace.kind === 'candidate'`) llega en la Tarea 5 y lo reemplaza.
- * No toca la API ni pinta el token.
- */
-function MarcadorRestablecerClave({ enlace }: { enlace: EnlaceReset } & PropsPantallaPublica) {
-  if (enlace.kind === 'invalid') {
-    return (
-      <section>
-        <p role="alert">El enlace no es válido o ya expiró. Solicita uno nuevo.</p>
-      </section>
-    );
-  }
-  return (
-    <section>
-      <h1>Define tu nueva contraseña</h1>
-    </section>
-  );
+  return <RutaPublicaAcceso pintar={(props) => <PantallaRestablecerClave enlace={enlace} {...props} />} />;
 }
 
 /**
