@@ -75,11 +75,29 @@ function ErrorArranqueRecuperable({ logoutSinConfirmar, recargar }: { logoutSinC
  * Ruta pública de recuperación de clave (S02). Espera el bootstrap solo para obtener el token
  * CSRF; una vez resuelto, ignora el estado de sesión (anónimo, cambio de clave pendiente o
  * autenticado) y pinta la recuperación.
+ *
+ * **Ronda de arreglo 1 (S02-UX-06):** "Cargando…" solo se pinta en la carga INICIAL, antes de
+ * que exista algún bootstrap. `alRevalidar` (el botón "Actualizar sesión" tras un 403
+ * `csrf_invalid`) es `recargar()`, que pone `estado` en `cargando` y `arranque` en `null`
+ * mientras pide un bootstrap nuevo (`SesionProvider.recargar`) — sin este resguardo, esa
+ * revalidación desmontaba `PantallaRecuperarClave` y perdía el correo tecleado y el foco
+ * (reproducido en `.superpowers/sdd/2026-08-30-s02-recuperar-clave-react/revisor-403.mjs`,
+ * cubierto en `rutas.test.tsx`). `huboArranquePrevio` distingue "nunca hubo sesión" (sí muestra
+ * "Cargando…", como ya prueba el escenario de bootstrap en vuelo/fallido de más abajo) de "ya
+ * hubo una, se está revalidando" (se queda montada la pantalla). `csrfDeUltimoArranque` conserva
+ * el último token conocido durante ese hueco, en vez de mandar uno vacío mientras se resuelve.
  */
 function RutaRecuperacion() {
   const { estado, arranque, recargar, logoutSinConfirmar } = useSesion();
+  const huboArranquePrevio = useRef(false);
+  const csrfDeUltimoArranque = useRef('');
 
-  if (estado === 'cargando') {
+  if (arranque) {
+    huboArranquePrevio.current = true;
+    csrfDeUltimoArranque.current = arranque.csrfToken;
+  }
+
+  if (estado === 'cargando' && !huboArranquePrevio.current) {
     return <p role="status">Cargando…</p>;
   }
 
@@ -87,7 +105,12 @@ function RutaRecuperacion() {
     return <ErrorArranqueRecuperable logoutSinConfirmar={logoutSinConfirmar} recargar={recargar} />;
   }
 
-  return <PantallaRecuperarClave csrfToken={arranque?.csrfToken ?? ''} alRevalidar={recargar} />;
+  return (
+    <PantallaRecuperarClave
+      csrfToken={arranque?.csrfToken ?? csrfDeUltimoArranque.current}
+      alRevalidar={recargar}
+    />
+  );
 }
 
 /**

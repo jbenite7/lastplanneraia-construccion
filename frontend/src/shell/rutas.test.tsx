@@ -437,6 +437,64 @@ test('en la ruta de recuperación, el bootstrap en vuelo muestra "Cargando…" y
   expect(await screen.findByRole('status')).toHaveTextContent(/cargando/i);
 });
 
+test('403 csrf_invalid: "Actualizar sesión" revalida sin perder el correo ni desmontar la pantalla', async () => {
+  // Ronda de arreglo 1 (Tarea 9, S02-UX-06): `alRevalidar` es `recargar()`, que pone la sesión en
+  // `cargando` mientras pide un bootstrap nuevo. Antes de este fix, `RutaRecuperacion` trataba
+  // CUALQUIER `cargando` como "sin sesión todavía" y desmontaba `PantallaRecuperarClave` en favor
+  // de `<p role="status">Cargando…</p>` — perdiendo el correo tecleado y el foco (reproducido en
+  // `.superpowers/sdd/2026-08-30-s02-recuperar-clave-react/revisor-403.mjs`).
+  window.history.pushState({}, '', '/password/forgot');
+
+  let resolverSegundaSesion: (respuesta: Response) => void = () => {};
+  const segundaSesion = new Promise<Response>((resolve) => {
+    resolverSegundaSesion = resolve;
+  });
+  let llamadasSesion = 0;
+
+  vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes('/api/auth/password/forgot')) {
+      return Promise.resolve(new Response(JSON.stringify({
+        success: false,
+        code: 'csrf_invalid',
+        message: 'No fue posible validar la solicitud. Intenta nuevamente.',
+        error: {
+          codigo: 'csrf_invalid',
+          mensaje: 'No fue posible validar la solicitud. Intenta nuevamente.',
+        },
+      }), { status: 403 }));
+    }
+
+    llamadasSesion += 1;
+    if (llamadasSesion === 1) {
+      return Promise.resolve(new Response(JSON.stringify(ANONIMA_MISSING_SESSION), { status: 200 }));
+    }
+    return segundaSesion;
+  }));
+
+  render(<Rutas />);
+
+  expect(await screen.findByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
+
+  const campo = screen.getByLabelText('Correo electrónico') as HTMLInputElement;
+  fireEvent.change(campo, { target: { value: 'persona@example.test' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Enviar enlace' }));
+
+  await screen.findByRole('button', { name: 'Actualizar sesión' });
+  fireEvent.click(screen.getByRole('button', { name: 'Actualizar sesión' }));
+
+  // Mientras la revalidación sigue en vuelo: la pantalla de recuperación sigue montada, con el
+  // correo intacto — nunca "Cargando…" ni el login.
+  expect(screen.getByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
+  expect(screen.queryByRole('status', { name: /cargando/i })).not.toBeInTheDocument();
+  expect((screen.getByLabelText('Correo electrónico') as HTMLInputElement).value).toBe('persona@example.test');
+
+  resolverSegundaSesion(new Response(JSON.stringify(ANONIMA_MISSING_SESSION), { status: 200 }));
+
+  await waitFor(() => expect(screen.getByLabelText('Correo electrónico')).toHaveFocus());
+  expect((screen.getByLabelText('Correo electrónico') as HTMLInputElement).value).toBe('persona@example.test');
+});
+
 test('App monta la recuperación de clave en /password/forgot', async () => {
   window.history.pushState({}, '', '/password/forgot');
   responderSesion(AUTENTICADA_CON_PROYECTO);

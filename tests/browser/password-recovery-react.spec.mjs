@@ -126,7 +126,7 @@ test.describe('recuperación React — comportamiento', () => {
 
   test('422: el correo queda, el error se asocia al campo y el foco entra al input', async ({ page }) => {
     await simularSesion(page, [arranqueAnonimo()]);
-    await instalarRecuperacion(page, () => ({
+    const forgot = await instalarRecuperacion(page, () => ({
       status: 422,
       cuerpo: cuerpoError({
         code: 'validation_error',
@@ -144,9 +144,15 @@ test.describe('recuperación React — comportamiento', () => {
     await expect(page.getByLabel('Correo electrónico')).toHaveAttribute('aria-invalid', 'true');
     await expect(page.getByLabel('Correo electrónico')).toHaveAttribute('aria-describedby', 'recuperacion-email-error');
     await expect(page.getByLabel('Correo electrónico')).toBeFocused();
+    expect(forgot.total).toBe(1);
   });
 
-  test('403: ofrece "Actualizar sesión" y solo dispara una nueva GET de sesión, sin reenviar el correo', async ({ page }) => {
+  test('403: "Actualizar sesión" revalida sin reenviar el correo y conserva el correo tecleado con el foco de vuelta', async ({ page }) => {
+    // Ronda de arreglo 1 (S02-UX-06): antes de `rutas.tsx` (fix del coordinador), `alRevalidar`
+    // desmontaba `PantallaRecuperarClave` en favor de "Cargando…" mientras la sesión se
+    // revalidaba, perdiendo el correo tecleado y el foco. Este caso ahora exige explícitamente
+    // las tres garantías de la spec: correo conservado, foco de vuelta en el campo, sin un
+    // segundo POST.
     const sesion = await simularSesion(page, [arranqueAnonimo(), arranqueAnonimo()]);
     const forgot = await instalarRecuperacion(page, () => ({
       status: 403,
@@ -168,12 +174,16 @@ test.describe('recuperación React — comportamiento', () => {
     await page.getByRole('button', { name: 'Actualizar sesión' }).click();
     await expect.poll(() => sesion.total).toBe(2);
     expect(forgot.total).toBe(1);
+
+    // Tras la revalidación exitosa: el correo sigue ahí y el foco vuelve al campo — nunca a BODY.
+    await expect(page.getByLabel('Correo electrónico')).toHaveValue(CORREO);
+    await expect(page.getByLabel('Correo electrónico')).toBeFocused();
   });
 
   test('503: alerta con el copy del propio servidor, foco en la alerta y correo preservado', async ({ page }) => {
     const MENSAJE_SERVIDOR = 'El servicio de recuperación no está disponible en este momento.';
     await simularSesion(page, [arranqueAnonimo()]);
-    await instalarRecuperacion(page, () => ({
+    const forgot = await instalarRecuperacion(page, () => ({
       status: 503,
       cuerpo: cuerpoError({ code: 'recovery_unavailable', message: MENSAJE_SERVIDOR }),
     }));
@@ -185,6 +195,7 @@ test.describe('recuperación React — comportamiento', () => {
     await expect(page.getByRole('alert')).toHaveText(MENSAJE_SERVIDOR);
     await expect(page.getByRole('alert')).toBeFocused();
     await expect(page.getByLabel('Correo electrónico')).toHaveValue(CORREO);
+    expect(forgot.total).toBe(1);
   });
 
   test('red: fallo de transporte muestra el aviso técnico fijo del frontend, sin reintento oculto', async ({ page }) => {
@@ -217,16 +228,12 @@ test.describe('recuperación React — comportamiento', () => {
     expect(forgot.total).toBe(1);
   });
 
-  test('navegación: "Volver al inicio de sesión" lleva a /login sin recarga documental', async ({ page }) => {
+  test('navegación: "Volver al inicio de sesión" llega a /login', async ({ page }) => {
+    // Ruling del coordinador (ronda de arreglo 1, S02-UX-10): la spec solo exige llegar a
+    // `/login` con su pantalla; no exige que la navegación evite una recarga documental.
     await simularSesion(page, [arranqueAnonimo(), arranqueAnonimo()]);
     await page.goto('/password/forgot');
     await esperarPantallaDeRecuperacion(page);
-
-    // Marca viva en `window`: sobrevive a un cambio de vista de React, pero una recarga
-    // documental completa (`<a>` sin router) la borra — es el detector de "sin recarga".
-    await page.evaluate(() => {
-      window.__s02SinRecarga = true;
-    });
 
     await page.getByRole('link', { name: 'Volver al inicio de sesión' }).click();
 
