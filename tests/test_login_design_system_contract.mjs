@@ -112,8 +112,8 @@ assert.match(cambioClave, /aia-modal-surface aia-auth__dialog/);
 assert.ok(manifest.sources.includes('frontend/src/shell/auth/PantallaLogin.tsx'));
 assert.ok(manifest.sources.includes('frontend/src/shell/auth/MarcoAcceso.tsx'));
 assert.ok(manifest.sources.includes('public/css/auth-react.css'));
-// El legacy S03 sigue declarado como fuente (sigue existiendo y sirviéndose), pero nunca
-// como migrado: no hay entrada React para password-reset. VIEW-02 (password-forgot) se
+// El legacy S03 (VIEW-03) sigue declarado como fuente de rollback hasta la Tarea 10 de S03,
+// aunque GET/HEAD /password/reset ya lo sirve PantallaRestablecerClave.tsx. VIEW-02 (password-forgot) se
 // retiró en la Tarea 10 tras el gate de Felipe: ya no debe aparecer como fuente.
 assert.ok(!manifest.sources.includes('views/auth/password-forgot.view.php'));
 assert.ok(manifest.sources.includes('views/auth/password-reset.view.php'));
@@ -148,7 +148,7 @@ assert.ok(
 );
 assert.ok(
   manifest.sources.includes('views/auth/password-reset.view.php'),
-  'auth.json sources must still list VIEW-03 (no React counterpart yet)',
+  'auth.json sources must still list VIEW-03 (rollback source until S03 Task 10)',
 );
 for (const state of [
   'recovery-initial',
@@ -175,3 +175,39 @@ assert.match(pantallaRecuperarClave, /role="status"/);
 assert.match(pantallaRecuperarClave, /role="alert"/);
 assert.match(pantallaRecuperarClave, /aria-busy=\{enviando\}/);
 assert.match(pantallaRecuperarClave, /aria-invalid=/);
+
+// --- Restablecimiento de clave React (Tarea 8, S03): manifiesto y presentación ------
+// PantallaRestablecerClave.tsx sirve GET/HEAD /password/reset. VIEW-03 se conserva como
+// fuente de rollback hasta la Tarea 10. La política es un `aia-helper` asociado al campo
+// (Tarea 6), no una clase `.aia-auth__policy` propia.
+const pantallaRestablecerClave = read('frontend/src/shell/auth/PantallaRestablecerClave.tsx');
+
+assert.match(pantallaRestablecerClave, /MarcoAcceso/);
+assert.match(pantallaRestablecerClave, /CampoClave/);
+assert.match(pantallaRestablecerClave, /<p id="reset-password-policy" className="aia-helper">/);
+assert.match(pantallaRestablecerClave, /describedBy="reset-password-policy"/);
+assert.match(pantallaRestablecerClave, /className="aia-auth__acciones"/);
+assert.match(pantallaRestablecerClave, /className="aia-auth__boton-flecha"/);
+assert.match(pantallaRestablecerClave, /role="alert"/);
+assert.match(pantallaRestablecerClave, /role="status"/);
+assert.match(pantallaRestablecerClave, /aria-busy=\{submitting\}/);
+assert.doesNotMatch(authCss, /\.aia-auth__policy/, 'S03 must reuse aia-helper, not a bespoke policy class');
+
+assert.ok(manifest.routes.includes('/password/reset'), 'auth.json routes must include /password/reset');
+assert.ok(
+  manifest.sources.includes('frontend/src/shell/auth/PantallaRestablecerClave.tsx'),
+  'auth.json sources must include PantallaRestablecerClave.tsx',
+);
+for (const state of [
+  'reset-validating',
+  'reset-invalid',
+  'reset-form',
+  'reset-field-error',
+  'reset-busy',
+  'reset-csrf',
+  'reset-unavailable',
+  'reset-network',
+]) {
+  assert.ok(manifest.states.includes(state), `auth.json states must include "${state}"`);
+}
+assert.ok(!('rollbackSource' in manifest) && !('viewports' in manifest), 'schema forbids rollbackSource/viewports');
