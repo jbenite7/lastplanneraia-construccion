@@ -109,7 +109,7 @@ export function SelectorProyectos({ session, onOpen: _onOpen, onRevalidate: _onR
       ) : lista.projects.length === 0 ? (
         <div className="aia-empty project-selector-react__empty">
           <h2 className="aia-title">No tienes proyectos asignados</h2>
-          <p>Pídele acceso a un administrador.</p>
+          <p>Contacta al administrador para solicitar acceso.</p>
         </div>
       ) : (
         <>
@@ -119,12 +119,13 @@ export function SelectorProyectos({ session, onOpen: _onOpen, onRevalidate: _onR
               id="project-search"
               type="search"
               value={query}
+              placeholder="Buscar proyecto..."
               autoComplete="off"
               aria-controls="project-list"
               aria-describedby="project-search-status"
               onChange={(event) => setQuery(event.currentTarget.value)}
             />
-            {query !== '' && resultados.length > 0 && (
+            {hasQuery && resultados.length > 0 && (
               <button type="button" onClick={() => setQuery('')}>
                 Limpiar búsqueda
               </button>
@@ -135,28 +136,35 @@ export function SelectorProyectos({ session, onOpen: _onOpen, onRevalidate: _onR
             {textoConteo(resultados.length, hasQuery)}
           </p>
 
-          {resultados.length === 0 ? (
-            <div className="aia-empty project-selector-react__empty">
-              <h2 className="aia-title">No encontramos proyectos</h2>
-              <p>Prueba con otro término de búsqueda.</p>
-              <button type="button" onClick={() => setQuery('')}>
-                Limpiar búsqueda
-              </button>
-            </div>
-          ) : (
-            <ul id="project-list" className="project-selector-react__list">
-              {resultados.map((project) => (
-                <TarjetaProyecto
-                  key={project.id}
-                  project={project}
-                  current={session.project?.id === project.id}
-                  busy={false}
-                  disabled={false}
-                  onSelect={handleSelect}
-                />
-              ))}
-            </ul>
-          )}
+          {/*
+            `id="project-list"` vive en este contenedor estable, no en el `<ul>` de abajo: el
+            `aria-controls="project-list"` del buscador debe apuntar a algo que exista siempre,
+            incluida la rama sin resultados (que no pinta ningún `<ul>`).
+          */}
+          <div id="project-list">
+            {resultados.length === 0 ? (
+              <div className="aia-empty project-selector-react__empty">
+                <h2 className="aia-title">No encontramos proyectos</h2>
+                <p>Prueba con otro término de búsqueda.</p>
+                <button type="button" onClick={() => setQuery('')}>
+                  Limpiar búsqueda
+                </button>
+              </div>
+            ) : (
+              <ul className="project-selector-react__list">
+                {resultados.map((project) => (
+                  <TarjetaProyecto
+                    key={project.id}
+                    project={project}
+                    current={session.project?.id === project.id}
+                    busy={false}
+                    disabled={false}
+                    onSelect={handleSelect}
+                  />
+                ))}
+              </ul>
+            )}
+          </div>
         </>
       )}
     </main>

@@ -76,13 +76,58 @@ test('muestra un estado de carga estable mientras llega la respuesta', async () 
   await screen.findByRole('heading', { name: 'Da Porto' });
 });
 
-test('sin proyectos asignados muestra el vacío sin enlace de administración', async () => {
+test('sin proyectos asignados muestra el vacío sin enlace de administración, con el texto del legado', async () => {
   vi.mocked(listarProyectos).mockResolvedValue(lista([]));
 
   render(<SelectorProyectos {...props()} />);
 
   expect(await screen.findByText('No tienes proyectos asignados')).toBeVisible();
+  expect(screen.getByText('Contacta al administrador para solicitar acceso.')).toBeVisible();
   expect(screen.queryByRole('link')).not.toBeInTheDocument();
+});
+
+test('el buscador lleva el placeholder del legado', async () => {
+  vi.mocked(listarProyectos).mockResolvedValue(lista([proyecto()]));
+
+  render(<SelectorProyectos {...props()} />);
+
+  expect(await screen.findByRole('searchbox', { name: 'Buscar proyecto' }))
+    .toHaveAttribute('placeholder', 'Buscar proyecto...');
+});
+
+test('el id de aria-controls existe también cuando la búsqueda no encuentra nada', async () => {
+  vi.mocked(listarProyectos).mockResolvedValue(lista([proyecto()]));
+  const usuario = userEvent.setup();
+
+  render(<SelectorProyectos {...props()} />);
+
+  const buscador = await screen.findByRole('searchbox', { name: 'Buscar proyecto' });
+  expect(buscador).toHaveAttribute('aria-controls', 'project-list');
+
+  await usuario.type(buscador, 'zzz-no-existe');
+  await screen.findByText('No encontramos proyectos');
+
+  // El nodo que `aria-controls` referencia debe existir en las dos ramas (con y sin resultados).
+  expect(document.getElementById('project-list')).not.toBeNull();
+  expect(document.getElementById('project-list')).toHaveTextContent('No encontramos proyectos');
+});
+
+test('una búsqueda de solo espacios no ofrece "Limpiar búsqueda" ni cuenta como filtro activo', async () => {
+  vi.mocked(listarProyectos).mockResolvedValue(lista([
+    proyecto({ id: 1, name: 'Da Porto' }),
+    proyecto({ id: 2, name: 'Ágora' }),
+  ]));
+  const usuario = userEvent.setup();
+
+  render(<SelectorProyectos {...props()} />);
+
+  const buscador = await screen.findByRole('searchbox', { name: 'Buscar proyecto' });
+  expect(await screen.findByText('2 proyectos disponibles')).toBeVisible();
+
+  await usuario.type(buscador, '   ');
+
+  expect(screen.getByText('2 proyectos disponibles')).toBeVisible();
+  expect(screen.queryByRole('button', { name: 'Limpiar búsqueda' })).not.toBeInTheDocument();
 });
 
 test('sin coincidencias de búsqueda ofrece limpiar el filtro', async () => {
