@@ -549,3 +549,75 @@ test('App monta la recuperación de clave en /password/forgot', async () => {
 
   expect(await screen.findByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
 });
+
+// --- S03: la ruta pública de restablecimiento prevalece sobre el estado de sesión (Tarea 4) --
+
+const TOKEN_RESET = 'a'.repeat(64);
+
+function llamadasA(fragmento: string): number {
+  const simulado = globalThis.fetch as unknown as { mock: { calls: unknown[][] } };
+  return simulado.mock.calls.filter(([entrada]) => String(entrada).includes(fragmento)).length;
+}
+
+test.each([
+  ['anónima', '/password/reset', ANONIMA_MISSING_SESSION],
+  ['con cambio de clave pendiente', '/password/reset', PENDIENTE_CAMBIO_CLAVE],
+  ['autenticada sin proyecto', '/password/reset', AUTENTICADA_SIN_PROYECTO],
+  ['autenticada con proyecto', '/password/reset', AUTENTICADA_CON_PROYECTO],
+  ['anónima', '/app/password/reset', ANONIMA_MISSING_SESSION],
+  ['con cambio de clave pendiente', '/app/password/reset', PENDIENTE_CAMBIO_CLAVE],
+  ['autenticada con proyecto', '/app/password/reset', AUTENTICADA_CON_PROYECTO],
+])('el restablecimiento prevalece sobre una sesión %s en %s', async (_nombre, ruta, cuerpo) => {
+  window.history.pushState({}, '', `${ruta}?token=${TOKEN_RESET}`);
+  responderSesion(cuerpo);
+
+  render(<Rutas />);
+
+  expect(await screen.findByRole('heading', { name: 'Define tu nueva contraseña' })).toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /bienvenido a last planner aia/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Actualizar y continuar' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+  expect(screen.queryByText('test.A')).not.toBeInTheDocument();
+  expect(screen.queryByText('Ana')).not.toBeInTheDocument();
+  // El token nunca se pinta.
+  expect(document.body.textContent ?? '').not.toContain(TOKEN_RESET);
+});
+
+test.each([
+  ['/password/reset', ''],
+  ['/password/reset', '?token=abc'],
+  ['/password/reset', `?token=${TOKEN_RESET}&token=${TOKEN_RESET}`],
+  ['/app/password/reset', ''],
+  ['/app/password/reset', `?token=${TOKEN_RESET.toUpperCase()}`],
+])('%s%s sin token válido muestra el enlace inválido sin llamar a la API de restablecimiento', async (ruta, query) => {
+  window.history.pushState({}, '', `${ruta}${query}`);
+  responderSesion(AUTENTICADA_CON_PROYECTO);
+
+  render(<Rutas />);
+
+  expect(await screen.findByText('El enlace no es válido o ya expiró. Solicita uno nuevo.')).toBeInTheDocument();
+  expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+  expect(llamadasA('/api/auth/password/reset')).toBe(0);
+});
+
+test('en la ruta de restablecimiento, el bootstrap en vuelo muestra "Cargando…" y un fallo la alerta recuperable', async () => {
+  window.history.pushState({}, '', `/password/reset?token=${TOKEN_RESET}`);
+  vi.stubGlobal('fetch', vi.fn()
+    .mockRejectedValueOnce(new Error('red no disponible'))
+    .mockReturnValueOnce(new Promise<Response>(() => {})));
+
+  render(<Rutas />);
+
+  expect(screen.getByRole('status')).toHaveTextContent(/cargando/i);
+  expect(await screen.findByRole('alert')).toHaveTextContent(/no pudimos conectar/i);
+  expect(screen.queryByRole('heading', { name: 'Define tu nueva contraseña' })).not.toBeInTheDocument();
+});
+
+test('App monta el restablecimiento en /password/reset', async () => {
+  window.history.pushState({}, '', `/password/reset?token=${TOKEN_RESET}`);
+  responderSesion(AUTENTICADA_CON_PROYECTO);
+
+  render(<App />);
+
+  expect(await screen.findByRole('heading', { name: 'Define tu nueva contraseña' })).toBeInTheDocument();
+});
