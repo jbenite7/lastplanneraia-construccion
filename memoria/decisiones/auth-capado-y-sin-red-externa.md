@@ -5,8 +5,17 @@ estado: vigente
 fecha: 2026-08-06
 areas: [design-system, qa]
 fuente: sesion
-resumen: "AdminLTE deja VIEW_OWNED_VENDORS y pasa a attach-adminlte.css con layer(vendor); las tres vistas de views/auth/ quedan sin una sola petición externa"
+resumen: "AdminLTE deja VIEW_OWNED_VENDORS y pasa a attach-adminlte.css con layer(vendor); las vistas de views/auth/ —tres entonces, dos desde que S02 retiró password-forgot el 2026-09-16— quedan sin una sola petición externa"
 ---
+> **Nota del 2026-09-17.** De las tres vistas quedan **dos** (`views/auth/login.view.php` y
+> `password-reset.view.php`, ambas con `renderForModule('auth')` en su línea 11):
+> `password-forgot.view.php` se retiró el 2026-09-16 con S02 (PR #43). Además los `GET` de `/login` y
+> `/password/forgot` los sirve el shell React desde el 2026-09-01 y el 2026-09-16
+> (`SpaRouter::RUTAS_EXACTAS_MIGRADAS`), así que `login.view.php` solo se pinta tras un `POST /login`
+> fallido. El caso 7 (`login-brand-unified.css`) sigue abierto **solo para `/password/reset`**
+> (`docs/design-system/unlayered-delivery-inventory.json`). La decisión de capar el vendor sigue
+> vigente para las dos vistas PHP que quedan.
+
 Las tres vistas de `views/auth/` (`/login`, `/password/forgot`, `/password/reset`) cargaban
 AdminLTE 3.2 desde jsDelivr con un `<link>` **sin capa**. Una hoja de autor sin capa gana a
 **todas** las capas en declaraciones normales (DS-006), así que el vendor derrotaba al design

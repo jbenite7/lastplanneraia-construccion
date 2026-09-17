@@ -47,7 +47,9 @@ Políticas específicas viven aparte: `LpsWeekEditPolicy`, `DesignSystemLabAcces
 
 ## Sesión
 
-Se aplica en `SessionMiddleware::check()` desde el front controller. Toda mutación autenticada
+Se aplica en `SessionMiddleware::beginRequest()` desde el front controller (`public/index.php:56-58`;
+hasta el 2026-08-29 era `check()`, que sigue existiendo pero ya no llama nadie desde ahí), y solo
+exige sesión si la ruta no es de la SPA ni está en `$publicRoutes`. Toda mutación autenticada
 lleva CSRF, y las consultas van por sentencias preparadas de la capa `Database`.
 
 Para abrir sesión en local se usa **siempre** la puerta de servicio, nunca el formulario de login:

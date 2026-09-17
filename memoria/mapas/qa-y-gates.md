@@ -69,7 +69,7 @@ for n in puro db http datos-proyecto admin-db; do echo -n "$n: "; grep -l "@requ
   los omite: misma regla que con la base de datos ausente. Por eso el job estático del CI construye
   con `--build-arg COMPOSER_INSTALL_FLAGS=""`; sin eso la imagen se construye `--no-dev` y no trae
   PHPUnit. Las tres líneas de esa variable en `docker/php/Dockerfile` y `docker-compose.ci.yml`
-  están fijadas por `tests/design-system/visual-ci-contract.test.mjs:143-145` y **no se tocan** —
+  están fijadas por `tests/design-system/visual-ci-contract.test.mjs:232-240` (test «CI image includes analysis tools») y **no se tocan** —
   ver [[el-archivo-que-tocas-puede-tener-un-contrato]].
 - **Antes de correr la suite sin entorno, lee [[test-sin-base-sale-verde]]**: 26 tests salen 0
   cuando no hay base de datos. Por eso el runner comprueba el entorno antes de ejecutar y aborta si

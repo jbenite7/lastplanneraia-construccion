@@ -5,14 +5,16 @@ estado: vigente
 fecha: 2026-08-18
 areas: [rbac, arquitectura]
 fuente: sesión del 2026-08-18, salida del modal de cambio obligatorio de contraseña
-resumen: la sesión a medias del cambio obligatorio de contraseña no se limpia con `/logout`, porque esa ruta no es pública y el middleware exige `$_SESSION['usuario']`, que en ese estado no existe
+resumen: la sesión a medias del cambio obligatorio de contraseña no se limpia con `/logout`, porque esa ruta no es pública y el middleware exige `$_SESSION['usuario']`, que en ese estado no existe; el shell React sale por `POST /api/auth/password/cancel`, pública y con la misma guarda
 ---
 Cuando una cuenta trae `force_password_change = 1`, `LoginController::login()` **no** crea sesión
 completa: deja `usuario_temp` + `must_change_password` y devuelve a `/login`, donde la vista abre
 un modal bloqueante. Es un estado intermedio, ni anónimo ni autenticado, y ahí está la trampa:
 
 **`/logout` no sirve para salir de él.** No figura en `$publicRoutes` de `public/index.php`, así
-que la petición pasa antes por `SessionMiddleware::check()`, que exige `$_SESSION['usuario']` —la
+que la petición pasa antes por `SessionMiddleware::check()` —hoy `beginRequest()`, que además
+devuelve `password_change_required` al ver la bandera y redirige igual a `/login`
+(`src/Core/SessionMiddleware.php:91-93,160-166`)—, que exige `$_SESSION['usuario']` —la
 que justamente no se creó— y redirige a `/login` **sin destruir nada**. La bandera sobrevive, y el
 modal se reabre en cada carga. El usuario queda encerrado: la única salida era completar el cambio
 de contraseña o borrar la cookie a mano.
@@ -46,6 +48,16 @@ El modal sigue con `allowEscapeKey: false`, pero por el motivo real, ya escrito 
 Escape accidental cae en el `.then()` como `dismiss` y navega a `/login/cancelar`, que destruye la
 sesión pendiente; descartaría la contraseña a medio teclear y además cerraría la sesión. No es
 trampa de teclado, porque el botón «Volver al inicio de sesión» es alcanzable con Tab.
+
+**Nota del 2026-09-17: el caso tiene gemelo en React.** Desde el 2026-09-01 el `GET /login` lo pinta
+el shell React, y el cambio obligatorio vive en `frontend/src/shell/auth/CambioClaveObligatorio.tsx`,
+que sale por `POST /api/auth/password/cancel` → `AuthApiController::cancelPasswordChange()`
+(`src/Controllers/Api/AuthApiController.php:173-186`). Esa ruta **sí está en `$publicRoutes`**
+(`public/index.php:46`) —la regla general de arriba, cumplida— y conserva las dos guardas: exige
+CSRF y `ForcedPasswordChangeService::cancel()` solo destruye la sesión si hay cambio pendiente
+(`src/Services/Auth/ForcedPasswordChangeService.php:68-77`). El modal de SweetAlert2 y
+`/login/cancelar` siguen existiendo en el camino PHP, pero solo se alcanzan tras un `POST /login`
+que vuelve a pintar `views/auth/login.view.php`.
 
 Ver también [[dev-door-acceso-local]], la otra ruta que vive fuera del middleware, y
 [[un-if-de-autorizacion-no-es-toda-la-autorizacion]], que es la misma pregunta —quién comprueba

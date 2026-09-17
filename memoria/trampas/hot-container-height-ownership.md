@@ -25,7 +25,7 @@ semana). Medido a 1180x820 dark en /programacion-semanal: context-bar 49px + `.h
 
 Ojo con el **drift de sujeto**: `calc(100vh - 49px)` es correcto sobre **`.hot-full-bleed`**
 (el 49px es la context-bar sticky, que sí es lo único encima de ese wrapper) y así se aplicó en
-`public/css/programa-general-actualizar.css:63`. Copiarlo a
+`public/css/programa-general-actualizar.css:66-68`. Copiarlo a
 `#hot-container` lo vuelve falso por el alto de la toolbar (resolvía 771px). Esa vista tiene
 además el patrón CSS completo y sin números mágicos por módulo, si algún día se migra la
 geometría a CSS: `.hot-full-bleed { display:flex; flex-direction:column; height:calc(100vh - 49px) }`
