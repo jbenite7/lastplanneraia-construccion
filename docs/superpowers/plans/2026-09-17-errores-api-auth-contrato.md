@@ -57,3 +57,34 @@ Efectos:
 - **Alcance:** solo `AuthApiController`. Otros controladores con forma plana quedan fuera y se anotan si aparecen.
 - **Verificación:** `npm --prefix frontend test`, `npm run frontend:typecheck`, `npm run frontend:build`, `test_api_auth_contract.php`, `test_api_password_recovery_contract.php`, Playwright de `login-react`, `password-recovery-react` y `shell-control-actividad` contra `:8098`, `npm run test:design-system:static` y `npm run test:wiki`.
 - **Cierre:** PR con condición de hecho declarada antes del CI: `design-system-static` y los 13 `G_*` en `success` en las dos patas.
+
+## Cierre
+
+**Estado (2026-09-17):** hecho en la rama `fix/errores-api-auth-contrato`, sin push. Cuatro commits de código y tests más este de documentación.
+
+**Qué se hizo**
+
+- **Contrato entre PHP y Zod.** `tests/test_api_auth_contract.php` captura del servidor real el texto crudo de cuatro cuerpos (403 `csrf_invalid`, 401 `invalid_credentials`, 422 de login y 422 de `password/change`) y los contrasta con `tests/fixtures/api-auth-error-bodies.json`. Se regenera con `LPS_REGENERAR_CUERPOS=1`; sin el archivo, falla. `frontend/src/lib/api/esquemas/error.contrato.test.ts` pasa cada cuerpo por `EsquemaCuerpoErrorApi` y por `pedir()`.
+- **Arreglo.** `AuthApiController::respondError()` omite `fieldErrors` y `error.campos` sin errores de campo, y ya no emite `redirect` ni `correlationId`.
+- **Navegador.** `tests/browser/auth-errores-contrato.spec.mjs`: un 403 contra el servidor real (solo `/api/session` simulado), el 422 de política de claves servido desde el cuerpo capturado, y `cuerpoError()` atado a los cuatro cuerpos del archivo.
+
+**RED → GREEN**
+
+- Vitest contra los cuerpos previos: `8 failed | 1 passed (9)` («expected record, received array» y «expected string, received null»; `pedir()` devolvía `HTTP_403`/`HTTP_401`/`HTTP_422`). Después: `9 passed`.
+- Spec de navegador con el controlador y el archivo previos restaurados temporalmente: `2 failed`. Después: `3 passed`.
+- El contrato PHP detectó por sí solo la divergencia tras el arreglo (`1 fallo(s)`) hasta regenerar el archivo.
+
+**Verificación final** (cada RC en su propia línea): `npm --prefix frontend test` 629 passed RC=0 · `npm run frontend:typecheck` RC=0 · `npm run frontend:build` RC=0, sin cambios en `public/app` · `test_api_auth_contract.php` RC=0 · `test_api_password_recovery_contract.php` RC=0 · Playwright `login-react`, `password-recovery-react`, `shell-control-actividad` y el spec nuevo contra `:8098`: 41 passed RC=0 · `npm run test:design-system:static` RC=0 · `run-php-tests.php --nivel=http` 110/110 y 31 clases PHPUnit, RC=0 · `--nivel=puro` 38/38 y 27 clases, RC=0 · `git diff --check` RC=0 · `npm run test:wiki` RC=0.
+
+**Desvíos**
+
+- Se capturan **cuatro** cuerpos, no tres: además del 422 de login está el de `password/change`, que es el que consume `CambioClaveObligatorio`. Se obtiene con la sesión forjada como archivo que ya usaba el test, sin tocar la base.
+- **El 422 no se provoca desde la UI.** El login valida vacíos en el cliente antes del `fetch`, y el cambio de clave exige una cuenta con `force_password_change=1`. Crearla muta datos. El spec sirve el cuerpo real capturado, que el contrato PHP mantiene fiel al servidor.
+- **`cuerpoError()` ya tenía la forma buena.** Solo cambió su docblock y quedó atado al archivo con una aserción.
+- No hubo cambio en el frontend productivo, así que no se reconstruyó el bundle de `public/app`.
+
+**Fuera de alcance, anotado**
+
+- `logout()` responde su 403 con la forma plana, sin bloque `error`. No es `respondError()` y el plan no lo cubría.
+- `login-react.spec.mjs` usa códigos en mayúsculas (`INVALID_CREDENTIALS`, `VALIDATION_ERROR`) y el servidor los emite en minúsculas. Hoy es inocuo porque la pantalla decide por status.
+- Queda pendiente el PR con la condición de hecho declarada antes del CI.
