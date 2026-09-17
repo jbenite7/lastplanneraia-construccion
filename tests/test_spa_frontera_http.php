@@ -4,11 +4,13 @@
 
 /**
  * Comprueba la frontera desde Apache: las rutas del shell (`/app`, y desde la Tarea 13 también
- * `/`/`/login` en GET/HEAD) devuelven el HTML inicial sin autenticar, sus assets se sirven como
- * archivos, y las cuatro rutas que NUNCA deben cruzar al host SPA
- * (`/password/forgot`, `/password/reset`, `/api/*`, `/app/assets*`) siguen siendo del sitio PHP.
- * `POST /login` también sigue siendo del sitio PHP mientras dure la ventana de rollback de la
- * Tarea 13 — moverlo habría hecho el rollback irreversible.
+ * `/`/`/login`, y desde la Tarea 8 (S02) también `/password/forgot`, en GET/HEAD) devuelven el
+ * HTML inicial sin autenticar, sus assets se sirven como archivos, y las rutas que NUNCA deben
+ * cruzar al host SPA (`/password/reset`, `/api/*`, `/app/assets*`) siguen siendo del sitio PHP.
+ * `POST /login` sigue siendo del sitio PHP mientras dure la ventana de rollback de S01.
+ * `POST /password/forgot` se retiró en la Tarea 10 (gate explícito de Felipe, S02
+ * MIGRATION_COMPLETE): ya no hay controlador legado que lo atienda y responde el 404
+ * controlado del producto, nunca el formulario PHP ni el shell React.
  */
 
 declare(strict_types=1);
@@ -149,11 +151,35 @@ try {
     comprobarFronteraSpa(str_contains($loginPost['cuerpo'], 'id="loginForm"'), 'POST /login debe seguir devolviendo el formulario PHP legado con errores');
     comprobarFronteraSpa(!str_contains($loginPost['cuerpo'], '<div id="root"></div>'), 'POST /login no debe devolver el HTML del shell React');
 
-    // --- Las cuatro rutas que NUNCA deben pasar al host SPA. ---
-    $forgot = pedirFronteraSpa("{$base}/password/forgot");
-    comprobarFronteraSpa($forgot['codigo'] === 200, "/password/forgot debe conservar su 200, llegó {$forgot['codigo']}");
-    comprobarFronteraSpa(!str_contains($forgot['cuerpo'], '<div id="root"></div>'), '/password/forgot no debe ser robada por el shell SPA (S02 sin migrar)');
+    // --- El corte de la Tarea 8 (S02): GET/HEAD '/password/forgot' ahora sirven el shell React. ---
+    $forgotGet = pedirFronteraSpa("{$base}/password/forgot");
+    comprobarFronteraSpa($forgotGet['codigo'] === 200, "GET /password/forgot debe responder 200, llegó {$forgotGet['codigo']}");
+    comprobarFronteraSpa(str_contains($forgotGet['cuerpo'], '<div id="root"></div>'), 'GET /password/forgot debe devolver el HTML del shell React');
+    comprobarFronteraSpa(!str_contains($forgotGet['cuerpo'], 'data-auth-form'), 'GET /password/forgot ya no debe devolver el formulario PHP legado');
 
+    $forgotHead = pedirFronteraSpaConMetodo("{$base}/password/forgot", 'HEAD');
+    comprobarFronteraSpa($forgotHead['codigo'] === 200, "HEAD /password/forgot debe responder 200, llegó {$forgotHead['codigo']}");
+    comprobarFronteraSpa($forgotHead['cuerpo'] === '', 'HEAD /password/forgot no debe llevar cuerpo');
+
+    // --- POST /password/forgot se retiró (Tarea 10): sin controlador legado, cae al 404
+    // controlado del producto porque '/password/forgot' sigue en el allowlist público por
+    // path, nunca a un redirect de autenticación. CSRF inválido a propósito: nunca ejercita
+    // PasswordResetService ni envía correo real. ---
+    $forgotPost = pedirFronteraSpaConMetodo("{$base}/password/forgot", 'POST', [
+        'email' => 'persona@example.test',
+        'csrf_token' => 'invalido',
+    ]);
+    comprobarFronteraSpa($forgotPost['codigo'] === 404, "POST /password/forgot debe responder 404 tras el retiro, llegó {$forgotPost['codigo']}");
+    comprobarFronteraSpa(!str_contains($forgotPost['cabeceras'], 'Location: /login'), 'POST /password/forgot no debe redirigir a /login');
+    comprobarFronteraSpa(!str_contains($forgotPost['cuerpo'], 'data-auth-form'), 'POST /password/forgot no debe devolver el formulario PHP legado retirado');
+    comprobarFronteraSpa(!str_contains($forgotPost['cuerpo'], '<div id="root"></div>'), 'POST /password/forgot no debe devolver el HTML del shell React');
+
+    // --- El prefijo piloto '/app' sigue sirviendo la pantalla también bajo /app/password/forgot. ---
+    $forgotApp = pedirFronteraSpa("{$base}/app/password/forgot");
+    comprobarFronteraSpa($forgotApp['codigo'] === 200, "GET /app/password/forgot debe responder 200, llegó {$forgotApp['codigo']}");
+    comprobarFronteraSpa(str_contains($forgotApp['cuerpo'], '<div id="root"></div>'), 'GET /app/password/forgot debe devolver el HTML del shell React');
+
+    // --- '/password/reset' (S03) sigue siendo del sitio PHP: NUNCA debe cruzar al host SPA. ---
     $reset = pedirFronteraSpa("{$base}/password/reset");
     comprobarFronteraSpa($reset['codigo'] === 200, "/password/reset debe conservar su 200, llegó {$reset['codigo']}");
     comprobarFronteraSpa(!str_contains($reset['cuerpo'], '<div id="root"></div>'), '/password/reset no debe ser robada por el shell SPA (S03 sin migrar)');

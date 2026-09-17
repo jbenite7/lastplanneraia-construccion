@@ -4,11 +4,10 @@ import { existsSync, readFileSync } from 'node:fs';
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const views = [
   read('views/auth/login.view.php'),
-  read('views/auth/password-forgot.view.php'),
   read('views/auth/password-reset.view.php'),
 ];
 const login = views[0];
-const reset = views[2];
+const reset = views[1];
 const css = read('public/css/login-brand-unified.css');
 const authFormsUrl = new URL('../public/js/modules/aia_ui/auth_forms.js', import.meta.url);
 assert.ok(existsSync(authFormsUrl), 'auth_forms.js must centralize auth interactions');
@@ -66,7 +65,7 @@ assert.doesNotMatch(css, /#[0-9a-f]{3,8}\b/i);
 
 const budget = exceptions.pathBudgets.find((item) => item.name === 'login');
 assert.ok(budget);
-assert.ok(budget.paths.includes('views/auth/password-forgot.view.php'));
+assert.ok(!budget.paths.includes('views/auth/password-forgot.view.php'));
 assert.ok(budget.paths.includes('views/auth/password-reset.view.php'));
 assert.ok(budget.paths.includes('public/js/modules/aia_ui/auth_forms.js'));
 assert.equal(budget.maxViolations['hardcoded-color-function'], 0);
@@ -113,9 +112,10 @@ assert.match(cambioClave, /aia-modal-surface aia-auth__dialog/);
 assert.ok(manifest.sources.includes('frontend/src/shell/auth/PantallaLogin.tsx'));
 assert.ok(manifest.sources.includes('frontend/src/shell/auth/MarcoAcceso.tsx'));
 assert.ok(manifest.sources.includes('public/css/auth-react.css'));
-// El legacy S02/S03 sigue declarado como fuente (sigue existiendo y sirviéndose),
-// pero nunca como migrado: no hay entrada React para password-forgot/password-reset.
-assert.ok(manifest.sources.includes('views/auth/password-forgot.view.php'));
+// El legacy S03 sigue declarado como fuente (sigue existiendo y sirviéndose), pero nunca
+// como migrado: no hay entrada React para password-reset. VIEW-02 (password-forgot) se
+// retiró en la Tarea 10 tras el gate de Felipe: ya no debe aparecer como fuente.
+assert.ok(!manifest.sources.includes('views/auth/password-forgot.view.php'));
 assert.ok(manifest.sources.includes('views/auth/password-reset.view.php'));
 assert.ok(!manifest.sources.some((source) => /password-forgot|password-reset/.test(source) && source.endsWith('.tsx')));
 
@@ -126,3 +126,52 @@ for (const state of ['normal', 'error', 'focus', 'busy', 'password-change', 'can
 assert.ok(manifest.roles.includes('anonymous'));
 assert.ok(manifest.roles.includes('pending-password'));
 assert.doesNotMatch(manifest.persistence.theme, /^none\b/, 'auth.json must no longer claim the React login has no theme persistence');
+
+// --- Recuperación de clave React (Tarea 7, S02): manifiesto y presentación --------
+// PantallaRecuperarClave.tsx (S02) es la pantalla pública única de `/password/forgot`.
+// Su contraparte legacy (password-forgot.view.php, VIEW-02) se retiró en la Tarea 10
+// tras el gate explícito de Felipe; password-reset.view.php (VIEW-03) sigue sin React
+// propio y por eso permanece siempre.
+const pantallaRecuperarClave = read('frontend/src/shell/auth/PantallaRecuperarClave.tsx');
+
+assert.ok(
+  manifest.routes.includes('/password/forgot'),
+  'auth.json routes must include /password/forgot',
+);
+assert.ok(
+  manifest.sources.includes('frontend/src/shell/auth/PantallaRecuperarClave.tsx'),
+  'auth.json sources must include PantallaRecuperarClave.tsx',
+);
+assert.ok(
+  !manifest.sources.includes('views/auth/password-forgot.view.php'),
+  'auth.json sources must no longer list the retired legacy VIEW-02',
+);
+assert.ok(
+  manifest.sources.includes('views/auth/password-reset.view.php'),
+  'auth.json sources must still list VIEW-03 (no React counterpart yet)',
+);
+for (const state of [
+  'recovery-initial',
+  'recovery-invalid',
+  'recovery-busy',
+  'recovery-accepted',
+  'recovery-csrf',
+  'recovery-unavailable',
+  'recovery-network',
+]) {
+  assert.ok(manifest.states.includes(state), `auth.json states must include "${state}"`);
+}
+
+// La pantalla reutiliza primitivas y clases ya contractuales de S01 (aia-field,
+// aia-label, aia-input, aia-helper, aia-alert, aia-auth__campo-icono,
+// aia-auth__campo-adorno, aia-auth__acciones, aia-auth__boton-flecha) en vez de
+// inventar clases nuevas: nada de esto exige tocar auth-react.css.
+assert.match(pantallaRecuperarClave, /className="aia-field"/);
+assert.match(pantallaRecuperarClave, /className="aia-auth__campo-icono"/);
+assert.match(pantallaRecuperarClave, /className="aia-auth__campo-adorno"/);
+assert.match(pantallaRecuperarClave, /className="aia-auth__acciones"/);
+assert.match(pantallaRecuperarClave, /className="aia-auth__boton-flecha"/);
+assert.match(pantallaRecuperarClave, /role="status"/);
+assert.match(pantallaRecuperarClave, /role="alert"/);
+assert.match(pantallaRecuperarClave, /aria-busy=\{enviando\}/);
+assert.match(pantallaRecuperarClave, /aria-invalid=/);

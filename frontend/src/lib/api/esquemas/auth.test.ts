@@ -1,10 +1,15 @@
 import {
+  EsquemaRecuperacionAceptada,
   EsquemaRespuestaCambioClave,
   EsquemaRespuestaCancelacionClave,
   EsquemaRespuestaLogin,
   EsquemaSolicitudCambioClave,
   EsquemaSolicitudLogin,
+  EsquemaSolicitudRecuperacion,
 } from './auth';
+
+const MENSAJE_GENERICO_RECUPERACION =
+  'Si el correo existe y está habilitado, enviaremos un enlace de restablecimiento en unos minutos.';
 
 // --- EsquemaRespuestaLogin ---------------------------------------------
 
@@ -52,4 +57,32 @@ test('la respuesta de cambio de clave fija next en projects', () => {
 test('la respuesta de cancelación fija next en login', () => {
   expect(EsquemaRespuestaCancelacionClave.safeParse({ success: true, next: 'login' }).success).toBe(true);
   expect(EsquemaRespuestaCancelacionClave.safeParse({ success: true, next: 'projects' }).success).toBe(false);
+});
+
+// --- Recuperación de contraseña (S02) ------------------------------------
+
+test('la solicitud S02 acepta únicamente un email válido y recortado', () => {
+  expect(EsquemaSolicitudRecuperacion.parse({ email: ' persona@empresa.com ' })).toEqual({
+    email: 'persona@empresa.com',
+  });
+  expect(
+    EsquemaSolicitudRecuperacion.safeParse({ email: 'persona@empresa.com', scope: 'admin' }).success,
+  ).toBe(false);
+  expect(EsquemaSolicitudRecuperacion.safeParse({ email: 'sin-formato' }).success).toBe(false);
+});
+
+test('la respuesta pública de recuperación nunca acepta el resultado interno', () => {
+  expect(
+    EsquemaRecuperacionAceptada.safeParse({
+      success: true,
+      message: MENSAJE_GENERICO_RECUPERACION,
+      delivery: 'enviado',
+    }).success,
+  ).toBe(false);
+  expect(
+    EsquemaRecuperacionAceptada.safeParse({
+      success: true,
+      message: MENSAJE_GENERICO_RECUPERACION,
+    }).success,
+  ).toBe(true);
 });

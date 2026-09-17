@@ -49,7 +49,8 @@ test.describe('acceso React — comportamiento', () => {
       '/password/forgot',
     );
 
-    // S02 sigue sin migrar: el enlace debe apuntar al PHP legado, no a una ruta React inventada.
+    // S02 ya migró (Tarea 8): `/password/forgot` es la propia ruta pública React de
+    // recuperación (`password-recovery-react.spec.mjs`), no un destino legado en PHP.
     expect(sesion.total).toBe(1);
   });
 

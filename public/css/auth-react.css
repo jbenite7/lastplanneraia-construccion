@@ -212,7 +212,7 @@
   }
 
   /* El conmutador reutiliza `aia-sidebar__utility`, pensado para la barra lateral. Sobre el
-     lienzo claro del acceso medía rgb(199,212,204) sobre rgb(250,250,250) ≈ 1,5:1 (2026-09-16):
+     lienzo claro del acceso medía 199/212/204 sobre 250/250/250 en RGB ≈ 1,5:1 (2026-09-16):
      ilegible. En esta pantalla toma el texto secundario del tema activo. */
   .aia-auth__cabecera .aia-sidebar__utility,
   .aia-auth__cabecera .aia-sidebar__label {

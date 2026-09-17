@@ -380,13 +380,14 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   React, y eso pide su propio ajuste. Dos arreglos posibles: adaptar el validador a manifiestos con
   fuentes `.tsx`, o al menos que su mensaje no diga `PASS` cuando saltó. Solo `project-selector.json`
   declara hoy la clave.
-- [ ] **Migrar recuperación de clave — es lo siguiente en Entrega 0:** `password-forgot` y
-  `password-reset` siguen en PHP por decisión R12. Sus planes ya existen y son decision-complete:
-  `docs/superpowers/plans/2026-08-30-s02-recuperar-clave-react.md` (precondición: S01 completo —
-  cumplida) y `…-s03-restablecer-clave-react.md`. S02 activa el incremento mínimo de `BrowserRouter`
-  y consume `MarcoAcceso`, `auth.ts`, `auth-react.css` y `SpaRouter::coincideConMapa()`, todos ya
-  construidos. **No arranca hasta que el PR #20 esté en `main`**: el gate de cierre de frente es
-  bloqueante y S02 se apoyaría en commits sin publicar.
+- [x] **Migrar recuperación de clave (S02) — código cerrado el 2026-09-16, pendiente de PR/merge:**
+  `password-forgot` vive en React (`/password/forgot`, `POST /api/auth/password/forgot`) y su vista
+  PHP se retiró por autorización expresa de Felipe («sí, retira la pantalla PHP», 2026-09-16), tras
+  aprobar los 8 candidatos visuales. Estado `MIGRATION_COMPLETE` en la rama
+  `s02-recuperar-clave-react`; cierre y verificación en
+  `docs/superpowers/plans/2026-08-30-s02-recuperar-clave-react.md` (`## Cierre`). Lo siguiente de
+  la serie es `…-s03-restablecer-clave-react.md` (`password-reset` sigue en PHP), que no arranca
+  hasta que S02 esté en `main`.
 - [ ] **Resolver el menú contextual de Semanas:** definir su comportamiento y su lugar en la
   navegación React antes de migrar los módulos de programación.
 - [ ] **Definir QA y goldens durante la convivencia:** decidir por cada módulo si su golden PHP se
@@ -864,12 +865,19 @@ estado por defecto mientras Felipe no reparta.
   `## Cierre` de cada plan: **S01 cumple el criterio en cuanto este frente esté en `main`**
   (paridad visual: marca, íconos, bienvenida y pie del legado) — código completo en la rama
   `s01-paridad-visual`, pendiente de PR/merge; ver
-  `docs/superpowers/plans/2026-09-16-s01-paridad-visual.md`; **S02–S27 no están implementadas**, sus cierres lo dicen expresamente.
+  `docs/superpowers/plans/2026-09-16-s01-paridad-visual.md`; **S02 cumple el criterio cuando esté
+  en `main`** — código cerrado en la rama `s02-recuperar-clave-react`, pendiente de PR/merge; quedó
+  **sin legado de respaldo** por autorización expresa de Felipe del 2026-09-16 («sí, retira la
+  pantalla PHP»), que aplica solo a S02 y no generaliza la cláusula a otras superficies; ver
+  `docs/superpowers/plans/2026-08-30-s02-recuperar-clave-react.md`; **S03–S27 no están
+  implementadas**, sus cierres lo dicen expresamente.
   `pdc-app/` y `ct-app/` ya son React pero van por fuera de esa serie, así que cuentan solo cuando
   su plan S lo acepte. Consecuencia: producción sigue en `fix/pdc-duraciones-pasos` hasta entonces,
   y cualquier urgencia de producción es un hotfix sobre esa rama que después se trae a `main`.
-- **Decisión abierta (2026-09-16):** si el respaldo legado de `/login` debe poder activarse sin
-  deploy — hoy exige quitar `'/login'` de `SpaRouter::RUTAS_EXACTAS_MIGRADAS` y publicar.
+- **Resuelto el 2026-09-16 (decisión de Felipe): el login legado NO necesita poder activarse como
+  respaldo.** «Si React ya funciona igual, no es necesario mantenerlo.» Aplica al acceso de S01; si la
+  cláusula «con el legado disponible como respaldo» del criterio de deploy cae también para las demás
+  superficies se le pregunta aparte, no se infiere de esta respuesta.
 - **Gobierno del catálogo de duraciones desde `/admin/`** (decisión de Felipe, 2026-09-01):
   frente propio. Contexto: `docs/superpowers/specs/2026-09-01-duraciones-por-obra-design.md` §3.2.
 - **Diferidos del triaje final de duraciones por obra**, ninguno bloqueante: e2e con paso

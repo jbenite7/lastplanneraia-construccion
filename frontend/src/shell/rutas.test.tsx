@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, test, vi } from 'vitest';
+import { App } from '../App';
 import { Rutas } from './rutas';
 
 const csrfToken = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
@@ -375,4 +376,176 @@ test('con configuracionRuntime inválida se ve una alerta recuperable, sin llama
 
   expect(await screen.findByRole('alert')).toBeInTheDocument();
   expect(fetchEspia).not.toHaveBeenCalled();
+});
+
+// --- S02: la ruta pública de recuperación prevalece sobre el estado de sesión (Tarea 4) ----
+
+const PENDIENTE_CAMBIO_CLAVE = {
+  state: 'password_change_required',
+  authenticated: false,
+  reason: null,
+  user: null,
+  project: null,
+  capabilities: {},
+  navigation: { bi: null, groups: [] },
+  week: null,
+  csrfToken,
+};
+
+const AUTENTICADA_SIN_PROYECTO = { ...AUTENTICADA_CON_PROYECTO, project: null, week: null };
+
+test.each(['/password/forgot', '/app/password/forgot'])('%s muestra la recuperación de clave', async (ruta) => {
+  window.history.pushState({}, '', ruta);
+  responderSesion(ANONIMA_MISSING_SESSION);
+
+  render(<Rutas />);
+
+  expect(await screen.findByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /bienvenido a last planner aia/i })).not.toBeInTheDocument();
+});
+
+test.each([
+  ['anónima', ANONIMA_MISSING_SESSION],
+  ['con cambio de clave pendiente', PENDIENTE_CAMBIO_CLAVE],
+  ['autenticada sin proyecto', AUTENTICADA_SIN_PROYECTO],
+  ['autenticada con proyecto', AUTENTICADA_CON_PROYECTO],
+])('la recuperación prevalece sobre una sesión %s', async (_nombre, cuerpo) => {
+  window.history.pushState({}, '', '/password/forgot');
+  responderSesion(cuerpo);
+
+  render(<Rutas />);
+
+  expect(await screen.findByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /bienvenido a last planner aia/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Actualizar y continuar' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+});
+
+test('en la ruta de recuperación, el bootstrap en vuelo muestra "Cargando…" y un fallo la alerta recuperable', async () => {
+  window.history.pushState({}, '', '/password/forgot');
+  vi.stubGlobal('fetch', vi.fn()
+    .mockRejectedValueOnce(new Error('red no disponible'))
+    .mockReturnValueOnce(new Promise<Response>(() => {})));
+
+  render(<Rutas />);
+
+  expect(screen.getByRole('status')).toHaveTextContent(/cargando/i);
+  expect(await screen.findByRole('alert')).toHaveTextContent(/no pudimos conectar/i);
+  expect(screen.queryByRole('heading', { name: 'Restablecer contraseña' })).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: /reintentar/i }));
+  expect(await screen.findByRole('status')).toHaveTextContent(/cargando/i);
+});
+
+test('403 csrf_invalid: "Actualizar sesión" revalida sin perder el correo ni desmontar la pantalla', async () => {
+  // Ronda de arreglo 1 (Tarea 9, S02-UX-06): `alRevalidar` es `recargar()`, que pone la sesión en
+  // `cargando` mientras pide un bootstrap nuevo. Antes de este fix, `RutaRecuperacion` trataba
+  // CUALQUIER `cargando` como "sin sesión todavía" y desmontaba `PantallaRecuperarClave` en favor
+  // de `<p role="status">Cargando…</p>` — perdiendo el correo tecleado y el foco (reproducido en
+  // `.superpowers/sdd/2026-08-30-s02-recuperar-clave-react/revisor-403.mjs`).
+  window.history.pushState({}, '', '/password/forgot');
+
+  let resolverSegundaSesion: (respuesta: Response) => void = () => {};
+  const segundaSesion = new Promise<Response>((resolve) => {
+    resolverSegundaSesion = resolve;
+  });
+  let llamadasSesion = 0;
+
+  vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes('/api/auth/password/forgot')) {
+      return Promise.resolve(new Response(JSON.stringify({
+        success: false,
+        code: 'csrf_invalid',
+        message: 'No fue posible validar la solicitud. Intenta nuevamente.',
+        error: {
+          codigo: 'csrf_invalid',
+          mensaje: 'No fue posible validar la solicitud. Intenta nuevamente.',
+        },
+      }), { status: 403 }));
+    }
+
+    llamadasSesion += 1;
+    if (llamadasSesion === 1) {
+      return Promise.resolve(new Response(JSON.stringify(ANONIMA_MISSING_SESSION), { status: 200 }));
+    }
+    return segundaSesion;
+  }));
+
+  render(<Rutas />);
+
+  expect(await screen.findByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
+
+  const campo = screen.getByLabelText('Correo electrónico') as HTMLInputElement;
+  fireEvent.change(campo, { target: { value: 'persona@example.test' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Enviar enlace' }));
+
+  await screen.findByRole('button', { name: 'Actualizar sesión' });
+  fireEvent.click(screen.getByRole('button', { name: 'Actualizar sesión' }));
+
+  // Mientras la revalidación sigue en vuelo: la pantalla de recuperación sigue montada, con el
+  // correo intacto — nunca "Cargando…" ni el login.
+  expect(screen.getByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
+  expect(screen.queryByText(/cargando/i)).not.toBeInTheDocument();
+  expect((screen.getByLabelText('Correo electrónico') as HTMLInputElement).value).toBe('persona@example.test');
+
+  resolverSegundaSesion(new Response(JSON.stringify(ANONIMA_MISSING_SESSION), { status: 200 }));
+
+  await waitFor(() => expect(screen.getByLabelText('Correo electrónico')).toHaveFocus());
+  expect((screen.getByLabelText('Correo electrónico') as HTMLInputElement).value).toBe('persona@example.test');
+});
+
+test('403 csrf_invalid: si la revalidación falla, la pantalla sigue montada con el correo y avisa dentro', async () => {
+  // Ola final de la revisión S02: con `/api/session` en 500 durante "Actualizar sesión", la ruta
+  // pública caía en `ErrorArranqueRecuperable` («No pudimos conectar con la aplicación») y se
+  // perdía el correo. Tras un arranque previo, el fallo se cuenta dentro de la pantalla.
+  window.history.pushState({}, '', '/password/forgot');
+  let llamadasSesion = 0;
+
+  vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes('/api/auth/password/forgot')) {
+      return Promise.resolve(new Response(JSON.stringify({
+        success: false,
+        code: 'csrf_invalid',
+        message: 'No fue posible validar la solicitud. Intenta nuevamente.',
+        error: { codigo: 'csrf_invalid', mensaje: 'No fue posible validar la solicitud. Intenta nuevamente.' },
+      }), { status: 403 }));
+    }
+
+    llamadasSesion += 1;
+    if (llamadasSesion === 2) {
+      return Promise.resolve(new Response('<h1>Error</h1>', { status: 500, headers: { 'Content-Type': 'text/html' } }));
+    }
+    return Promise.resolve(new Response(JSON.stringify(ANONIMA_MISSING_SESSION), { status: 200 }));
+  }));
+
+  render(<Rutas />);
+
+  const campo = (await screen.findByLabelText('Correo electrónico')) as HTMLInputElement;
+  fireEvent.change(campo, { target: { value: 'persona@example.test' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Enviar enlace' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Actualizar sesión' }));
+
+  expect(await screen.findByText('No pudimos actualizar la sesión. Intenta nuevamente.')).toBeInTheDocument();
+  expect(screen.queryByText(/no pudimos conectar con la aplicación/i)).not.toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
+  expect((screen.getByLabelText('Correo electrónico') as HTMLInputElement).value).toBe('persona@example.test');
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Actualizar sesión' })).toHaveFocus());
+
+  // Un segundo intento con `/api/session` sano limpia el aviso y devuelve el foco al campo.
+  fireEvent.click(screen.getByRole('button', { name: 'Actualizar sesión' }));
+  await waitFor(() => expect(screen.queryByText('No pudimos actualizar la sesión. Intenta nuevamente.')).not.toBeInTheDocument());
+  await waitFor(() => expect(screen.getByLabelText('Correo electrónico')).toHaveFocus());
+  expect((screen.getByLabelText('Correo electrónico') as HTMLInputElement).value).toBe('persona@example.test');
+  expect(llamadasSesion).toBe(3);
+});
+
+test('App monta la recuperación de clave en /password/forgot', async () => {
+  window.history.pushState({}, '', '/password/forgot');
+  responderSesion(AUTENTICADA_CON_PROYECTO);
+
+  render(<App />);
+
+  expect(await screen.findByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
 });

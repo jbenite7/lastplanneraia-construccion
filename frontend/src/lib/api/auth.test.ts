@@ -1,5 +1,5 @@
 import { ApiError } from './cliente';
-import { cambiarClave, cancelarCambioClave, iniciarSesion } from './auth';
+import { cambiarClave, cancelarCambioClave, iniciarSesion, solicitarRecuperacion } from './auth';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -82,4 +82,56 @@ test('cancelarCambioClave llama a /api/auth/password/cancel con el header CSRF y
   const opciones = fetchFalso.mock.calls[0]?.[1] as RequestInit;
   const encabezados = new Headers(opciones.headers);
   expect(encabezados.get('X-CSRF-Token')).toBe(CSRF);
+});
+
+// --- solicitarRecuperacion ---------------------------------------------
+
+const MENSAJE_GENERICO_RECUPERACION =
+  'Si el correo existe y está habilitado, enviaremos un enlace de restablecimiento en unos minutos.';
+
+test('solicitarRecuperacion recorta el email, envía CSRF y devuelve el mensaje genérico', async () => {
+  const fetchFalso = vi
+    .fn()
+    .mockResolvedValue(respuesta({ success: true, message: MENSAJE_GENERICO_RECUPERACION }));
+  vi.stubGlobal('fetch', fetchFalso);
+
+  const resultado = await solicitarRecuperacion(' persona@empresa.com ', CSRF);
+
+  expect(resultado).toEqual({ success: true, message: MENSAJE_GENERICO_RECUPERACION });
+  expect(fetchFalso).toHaveBeenCalledOnce();
+  expect(fetchFalso).toHaveBeenCalledWith(
+    '/api/auth/password/forgot',
+    expect.objectContaining({ method: 'POST' }),
+  );
+  const opciones = fetchFalso.mock.calls[0]?.[1] as RequestInit;
+  const encabezados = new Headers(opciones.headers);
+  expect(encabezados.get('X-CSRF-Token')).toBe(CSRF);
+  expect(JSON.parse(opciones.body as string)).toEqual({ email: 'persona@empresa.com' });
+});
+
+test('solicitarRecuperacion rechaza localmente un email sin formato, sin llamar a fetch', async () => {
+  const fetchFalso = vi.fn();
+  vi.stubGlobal('fetch', fetchFalso);
+
+  await expect(solicitarRecuperacion('sin-formato', CSRF)).rejects.toThrow();
+  expect(fetchFalso).not.toHaveBeenCalled();
+});
+
+test('solicitarRecuperacion propaga un ApiError tipado cuando el servidor responde 422', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(
+      respuesta(
+        { error: { code: 'validation_failed', fields: { email: 'correo inválido' } } },
+        422,
+      ),
+    ),
+  );
+
+  const error = await solicitarRecuperacion('persona@empresa.com', CSRF).catch((causa: unknown) => causa);
+
+  expect(error).toBeInstanceOf(ApiError);
+  expect((error as ApiError).tipo).toBe('http');
+  expect((error as ApiError).status).toBe(422);
+  expect((error as ApiError).camposInvalidos?.email).toBe('correo inválido');
 });

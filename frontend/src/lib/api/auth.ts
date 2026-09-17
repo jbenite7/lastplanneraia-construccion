@@ -1,10 +1,13 @@
 import { pedir } from './cliente';
 import {
+  EsquemaRecuperacionAceptada,
   EsquemaRespuestaCambioClave,
   EsquemaRespuestaCancelacionClave,
   EsquemaRespuestaLogin,
   EsquemaSolicitudCambioClave,
   EsquemaSolicitudLogin,
+  EsquemaSolicitudRecuperacion,
+  type RecuperacionAceptada,
   type RespuestaCambioClave,
   type RespuestaCancelacionClave,
   type RespuestaLogin,
@@ -48,5 +51,18 @@ export async function cancelarCambioClave(csrfToken: string): Promise<RespuestaC
     method: 'POST',
     headers: { 'X-CSRF-Token': csrfToken },
     body: JSON.stringify({}),
+  });
+}
+
+export async function solicitarRecuperacion(
+  email: string,
+  csrfToken: string,
+): Promise<RecuperacionAceptada> {
+  const solicitud = EsquemaSolicitudRecuperacion.parse({ email });
+
+  return pedir('/api/auth/password/forgot', EsquemaRecuperacionAceptada, {
+    method: 'POST',
+    headers: { 'X-CSRF-Token': csrfToken },
+    body: JSON.stringify(solicitud),
   });
 }

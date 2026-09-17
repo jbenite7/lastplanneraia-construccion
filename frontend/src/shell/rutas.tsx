@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import type { ConfiguracionRuntime } from '../lib/runtime/configuracion';
 import { AppShell } from './AppShell';
 import { CambioClaveObligatorio } from './auth/CambioClaveObligatorio';
 import { limpiarParametrosAviso, resolverAvisoAcceso } from './auth/avisos';
 import { PantallaLogin } from './auth/PantallaLogin';
+import { PantallaRecuperarClave } from './auth/PantallaRecuperarClave';
 import { SelectorProyecto } from './SelectorProyecto';
 import { SesionProvider, useSesion } from './SesionProvider';
 
@@ -33,10 +34,113 @@ export function Rutas({ configuracionRuntime = CONFIGURACION_APLICACION_POR_DEFE
     return <RutaMantenimiento configuracion={configuracionRuntime} />;
   }
 
+  // Un único `BrowserRouter` para toda la rama de aplicación (S02, Tarea 4). Vive aquí y no en
+  // `App` porque `Rutas` se monta sola en las pruebas y `AppShell` necesita un router alrededor.
+  // Las rutas públicas de acceso se resuelven ANTES de la máquina de estados por sesión: en
+  // `/password/forgot` la pantalla de recuperación se ve igual con sesión anónima, pendiente de
+  // cambio de clave o autenticada. Todo lo demás cae en `RutasSegunSesion`, sin cambios de orden.
   return (
-    <SesionProvider>
-      <RutasSegunSesion />
-    </SesionProvider>
+    <BrowserRouter>
+      <SesionProvider>
+        <Routes>
+          <Route element={<RutaRecuperacion />} path="/password/forgot" />
+          <Route element={<RutaRecuperacion />} path="/app/password/forgot" />
+          <Route element={<RutasSegunSesion />} path="*" />
+        </Routes>
+      </SesionProvider>
+    </BrowserRouter>
+  );
+}
+
+/**
+ * Pantalla de arranque sin resolver o con fallo técnico: compartida por la ruta pública de
+ * recuperación y por la máquina de estados, para que ambas digan lo mismo.
+ */
+function ErrorArranqueRecuperable({ logoutSinConfirmar, recargar }: { logoutSinConfirmar: boolean; recargar: () => Promise<void> }) {
+  return (
+    <section role="alert">
+      <p>
+        {logoutSinConfirmar
+          ? 'Intentamos cerrar tu sesión pero no pudimos confirmarlo con el servidor. Revisa tu conexión e inténtalo de nuevo.'
+          : 'No pudimos conectar con la aplicación. Inténtalo de nuevo.'}
+      </p>
+      <button type="button" onClick={() => void recargar()}>
+        Reintentar
+      </button>
+    </section>
+  );
+}
+
+/**
+ * Ruta pública de recuperación de clave (S02). Espera el bootstrap solo para obtener el token
+ * CSRF; una vez resuelto, ignora el estado de sesión (anónimo, cambio de clave pendiente o
+ * autenticado) y pinta la recuperación.
+ *
+ * **Ronda de arreglo 1 (S02-UX-06):** "Cargando…" solo se pinta en la carga INICIAL, antes de
+ * que exista algún bootstrap. `alRevalidar` (el botón "Actualizar sesión" tras un 403
+ * `csrf_invalid`) es `recargar()`, que pone `estado` en `cargando` y `arranque` en `null`
+ * mientras pide un bootstrap nuevo (`SesionProvider.recargar`) — sin este resguardo, esa
+ * revalidación desmontaba `PantallaRecuperarClave` y perdía el correo tecleado y el foco
+ * (reproducido en `.superpowers/sdd/2026-08-30-s02-recuperar-clave-react/revisor-403.mjs`,
+ * cubierto en `rutas.test.tsx`). `huboArranquePrevio` distingue "nunca hubo sesión" (sí muestra
+ * "Cargando…", como ya prueba el escenario de bootstrap en vuelo/fallido de más abajo) de "ya
+ * hubo una, se está revalidando" (se queda montada la pantalla). `csrfDeUltimoArranque` conserva
+ * el último token conocido durante ese hueco, en vez de mandar uno vacío mientras se resuelve.
+ *
+ * **Ola final de la revisión S02:** la revalidación también puede FALLAR (`/api/session` en 500).
+ * Antes, ese `error_recuperable` reemplazaba la pantalla por `ErrorArranqueRecuperable` y se
+ * perdía el correo. Ahora, si ya hubo un arranque, la pantalla sigue montada y `alRevalidar`
+ * **rechaza**, para que `PantallaRecuperarClave` cuente el fallo dentro («No pudimos actualizar la
+ * sesión») y deje el foco en «Actualizar sesión». `recargar()` no lanza ni devuelve el resultado,
+ * así que la promesa se liquida desde un efecto cuando la sesión sale de `cargando`: leer `estado`
+ * justo después de `await recargar()` daría el valor viejo. `generacion` va en las dependencias
+ * por si React agrupa `cargando` y el resultado final en un solo commit.
+ */
+function RutaRecuperacion() {
+  const { estado, arranque, recargar, logoutSinConfirmar, generacion } = useSesion();
+  const huboArranquePrevio = useRef(false);
+  const csrfDeUltimoArranque = useRef('');
+  const revalidacionPendiente = useRef<{ resolver: () => void; rechazar: (causa: Error) => void } | null>(null);
+
+  useEffect(() => {
+    const pendiente = revalidacionPendiente.current;
+    if (!pendiente || estado === 'cargando') return;
+
+    revalidacionPendiente.current = null;
+    if (estado === 'error_recuperable') {
+      pendiente.rechazar(new Error('No se pudo revalidar la sesión'));
+    } else {
+      pendiente.resolver();
+    }
+  }, [estado, generacion]);
+
+  const alRevalidar = useCallback(
+    () =>
+      new Promise<void>((resolver, rechazar) => {
+        revalidacionPendiente.current = { resolver, rechazar };
+        void recargar();
+      }),
+    [recargar],
+  );
+
+  if (arranque) {
+    huboArranquePrevio.current = true;
+    csrfDeUltimoArranque.current = arranque.csrfToken;
+  }
+
+  if (estado === 'cargando' && !huboArranquePrevio.current) {
+    return <p role="status">Cargando…</p>;
+  }
+
+  if (estado === 'error_recuperable' && !huboArranquePrevio.current) {
+    return <ErrorArranqueRecuperable logoutSinConfirmar={logoutSinConfirmar} recargar={recargar} />;
+  }
+
+  return (
+    <PantallaRecuperarClave
+      csrfToken={arranque?.csrfToken ?? csrfDeUltimoArranque.current}
+      alRevalidar={alRevalidar}
+    />
   );
 }
 
@@ -183,18 +287,7 @@ function RutasSegunSesion() {
       return <p role="status">Cargando…</p>;
 
     case 'error_recuperable':
-      return (
-        <section role="alert">
-          <p>
-            {logoutSinConfirmar
-              ? 'Intentamos cerrar tu sesión pero no pudimos confirmarlo con el servidor. Revisa tu conexión e inténtalo de nuevo.'
-              : 'No pudimos conectar con la aplicación. Inténtalo de nuevo.'}
-          </p>
-          <button type="button" onClick={() => void recargar()}>
-            Reintentar
-          </button>
-        </section>
-      );
+      return <ErrorArranqueRecuperable logoutSinConfirmar={logoutSinConfirmar} recargar={recargar} />;
 
     case 'cambio_clave_requerido':
       return (
@@ -239,15 +332,15 @@ function RutasSegunSesion() {
       // `AppShell` es la única raíz de rutas cliente: los módulos de S01-S27 cuelgan de su
       // `Outlet` como rutas hijas (Tarea 4, checkpoint T01 "un solo contrato de shell/outlet,
       // ninguna superficie migrada todavía" — de ahí que hoy no haya ninguna `<Route>` hija).
+      // El router es el único `BrowserRouter` que monta `Rutas` (S02, Tarea 4): aquí solo se
+      // declaran rutas descendientes bajo el `path="*"` de arriba, nunca un segundo router.
       return (
-        <BrowserRouter>
-          <Routes>
-            <Route
-              element={<AppShell cerrarSesion={cerrarSesion} generacionSesion={generacion} recargar={recargar} sesion={autenticado} />}
-              path="*"
-            />
-          </Routes>
-        </BrowserRouter>
+        <Routes>
+          <Route
+            element={<AppShell cerrarSesion={cerrarSesion} generacionSesion={generacion} recargar={recargar} sesion={autenticado} />}
+            path="*"
+          />
+        </Routes>
       );
   }
 }
