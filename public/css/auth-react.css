@@ -103,16 +103,26 @@
     white-space: nowrap;
   }
 
-  /* Bienvenida y subtítulo (paridad visual con el legado, 2026-09-16). */
+  /* Bienvenida y subtítulo (paridad visual con el legado, 2026-09-16). Tamaño, peso, interlineado,
+     espaciado de letras y margen calcados de `.login-title`/`.login-subtitle`
+     (`public/css/login-brand-unified.css`) — ronda de arreglo 1: el h1 salía mucho más grande que
+     en el legado (tres líneas a 390x844, dos líneas grandes a 1180x820). */
   .aia-auth__layout > .aia-card > h1 {
     text-align: center;
     font-family: var(--ds-font-display);
+    font-size: clamp(1.2rem, 2.7vw, 1.55rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    margin: 0;
   }
 
   .aia-auth__subtitulo {
-    margin-block: 0 var(--ds-space-4);
+    margin-block: 0.45rem var(--ds-space-4);
     text-align: center;
     color: var(--ds-active-text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.45;
   }
 
   .aia-auth__pie .aia-copy {
