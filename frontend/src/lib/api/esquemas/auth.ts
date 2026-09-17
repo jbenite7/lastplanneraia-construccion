@@ -33,8 +33,23 @@ export const EsquemaRespuestaCancelacionClave = z.object({
   next: z.literal('login'),
 });
 
+export const EsquemaSolicitudRecuperacion = z
+  .object({
+    email: z.string().trim().email(),
+  })
+  .strict();
+
+export const EsquemaRecuperacionAceptada = z
+  .object({
+    success: z.literal(true),
+    message: z.string().min(1),
+  })
+  .strict();
+
 export type SolicitudLogin = z.infer<typeof EsquemaSolicitudLogin>;
 export type RespuestaLogin = z.infer<typeof EsquemaRespuestaLogin>;
 export type SolicitudCambioClave = z.infer<typeof EsquemaSolicitudCambioClave>;
 export type RespuestaCambioClave = z.infer<typeof EsquemaRespuestaCambioClave>;
 export type RespuestaCancelacionClave = z.infer<typeof EsquemaRespuestaCancelacionClave>;
+export type SolicitudRecuperacion = z.infer<typeof EsquemaSolicitudRecuperacion>;
+export type RecuperacionAceptada = z.infer<typeof EsquemaRecuperacionAceptada>;
