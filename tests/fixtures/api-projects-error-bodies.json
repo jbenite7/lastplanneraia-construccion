@@ -1,18 +1,4 @@
 {
-    "401_session_invalid": {
-        "ruta": "/api/proyectos",
-        "status": 401,
-        "origen": "render-puro",
-        "cuerpo": {
-            "success": false,
-            "code": "session_invalid",
-            "message": "Tu sesión no está activa. Vuelve a iniciar sesión.",
-            "error": {
-                "codigo": "session_invalid",
-                "mensaje": "Tu sesión no está activa. Vuelve a iniciar sesión."
-            }
-        }
-    },
     "403_csrf_invalid": {
         "ruta": "/api/proyectos/seleccionar",
         "status": 403,

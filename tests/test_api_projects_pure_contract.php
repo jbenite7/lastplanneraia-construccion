@@ -232,7 +232,11 @@ checkProyectos(
     $s === 401 && bloqueErrorProyectos($b, 'session_invalid', null) && $sinSesion->listCalls === [],
     'index: sin sesión responde 401 session_invalid sin llamar al servicio',
 );
-$capturas['401_session_invalid'] = ['ruta' => '/api/proyectos', 'status' => $s, 'raw' => $raw];
+// A propósito NO se captura en la fixture: este 401 es defensa en profundidad y el navegador no
+// lo recibe nunca. `/api/proyectos*` no está en `$publicRoutes`, así que
+// `SessionMiddleware::finishUnauthorized()` corta antes con
+// `{success,sessionExpired,reason,redirect}` — otra forma, ya cubierta por `cliente.test.ts`.
+// Publicarlo como cuerpo de contrato afirmaría sobre un cuerpo que no circula.
 $_SESSION['usuario'] = 'fixture';
 
 // --- select() -------------------------------------------------------------------------------

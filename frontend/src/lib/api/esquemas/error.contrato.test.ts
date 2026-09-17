@@ -87,12 +87,14 @@ test('el archivo de /api/auth/password/reset trae los seis cuerpos que el contra
 /**
  * `/api/proyectos*` (S04): los captura `tests/test_api_projects_pure_contract.php` del render real
  * del controlador en proceso (`origen: render-puro`, sin DB), con el mismo flag
- * `LPS_REGENERAR_CUERPOS=1`. El rechazo de selección no está aquí a propósito: es un 200 con
- * `{success:false, message, route:null}`, no un error de transporte.
+ * `LPS_REGENERAR_CUERPOS=1`. Dos ausencias a propósito: el rechazo de selección es un 200 con
+ * `{success:false, message, route:null}`, no un error de transporte; y el 401 del controlador es
+ * defensa en profundidad que el navegador nunca recibe, porque `/api/proyectos*` no es ruta
+ * pública y `SessionMiddleware::finishUnauthorized()` corta antes con
+ * `{success,sessionExpired,reason,redirect}` — esa forma la cubre `cliente.test.ts`.
  */
-test('el archivo de /api/proyectos trae los cinco cuerpos que el contrato vigila', () => {
+test('el archivo de /api/proyectos trae los cuatro cuerpos que el contrato vigila', () => {
   expect(casosProyectos.map(([nombre]) => nombre).sort()).toEqual([
-    '401_session_invalid',
     '403_csrf_invalid',
     '422_validation_error',
     '500_invalid_landing',
