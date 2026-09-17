@@ -7,7 +7,6 @@ import {
   arranqueAnonimo,
   arranqueAutenticadoSinProyecto,
   arranqueCambioClave,
-  cuerpoError,
   fijarTema,
   simularSesion,
 } from './support/login-react-fixtures.mjs';
@@ -19,8 +18,13 @@ import {
  * máquina de estados por sesión, así que se ve igual anónimo, con cambio de clave
  * pendiente o autenticado — la sección "Sesión" ejerce las tres.
  *
- * **Todo el backend está simulado con `page.route()`.** Ningún test toca SMTP ni la base
- * de datos: `/api/session` y `/api/auth/password/forgot` se sirven desde dobles.
+ * **Casi todo el backend está simulado con `page.route()`.** Ningún test toca SMTP ni la base
+ * de datos. La excepción, a propósito, es el caso «403 real»: deja pasar
+ * `/api/auth/password/forgot` al servidor con un CSRF que no conoce, que responde 403 antes de
+ * llegar al servicio de correo. Existe porque los dobles de error, escritos a mano, emitían un
+ * bloque `error` que el controlador real no emitía, y ocultaron que un 403/503 real mostraba
+ * «/api/auth/password/forgot respondió 403» (ola final de la revisión S02). Los dobles de error
+ * de este archivo copian la forma real con `cuerpoErrorRecuperacion()`.
  */
 
 const RUTA_FORGOT = '/api/auth/password/forgot';
@@ -45,6 +49,22 @@ async function instalarRecuperacion(page, responder) {
   return llamadas;
 }
 
+/**
+ * Cuerpo de error tal como lo emite `PasswordRecoveryApiController::respondError()`: claves planas
+ * con `fieldErrors` como listas y bloque `error` con `campos` como strings, que solo existe si hay
+ * errores de campo. No se usa `cuerpoError()` de las fixtures del login: su `fieldErrors` es plano
+ * y no es la forma de este endpoint.
+ */
+function cuerpoErrorRecuperacion({ code, message, campos = null }) {
+  return {
+    success: false,
+    code,
+    message,
+    ...(campos ? { fieldErrors: Object.fromEntries(Object.entries(campos).map(([campo, texto]) => [campo, [texto]])) } : {}),
+    error: { codigo: code, mensaje: message, ...(campos ? { campos } : {}) },
+  };
+}
+
 async function esperarPantallaDeRecuperacion(page) {
   await expect(page.getByRole('heading', { level: 1, name: 'Restablecer contraseña' })).toBeVisible();
   await expect(page.locator('h1')).toHaveCount(1);
@@ -65,6 +85,8 @@ test.describe('recuperación React — comportamiento', () => {
 
     await expect(page.getByRole('status')).toContainText(MENSAJE_GENERICO);
     expect(forgot.total).toBe(1);
+    // El `disabled` del envío suelta el foco: tras el éxito vuelve al campo, nunca a BODY.
+    await expect(page.getByLabel('Correo electrónico')).toBeFocused();
     // Tras el éxito el campo se limpia: no queda el correo tecleado en pantalla.
     await expect(page.getByLabel('Correo electrónico')).toHaveValue('');
   });
@@ -128,10 +150,10 @@ test.describe('recuperación React — comportamiento', () => {
     await simularSesion(page, [arranqueAnonimo()]);
     const forgot = await instalarRecuperacion(page, () => ({
       status: 422,
-      cuerpo: cuerpoError({
+      cuerpo: cuerpoErrorRecuperacion({
         code: 'validation_error',
         message: 'Revisa el correo electrónico.',
-        fieldErrors: { email: 'Ingresa un correo electrónico válido.' },
+        campos: { email: 'Ingresa un correo electrónico válido.' },
       }),
     }));
 
@@ -156,7 +178,7 @@ test.describe('recuperación React — comportamiento', () => {
     const sesion = await simularSesion(page, [arranqueAnonimo(), arranqueAnonimo()]);
     const forgot = await instalarRecuperacion(page, () => ({
       status: 403,
-      cuerpo: cuerpoError({
+      cuerpo: cuerpoErrorRecuperacion({
         code: 'csrf_invalid',
         message: 'No fue posible validar la solicitud. Intenta nuevamente.',
       }),
@@ -180,12 +202,62 @@ test.describe('recuperación React — comportamiento', () => {
     await expect(page.getByLabel('Correo electrónico')).toBeFocused();
   });
 
+  test('403 real: el servidor rechaza un CSRF desconocido y la alerta muestra el mensaje humano, nunca la ruta ni el status', async ({ page }) => {
+    // Sin doble de `/api/auth/password/forgot`: el POST llega al servidor real con el CSRF de
+    // `arranqueAnonimo()`, que esta sesión de PHP no emitió. El controlador valida CSRF antes de
+    // leer el body, así que responde 403 sin llegar al servicio de correo.
+    await simularSesion(page, [arranqueAnonimo()]);
+
+    await page.goto('/password/forgot');
+    await esperarPantallaDeRecuperacion(page);
+    await page.getByLabel('Correo electrónico').fill('nadie@example.invalid');
+    const respuesta = page.waitForResponse((r) => r.url().includes(RUTA_FORGOT) && r.request().method() === 'POST');
+    await page.getByRole('button', { name: 'Enviar enlace' }).click();
+    expect((await respuesta).status()).toBe(403);
+
+    const alerta = page.getByRole('alert');
+    await expect(alerta).toContainText('No fue posible validar la solicitud. Intenta nuevamente.');
+    await expect(alerta).not.toContainText('/api/');
+    await expect(alerta).not.toContainText('respondió');
+    await expect(alerta).not.toContainText('403');
+    await expect(page.getByRole('button', { name: 'Actualizar sesión' })).toBeFocused();
+    await expect(page.getByLabel('Correo electrónico')).toHaveValue('nadie@example.invalid');
+  });
+
+  test('403 + revalidación fallida: la pantalla sigue montada, conserva el correo y avisa dentro', async ({ page }) => {
+    // `/api/session`: arranque sano, 500 al revalidar, sano al reintentar.
+    const sesion = await simularSesion(page, [arranqueAnonimo(), 500, arranqueAnonimo()]);
+    const forgot = await instalarRecuperacion(page, () => ({
+      status: 403,
+      cuerpo: cuerpoErrorRecuperacion({ code: 'csrf_invalid', message: 'No fue posible validar la solicitud. Intenta nuevamente.' }),
+    }));
+
+    await page.goto('/password/forgot');
+    await page.getByLabel('Correo electrónico').fill(CORREO);
+    await page.getByRole('button', { name: 'Enviar enlace' }).click();
+    await page.getByRole('button', { name: 'Actualizar sesión' }).click();
+
+    await expect(page.getByRole('alert')).toContainText('No pudimos actualizar la sesión. Intenta nuevamente.');
+    await expect(page.getByText(/no pudimos conectar con la aplicación/i)).toHaveCount(0);
+    await esperarPantallaDeRecuperacion(page);
+    await expect(page.getByLabel('Correo electrónico')).toHaveValue(CORREO);
+    await expect(page.getByRole('button', { name: 'Actualizar sesión' })).toBeFocused();
+    expect(sesion.total).toBe(2);
+
+    await page.getByRole('button', { name: 'Actualizar sesión' }).click();
+    await expect.poll(() => sesion.total).toBe(3);
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    await expect(page.getByLabel('Correo electrónico')).toHaveValue(CORREO);
+    await expect(page.getByLabel('Correo electrónico')).toBeFocused();
+    expect(forgot.total).toBe(1);
+  });
+
   test('503: alerta con el copy del propio servidor, foco en la alerta y correo preservado', async ({ page }) => {
     const MENSAJE_SERVIDOR = 'El servicio de recuperación no está disponible en este momento.';
     await simularSesion(page, [arranqueAnonimo()]);
     const forgot = await instalarRecuperacion(page, () => ({
       status: 503,
-      cuerpo: cuerpoError({ code: 'recovery_unavailable', message: MENSAJE_SERVIDOR }),
+      cuerpo: cuerpoErrorRecuperacion({ code: 'recovery_unavailable', message: MENSAJE_SERVIDOR }),
     }));
 
     await page.goto('/password/forgot');
