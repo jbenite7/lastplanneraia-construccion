@@ -1381,3 +1381,122 @@ candidatos visuales están aprobados sin regeneración silenciosa. Queda `MIGRAT
 únicamente después del gate post-rollout de Task 10, su commit y una reverificación del SHA que
 autoriza retirar VIEW-02 y el POST legacy. Ninguno de esos estados autoriza deploy, DDL/DML, cambios
 RLS, `/admin/`, correo real o modificación de S03.
+
+## Cierre
+
+**Estado:** `MIGRATION_COMPLETE` en la rama `s02-recuperar-clave-react`, **pendiente de PR y merge a
+`main`**. La recuperación de clave vive en React (`/password/forgot`, API
+`POST /api/auth/password/forgot`), la vista PHP `views/auth/password-forgot.view.php` y su
+controlador legado se retiraron, y los goldens aprobados están congelados. No autoriza deploy.
+
+**Autorización de Felipe (2026-09-16, chat):** «Aprobados» sobre los 8 candidatos visuales
+(sha256 en `.superpowers/sdd/2026-08-30-s02-recuperar-clave-react/candidatos-s02.sha256`) y
+«sí, retira la pantalla PHP», que abrió la Tarea 10. S02 queda **sin legado de respaldo** por esa
+autorización expresa; no se generaliza a otras superficies.
+
+**Tareas y commits** (del ledger `progress.md`):
+
+| Tarea | Commits |
+|---|---|
+| Previo (login legado sin respaldo activable) | `3cc20207` |
+| Task 1 | `3cc20207..c2e29d5c` |
+| Task 2 | `c2e29d5c..e162bfd4` |
+| Task 3 | `e162bfd4..977236d2` |
+| Task 4 | `977236d2..ca6b03b2` |
+| Task 5 | `ca6b03b2..9d81c5c9` |
+| Task 6 | `9d81c5c9..c73342ce` |
+| Task 7 | `c73342ce..318d5d9c` |
+| Task 8 | `318d5d9c..531b6e50` |
+| Task 9 | `531b6e50..e87d749f` (1 ronda de arreglo) |
+| Task 9b (goldens aprobados) | `2a27fb54` |
+| Task 10 (retiro de VIEW-02) | `2a27fb54..85295d8b` (1 ronda de arreglo) |
+| Ola final de la revisión | `85295d8b..2d74383b` + este cierre |
+
+La ola final: `4c3021db` (bloque `error` en la API), `869e09c3` (foco e `inputMode`), `9bb25ef9`
+(revalidación fallida no desmonta la pantalla), `74bfd32d` (403 real y revalidación fallida en
+navegador), `d80d0ce0` (frontera sin rollback S02), `1d117532` (bundle), `2d74383b` (wiki de rutas).
+
+**Verificación medida (2026-09-16, sobre `2d74383b`, contenedor efímero `lps-s02` en `:8097`):**
+- `npm --prefix frontend test` → 51 archivos, 620 tests, RC=0.
+- `npm run frontend:typecheck` RC=0; `npm run frontend:build` RC=0 (bundle idéntico al commiteado).
+- `tests/test_api_password_recovery_contract.php` RC=0 (incluye el bloque `error` en 403/422/503);
+  `tests/test_api_password_recovery_http.php` RC=0; `tests/test_spa_frontera.php` RC=0;
+  `tests/test_spa_frontera_http.php` RC=0; `tests/test_api_auth_contract.php` RC=0.
+- `node tests/test_login_design_system_contract.mjs` RC=0; `npm run test:design-system:static` RC=0;
+  `npm run css:minify:check` RC=0; `npm run test:wiki` RC=0.
+- `scripts/run-php-tests.php --nivel=http` → 110 scripts en verde, PHPUnit 31 clases en verde, RC=0.
+- Playwright `password-recovery-react.spec.mjs` + `login-react.spec.mjs` +
+  `shell-control-actividad.spec.mjs` → 38 passed, RC=0.
+- Goldens `password-recovery-react.visual.mjs --grep golden` con `S02_GOLDENS_APROBADOS=1` → 8
+  passed, RC=0 (el foco al montar no los movió: el visual quita el foco antes de capturar).
+- `git diff --check` RC=0.
+
+**Rulings (del ledger, en orden, con su costo):**
+1. El plan de agosto se ejecuta con las correcciones de `correcciones.md` en vez de reescribirlo —
+   las diferencias son de nombres/infra/tema, no de diseño — costo si fuera error: un implementador
+   sigue el texto viejo; mitigado pasando `correcciones.md` a cada dispatch y revisor.
+2. Botón «Enviar enlace» en tipo oración (no «ENVIAR ENLACE» del legado ni de S02-UX-04),
+   consistente con «Entrar» aprobado en S01 — costo si fuera error: cambiar un texto y sus tests.
+3. R-T10: la Tarea 10 no se ejecuta sin preguntar a Felipe; su respuesta sobre el respaldo fue para
+   el login y no se generaliza — costo: una pregunta al presentar candidatos.
+4. Tareas 1–9 seguidas; paradas en candidatos visuales y Tarea 10 — costo: ninguno.
+5. Biome no cubre `frontend/`; para TS el gate es typecheck + vitest — costo: ninguno, es la
+   configuración del repo.
+6. El rebuild del bundle y los specs de §10 contra `:8097` se corren en las Tareas 7 y 9, no en cada
+   tarea de UI — costo si fuera error: una regresión del shell se detecta dos tareas después.
+7. La Tarea 7 no crea las clases del plan (`aia-auth__field`, …): reutiliza `aia-field`,
+   `aia-helper`, `aia-alert` y `aia-auth__acciones` de S01 — costo si fuera error: el test del plan
+   pediría selectores inexistentes; se adaptó al nombre real.
+8. `design-system-consumer-smoke.mjs` y `entrypoint-segmentation-dryrun.mjs` esperan head PHP en
+   `/login` y `/password/forgot`; ningún workflow los ejecuta; no se tocan en S02 — costo si fuera
+   error: dos specs manuales siguen desalineados con el corte React.
+9. Se autoriza tocar `frontend/src/shell/rutas.tsx` para S02-UX-06 (la revalidación no desmonta la
+   pantalla) — costo si fuera error: cambio en shell compartido; mitigado con `login-react` y
+   `shell-control-actividad`.
+10. S02-UX-10 solo exige llegar a `/login`; el enlace con recarga es aceptable — costo si fuera
+    error: una recarga de documento al volver al login.
+11. Task 9b: los candidatos aprobados se congelan como goldens igual que S01 aunque el plan no lo
+    pedía — costo si fuera error: 8 PNG y 8 filas de manifiesto de más.
+12. Density compact en las filas 1440×900 de recuperación, igual que el login — costo: ninguno
+    visible.
+13. La re-revisión de la ronda 1 de la Tarea 10 la hace el controlador leyendo el diff completo
+    (cambio solo documental) — costo si fuera error: una imprecisión documental la vería la
+    revisión final.
+14. En la ola final se arreglan el Critical 1, los Important 2–4, el Minor 5 y la aserción inerte de
+    `rutas.test.tsx`; el alias `/app/password/forgot` se conserva para S03; `inputMode` email sí,
+    resumen 422 no — costo si fuera error: detalle menor de spec pendiente.
+15. `TASKS.md` registra S02 como `MIGRATION_COMPLETE` sin legado de respaldo por autorización
+    expresa de Felipe del 2026-09-16, sin generalizar la cláusula del criterio de deploy — costo:
+    ninguno, es texto.
+
+**Correcciones de ejecución (resumen de `correcciones.md`):** el plan de agosto se ejecutó con
+correcciones porque el código había cambiado: rama propia `s02-recuperar-clave-react`; tema de
+entrada **claro** (ambos contractuales); `ApiError` con `camposInvalidos` en vez de
+`ErrorApi`/`fieldErrors`; un único `BrowserRouter` en `rutas.tsx` con la ruta pública resuelta antes
+del switch por sesión; `MarcoAcceso` de S01 reutilizado; **paridad visual** con el legado
+(subtítulo, íconos de sobre y avión, placeholder); espejo `public/dist-css/` obligatorio al editar
+CSS; Biome solo sobre archivos tocados; Docker **efímero** (`lps-s02`, `:8097`) en vez del
+contenedor compartido; goldens solo con aprobación de Felipe.
+
+**Minors que esperan (sin bloquear el cierre):**
+- Ternario anidado del destino del foco en `PantallaRecuperarClave.tsx` (efecto de `focoPendiente`).
+- `rutas.tsx` (`RutaRecuperacion`) sigue escribiendo `ref.current` durante el render (idempotente).
+- `design-system-consumer-smoke.mjs` y `entrypoint-segmentation-dryrun.mjs` siguen esperando head
+  PHP en `/login` y `/password/forgot` (ruling 8).
+- `docs/design-system/auditoria/modulos/ds-f0-autenticacion.md:38` lista la vista retirada (reporte
+  fechado).
+- El alias `/app/password/forgot` sigue vivo; retirarlo en S03.
+- El resumen de error del 422 que pedía la spec no se implementó: el error va asociado al campo
+  (`aria-describedby`), que es el único campo del formulario.
+
+**Lecciones:**
+- **Fixtures de error que no copian al servidor real ocultaron un defecto crítico.** Los dobles de
+  Playwright y de vitest emitían el bloque `error` anidado que lee `cliente.ts`; el controlador real
+  solo emitía claves planas. Todo estaba en verde mientras un 403/503 real mostraba
+  «/api/auth/password/forgot respondió 403». Lo destapó la revisión final midiendo contra el
+  servidor. Desde esta ola, el spec tiene un caso contra el servidor real y los dobles copian la
+  forma del controlador.
+- Una ruta pública debe sobrevivir a la revalidación de sesión, **incluso fallida**: el usuario no
+  debe perder lo que tecleó porque `/api/session` respondió 500.
+- Retirar un legado no es borrar la vista: exige revisar censos estáticos, inventario sin capa,
+  excepciones del DS, drills de rollback y la wiki de rutas generada.
