@@ -46,6 +46,7 @@ function curlReq(string $url, ?array $post, string $jar, array $headers = []): a
 /** @return array{0:int,1:array<string,mixed>} */
 function jsonReq(string $url, ?array $post, string $jar, array $headers = []): array {
     [$code, $body] = curlReq($url, $post, $jar, $headers);
+    $GLOBALS['ultimoCuerpo'] = $body;
     $decoded = json_decode($body, true);
     if (!is_array($decoded)) {
         fwrite(STDERR, "ABORT: respuesta no-JSON de $url (HTTP $code): " . substr($body, 0, 200) . "\n");
@@ -63,6 +64,62 @@ function afirmar(bool $condicion, string $mensaje): void {
         echo "FALLO: $mensaje\n";
     }
 }
+
+/**
+ * Contrato entre PHP y Zod (plan 2026-09-17-errores-api-lps-contrato): los cuerpos de error REALES
+ * de `/api/lps/*` quedan versionados en `tests/fixtures/api-lps-error-bodies.json`, y
+ * `frontend/src/lib/api/esquemas/error.contrato.test.ts` los pasa por el esquema y por `pedir()`.
+ * Mismo patrón que `tests/test_api_auth_contract.php`, con dos diferencias medidas:
+ *
+ * - `meta.requestId` es aleatorio por respuesta (`bin2hex(random_bytes(8))`): se sustituye por
+ *   `<requestId>` al capturar — solo si tiene la forma esperada, para que un cambio de forma sí
+ *   se note — o el archivo no coincidiría nunca.
+ * - Un caso puede declarar `origen: render-puro`: su cuerpo no vino de la red sino de invocar el
+ *   render del controlador en proceso (ver el 409 `LPS_TARGET_STALE` más abajo).
+ *
+ * Se compara desde el texto crudo decodificado como objetos (no arrays asociativos): así un `[]`
+ * de PHP y un `{}` siguen siendo distintos. Se regenera solo con `LPS_REGENERAR_CUERPOS=1`; sin
+ * flag y sin archivo, falla — no se autocrea.
+ *
+ * @param array<string, array{ruta:string,codigo:int,raw:string,origen?:string}> $capturas
+ */
+function contrastarCuerposDeError(array $capturas): void {
+    $archivo = __DIR__ . '/fixtures/api-lps-error-bodies.json';
+    $opciones = JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
+    $actual = new stdClass();
+    foreach ($capturas as $caso => $captura) {
+        $cuerpo = json_decode($captura['raw'], false, 512, JSON_THROW_ON_ERROR);
+        if (isset($cuerpo->meta->requestId) && is_string($cuerpo->meta->requestId)
+            && preg_match('/^[0-9a-f]{16}$/', $cuerpo->meta->requestId) === 1) {
+            $cuerpo->meta->requestId = '<requestId>';
+        }
+        $entrada = ['ruta' => $captura['ruta'], 'status' => $captura['codigo']];
+        if (isset($captura['origen'])) {
+            $entrada['origen'] = $captura['origen'];
+        }
+        $entrada['cuerpo'] = $cuerpo;
+        $actual->{$caso} = (object) $entrada;
+    }
+    $serializado = json_encode($actual, $opciones | JSON_THROW_ON_ERROR) . "\n";
+
+    if (getenv('LPS_REGENERAR_CUERPOS') === '1') {
+        file_put_contents($archivo, $serializado);
+        echo "REGENERADO: {$archivo}\n";
+    }
+
+    $guardado = is_file($archivo) ? (string) file_get_contents($archivo) : null;
+    $normalizado = $guardado === null
+        ? null
+        : json_encode(json_decode($guardado, false, 512, JSON_THROW_ON_ERROR), $opciones | JSON_THROW_ON_ERROR) . "\n";
+    afirmar(
+        $normalizado !== null && $normalizado === $serializado,
+        'los cuerpos de error reales coinciden con tests/fixtures/api-lps-error-bodies.json'
+            . ' (regenerar con LPS_REGENERAR_CUERPOS=1 si el cambio es intencional)',
+    );
+}
+
+/** @var array<string, array{ruta:string,codigo:int,raw:string,origen?:string}> $capturas */
+$capturas = [];
 
 $jar = sesion('test.R'); // rol con permiso de edición sobre programación semanal
 
@@ -135,8 +192,16 @@ afirmar(($data['actions']['read'] ?? null) === true, 'actions.read es true para 
 afirmar(!array_key_exists('crisisAlert', $data), 'un target de actividad (no alerta) no trae "crisisAlert"');
 
 [$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=' . ACTIVIDAD_PG_SEMBRADA . '&modulo=ZZ', null, $jar);
+$capturas['422_validation_failed'] = ['ruta' => '/api/lps/comments', 'codigo' => $code, 'raw' => $ultimoCuerpo];
 afirmar($code === 422, "GET comments con módulo fuera de PG/PI/PS debería responder HTTP 422 (fue $code)");
 afirmar(($data['error']['code'] ?? null) === 'VALIDATION_FAILED', 'módulo inválido trae error.code=VALIDATION_FAILED (T02-AC-011)');
+
+// El 404 tal como lo recibe el cajón React (medido en la revisión del #44): actividad inexistente
+// con módulo — lectura pura, SELECT sin filas.
+[$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=999999999&modulo=PS', null, $jar);
+$capturas['404_lps_target_not_found'] = ['ruta' => '/api/lps/comments', 'codigo' => $code, 'raw' => $ultimoCuerpo];
+afirmar($code === 404, "GET comments con consecutivo+modulo inexistentes debería responder HTTP 404 (fue $code)");
+afirmar(($data['error']['code'] ?? null) === 'LPS_TARGET_NOT_FOUND', 'actividad inexistente con módulo trae error.code=LPS_TARGET_NOT_FOUND');
 
 [$code, $data] = jsonReq(BASE . '/api/lps/comments?alerta_id=999999999', null, $jar);
 afirmar($code === 404, "GET comments con alerta_id inexistente debería responder HTTP 404 (fue $code)");
@@ -167,6 +232,7 @@ if (!preg_match('/<meta name="lps-drawer-csrf-token" content="([a-f0-9]{64})"/',
         'comentario' => 'censo t02 — actor sin fila profesionales',
         '_csrf_token' => $csrfToken,
     ], $jar);
+    $capturas['409_profile_required'] = ['ruta' => '/api/lps/comments/add', 'codigo' => $code, 'raw' => $ultimoCuerpo];
     afirmar($code === 409, "POST comments/add con actor sin fila profesionales debería responder HTTP 409 (fue $code, sin DML)");
     afirmar(($data['error']['code'] ?? null) === 'PROFILE_REQUIRED', 'actor incompatible trae error.code=PROFILE_REQUIRED (T02-AC-099/100)');
     afirmar(($data['ok'] ?? null) === false, 'PROFILE_REQUIRED trae ok=false');
@@ -244,6 +310,33 @@ if (isset($csrfToken)) {
     $fallos++;
     echo "FALLO: sección 3c no pudo obtener el token CSRF real (bloque de sección 3b falló antes)\n";
 }
+
+// ---------------------------------------------------------------------------
+// Sección 3d (plan 2026-09-17-errores-api-lps-contrato): 409 LPS_TARGET_STALE y contraste de
+// cuerpos contra el archivo versionado.
+//
+// El 409 no se puede provocar por HTTP sin escribir: exige una alerta existente y ya cerrada, y
+// `lps_escalamientos` está vacía en la base de dev (medido el 2026-09-17, 0 filas en total). Crear
+// una sería DML. Se captura invocando el render REAL del controlador en proceso —el mismo método
+// privado que usan los tres llamadores de `targetStale()`— con la fábrica real, sin constructor
+// (el render no toca `$this->db`). Es el único caso con `origen: render-puro` en el archivo.
+// ---------------------------------------------------------------------------
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$controlador = (new ReflectionClass(\App\Controllers\Api\LpsApiController::class))->newInstanceWithoutConstructor();
+$render = new ReflectionMethod($controlador, 'renderApiError');
+ob_start();
+$render->invoke($controlador, \App\Services\Lps\LpsApiError::targetStale());
+$capturas['409_lps_target_stale'] = [
+    'ruta' => '/api/lps/crisis/close',
+    'codigo' => \App\Services\Lps\LpsApiError::targetStale()->httpStatus,
+    'raw' => (string) ob_get_clean(),
+    'origen' => 'render-puro',
+];
+
+ksort($capturas);
+contrastarCuerposDeError($capturas);
 
 // ---------------------------------------------------------------------------
 // Sección 4: /api/notifications/* — sobre de sesión ausente (sin cookie de sesión)

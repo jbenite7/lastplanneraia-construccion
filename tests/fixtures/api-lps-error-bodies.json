@@ -1,0 +1,73 @@
+{
+    "404_lps_target_not_found": {
+        "ruta": "/api/lps/comments",
+        "status": 404,
+        "cuerpo": {
+            "respuesta": "ERROR",
+            "ok": false,
+            "mensaje": "No fue posible completar la acción.",
+            "error": {
+                "code": "LPS_TARGET_NOT_FOUND",
+                "message": "No fue posible completar la acción.",
+                "fields": []
+            },
+            "meta": {
+                "requestId": "<requestId>"
+            }
+        }
+    },
+    "409_lps_target_stale": {
+        "ruta": "/api/lps/crisis/close",
+        "status": 409,
+        "origen": "render-puro",
+        "cuerpo": {
+            "respuesta": "ERROR",
+            "ok": false,
+            "mensaje": "El contexto de la alerta cambió; recarga la actividad.",
+            "error": {
+                "code": "LPS_TARGET_STALE",
+                "message": "El contexto de la alerta cambió; recarga la actividad.",
+                "fields": []
+            },
+            "meta": {
+                "requestId": "<requestId>"
+            }
+        }
+    },
+    "409_profile_required": {
+        "ruta": "/api/lps/comments/add",
+        "status": 409,
+        "cuerpo": {
+            "respuesta": "ERROR",
+            "ok": false,
+            "mensaje": "La bitácora queda disponible en modo lectura.",
+            "error": {
+                "code": "PROFILE_REQUIRED",
+                "message": "La bitácora queda disponible en modo lectura.",
+                "fields": []
+            },
+            "meta": {
+                "requestId": "<requestId>"
+            }
+        }
+    },
+    "422_validation_failed": {
+        "ruta": "/api/lps/comments",
+        "status": 422,
+        "cuerpo": {
+            "respuesta": "ERROR",
+            "ok": false,
+            "mensaje": "Datos inválidos.",
+            "error": {
+                "code": "VALIDATION_FAILED",
+                "message": "Datos inválidos.",
+                "fields": {
+                    "modulo": "Debe ser PG, PI o PS."
+                }
+            },
+            "meta": {
+                "requestId": "<requestId>"
+            }
+        }
+    }
+}
