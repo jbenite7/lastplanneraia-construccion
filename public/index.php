@@ -100,6 +100,10 @@ $router->get('/login', [\App\Controllers\Auth\LoginController::class, 'index']);
 $router->head('/login', [\App\Controllers\Auth\LoginController::class, 'index']);
 $router->post('/login', [\App\Controllers\Auth\LoginController::class, 'login']);
 $router->get('/password/forgot', [\App\Controllers\Auth\PasswordResetController::class, 'forgot']);
+// HEAD junto a GET, mismo motivo que '/' y '/login' arriba: es la tercera ruta exacta migrada
+// de SpaRouter (RUTAS_EXACTAS_MIGRADAS, Tarea 8/S02), y su rollback tiene que devolver ambos
+// métodos al legado, no solo GET.
+$router->head('/password/forgot', [\App\Controllers\Auth\PasswordResetController::class, 'forgot']);
 $router->post('/password/forgot', [\App\Controllers\Auth\PasswordResetController::class, 'sendLink']);
 $router->get('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'reset']);
 $router->post('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'update']);
