@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, test, vi } from 'vitest';
+import { App } from '../App';
 import { Rutas } from './rutas';
 
 const csrfToken = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
@@ -375,4 +376,72 @@ test('con configuracionRuntime inválida se ve una alerta recuperable, sin llama
 
   expect(await screen.findByRole('alert')).toBeInTheDocument();
   expect(fetchEspia).not.toHaveBeenCalled();
+});
+
+// --- S02: la ruta pública de recuperación prevalece sobre el estado de sesión (Tarea 4) ----
+
+const PENDIENTE_CAMBIO_CLAVE = {
+  state: 'password_change_required',
+  authenticated: false,
+  reason: null,
+  user: null,
+  project: null,
+  capabilities: {},
+  navigation: { bi: null, groups: [] },
+  week: null,
+  csrfToken,
+};
+
+const AUTENTICADA_SIN_PROYECTO = { ...AUTENTICADA_CON_PROYECTO, project: null, week: null };
+
+test.each(['/password/forgot', '/app/password/forgot'])('%s muestra la recuperación de clave', async (ruta) => {
+  window.history.pushState({}, '', ruta);
+  responderSesion(ANONIMA_MISSING_SESSION);
+
+  render(<Rutas />);
+
+  expect(await screen.findByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /bienvenido a last planner aia/i })).not.toBeInTheDocument();
+});
+
+test.each([
+  ['anónima', ANONIMA_MISSING_SESSION],
+  ['con cambio de clave pendiente', PENDIENTE_CAMBIO_CLAVE],
+  ['autenticada sin proyecto', AUTENTICADA_SIN_PROYECTO],
+  ['autenticada con proyecto', AUTENTICADA_CON_PROYECTO],
+])('la recuperación prevalece sobre una sesión %s', async (_nombre, cuerpo) => {
+  window.history.pushState({}, '', '/password/forgot');
+  responderSesion(cuerpo);
+
+  render(<Rutas />);
+
+  expect(await screen.findByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /bienvenido a last planner aia/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Actualizar y continuar' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+});
+
+test('en la ruta de recuperación, el bootstrap en vuelo muestra "Cargando…" y un fallo la alerta recuperable', async () => {
+  window.history.pushState({}, '', '/password/forgot');
+  vi.stubGlobal('fetch', vi.fn()
+    .mockRejectedValueOnce(new Error('red no disponible'))
+    .mockReturnValueOnce(new Promise<Response>(() => {})));
+
+  render(<Rutas />);
+
+  expect(screen.getByRole('status')).toHaveTextContent(/cargando/i);
+  expect(await screen.findByRole('alert')).toHaveTextContent(/no pudimos conectar/i);
+  expect(screen.queryByRole('heading', { name: 'Restablecer contraseña' })).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: /reintentar/i }));
+  expect(await screen.findByRole('status')).toHaveTextContent(/cargando/i);
+});
+
+test('App monta la recuperación de clave en /password/forgot', async () => {
+  window.history.pushState({}, '', '/password/forgot');
+  responderSesion(AUTENTICADA_CON_PROYECTO);
+
+  render(<App />);
+
+  expect(await screen.findByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
 });

@@ -33,10 +33,72 @@ export function Rutas({ configuracionRuntime = CONFIGURACION_APLICACION_POR_DEFE
     return <RutaMantenimiento configuracion={configuracionRuntime} />;
   }
 
+  // Un único `BrowserRouter` para toda la rama de aplicación (S02, Tarea 4). Vive aquí y no en
+  // `App` porque `Rutas` se monta sola en las pruebas y `AppShell` necesita un router alrededor.
+  // Las rutas públicas de acceso se resuelven ANTES de la máquina de estados por sesión: en
+  // `/password/forgot` la pantalla de recuperación se ve igual con sesión anónima, pendiente de
+  // cambio de clave o autenticada. Todo lo demás cae en `RutasSegunSesion`, sin cambios de orden.
   return (
-    <SesionProvider>
-      <RutasSegunSesion />
-    </SesionProvider>
+    <BrowserRouter>
+      <SesionProvider>
+        <Routes>
+          <Route element={<RutaRecuperacion />} path="/password/forgot" />
+          <Route element={<RutaRecuperacion />} path="/app/password/forgot" />
+          <Route element={<RutasSegunSesion />} path="*" />
+        </Routes>
+      </SesionProvider>
+    </BrowserRouter>
+  );
+}
+
+/**
+ * Pantalla de arranque sin resolver o con fallo técnico: compartida por la ruta pública de
+ * recuperación y por la máquina de estados, para que ambas digan lo mismo.
+ */
+function ErrorArranqueRecuperable({ logoutSinConfirmar, recargar }: { logoutSinConfirmar: boolean; recargar: () => Promise<void> }) {
+  return (
+    <section role="alert">
+      <p>
+        {logoutSinConfirmar
+          ? 'Intentamos cerrar tu sesión pero no pudimos confirmarlo con el servidor. Revisa tu conexión e inténtalo de nuevo.'
+          : 'No pudimos conectar con la aplicación. Inténtalo de nuevo.'}
+      </p>
+      <button type="button" onClick={() => void recargar()}>
+        Reintentar
+      </button>
+    </section>
+  );
+}
+
+/**
+ * Ruta pública de recuperación de clave (S02). Espera el bootstrap solo para obtener el token
+ * CSRF; una vez resuelto, ignora el estado de sesión (anónimo, cambio de clave pendiente o
+ * autenticado) y pinta la recuperación.
+ */
+function RutaRecuperacion() {
+  const { estado, arranque, recargar, logoutSinConfirmar } = useSesion();
+
+  if (estado === 'cargando') {
+    return <p role="status">Cargando…</p>;
+  }
+
+  if (estado === 'error_recuperable') {
+    return <ErrorArranqueRecuperable logoutSinConfirmar={logoutSinConfirmar} recargar={recargar} />;
+  }
+
+  return <MarcadorRecuperarClave csrfToken={arranque?.csrfToken ?? ''} alRevalidar={recargar} />;
+}
+
+/**
+ * Marcador provisional (Tarea 4): la Tarea 5 lo sustituye por `PantallaRecuperarClave`, con la
+ * misma firma `{csrfToken, alRevalidar}`. Solo existe para que el enrutado sea verificable.
+ */
+function MarcadorRecuperarClave(_props: { csrfToken: string; alRevalidar: () => Promise<void> }) {
+  return (
+    <main>
+      <h1>Restablecer contraseña</h1>
+      <a href="/login">Volver al inicio de sesión</a>
+    </main>
   );
 }
 
@@ -183,18 +245,7 @@ function RutasSegunSesion() {
       return <p role="status">Cargando…</p>;
 
     case 'error_recuperable':
-      return (
-        <section role="alert">
-          <p>
-            {logoutSinConfirmar
-              ? 'Intentamos cerrar tu sesión pero no pudimos confirmarlo con el servidor. Revisa tu conexión e inténtalo de nuevo.'
-              : 'No pudimos conectar con la aplicación. Inténtalo de nuevo.'}
-          </p>
-          <button type="button" onClick={() => void recargar()}>
-            Reintentar
-          </button>
-        </section>
-      );
+      return <ErrorArranqueRecuperable logoutSinConfirmar={logoutSinConfirmar} recargar={recargar} />;
 
     case 'cambio_clave_requerido':
       return (
@@ -239,15 +290,15 @@ function RutasSegunSesion() {
       // `AppShell` es la única raíz de rutas cliente: los módulos de S01-S27 cuelgan de su
       // `Outlet` como rutas hijas (Tarea 4, checkpoint T01 "un solo contrato de shell/outlet,
       // ninguna superficie migrada todavía" — de ahí que hoy no haya ninguna `<Route>` hija).
+      // El router es el único `BrowserRouter` que monta `Rutas` (S02, Tarea 4): aquí solo se
+      // declaran rutas descendientes bajo el `path="*"` de arriba, nunca un segundo router.
       return (
-        <BrowserRouter>
-          <Routes>
-            <Route
-              element={<AppShell cerrarSesion={cerrarSesion} generacionSesion={generacion} recargar={recargar} sesion={autenticado} />}
-              path="*"
-            />
-          </Routes>
-        </BrowserRouter>
+        <Routes>
+          <Route
+            element={<AppShell cerrarSesion={cerrarSesion} generacionSesion={generacion} recargar={recargar} sesion={autenticado} />}
+            path="*"
+          />
+        </Routes>
       );
   }
 }
