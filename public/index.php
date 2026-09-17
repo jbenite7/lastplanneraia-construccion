@@ -107,6 +107,10 @@ $router->post('/login', [\App\Controllers\Auth\LoginController::class, 'login'])
 // GET/HEAD '/password/reset' los sirve SpaRouter/SpaHostRenderer desde la Tarea 8 (S03); el
 // registro GET y el POST legados se conservan como rollback hasta la Tarea 10.
 $router->get('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'reset']);
+// HEAD junto a GET, como '/' y '/login': el rollback (quitar la ruta de RUTAS_EXACTAS_MIGRADAS)
+// tiene que devolver ambos métodos al legado sin depender del fallback interno de FastRoute —
+// ver App\Core\Router::head().
+$router->head('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'reset']);
 $router->post('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'update']);
 $router->post('/password/update', [\App\Controllers\Auth\LoginController::class, 'updatePassword']);
 $router->get('/login/cancelar', [\App\Controllers\Auth\LoginController::class, 'cancelPasswordChange']);
@@ -405,9 +409,9 @@ $router->get('/bi/curva-s', [\App\Controllers\Bi\BiViewController::class, 'curva
 // el mismo HTML y React decide qué pantalla mostrar. Solo GET/HEAD cruzan aquí —
 // ver App\Core\SpaRouter::coincideConMapa().
 if (\App\Core\SpaRouter::sirveLaSpa($requestUri, $requestMethod)) {
-    // S03 (Tarea 8): la URL de restablecimiento lleva el token en la query. no-referrer evita
+    // S03 (Tarea 8): la URL de restablecimiento (canónica y piloto /app) lleva el token en la query. no-referrer evita
     // que viaje en el Referer de cualquier recurso o enlace, y no-store que quede en caché.
-    if ($requestUri === '/password/reset') {
+    if (in_array($requestUri, ['/password/reset', '/app/password/reset'], true)) {
         header('Referrer-Policy: no-referrer');
         header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
     }

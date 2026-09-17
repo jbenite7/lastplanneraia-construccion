@@ -208,7 +208,7 @@ function comprobarRollbackS03(): void
 
     // El legado al que volver sigue registrado (GET y POST) mientras dure la ventana de rollback.
     $index = (string) file_get_contents(__DIR__ . '/../public/index.php');
-    foreach (['get', 'post'] as $verbo) {
+    foreach (['get', 'head', 'post'] as $verbo) {
         if (preg_match('~\$router->' . $verbo . "\\(\\s*'/password/reset'~", $index) !== 1) {
             echo "FALLO: S03 — public/index.php debe conservar \$router->{$verbo}('/password/reset') hasta la Tarea 10\n";
             $fallos++;

@@ -215,6 +215,17 @@ try {
     $resetApp = pedirFronteraSpa("{$base}/app/password/reset");
     comprobarFronteraSpa($resetApp['codigo'] === 200, "GET /app/password/reset debe responder 200, llegó {$resetApp['codigo']}");
     comprobarFronteraSpa(str_contains($resetApp['cuerpo'], '<div id="root"></div>'), 'GET /app/password/reset debe devolver el HTML del shell React');
+    comprobarFronteraSpa(preg_match('/^Referrer-Policy:\s*no-referrer\s*$/mi', $resetApp['cabeceras']) === 1, 'GET /app/password/reset debe enviar Referrer-Policy: no-referrer (lleva el token en la URL)');
+    comprobarFronteraSpa(preg_match('/^Cache-Control:[^\r\n]*no-store[^\r\n]*max-age=0/mi', $resetApp['cabeceras']) === 1, 'GET /app/password/reset debe enviar Cache-Control: no-store…max-age=0');
+    $resetAppHead = pedirFronteraSpaConMetodo("{$base}/app/password/reset", 'HEAD');
+    comprobarFronteraSpa(preg_match('/^Referrer-Policy:\s*no-referrer\s*$/mi', $resetAppHead['cabeceras']) === 1, 'HEAD /app/password/reset debe enviar Referrer-Policy: no-referrer');
+    comprobarFronteraSpa(preg_match('/^Cache-Control:[^\r\n]*no-store[^\r\n]*max-age=0/mi', $resetAppHead['cabeceras']) === 1, 'HEAD /app/password/reset debe enviar Cache-Control: no-store…max-age=0');
+
+    // --- Y no se filtran a otras rutas del shell. ---
+    foreach (['/app', '/app/login', '/app/password/forgot'] as $otraRuta) {
+        $otra = pedirFronteraSpa("{$base}{$otraRuta}");
+        comprobarFronteraSpa(preg_match('/^Referrer-Policy:\s*no-referrer/mi', $otra['cabeceras']) !== 1, "GET {$otraRuta} no debe heredar Referrer-Policy de S03");
+    }
 
     // --- Subrutas y API vecinas no caen en la ruta exacta. ---
     $resetExtra = pedirFronteraSpa("{$base}/password/reset-extra");
