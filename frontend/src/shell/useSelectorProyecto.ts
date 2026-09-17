@@ -1,21 +1,8 @@
 import { useEffect, useState } from 'react';
-import { z } from 'zod';
-import { pedir } from '../lib/api/cliente';
+import { listarProyectos, seleccionarProyecto } from '../lib/api/proyectos';
+import type { ProyectoDisponible } from '../lib/api/esquemas/proyectos';
 
-const EsquemaListaProyectos = z.object({
-  projects: z.array(z.object({
-    id: z.number().int(),
-    name: z.string(),
-    role: z.string(),
-  })),
-});
-
-const EsquemaSeleccionProyecto = z.object({
-  success: z.boolean(),
-  message: z.string().nullable(),
-});
-
-export type ProyectoDisponible = z.infer<typeof EsquemaListaProyectos>['projects'][number];
+export type { ProyectoDisponible } from '../lib/api/esquemas/proyectos';
 
 /**
  * Lógica de fetch/CSRF/selección de proyecto, extraída de `SelectorProyecto` en la ronda de
@@ -24,6 +11,9 @@ export type ProyectoDisponible = z.infer<typeof EsquemaListaProyectos>['projects
  * visual (sin `<h1>` de página completa ni `.aia-card`). Aislar el estado aquí es lo que permite
  * que `SelectorProyecto` (pantalla completa) y `PanelCambiarProyecto` (panel del menú de cuenta)
  * compartan una sola implementación sin que ninguno imponga su marcado al otro.
+ *
+ * Los esquemas y el fetch vivían aquí mismo; se movieron a `lib/api/esquemas/proyectos.ts` y
+ * `lib/api/proyectos.ts` en la Tarea 1 de S04, siguiendo el mismo patrón de `lib/api/auth.ts`.
  */
 export function useSelectorProyecto(alElegir: () => Promise<void>, csrfToken: string) {
   const [proyectos, setProyectos] = useState<ProyectoDisponible[] | null>(null);
@@ -33,7 +23,7 @@ export function useSelectorProyecto(alElegir: () => Promise<void>, csrfToken: st
   useEffect(() => {
     void (async () => {
       try {
-        const respuesta = await pedir('/api/proyectos', EsquemaListaProyectos);
+        const respuesta = await listarProyectos();
         setProyectos(respuesta.projects);
       } catch {
         setError('No pudimos cargar tus proyectos. Intenta de nuevo.');
@@ -46,11 +36,7 @@ export function useSelectorProyecto(alElegir: () => Promise<void>, csrfToken: st
     setSeleccionandoId(proyecto.id);
 
     try {
-      const respuesta = await pedir('/api/proyectos/seleccionar', EsquemaSeleccionProyecto, {
-        method: 'POST',
-        headers: { 'X-CSRF-Token': csrfToken },
-        body: JSON.stringify({ name: proyecto.name }),
-      });
+      const respuesta = await seleccionarProyecto(proyecto.name, csrfToken);
 
       if (!respuesta.success) {
         setError('No pudimos abrir ese proyecto. Intenta de nuevo.');

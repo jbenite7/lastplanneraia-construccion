@@ -13,6 +13,20 @@ function cerrarSesionFalso() {
   return vi.fn().mockResolvedValue(undefined);
 }
 
+const navegacion = { bi: { visible: false, href: null } };
+
+function proyecto(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    id: 1,
+    name: 'Da Porto',
+    area: 'Construccion',
+    active: true,
+    role: 'A',
+    roleLabel: 'Administrador',
+    ...overrides,
+  };
+}
+
 afterEach(() => vi.unstubAllGlobals());
 
 // Hallazgo del revisor de código (ronda de arreglos 1): `MenuCuenta` anidaba la pantalla
@@ -43,7 +57,8 @@ test('el disparador referencia el panel con aria-controls', () => {
 
 test('cambiar proyecto muestra la lista como menuitems, sin h1 ni .aia-card, y reutiliza el fetch de SelectorProyecto', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(respuesta({
-    projects: [{ id: 1, name: 'Da Porto', role: 'A' }],
+    projects: [proyecto()],
+    navigation: navegacion,
   })));
   const usuario = userEvent.setup();
   render(<MenuCuenta alCambiarProyecto={vi.fn()} cerrarSesion={cerrarSesionFalso()} csrfToken={csrfToken} nombre="Ana" />);
@@ -60,8 +75,8 @@ test('cambiar proyecto muestra la lista como menuitems, sin h1 ni .aia-card, y r
 
 test('elegir un proyecto en el panel llama a alCambiarProyecto y cierra el menú', async () => {
   const fetchFalso = vi.fn()
-    .mockResolvedValueOnce(respuesta({ projects: [{ id: 1, name: 'Da Porto', role: 'A' }] }))
-    .mockResolvedValueOnce(respuesta({ success: true, message: null }));
+    .mockResolvedValueOnce(respuesta({ projects: [proyecto()], navigation: navegacion }))
+    .mockResolvedValueOnce(respuesta({ success: true, message: null, route: '/programacion-semanal' }));
   vi.stubGlobal('fetch', fetchFalso);
   const alCambiarProyecto = vi.fn().mockResolvedValue(undefined);
   const usuario = userEvent.setup();
@@ -77,7 +92,8 @@ test('elegir un proyecto en el panel llama a alCambiarProyecto y cierra el menú
 
 test('volver regresa del panel de proyectos al menú principal sin perder el fetch ya hecho', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(respuesta({
-    projects: [{ id: 1, name: 'Da Porto', role: 'A' }],
+    projects: [proyecto()],
+    navigation: navegacion,
   })));
   const usuario = userEvent.setup();
   render(<MenuCuenta alCambiarProyecto={vi.fn()} cerrarSesion={cerrarSesionFalso()} csrfToken={csrfToken} nombre="Ana" />);
