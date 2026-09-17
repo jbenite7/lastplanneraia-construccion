@@ -105,8 +105,12 @@ try {
     check($listBody['code'] === 422, 'validate rechaza body tipo lista');
 
     $missingToken = requestJson('POST', "{$base}/api/auth/password/reset/validate", $jar,
-        [], ['X-CSRF-Token: ' . $csrf]);
+        ['tokn' => $invalidToken], ['X-CSRF-Token: ' . $csrf]);
     check($missingToken['code'] === 422, 'validate exige el campo token');
+
+    $nonStringToken = requestJson('POST', "{$base}/api/auth/password/reset/validate", $jar,
+        ['token' => 123], ['X-CSRF-Token: ' . $csrf]);
+    check($nonStringToken['code'] === 422, 'validate exige que token sea string');
 
     $badCsrfValidate = requestJson('POST', "{$base}/api/auth/password/reset/validate", $jar,
         ['token' => $invalidToken], ['X-CSRF-Token: invalid']);
