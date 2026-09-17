@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, expect, test, vi } from 'vitest';
-import { validarEnlaceReset } from '../../lib/api/auth';
+import { restablecerClave, validarEnlaceReset } from '../../lib/api/auth';
 import { ApiError } from '../../lib/api/cliente';
 import { MENSAJE_ENLACE_RESET_INVALIDO, type EstadoEnlaceReset } from '../../lib/api/esquemas/auth';
 import type { EnlaceReset } from './tokenReset';
@@ -8,6 +9,7 @@ import { PantallaRestablecerClave } from './PantallaRestablecerClave';
 
 vi.mock('../../lib/api/auth', () => ({
   validarEnlaceReset: vi.fn(),
+  restablecerClave: vi.fn(),
 }));
 
 const TOKEN = 'a'.repeat(64);
@@ -208,4 +210,77 @@ test('nunca pinta ni el token ni la palabra "token" en ningún estado', async ()
   expect(container.innerHTML).not.toContain(TOKEN);
   expect(container.querySelector('[data-token]')).toBeNull();
   expect(container.querySelector('input[type="hidden"]')).toBeNull();
+});
+
+// --- Tarea 6: política, campos secretos y toggles accesibles ---------------------
+
+test('presenta dos secretos con política y toggles independientes', async () => {
+  const user = userEvent.setup();
+  vi.mocked(validarEnlaceReset).mockResolvedValue({ success: true, state: 'valid' });
+  render(<PantallaRestablecerClave {...propiedades()} />);
+
+  const password = await screen.findByLabelText('Nueva contraseña');
+  const confirm = screen.getByLabelText('Confirmar contraseña');
+
+  expect(password).toHaveAttribute('autocomplete', 'new-password');
+  expect(password).toHaveAttribute('aria-describedby', 'reset-password-policy');
+  expect(confirm).toHaveAttribute('autocomplete', 'new-password');
+  expect(password).toHaveAttribute('placeholder', 'Nueva contraseña');
+  expect(confirm).toHaveAttribute('placeholder', 'Confirma tu contraseña');
+
+  await user.click(screen.getAllByRole('button', { name: 'Mostrar contraseña' })[0]);
+
+  expect(password).toHaveAttribute('type', 'text');
+  expect(confirm).toHaveAttribute('type', 'password');
+  expect(screen.getByRole('button', { name: 'Ocultar contraseña' })).toHaveAttribute('aria-pressed', 'true');
+  expect(password).toHaveFocus();
+});
+
+test.each([
+  ['abc', 'abc', 'La contraseña debe tener al menos 6 caracteres', 'Nueva contraseña'],
+  ['abcdef!', 'abcdef!', 'Debe contener al menos una letra mayúscula', 'Nueva contraseña'],
+  ['Abcdef', 'Abcdef', 'Debe contener al menos un carácter especial (!@#$%...)', 'Nueva contraseña'],
+  ['Abcdef!', 'Otra1!', 'Las contraseñas no coinciden', 'Confirmar contraseña'],
+])('valida %s sin llamar API', async (password, confirm, message, label) => {
+  const user = userEvent.setup();
+  vi.mocked(validarEnlaceReset).mockResolvedValue({ success: true, state: 'valid' });
+  render(<PantallaRestablecerClave {...propiedades()} />);
+
+  await user.type(await screen.findByLabelText('Nueva contraseña'), password);
+  await user.type(screen.getByLabelText('Confirmar contraseña'), confirm);
+  await user.click(screen.getByRole('button', { name: 'Actualizar contraseña' }));
+
+  expect(restablecerClave).not.toHaveBeenCalled();
+  expect(await screen.findByText(message)).toBeVisible();
+  await waitFor(() => expect(screen.getByLabelText(label)).toHaveFocus());
+});
+
+test('editar el campo con error lo limpia sin tocar el otro, y conserva lo tecleado', async () => {
+  const user = userEvent.setup();
+  vi.mocked(validarEnlaceReset).mockResolvedValue({ success: true, state: 'valid' });
+  render(<PantallaRestablecerClave {...propiedades()} />);
+
+  await user.type(await screen.findByLabelText('Nueva contraseña'), 'abc');
+  await user.type(screen.getByLabelText('Confirmar contraseña'), 'abc');
+  await user.click(screen.getByRole('button', { name: 'Actualizar contraseña' }));
+
+  await screen.findByText('La contraseña debe tener al menos 6 caracteres');
+
+  await user.type(screen.getByLabelText('Nueva contraseña'), '!');
+
+  expect(screen.queryByText('La contraseña debe tener al menos 6 caracteres')).not.toBeInTheDocument();
+  expect(screen.getByLabelText('Nueva contraseña')).toHaveValue('abc!');
+  expect(screen.getByLabelText('Confirmar contraseña')).toHaveValue('abc');
+});
+
+test('con las cuatro reglas satisfechas, el envío local no marca error', async () => {
+  const user = userEvent.setup();
+  vi.mocked(validarEnlaceReset).mockResolvedValue({ success: true, state: 'valid' });
+  render(<PantallaRestablecerClave {...propiedades()} />);
+
+  await user.type(await screen.findByLabelText('Nueva contraseña'), 'Abcdef!');
+  await user.type(screen.getByLabelText('Confirmar contraseña'), 'Abcdef!');
+  await user.click(screen.getByRole('button', { name: 'Actualizar contraseña' }));
+
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });

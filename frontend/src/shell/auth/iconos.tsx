@@ -62,3 +62,13 @@ export function IconoEnviar() {
     </svg>
   );
 }
+
+/** Botón «Actualizar contraseña» de la pantalla de restablecimiento (S03, Tarea 6). */
+export function IconoLlave() {
+  return (
+    <svg {...base} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="8" cy="15" r="4" />
+      <path d="M11 12l9-9M17 3l3 3M14 6l3 3" />
+    </svg>
+  );
+}

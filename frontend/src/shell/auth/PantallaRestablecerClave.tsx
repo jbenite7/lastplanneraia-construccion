@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { validarEnlaceReset } from '../../lib/api/auth';
 import { ApiError } from '../../lib/api/cliente';
-import { MENSAJE_ENLACE_RESET_INVALIDO } from '../../lib/api/esquemas/auth';
+import { EsquemaSolicitudRestablecerClave, MENSAJE_ENLACE_RESET_INVALIDO } from '../../lib/api/esquemas/auth';
 import { CampoClave } from './CampoClave';
+import { IconoLlave } from './iconos';
 import { MarcoAcceso } from './MarcoAcceso';
 import type { EnlaceReset } from './tokenReset';
 
@@ -14,9 +15,12 @@ import type { EnlaceReset } from './tokenReset';
  * reintenta la validación por su cuenta — la única repetición ocurre tras una acción humana
  * explícita (spec §7 "no hay retry automático").
  *
- * El campo de contraseña que se ve en `valid` es un esqueleto mínimo (Tarea 6 lo completa con
- * política, dos toggles independientes, ayuda asociada y el submit real de Tarea 7); aquí no
- * hay mutación ni botón de envío todavía.
+ * El estado `valid` (Tarea 6) trae la política visible, dos campos de contraseña con toggles
+ * independientes y validación local contra `EsquemaSolicitudRestablecerClave` — el mismo esquema
+ * cliente↔servidor de la Tarea 1. La validación se detiene en la primera regla que falla (orden
+ * fijo: longitud, mayúscula, carácter especial, coincidencia) y mueve el foco al campo señalado;
+ * mientras alguna regla local falle, `restablecerClave()` no se llama. El envío real contra el
+ * servidor y sus errores 422/403/503 son de la Tarea 7.
  */
 type Props = {
   enlace: EnlaceReset;
@@ -59,11 +63,22 @@ export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar }: Pro
   const [validationAttempt, setValidationAttempt] = useState(0);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  // Un campo de error a la vez (spec §"la política se detiene en la primera falla"): nunca los
+  // dos a la vez, para que la persona corrija una cosa por vez, igual que en el servidor.
+  const [fieldErrors, setFieldErrors] = useState<{ password: string | null; confirmPassword: string | null }>({
+    password: null,
+    confirmPassword: null,
+  });
+  // El envío real contra el servidor (estado ocupado, 422/403/503) llega en la Tarea 7 — aquí el
+  // formulario nunca queda ocupado porque nunca llama a `restablecerClave()`.
+  const submitting = false;
   const csrfTokenRef = useRef(csrfToken);
   csrfTokenRef.current = csrfToken;
   const solicitarEnlaceRef = useRef<HTMLAnchorElement>(null);
   const accionErrorRef = useRef<HTMLButtonElement>(null);
   const alertaRef = useRef<HTMLParagraphElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const confirmRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (enlace.kind === 'invalid') {
@@ -137,6 +152,37 @@ export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar }: Pro
     }
   }
 
+  // Valida localmente contra el mismo esquema que usa `restablecerClave()` (Tarea 1) y mueve el
+  // foco al campo señalado por el primer issue — nunca los dos campos a la vez. `token` viaja
+  // solo para que `superRefine` corra completo; su propio patrón ya lo garantizó `leerTokenReset`
+  // antes de llegar aquí, así que nunca es la causa del primer issue en la práctica.
+  function enviarFormulario(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    if (submitting || enlace.kind !== 'candidate') return;
+
+    const resultado = EsquemaSolicitudRestablecerClave.safeParse({
+      token: enlace.token,
+      password,
+      confirmPassword,
+    });
+
+    if (resultado.success) {
+      // El envío real contra el servidor llega en la Tarea 7 — aquí solo se confirma que las
+      // cuatro reglas visibles al cliente ya pasaron.
+      return;
+    }
+
+    const issue = resultado.error.issues[0];
+    const campo = issue.path[0] === 'confirmPassword' ? 'confirmPassword' : 'password';
+    setFieldErrors({
+      password: campo === 'password' ? issue.message : null,
+      confirmPassword: campo === 'confirmPassword' ? issue.message : null,
+    });
+    requestAnimationFrame(() => {
+      (campo === 'confirmPassword' ? confirmRef.current : passwordRef.current)?.focus();
+    });
+  }
+
   if (linkState.kind === 'invalid') {
     return (
       <MarcoAcceso titulo="Define tu nueva contraseña" subtitulo={SUBTITULO}>
@@ -185,29 +231,56 @@ export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar }: Pro
     );
   }
 
-  // `valid`: esqueleto mínimo para la Tarea 6, que le añade política, dos toggles
-  // independientes, ayuda asociada y el submit real (Tarea 7). Aquí no hay mutación ni botón
-  // «Actualizar contraseña» todavía — los campos aceptan tecleo pero no se envían.
+  // `valid`: formulario accesible con política visible, dos toggles independientes y validación
+  // local (Tarea 6). El envío real contra el servidor llega en la Tarea 7.
   return (
     <MarcoAcceso titulo="Define tu nueva contraseña" subtitulo={SUBTITULO}>
-      <form aria-busy={false} noValidate>
+      <form onSubmit={enviarFormulario} aria-busy={submitting} noValidate>
+        <ul id="reset-password-policy" className="aia-auth__policy">
+          <li>Mínimo 6 caracteres</li>
+          <li>Al menos una letra mayúscula</li>
+          <li>Al menos un carácter especial</li>
+        </ul>
+
         <CampoClave
+          ref={passwordRef}
           id="reset-password"
           name="password"
           label="Nueva contraseña"
           value={password}
-          onChange={setPassword}
+          onChange={(valor) => {
+            setPassword(valor);
+            if (fieldErrors.password) setFieldErrors((actual) => ({ ...actual, password: null }));
+          }}
           autoComplete="new-password"
+          placeholder="Nueva contraseña"
+          describedBy="reset-password-policy"
+          error={fieldErrors.password}
+          disabled={submitting}
         />
         <CampoClave
-          id="reset-password-confirm"
+          ref={confirmRef}
+          id="reset-confirm"
           name="confirmPassword"
           label="Confirmar contraseña"
           value={confirmPassword}
-          onChange={setConfirmPassword}
+          onChange={(valor) => {
+            setConfirmPassword(valor);
+            if (fieldErrors.confirmPassword) setFieldErrors((actual) => ({ ...actual, confirmPassword: null }));
+          }}
           autoComplete="new-password"
+          placeholder="Confirma tu contraseña"
+          error={fieldErrors.confirmPassword}
+          disabled={submitting}
         />
+
         <div className="aia-auth__acciones">
+          <button type="submit" className="aia-btn" disabled={submitting}>
+            <span>{submitting ? 'Actualizando…' : 'Actualizar contraseña'}</span>
+            <span className="aia-auth__boton-flecha">
+              <IconoLlave />
+            </span>
+          </button>
           <a href="/login">Volver al inicio de sesión</a>
         </div>
       </form>
