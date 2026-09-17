@@ -539,7 +539,8 @@ git commit -m "feat(s01): íconos de usuario, contraseña y botón; contraste de
 
 ### Task 3b: Bienvenida y subtítulo del legado (añadida en ejecución)
 
-Decisión de Felipe en el chat (2026-09-16, opción A), tras ver Task 3 en curso: el `h1` pasa de
+Decisión de Felipe en el chat (2026-09-16, opción A), tomada tras ver los candidatos de la Tarea 5
+con Task 4 ya cerrada — se añadió esta tarea antes de cerrar la Tarea 5: el `h1` pasa de
 «Entrar» a **«Bienvenido a Last Planner AIA»**, con el subtítulo **«Ingresa tus credenciales para
 continuar»** debajo, en los dos modos de `PantallaLogin` (normal y mantenimiento); el botón sigue
 diciendo «Entrar»/«Entrando…». `CambioClaveObligatorio` conserva su título «Actualiza tu
