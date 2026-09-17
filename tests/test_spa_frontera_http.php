@@ -7,8 +7,10 @@
  * `/`/`/login`, y desde la Tarea 8 (S02) también `/password/forgot`, en GET/HEAD) devuelven el
  * HTML inicial sin autenticar, sus assets se sirven como archivos, y las rutas que NUNCA deben
  * cruzar al host SPA (`/password/reset`, `/api/*`, `/app/assets*`) siguen siendo del sitio PHP.
- * `POST /login` y `POST /password/forgot` también siguen siendo del sitio PHP mientras dure la
- * ventana de rollback — moverlos habría hecho el rollback irreversible.
+ * `POST /login` sigue siendo del sitio PHP mientras dure la ventana de rollback de S01.
+ * `POST /password/forgot` se retiró en la Tarea 10 (gate explícito de Felipe, S02
+ * MIGRATION_COMPLETE): ya no hay controlador legado que lo atienda y responde el 404
+ * controlado del producto, nunca el formulario PHP ni el shell React.
  */
 
 declare(strict_types=1);
@@ -159,15 +161,17 @@ try {
     comprobarFronteraSpa($forgotHead['codigo'] === 200, "HEAD /password/forgot debe responder 200, llegó {$forgotHead['codigo']}");
     comprobarFronteraSpa($forgotHead['cuerpo'] === '', 'HEAD /password/forgot no debe llevar cuerpo');
 
-    // --- POST /password/forgot sigue en el legado durante la ventana de rollback: si React se
-    // quedara con el POST, quitar '/password/forgot' del mapa dejaría de ser un rollback real.
-    // CSRF inválido a propósito: nunca ejercita PasswordResetService ni envía correo real. ---
+    // --- POST /password/forgot se retiró (Tarea 10): sin controlador legado, cae al 404
+    // controlado del producto porque '/password/forgot' sigue en el allowlist público por
+    // path, nunca a un redirect de autenticación. CSRF inválido a propósito: nunca ejercita
+    // PasswordResetService ni envía correo real. ---
     $forgotPost = pedirFronteraSpaConMetodo("{$base}/password/forgot", 'POST', [
         'email' => 'persona@example.test',
         'csrf_token' => 'invalido',
     ]);
-    comprobarFronteraSpa($forgotPost['codigo'] === 200, "POST /password/forgot debe seguir llegando al adaptador legado, llegó {$forgotPost['codigo']}");
-    comprobarFronteraSpa(str_contains($forgotPost['cuerpo'], 'data-auth-form'), 'POST /password/forgot debe seguir devolviendo el formulario PHP legado con errores');
+    comprobarFronteraSpa($forgotPost['codigo'] === 404, "POST /password/forgot debe responder 404 tras el retiro, llegó {$forgotPost['codigo']}");
+    comprobarFronteraSpa(!str_contains($forgotPost['cabeceras'], 'Location: /login'), 'POST /password/forgot no debe redirigir a /login');
+    comprobarFronteraSpa(!str_contains($forgotPost['cuerpo'], 'data-auth-form'), 'POST /password/forgot no debe devolver el formulario PHP legado retirado');
     comprobarFronteraSpa(!str_contains($forgotPost['cuerpo'], '<div id="root"></div>'), 'POST /password/forgot no debe devolver el HTML del shell React');
 
     // --- El prefijo piloto '/app' sigue sirviendo la pantalla también bajo /app/password/forgot. ---

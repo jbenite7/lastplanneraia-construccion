@@ -31,7 +31,6 @@
       "unlayeredRules": 54,
       "sites": [
         "views/auth/login.view.php",
-        "views/auth/password-forgot.view.php",
         "views/auth/password-reset.view.php"
       ],
       "case": "7-login-brand-unified"

@@ -296,7 +296,6 @@
       "name": "login",
       "paths": [
         "views/auth/login.view.php",
-        "views/auth/password-forgot.view.php",
         "views/auth/password-reset.view.php",
         "public/css/login-brand-unified.css",
         "public/js/modules/aia_ui/auth_forms.js"

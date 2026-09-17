@@ -99,12 +99,11 @@ $router->head('/', [\App\Controllers\Auth\LoginController::class, 'index']);
 $router->get('/login', [\App\Controllers\Auth\LoginController::class, 'index']);
 $router->head('/login', [\App\Controllers\Auth\LoginController::class, 'index']);
 $router->post('/login', [\App\Controllers\Auth\LoginController::class, 'login']);
-$router->get('/password/forgot', [\App\Controllers\Auth\PasswordResetController::class, 'forgot']);
-// HEAD junto a GET, mismo motivo que '/' y '/login' arriba: es la tercera ruta exacta migrada
-// de SpaRouter (RUTAS_EXACTAS_MIGRADAS, Tarea 8/S02), y su rollback tiene que devolver ambos
-// métodos al legado, no solo GET.
-$router->head('/password/forgot', [\App\Controllers\Auth\PasswordResetController::class, 'forgot']);
-$router->post('/password/forgot', [\App\Controllers\Auth\PasswordResetController::class, 'sendLink']);
+// '/password/forgot' (GET/HEAD/POST) se retiró de este bloque en la Tarea 10 (S02
+// MIGRATION_COMPLETE, gate explícito de Felipe): GET/HEAD ya los sirve SpaRouter/
+// SpaHostRenderer antes de llegar aquí (RUTAS_EXACTAS_MIGRADAS sigue incluyendo la ruta),
+// y el POST legado ya no tiene controlador — cae al 404 controlado del producto porque
+// '/password/forgot' permanece en $publicRoutes.
 $router->get('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'reset']);
 $router->post('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'update']);
 $router->post('/password/update', [\App\Controllers\Auth\LoginController::class, 'updatePassword']);
