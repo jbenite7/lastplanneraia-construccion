@@ -117,7 +117,7 @@ assert.ok(manifest.sources.includes('public/css/auth-react.css'));
 // retiró en la Tarea 10 tras el gate de Felipe: ya no debe aparecer como fuente.
 assert.ok(!manifest.sources.includes('views/auth/password-forgot.view.php'));
 assert.ok(manifest.sources.includes('views/auth/password-reset.view.php'));
-assert.ok(!manifest.sources.some((source) => /password-forgot|password-reset/.test(source) && source.endsWith('.tsx')));
+assert.ok(!manifest.sources.some((source) => /password-forgot/.test(source) && source.endsWith('.tsx')));
 
 assert.deepEqual(manifest.layouts.slice().sort(), ['desktop', 'mobile', 'tablet', 'wide']);
 for (const state of ['normal', 'error', 'focus', 'busy', 'password-change', 'cancel-confirmation']) {
@@ -130,8 +130,8 @@ assert.doesNotMatch(manifest.persistence.theme, /^none\b/, 'auth.json must no lo
 // --- Recuperación de clave React (Tarea 7, S02): manifiesto y presentación --------
 // PantallaRecuperarClave.tsx (S02) es la pantalla pública única de `/password/forgot`.
 // Su contraparte legacy (password-forgot.view.php, VIEW-02) se retiró en la Tarea 10
-// tras el gate explícito de Felipe; password-reset.view.php (VIEW-03) sigue sin React
-// propio y por eso permanece siempre.
+// tras el gate explícito de Felipe; password-reset.view.php (VIEW-03) permanece como fuente de
+// rollback de S03 hasta su Tarea 10 (su React es PantallaRestablecerClave.tsx, bloque S03).
 const pantallaRecuperarClave = read('frontend/src/shell/auth/PantallaRecuperarClave.tsx');
 
 assert.ok(
