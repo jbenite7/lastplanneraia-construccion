@@ -15,7 +15,9 @@ const routes = [
 const AGGREGATOR = 'link[href^="/runtime/css/aia-design-system.css"]';
 const CORE = 'link[href^="/runtime/css/design-system/entrypoints/core.css"]';
 
-// Superficies migradas: core + adjuntos declarados, nunca el agregador ni CSS de grilla.
+// Superficies migradas al design system segmentado: core + adjuntos declarados, nunca el
+// agregador ni CSS de grilla. «Migrada» aquí es al entrypoint segmentado, no a React.
+
 async function expectSegmentedHead(page, { attachments }) {
   await expect(page.locator(CORE)).toHaveCount(1);
   await expect(page.locator(AGGREGATOR)).toHaveCount(0);
@@ -56,10 +58,38 @@ test('project selector loads the segmented core without grid vendors', async ({ 
   }
 });
 
-test('auth surfaces load the segmented core with only their declared attachments', async ({ page }) => {
-  for (const route of ['/login', '/password/forgot', '/password/reset']) {
+// Las tres superficies de acceso (`/login`, `/password/forgot`, `/password/reset`) ya no las
+// sirve una vista PHP: las sirve el shell React desde `App\Core\SpaHostRenderer`, con el head
+// fijo de `public/app/index.html`. No queda ninguna ruta GET de acceso en PHP — `views/auth/
+// login.view.php` solo atiende el POST legado —, así que este spec no conserva un caso PHP de
+// acceso; el head segmentado sigue cubierto por el test de `/proyectos`.
+const AUTH_REACT_ROUTES = ['/login', '/password/forgot', '/password/reset'];
+
+async function expectReactShellHead(page) {
+  for (const href of ['/css/tokens.css', '/css/aia-design-system.css', '/css/auth-react.css']) {
+    await expect(page.locator(`link[href^="${href}"]`), href).toHaveCount(1);
+  }
+  // El tema lo fija el HTML construido (hoy `theme-claro.css`, el fallback del shell).
+  await expect(page.locator('link[href^="/css/design-system/theme-"]')).toHaveCount(1);
+  await expect(page.locator('link[href^="/css/design-system/theme-claro.css"]')).toHaveCount(1);
+  await expect(page.locator('link[href^="/app/assets/index-"][href$=".css"]')).toHaveCount(1);
+  await expect(page.locator('script[type="module"][src^="/app/assets/index-"]')).toHaveCount(1);
+
+  // Nada del serving runtime segmentado ni de los adjuntos de vendor.
+  await expect(page.locator(CORE)).toHaveCount(0);
+  await expect(page.locator(AGGREGATOR)).toHaveCount(0);
+  for (const vendor of ['jquery-ui', 'anychart', 'select2', 'sweetalert2', 'handsontable']) {
+    const locator = page.locator(`link[href^="/runtime/css/design-system/entrypoints/attach-${vendor}.css"]`);
+    await expect(locator, `attach-${vendor}`).toHaveCount(0);
+  }
+  await expect(page.locator('link[href*="handsontable-module.css"]')).toHaveCount(0);
+}
+
+test('auth surfaces load the React shell head', async ({ page }) => {
+  for (const route of AUTH_REACT_ROUTES) {
     const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
     expect(response?.status(), `${route} must respond`).toBeLessThan(400);
-    await expectSegmentedHead(page, { attachments: ['sweetalert2'] });
+    await expectReactShellHead(page);
+    expect(await page.locator('body').innerText()).not.toContain('Fatal error');
   }
 });

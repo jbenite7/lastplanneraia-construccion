@@ -116,8 +116,19 @@ cabecera `X-CSRF-Token`, atendido por `App\Controllers\Api\PasswordRecoveryApiCo
 El legado `POST /password/forgot` (formulario PHP, `PasswordResetController::sendLink()`)
 se retiró tras el gate explícito de Felipe sobre los candidatos visuales aprobados: sin
 controlador registrado, ese verbo cae en el 404 controlado del producto, nunca en el
-formulario ni en redirect de login. `/password/reset` (S03) sigue siendo del sitio PHP,
-sin migrar, servido por `PasswordResetController::reset()`/`update()`.
+formulario ni en redirect de login.
+
+**Corregido (S03, Tarea 10, 2026-09-17):** `/password/reset` ya no es del sitio PHP.
+`GET/HEAD /password/reset` los sirve la misma pantalla React (`PantallaRestablecerClave`,
+shell `frontend/src/shell/auth/`) vía `SpaHostRenderer`, con `Referrer-Policy: no-referrer`
+y `Cache-Control: no-store` porque el enlace lleva el token en la URL. La validación del
+enlace es fetch a `POST /api/auth/password/reset/validate` y el cambio de clave es fetch a
+`POST /api/auth/password/reset`, los dos atendidos por
+`App\Controllers\Api\PasswordResetApiController` con CSRF del canal `shell_api`
+(`X-CSRF-Token`). El legado `POST /password/reset` se retiró con el mismo gate explícito de
+Felipe: `views/auth/password-reset.view.php` y `src/Controllers/Auth/PasswordResetController.php`
+ya no existen y ese verbo cae en el 404 controlado del producto, nunca en el formulario PHP
+ni en un redirect de login.
 
 Pasos:
 
@@ -127,20 +138,26 @@ Pasos:
    correos; el enlace real solo llega si la cuenta existe (email generado con `APP_URL`).
 4. Si el correo es inválido o falta CSRF, ver 422/403 asociado al campo o a la alerta,
    sin mutar nada; si el envío de correo falla, 503 con aviso honesto y correo preservado.
-5. Entrar a `/password/reset` (legado PHP) desde el enlace recibido.
-6. Enviar nueva clave.
-7. Volver a login.
+5. Entrar a `/password/reset?token=…` (React) desde el enlace recibido: la pantalla valida
+   el enlace contra `POST /api/auth/password/reset/validate` y, si no sirve, muestra un único
+   estado inválido sin revelar identidad, con enlace para solicitar uno nuevo.
+6. Enviar la nueva clave y su confirmación: fetch a `POST /api/auth/password/reset`. Las
+   reglas (longitud, mayúscula, carácter especial, coincidencia, clave anterior) siguen
+   siendo autoridad de PHP; los 422 vuelven mapeados al campo, el 403 de CSRF se recupera sin
+   reenviar y el 410 de token consumido se vuelve el mismo estado inválido.
+7. Volver a login: el éxito redirige con `replace` a `/login?reset=1`, que muestra el aviso
+   de S01.
 
 Auditoria tecnica:
 
 | Campo | Detalle |
 |---|---|
-| UI | `/password/forgot` (React, `PantallaRecuperarClave`), `/password/reset` (PHP legado, S03) |
-| API/ruta | `GET /password/forgot` (React), `POST /api/auth/password/forgot` (JSON, CSRF), `GET/POST /password/reset` (legado) |
-| Controlador | `App\Controllers\Api\PasswordRecoveryApiController` (recuperación); `App\Controllers\Auth\PasswordResetController::reset()`/`update()` (reset, S03) |
+| UI | `/password/forgot` (React, `PantallaRecuperarClave`), `/password/reset` (React, `PantallaRestablecerClave`) |
+| API/ruta | `GET /password/forgot` y `GET/HEAD /password/reset` (shell React), `POST /api/auth/password/forgot`, `POST /api/auth/password/reset/validate`, `POST /api/auth/password/reset` (JSON, CSRF `shell_api`). `POST /password/forgot` y `POST /password/reset` legados: retirados, 404 controlado |
+| Controlador | `App\Controllers\Api\PasswordRecoveryApiController` (recuperación); `App\Controllers\Api\PasswordResetApiController` (restablecimiento). `App\Controllers\Auth\PasswordResetController` ya no existe |
 | Persistencia | `password_reset_tokens`, usuario |
 | Dependencia | SMTP en `.env`, patch de tokens aplicado |
-| Tests actuales | `tests/test_api_password_recovery_contract.php`, `tests/test_api_password_recovery_http.php`, `tests/browser/password-recovery-react.spec.mjs`, goldens en `tests/browser/password-recovery-react.visual.mjs` |
+| Tests actuales | `tests/test_api_password_recovery_contract.php`, `tests/test_api_password_recovery_http.php`, `tests/test_api_password_reset_contract.php`, `tests/test_api_password_reset_http.php`, `tests/browser/password-recovery-react.spec.mjs`, `tests/browser/password-reset-react.spec.mjs`, goldens en `tests/browser/password-recovery-react.visual.mjs` y `tests/browser/password-reset-react.visual.mjs` |
 | Riesgo | Muta clave; requiere SMTP |
 
 ### 3.3 Selector de proyecto

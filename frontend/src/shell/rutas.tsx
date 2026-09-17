@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import type { ConfiguracionRuntime } from '../lib/runtime/configuracion';
 import { AppShell } from './AppShell';
 import { CambioClaveObligatorio } from './auth/CambioClaveObligatorio';
 import { limpiarParametrosAviso, resolverAvisoAcceso } from './auth/avisos';
 import { PantallaLogin } from './auth/PantallaLogin';
 import { PantallaRecuperarClave } from './auth/PantallaRecuperarClave';
+import { PantallaRestablecerClave } from './auth/PantallaRestablecerClave';
+import { leerTokenReset } from './auth/tokenReset';
 import { SelectorProyecto } from './SelectorProyecto';
 import { SesionProvider, useSesion } from './SesionProvider';
 
@@ -37,14 +39,16 @@ export function Rutas({ configuracionRuntime = CONFIGURACION_APLICACION_POR_DEFE
   // Un único `BrowserRouter` para toda la rama de aplicación (S02, Tarea 4). Vive aquí y no en
   // `App` porque `Rutas` se monta sola en las pruebas y `AppShell` necesita un router alrededor.
   // Las rutas públicas de acceso se resuelven ANTES de la máquina de estados por sesión: en
-  // `/password/forgot` la pantalla de recuperación se ve igual con sesión anónima, pendiente de
-  // cambio de clave o autenticada. Todo lo demás cae en `RutasSegunSesion`, sin cambios de orden.
+  // `/password/forgot` (S02) y `/password/reset` (S03) la pantalla pública se ve igual con sesión
+  // anónima, pendiente de cambio de clave o autenticada. Todo lo demás cae en `RutasSegunSesion`, sin cambios de orden.
   return (
     <BrowserRouter>
       <SesionProvider>
         <Routes>
           <Route element={<RutaRecuperacion />} path="/password/forgot" />
           <Route element={<RutaRecuperacion />} path="/app/password/forgot" />
+          <Route element={<RutaRestablecimiento />} path="/password/reset" />
+          <Route element={<RutaRestablecimiento />} path="/app/password/reset" />
           <Route element={<RutasSegunSesion />} path="*" />
         </Routes>
       </SesionProvider>
@@ -71,16 +75,20 @@ function ErrorArranqueRecuperable({ logoutSinConfirmar, recargar }: { logoutSinC
   );
 }
 
+type PropsPantallaPublica = { csrfToken: string; alRevalidar: () => Promise<void> };
+
 /**
- * Ruta pública de recuperación de clave (S02). Espera el bootstrap solo para obtener el token
+ * Marco común de las rutas públicas de acceso: recuperación (S02) y restablecimiento (S03).
+ * Nació como `RutaRecuperacion` y se generalizó en S03 (Tarea 4) para que ambas compartan el
+ * mismo comportamiento de arranque y revalidación en vez de duplicarlo. Espera el bootstrap solo para obtener el token
  * CSRF; una vez resuelto, ignora el estado de sesión (anónimo, cambio de clave pendiente o
- * autenticado) y pinta la recuperación.
+ * autenticado) y pinta la pantalla que le pasa `pintar`.
  *
  * **Ronda de arreglo 1 (S02-UX-06):** "Cargando…" solo se pinta en la carga INICIAL, antes de
  * que exista algún bootstrap. `alRevalidar` (el botón "Actualizar sesión" tras un 403
  * `csrf_invalid`) es `recargar()`, que pone `estado` en `cargando` y `arranque` en `null`
  * mientras pide un bootstrap nuevo (`SesionProvider.recargar`) — sin este resguardo, esa
- * revalidación desmontaba `PantallaRecuperarClave` y perdía el correo tecleado y el foco
+ * revalidación desmontaba la pantalla pública y perdía el correo tecleado y el foco
  * (reproducido en `.superpowers/sdd/2026-08-30-s02-recuperar-clave-react/revisor-403.mjs`,
  * cubierto en `rutas.test.tsx`). `huboArranquePrevio` distingue "nunca hubo sesión" (sí muestra
  * "Cargando…", como ya prueba el escenario de bootstrap en vuelo/fallido de más abajo) de "ya
@@ -90,13 +98,13 @@ function ErrorArranqueRecuperable({ logoutSinConfirmar, recargar }: { logoutSinC
  * **Ola final de la revisión S02:** la revalidación también puede FALLAR (`/api/session` en 500).
  * Antes, ese `error_recuperable` reemplazaba la pantalla por `ErrorArranqueRecuperable` y se
  * perdía el correo. Ahora, si ya hubo un arranque, la pantalla sigue montada y `alRevalidar`
- * **rechaza**, para que `PantallaRecuperarClave` cuente el fallo dentro («No pudimos actualizar la
+ * **rechaza**, para que la pantalla cuente el fallo dentro («No pudimos actualizar la
  * sesión») y deje el foco en «Actualizar sesión». `recargar()` no lanza ni devuelve el resultado,
  * así que la promesa se liquida desde un efecto cuando la sesión sale de `cargando`: leer `estado`
  * justo después de `await recargar()` daría el valor viejo. `generacion` va en las dependencias
  * por si React agrupa `cargando` y el resultado final en un solo commit.
  */
-function RutaRecuperacion() {
+function RutaPublicaAcceso({ pintar }: { pintar: (props: PropsPantallaPublica) => ReactNode }) {
   const { estado, arranque, recargar, logoutSinConfirmar, generacion } = useSesion();
   const huboArranquePrevio = useRef(false);
   const csrfDeUltimoArranque = useRef('');
@@ -136,10 +144,29 @@ function RutaRecuperacion() {
     return <ErrorArranqueRecuperable logoutSinConfirmar={logoutSinConfirmar} recargar={recargar} />;
   }
 
+  return pintar({ csrfToken: arranque?.csrfToken ?? csrfDeUltimoArranque.current, alRevalidar });
+}
+
+function RutaRecuperacion() {
+  return <RutaPublicaAcceso pintar={(props) => <PantallaRecuperarClave {...props} />} />;
+}
+
+/**
+ * Ruta pública de restablecimiento (S03). El token se lee de la query UNA vez por `search`
+ * (`leerTokenReset`, estricto) y solo viaja por props a la pantalla: nunca a contexto, estado
+ * global, logs ni DOM. La pantalla recibe `csrfToken`, `enlace`, `alRevalidar` y `alCompletar`; jamás
+ * usuario ni proyecto.
+ */
+function RutaRestablecimiento() {
+  const { search } = useLocation();
+  const navigate = useNavigate();
+  const enlace = useMemo(() => leerTokenReset(search), [search]);
+  // Tarea 7: `replace` saca del historial la URL con el token; el aviso `reset=1` lo pinta el
+  // login de S01. La pantalla solo llama esto con la ruta segura fija (`RUTA_EXITO`).
+  const alCompletar = useCallback((ruta: string) => navigate(ruta, { replace: true }), [navigate]);
   return (
-    <PantallaRecuperarClave
-      csrfToken={arranque?.csrfToken ?? csrfDeUltimoArranque.current}
-      alRevalidar={alRevalidar}
+    <RutaPublicaAcceso
+      pintar={(props) => <PantallaRestablecerClave enlace={enlace} alCompletar={alCompletar} {...props} />}
     />
   );
 }

@@ -1,5 +1,12 @@
 import { ApiError } from './cliente';
-import { cambiarClave, cancelarCambioClave, iniciarSesion, solicitarRecuperacion } from './auth';
+import {
+  cambiarClave,
+  cancelarCambioClave,
+  iniciarSesion,
+  restablecerClave,
+  solicitarRecuperacion,
+  validarEnlaceReset,
+} from './auth';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -134,4 +141,93 @@ test('solicitarRecuperacion propaga un ApiError tipado cuando el servidor respon
   expect((error as ApiError).tipo).toBe('http');
   expect((error as ApiError).status).toBe(422);
   expect((error as ApiError).camposInvalidos?.email).toBe('correo inválido');
+});
+
+// --- validarEnlaceReset / restablecerClave (S03) -----------------------
+
+const TOKEN = 'a'.repeat(64);
+
+test('validarEnlaceReset envía el token por POST con el header CSRF y devuelve el estado parseado', async () => {
+  const fetchFalso = vi.fn().mockResolvedValue(respuesta({ success: true, state: 'valid' }));
+  vi.stubGlobal('fetch', fetchFalso);
+  const controller = new AbortController();
+
+  const resultado = await validarEnlaceReset(TOKEN, CSRF, controller.signal);
+
+  expect(resultado).toEqual({ success: true, state: 'valid' });
+  expect(fetchFalso).toHaveBeenCalledWith(
+    '/api/auth/password/reset/validate',
+    expect.objectContaining({ method: 'POST', signal: controller.signal }),
+  );
+  const opciones = fetchFalso.mock.calls[0]?.[1] as RequestInit;
+  const encabezados = new Headers(opciones.headers);
+  expect(encabezados.get('X-CSRF-Token')).toBe(CSRF);
+  expect(JSON.parse(opciones.body as string)).toEqual({ token: TOKEN });
+});
+
+test('validarEnlaceReset rechaza localmente un token con formato inválido, sin llamar a fetch', async () => {
+  const fetchFalso = vi.fn();
+  vi.stubGlobal('fetch', fetchFalso);
+
+  await expect(validarEnlaceReset('token-corto', CSRF)).rejects.toThrow();
+  expect(fetchFalso).not.toHaveBeenCalled();
+});
+
+test('restablecerClave envía token, password y confirmPassword a /api/auth/password/reset', async () => {
+  const fetchFalso = vi.fn().mockResolvedValue(
+    respuesta({ success: true, message: 'Contraseña restablecida correctamente.', redirect: '/login?reset=1' }),
+  );
+  vi.stubGlobal('fetch', fetchFalso);
+
+  const resultado = await restablecerClave(
+    { token: TOKEN, password: 'Abcdef!', confirmPassword: 'Abcdef!' },
+    CSRF,
+  );
+
+  expect(resultado).toEqual({
+    success: true,
+    message: 'Contraseña restablecida correctamente.',
+    redirect: '/login?reset=1',
+  });
+  expect(fetchFalso).toHaveBeenCalledWith(
+    '/api/auth/password/reset',
+    expect.objectContaining({ method: 'POST' }),
+  );
+  const opciones = fetchFalso.mock.calls[0]?.[1] as RequestInit;
+  const encabezados = new Headers(opciones.headers);
+  expect(encabezados.get('X-CSRF-Token')).toBe(CSRF);
+  expect(JSON.parse(opciones.body as string)).toEqual({
+    token: TOKEN,
+    password: 'Abcdef!',
+    confirmPassword: 'Abcdef!',
+  });
+});
+
+test('restablecerClave rechaza localmente contraseñas que no cumplen la política, sin llamar a fetch', async () => {
+  const fetchFalso = vi.fn();
+  vi.stubGlobal('fetch', fetchFalso);
+
+  await expect(
+    restablecerClave({ token: TOKEN, password: 'abc', confirmPassword: 'abc' }, CSRF),
+  ).rejects.toThrow();
+  expect(fetchFalso).not.toHaveBeenCalled();
+});
+
+test('restablecerClave propaga un ApiError tipado cuando el enlace ya no es válido', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(
+      respuesta({ error: { codigo: 'reset_token_invalid', mensaje: 'El enlace no es válido o ya expiró.' } }, 422),
+    ),
+  );
+
+  const error = await restablecerClave(
+    { token: TOKEN, password: 'Abcdef!', confirmPassword: 'Abcdef!' },
+    CSRF,
+  ).catch((causa: unknown) => causa);
+
+  expect(error).toBeInstanceOf(ApiError);
+  expect((error as ApiError).tipo).toBe('http');
+  expect((error as ApiError).status).toBe(422);
+  expect((error as ApiError).codigo).toBe('reset_token_invalid');
 });

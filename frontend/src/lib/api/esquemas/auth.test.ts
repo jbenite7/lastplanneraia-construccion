@@ -1,11 +1,16 @@
 import {
+  EsquemaEstadoEnlaceReset,
   EsquemaRecuperacionAceptada,
   EsquemaRespuestaCambioClave,
   EsquemaRespuestaCancelacionClave,
   EsquemaRespuestaLogin,
+  EsquemaRestablecimientoAceptado,
   EsquemaSolicitudCambioClave,
   EsquemaSolicitudLogin,
   EsquemaSolicitudRecuperacion,
+  EsquemaSolicitudRestablecerClave,
+  EsquemaSolicitudValidarReset,
+  MENSAJE_ENLACE_RESET_INVALIDO,
 } from './auth';
 
 const MENSAJE_GENERICO_RECUPERACION =
@@ -85,4 +90,79 @@ test('la respuesta pública de recuperación nunca acepta el resultado interno',
       message: MENSAJE_GENERICO_RECUPERACION,
     }).success,
   ).toBe(true);
+});
+
+// --- Restablecimiento de contraseña (S03) --------------------------------
+
+const TOKEN = 'a'.repeat(64);
+
+test('el enlace S03 solo acepta un token hex exacto', () => {
+  expect(EsquemaSolicitudValidarReset.parse({ token: TOKEN })).toEqual({ token: TOKEN });
+  expect(EsquemaSolicitudValidarReset.safeParse({ token: TOKEN.toUpperCase() }).success).toBe(false);
+  expect(EsquemaSolicitudValidarReset.safeParse({ token: TOKEN, scope: 'admin' }).success).toBe(false);
+});
+
+function firstResetIssue(password: string, confirmPassword: string) {
+  const result = EsquemaSolicitudRestablecerClave.safeParse({ token: TOKEN, password, confirmPassword });
+  expect(result.success).toBe(false);
+  if (result.success) throw new Error('Se esperaba una validación S03 fallida');
+  return result.error.issues[0];
+}
+
+test('la política cliente conserva las cuatro comprobaciones observables', () => {
+  expect(firstResetIssue('abc', 'abc').message).toBe('La contraseña debe tener al menos 6 caracteres');
+  expect(firstResetIssue('abcdef!', 'abcdef!').message).toBe('Debe contener al menos una letra mayúscula');
+  expect(firstResetIssue('Abcdef', 'Abcdef').message).toBe(
+    'Debe contener al menos un carácter especial (!@#$%...)',
+  );
+  expect(firstResetIssue('Abcdef!', 'Otra1!').path).toEqual(['confirmPassword']);
+});
+
+test('la solicitud S03 acepta una contraseña válida y coincidente', () => {
+  expect(
+    EsquemaSolicitudRestablecerClave.safeParse({
+      token: TOKEN,
+      password: 'Abcdef!',
+      confirmPassword: 'Abcdef!',
+    }).success,
+  ).toBe(true);
+});
+
+test('el estado del enlace S03 solo acepta valid o invalid con el mensaje fijo', () => {
+  expect(EsquemaEstadoEnlaceReset.safeParse({ success: true, state: 'valid' }).success).toBe(true);
+  expect(
+    EsquemaEstadoEnlaceReset.safeParse({
+      success: true,
+      state: 'invalid',
+      message: MENSAJE_ENLACE_RESET_INVALIDO,
+    }).success,
+  ).toBe(true);
+});
+
+test('invalid nunca acepta identidad o razón interna', () => {
+  expect(
+    EsquemaEstadoEnlaceReset.safeParse({
+      success: true,
+      state: 'invalid',
+      message: MENSAJE_ENLACE_RESET_INVALIDO,
+      username: 'test.A',
+    }).success,
+  ).toBe(false);
+});
+
+test('la respuesta de restablecimiento aceptado fija mensaje y redirect', () => {
+  expect(
+    EsquemaRestablecimientoAceptado.safeParse({
+      success: true,
+      message: 'Contraseña restablecida correctamente.',
+      redirect: '/login?reset=1',
+    }).success,
+  ).toBe(true);
+  expect(
+    EsquemaRestablecimientoAceptado.safeParse({
+      success: true,
+      message: 'otro mensaje',
+      redirect: '/login?reset=1',
+    }).success,
+  ).toBe(false);
 });

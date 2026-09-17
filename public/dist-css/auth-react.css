@@ -94,6 +94,10 @@
     inline-size: 100%;
     padding-inline-end: calc(var(--ds-target-min) + var(--ds-space-1));
   }
+  .aia-auth .aia-input::placeholder {
+    color: var(--ds-active-text-secondary);
+    opacity: 1;
+  }
   .aia-auth__campo-adorno,
   .aia-auth__clave-toggle {
     position: absolute;

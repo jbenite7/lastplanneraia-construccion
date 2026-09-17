@@ -43,7 +43,7 @@ if (file_exists(PROJECT_ROOT . '/.env')) {
 }
 
 // 3.5 Verificar Sesión y Timeout (Protección Universal)
-$publicRoutes = ['/', '/login', '/login/cancelar', '/password/forgot', '/password/reset', '/password/update', '/api/session', '/api/auth/login', '/api/auth/logout', '/api/auth/password/change', '/api/auth/password/cancel', '/api/auth/password/forgot', '/runtime/frontend-config.js', '/runtime/css/aia-design-system.css', '/runtime/css/design-system/lab-entrypoint.css', '/runtime/css/design-system/entrypoints/core.css', '/runtime/css/design-system/entrypoints/attach-jquery-ui.css', '/runtime/css/design-system/entrypoints/attach-anychart.css', '/runtime/css/design-system/entrypoints/attach-select2.css', '/runtime/css/design-system/entrypoints/attach-sweetalert2.css', '/runtime/css/design-system/entrypoints/attach-handsontable.css', MaintenanceMode::SECRET_PATH];
+$publicRoutes = ['/', '/login', '/login/cancelar', '/password/forgot', '/password/reset', '/password/update', '/api/session', '/api/auth/login', '/api/auth/logout', '/api/auth/password/change', '/api/auth/password/cancel', '/api/auth/password/forgot', '/api/auth/password/reset/validate', '/api/auth/password/reset', '/runtime/frontend-config.js', '/runtime/css/aia-design-system.css', '/runtime/css/design-system/lab-entrypoint.css', '/runtime/css/design-system/entrypoints/core.css', '/runtime/css/design-system/entrypoints/attach-jquery-ui.css', '/runtime/css/design-system/entrypoints/attach-anychart.css', '/runtime/css/design-system/entrypoints/attach-select2.css', '/runtime/css/design-system/entrypoints/attach-sweetalert2.css', '/runtime/css/design-system/entrypoints/attach-handsontable.css', MaintenanceMode::SECRET_PATH];
 
 // Puerta de servicio de desarrollo: solo existe si el candado triple lo permite
 // (APP_ENV development/testing + petición local + DEV_DOOR=1). Ver src/Core/DevDoor.php.
@@ -104,8 +104,12 @@ $router->post('/login', [\App\Controllers\Auth\LoginController::class, 'login'])
 // SpaHostRenderer antes de llegar aquí (RUTAS_EXACTAS_MIGRADAS sigue incluyendo la ruta),
 // y el POST legado ya no tiene controlador — cae al 404 controlado del producto porque
 // '/password/forgot' permanece en $publicRoutes.
-$router->get('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'reset']);
-$router->post('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'update']);
+// '/password/reset' (GET/HEAD/POST) se retiró de este bloque en la Tarea 10 (S03
+// MIGRATION_COMPLETE, gate explícito de Felipe): GET/HEAD ya los sirve SpaRouter/
+// SpaHostRenderer antes de llegar aquí (RUTAS_EXACTAS_MIGRADAS sigue incluyendo la ruta),
+// y el POST legado ya no tiene controlador — cae al 404 controlado del producto porque
+// '/password/reset' permanece en $publicRoutes. El restablecimiento real vive en
+// '/api/auth/password/reset/validate' y '/api/auth/password/reset'.
 $router->post('/password/update', [\App\Controllers\Auth\LoginController::class, 'updatePassword']);
 $router->get('/login/cancelar', [\App\Controllers\Auth\LoginController::class, 'cancelPasswordChange']);
 $router->get('/logout', [\App\Controllers\Auth\LoginController::class, 'logout']);
@@ -171,6 +175,8 @@ $router->post('/api/auth/logout', [\App\Controllers\Api\AuthApiController::class
 $router->post('/api/auth/password/change', [\App\Controllers\Api\AuthApiController::class, 'changePassword']);
 $router->post('/api/auth/password/cancel', [\App\Controllers\Api\AuthApiController::class, 'cancelPasswordChange']);
 $router->post('/api/auth/password/forgot', [\App\Controllers\Api\PasswordRecoveryApiController::class, 'request']);
+$router->post('/api/auth/password/reset/validate', [\App\Controllers\Api\PasswordResetApiController::class, 'validateLink']);
+$router->post('/api/auth/password/reset', [\App\Controllers\Api\PasswordResetApiController::class, 'update']);
 $router->get('/api/proyectos', [\App\Controllers\Api\ProjectApiController::class, 'index']);
 $router->post('/api/proyectos/seleccionar', [\App\Controllers\Api\ProjectApiController::class, 'select']);
 
@@ -401,6 +407,12 @@ $router->get('/bi/curva-s', [\App\Controllers\Bi\BiViewController::class, 'curva
 // el mismo HTML y React decide qué pantalla mostrar. Solo GET/HEAD cruzan aquí —
 // ver App\Core\SpaRouter::coincideConMapa().
 if (\App\Core\SpaRouter::sirveLaSpa($requestUri, $requestMethod)) {
+    // S03 (Tarea 8): la URL de restablecimiento (canónica y piloto /app) lleva el token en la query. no-referrer evita
+    // que viaje en el Referer de cualquier recurso o enlace, y no-store que quede en caché.
+    if (in_array($requestUri, ['/password/reset', '/app/password/reset'], true)) {
+        header('Referrer-Policy: no-referrer');
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    }
     \App\Core\SpaHostRenderer::render([], 200, $requestMethod);
     exit;
 }

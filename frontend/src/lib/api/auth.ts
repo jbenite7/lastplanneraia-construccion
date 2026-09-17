@@ -1,18 +1,25 @@
 import { pedir } from './cliente';
 import {
+  EsquemaEstadoEnlaceReset,
   EsquemaRecuperacionAceptada,
   EsquemaRespuestaCambioClave,
   EsquemaRespuestaCancelacionClave,
   EsquemaRespuestaLogin,
+  EsquemaRestablecimientoAceptado,
   EsquemaSolicitudCambioClave,
   EsquemaSolicitudLogin,
   EsquemaSolicitudRecuperacion,
+  EsquemaSolicitudRestablecerClave,
+  EsquemaSolicitudValidarReset,
+  type EstadoEnlaceReset,
   type RecuperacionAceptada,
   type RespuestaCambioClave,
   type RespuestaCancelacionClave,
   type RespuestaLogin,
+  type RestablecimientoAceptado,
   type SolicitudCambioClave,
   type SolicitudLogin,
+  type SolicitudRestablecerClave,
 } from './esquemas/auth';
 
 /**
@@ -61,6 +68,39 @@ export async function solicitarRecuperacion(
   const solicitud = EsquemaSolicitudRecuperacion.parse({ email });
 
   return pedir('/api/auth/password/forgot', EsquemaRecuperacionAceptada, {
+    method: 'POST',
+    headers: { 'X-CSRF-Token': csrfToken },
+    body: JSON.stringify(solicitud),
+  });
+}
+
+/**
+ * `signal` solo aplica aquí: validar el enlace ocurre al montar la pantalla y se
+ * puede cancelar (navegación fuera, doble montaje de React en desarrollo);
+ * `restablecerClave` es un envío explícito de formulario, sin necesidad de abortar.
+ */
+export async function validarEnlaceReset(
+  token: string,
+  csrfToken: string,
+  signal?: AbortSignal,
+): Promise<EstadoEnlaceReset> {
+  const solicitud = EsquemaSolicitudValidarReset.parse({ token });
+
+  return pedir('/api/auth/password/reset/validate', EsquemaEstadoEnlaceReset, {
+    method: 'POST',
+    headers: { 'X-CSRF-Token': csrfToken },
+    body: JSON.stringify(solicitud),
+    signal,
+  });
+}
+
+export async function restablecerClave(
+  input: SolicitudRestablecerClave,
+  csrfToken: string,
+): Promise<RestablecimientoAceptado> {
+  const solicitud = EsquemaSolicitudRestablecerClave.parse(input);
+
+  return pedir('/api/auth/password/reset', EsquemaRestablecimientoAceptado, {
     method: 'POST',
     headers: { 'X-CSRF-Token': csrfToken },
     body: JSON.stringify(solicitud),

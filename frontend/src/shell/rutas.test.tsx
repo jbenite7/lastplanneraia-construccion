@@ -12,6 +12,25 @@ function responderSesion(cuerpo: unknown) {
   ));
 }
 
+/**
+ * Como `responderSesion`, pero discrimina por URL: `/api/session` responde `cuerpoSesion` y
+ * `/api/auth/password/reset/validate` responde `cuerpoValidacion` (S03, Tarea 5) — desde que
+ * `PantallaRestablecerClave` llama a `validarEnlaceReset` de verdad, un solo cuerpo para toda
+ * llamada ya no alcanza.
+ */
+function responderSesionYValidacion(cuerpoSesion: unknown, cuerpoValidacion: unknown) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/auth/password/reset/validate')) {
+        return Promise.resolve(new Response(JSON.stringify(cuerpoValidacion), { status: 200 }));
+      }
+      return Promise.resolve(new Response(JSON.stringify(cuerpoSesion), { status: 200 }));
+    }),
+  );
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
   window.history.pushState({}, '', '/');
@@ -548,4 +567,223 @@ test('App monta la recuperación de clave en /password/forgot', async () => {
   render(<App />);
 
   expect(await screen.findByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
+});
+
+// --- S03: la ruta pública de restablecimiento prevalece sobre el estado de sesión (Tarea 4) --
+
+const TOKEN_RESET = 'a'.repeat(64);
+
+function llamadasA(fragmento: string): number {
+  const simulado = globalThis.fetch as unknown as { mock: { calls: unknown[][] } };
+  return simulado.mock.calls.filter(([entrada]) => String(entrada).includes(fragmento)).length;
+}
+
+test.each([
+  ['anónima', '/password/reset', ANONIMA_MISSING_SESSION],
+  ['con cambio de clave pendiente', '/password/reset', PENDIENTE_CAMBIO_CLAVE],
+  ['autenticada sin proyecto', '/password/reset', AUTENTICADA_SIN_PROYECTO],
+  ['autenticada con proyecto', '/password/reset', AUTENTICADA_CON_PROYECTO],
+  ['anónima', '/app/password/reset', ANONIMA_MISSING_SESSION],
+  ['con cambio de clave pendiente', '/app/password/reset', PENDIENTE_CAMBIO_CLAVE],
+  ['autenticada con proyecto', '/app/password/reset', AUTENTICADA_CON_PROYECTO],
+])('el restablecimiento prevalece sobre una sesión %s en %s', async (_nombre, ruta, cuerpo) => {
+  window.history.pushState({}, '', `${ruta}?token=${TOKEN_RESET}`);
+  responderSesionYValidacion(cuerpo, { success: true, state: 'valid' });
+
+  render(<Rutas />);
+
+  expect(await screen.findByRole('heading', { name: 'Define tu nueva contraseña' })).toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /bienvenido a last planner aia/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Actualizar y continuar' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+  expect(screen.queryByText('test.A')).not.toBeInTheDocument();
+  expect(screen.queryByText('Ana')).not.toBeInTheDocument();
+  // El token nunca se pinta.
+  expect(document.body.textContent ?? '').not.toContain(TOKEN_RESET);
+});
+
+test.each([
+  ['/password/reset', ''],
+  ['/password/reset', '?token=abc'],
+  ['/password/reset', `?token=${TOKEN_RESET}&token=${TOKEN_RESET}`],
+  ['/app/password/reset', ''],
+  ['/app/password/reset', `?token=${TOKEN_RESET.toUpperCase()}`],
+])('%s%s sin token válido muestra el enlace inválido sin llamar a la API de restablecimiento', async (ruta, query) => {
+  window.history.pushState({}, '', `${ruta}${query}`);
+  responderSesion(AUTENTICADA_CON_PROYECTO);
+
+  render(<Rutas />);
+
+  expect(await screen.findByText('El enlace no es válido o ya expiró. Solicita uno nuevo.')).toBeInTheDocument();
+  expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+  expect(llamadasA('/api/auth/password/reset')).toBe(0);
+});
+
+test('en la ruta de restablecimiento, el bootstrap en vuelo muestra "Cargando…" y un fallo la alerta recuperable', async () => {
+  window.history.pushState({}, '', `/password/reset?token=${TOKEN_RESET}`);
+  vi.stubGlobal('fetch', vi.fn()
+    .mockRejectedValueOnce(new Error('red no disponible'))
+    .mockReturnValueOnce(new Promise<Response>(() => {})));
+
+  render(<Rutas />);
+
+  expect(screen.getByRole('status')).toHaveTextContent(/cargando/i);
+  expect(await screen.findByRole('alert')).toHaveTextContent(/no pudimos conectar/i);
+  expect(screen.queryByRole('heading', { name: 'Define tu nueva contraseña' })).not.toBeInTheDocument();
+});
+
+test('App monta el restablecimiento en /password/reset', async () => {
+  window.history.pushState({}, '', `/password/reset?token=${TOKEN_RESET}`);
+  responderSesionYValidacion(AUTENTICADA_CON_PROYECTO, { success: true, state: 'valid' });
+
+  render(<App />);
+
+  expect(await screen.findByRole('heading', { name: 'Define tu nueva contraseña' })).toBeInTheDocument();
+});
+
+test('403 csrf_invalid al validar el enlace: "Actualizar sesión" revalida sin desmontar la pantalla (pendiente Tarea 4)', async () => {
+  // Tarea 4 dejó este test pendiente (ledger): con la pantalla real montada, un 403 al validar
+  // ofrece "Actualizar sesión"; si `/api/session` falla en ese intento, la pantalla de
+  // restablecimiento sigue montada y avisa dentro — mismo patrón que S02 (línea ~499).
+  window.history.pushState({}, '', `/password/reset?token=${TOKEN_RESET}`);
+  let llamadasSesion = 0;
+
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/auth/password/reset/validate')) {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              success: false,
+              code: 'csrf_invalid',
+              message: 'No fue posible validar la solicitud. Intenta nuevamente.',
+              error: { codigo: 'csrf_invalid', mensaje: 'No fue posible validar la solicitud. Intenta nuevamente.' },
+            }),
+            { status: 403 },
+          ),
+        );
+      }
+
+      llamadasSesion += 1;
+      if (llamadasSesion === 2) {
+        return Promise.resolve(new Response('<h1>Error</h1>', { status: 500, headers: { 'Content-Type': 'text/html' } }));
+      }
+      return Promise.resolve(new Response(JSON.stringify(ANONIMA_MISSING_SESSION), { status: 200 }));
+    }),
+  );
+
+  render(<Rutas />);
+
+  expect(await screen.findByRole('heading', { name: 'Define tu nueva contraseña' })).toBeInTheDocument();
+  fireEvent.click(await screen.findByRole('button', { name: 'Actualizar sesión' }));
+
+  expect(await screen.findByText('No pudimos actualizar la sesión. Intenta nuevamente.')).toBeInTheDocument();
+  // La pantalla de restablecimiento real sigue montada — nunca "Cargando…" ni el login.
+  expect(screen.getByRole('heading', { name: 'Define tu nueva contraseña' })).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Actualizar sesión' })).toHaveFocus());
+});
+
+test('403 al validar, revalidación exitosa: la segunda validación usa el CSRF nuevo, una sola vez', async () => {
+  // Cierra el pendiente de Tarea 4 en su variante de éxito: prueba que `csrfTokenRef` cumple su
+  // propósito (evitar el efecto duplicado si `csrfToken` fuera dependencia directa) con el token
+  // que de verdad cambia tras `alRevalidar()`, no con un mock.
+  window.history.pushState({}, '', `/password/reset?token=${TOKEN_RESET}`);
+  const csrfNuevo = 'f'.repeat(64);
+  let llamadasValidate = 0;
+  let llamadasSesion = 0;
+  let resolverSegundaSesion: (respuesta: Response) => void = () => {};
+  const segundaSesion = new Promise<Response>((resolve) => {
+    resolverSegundaSesion = resolve;
+  });
+
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes('/api/auth/password/reset/validate')) {
+        llamadasValidate += 1;
+        if (llamadasValidate === 1) {
+          expect(new Headers(init?.headers).get('X-CSRF-Token')).toBe(csrfToken);
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                success: false,
+                code: 'csrf_invalid',
+                message: 'No fue posible validar la solicitud. Intenta nuevamente.',
+                error: { codigo: 'csrf_invalid', mensaje: 'No fue posible validar la solicitud. Intenta nuevamente.' },
+              }),
+              { status: 403 },
+            ),
+          );
+        }
+        expect(new Headers(init?.headers).get('X-CSRF-Token')).toBe(csrfNuevo);
+        return Promise.resolve(new Response(JSON.stringify({ success: true, state: 'valid' }), { status: 200 }));
+      }
+
+      llamadasSesion += 1;
+      if (llamadasSesion === 1) {
+        return Promise.resolve(new Response(JSON.stringify(ANONIMA_MISSING_SESSION), { status: 200 }));
+      }
+      return segundaSesion;
+    }),
+  );
+
+  render(<Rutas />);
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Actualizar sesión' }));
+
+  // Mientras la revalidación sigue en vuelo, la pantalla sigue montada — nunca "Cargando…".
+  expect(screen.getByRole('heading', { name: 'Define tu nueva contraseña' })).toBeInTheDocument();
+  expect(screen.queryByText(/cargando/i)).not.toBeInTheDocument();
+
+  resolverSegundaSesion(
+    new Response(JSON.stringify({ ...ANONIMA_MISSING_SESSION, csrfToken: csrfNuevo }), { status: 200 }),
+  );
+
+  expect(await screen.findByLabelText('Nueva contraseña')).toBeVisible();
+  expect(llamadasValidate).toBe(2);
+});
+
+test('éxito del restablecimiento: reemplaza el historial hacia /login?reset=1 y muestra el aviso de S01', async () => {
+  // S03, Tarea 7: la URL con el token no debe quedar en el historial (navegación con `replace`),
+  // y el aviso `reset=1` lo pinta el login de S01 sin duplicarlo aquí.
+  window.history.pushState({}, '', `/password/reset?token=${TOKEN_RESET}`);
+  const largoInicial = window.history.length;
+  let llamadasReset = 0;
+
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/auth/password/reset/validate')) {
+        return Promise.resolve(new Response(JSON.stringify({ success: true, state: 'valid' }), { status: 200 }));
+      }
+      if (url.includes('/api/auth/password/reset')) {
+        llamadasReset += 1;
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({ success: true, message: 'Contraseña restablecida correctamente.', redirect: '/login?reset=1' }),
+            { status: 200 },
+          ),
+        );
+      }
+      return Promise.resolve(new Response(JSON.stringify(ANONIMA_MISSING_SESSION), { status: 200 }));
+    }),
+  );
+
+  const user = userEvent.setup();
+  render(<Rutas />);
+
+  await user.type(await screen.findByLabelText('Nueva contraseña'), 'Abcdef!');
+  await user.type(screen.getByLabelText('Confirmar contraseña'), 'Abcdef!');
+  await user.click(screen.getByRole('button', { name: 'Actualizar contraseña' }));
+
+  await screen.findByRole('heading', { name: /bienvenido a last planner aia/i });
+  expect(await screen.findByText(/restablecida correctamente/i)).toBeInTheDocument();
+  expect(llamadasReset).toBe(1);
+  expect(window.history.length).toBe(largoInicial);
+  expect(window.location.pathname).toBe('/login');
+  expect(window.location.href).not.toContain(TOKEN_RESET);
 });

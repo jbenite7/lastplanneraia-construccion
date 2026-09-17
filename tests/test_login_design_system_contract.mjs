@@ -2,12 +2,19 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
-const views = [
-  read('views/auth/login.view.php'),
-  read('views/auth/password-reset.view.php'),
-];
+// VIEW-03 (views/auth/password-reset.view.php) se retiró en la Tarea 10 de S03 tras el gate
+// explícito de Felipe: solo queda el login legado (POST /login), que sigue consumiendo
+// login-brand-unified.css y auth_forms.js — por eso ninguno de los dos se borra.
+const views = [read('views/auth/login.view.php')];
 const login = views[0];
-const reset = views[1];
+assert.ok(
+  !existsSync(new URL('../views/auth/password-reset.view.php', import.meta.url)),
+  'VIEW-03 must be gone after the S03 Task 10 retirement',
+);
+assert.ok(
+  !existsSync(new URL('../src/Controllers/Auth/PasswordResetController.php', import.meta.url)),
+  'the legacy auth PasswordResetController must be gone after the S03 Task 10 retirement',
+);
 const css = read('public/css/login-brand-unified.css');
 const authFormsUrl = new URL('../public/js/modules/aia_ui/auth_forms.js', import.meta.url);
 assert.ok(existsSync(authFormsUrl), 'auth_forms.js must centralize auth interactions');
@@ -34,12 +41,10 @@ assert.equal(
 );
 assert.doesNotMatch(login, /oncontextmenu/);
 assert.match(login, /data-password-toggle="password"/);
-assert.match(reset, /data-password-toggle="password"/);
-assert.match(reset, /data-password-toggle="confirm_password"/);
-assert.match(reset, /id="password-policy"/);
-assert.match(reset, /aria-describedby="password-policy"/);
-assert.match(reset, /minlength="6"/);
-assert.match(reset, /pattern=/);
+// Lo que VIEW-03 cubría aquí (dos alternadores, política asociada al campo y reglas de
+// contraseña) lo cubre ahora el camino React, más abajo en el bloque S03: los dos
+// `CampoClave` con sus alternadores, `reset-password-policy` vía `describedBy` y las
+// reglas, que desde S03 son autoridad de PHP + Zod, no atributos HTML de la vista.
 
 assert.match(authForms, /aria-busy/);
 assert.match(authForms, /data-password-toggle/);
@@ -66,7 +71,11 @@ assert.doesNotMatch(css, /#[0-9a-f]{3,8}\b/i);
 const budget = exceptions.pathBudgets.find((item) => item.name === 'login');
 assert.ok(budget);
 assert.ok(!budget.paths.includes('views/auth/password-forgot.view.php'));
-assert.ok(budget.paths.includes('views/auth/password-reset.view.php'));
+assert.ok(!budget.paths.includes('views/auth/password-reset.view.php'));
+// El presupuesto `login` NO se retira: login.view.php, login-brand-unified.css y
+// auth_forms.js siguen vivos para el POST /login legado.
+assert.ok(budget.paths.includes('views/auth/login.view.php'));
+assert.ok(budget.paths.includes('public/css/login-brand-unified.css'));
 assert.ok(budget.paths.includes('public/js/modules/aia_ui/auth_forms.js'));
 assert.equal(budget.maxViolations['hardcoded-color-function'], 0);
 
@@ -112,12 +121,12 @@ assert.match(cambioClave, /aia-modal-surface aia-auth__dialog/);
 assert.ok(manifest.sources.includes('frontend/src/shell/auth/PantallaLogin.tsx'));
 assert.ok(manifest.sources.includes('frontend/src/shell/auth/MarcoAcceso.tsx'));
 assert.ok(manifest.sources.includes('public/css/auth-react.css'));
-// El legacy S03 sigue declarado como fuente (sigue existiendo y sirviéndose), pero nunca
-// como migrado: no hay entrada React para password-reset. VIEW-02 (password-forgot) se
-// retiró en la Tarea 10 tras el gate de Felipe: ya no debe aparecer como fuente.
+// VIEW-02 (S02) y VIEW-03 (S03) se retiraron en sus respectivas Tareas 10, tras el gate
+// de Felipe: ninguna de las dos debe seguir declarada como fuente.
 assert.ok(!manifest.sources.includes('views/auth/password-forgot.view.php'));
-assert.ok(manifest.sources.includes('views/auth/password-reset.view.php'));
-assert.ok(!manifest.sources.some((source) => /password-forgot|password-reset/.test(source) && source.endsWith('.tsx')));
+assert.ok(!manifest.sources.includes('views/auth/password-reset.view.php'));
+// login-brand-unified.css SÍ sigue siendo fuente: lo carga el login legado (POST /login).
+assert.ok(manifest.sources.includes('public/css/login-brand-unified.css'));
 
 assert.deepEqual(manifest.layouts.slice().sort(), ['desktop', 'mobile', 'tablet', 'wide']);
 for (const state of ['normal', 'error', 'focus', 'busy', 'password-change', 'cancel-confirmation']) {
@@ -130,8 +139,7 @@ assert.doesNotMatch(manifest.persistence.theme, /^none\b/, 'auth.json must no lo
 // --- Recuperación de clave React (Tarea 7, S02): manifiesto y presentación --------
 // PantallaRecuperarClave.tsx (S02) es la pantalla pública única de `/password/forgot`.
 // Su contraparte legacy (password-forgot.view.php, VIEW-02) se retiró en la Tarea 10
-// tras el gate explícito de Felipe; password-reset.view.php (VIEW-03) sigue sin React
-// propio y por eso permanece siempre.
+// tras el gate explícito de Felipe, igual que VIEW-03 en la Tarea 10 de S03.
 const pantallaRecuperarClave = read('frontend/src/shell/auth/PantallaRecuperarClave.tsx');
 
 assert.ok(
@@ -147,8 +155,8 @@ assert.ok(
   'auth.json sources must no longer list the retired legacy VIEW-02',
 );
 assert.ok(
-  manifest.sources.includes('views/auth/password-reset.view.php'),
-  'auth.json sources must still list VIEW-03 (no React counterpart yet)',
+  !manifest.sources.includes('views/auth/password-reset.view.php'),
+  'auth.json sources must no longer list the retired legacy VIEW-03',
 );
 for (const state of [
   'recovery-initial',
@@ -175,3 +183,47 @@ assert.match(pantallaRecuperarClave, /role="status"/);
 assert.match(pantallaRecuperarClave, /role="alert"/);
 assert.match(pantallaRecuperarClave, /aria-busy=\{enviando\}/);
 assert.match(pantallaRecuperarClave, /aria-invalid=/);
+
+// --- Restablecimiento de clave React (Tarea 8, S03): manifiesto y presentación ------
+// PantallaRestablecerClave.tsx es la única pantalla de /password/reset desde la Tarea 10:
+// VIEW-03 y su controlador legado ya no existen. La política es un `aia-helper` asociado al
+// campo (Tarea 6), no una clase `.aia-auth__policy` propia.
+const pantallaRestablecerClave = read('frontend/src/shell/auth/PantallaRestablecerClave.tsx');
+
+assert.match(pantallaRestablecerClave, /MarcoAcceso/);
+assert.match(pantallaRestablecerClave, /CampoClave/);
+assert.match(pantallaRestablecerClave, /<p id="reset-password-policy" className="aia-helper">/);
+assert.match(pantallaRestablecerClave, /describedBy="reset-password-policy"/);
+assert.match(pantallaRestablecerClave, /className="aia-auth__acciones"/);
+assert.match(pantallaRestablecerClave, /className="aia-auth__boton-flecha"/);
+assert.match(pantallaRestablecerClave, /role="alert"/);
+assert.match(pantallaRestablecerClave, /role="status"/);
+assert.match(pantallaRestablecerClave, /aria-busy=\{submitting\}/);
+// Cobertura heredada de VIEW-03 (dos campos con alternador y ayuda asociada), ahora en React.
+assert.match(pantallaRestablecerClave, /id="reset-password"/);
+assert.match(pantallaRestablecerClave, /id="reset-confirm"/);
+assert.equal(
+  (pantallaRestablecerClave.match(/<CampoClave\b/g) || []).length,
+  2,
+  'la pantalla debe montar dos CampoClave (nueva contraseña y confirmación), cada uno con su alternador',
+);
+assert.doesNotMatch(authCss, /\.aia-auth__policy/, 'S03 must reuse aia-helper, not a bespoke policy class');
+
+assert.ok(manifest.routes.includes('/password/reset'), 'auth.json routes must include /password/reset');
+assert.ok(
+  manifest.sources.includes('frontend/src/shell/auth/PantallaRestablecerClave.tsx'),
+  'auth.json sources must include PantallaRestablecerClave.tsx',
+);
+for (const state of [
+  'reset-validating',
+  'reset-invalid',
+  'reset-form',
+  'reset-field-error',
+  'reset-busy',
+  'reset-csrf',
+  'reset-unavailable',
+  'reset-network',
+]) {
+  assert.ok(manifest.states.includes(state), `auth.json states must include "${state}"`);
+}
+assert.ok(!('rollbackSource' in manifest) && !('viewports' in manifest), 'schema forbids rollbackSource/viewports');

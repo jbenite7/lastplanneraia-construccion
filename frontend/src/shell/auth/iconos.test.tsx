@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import { expect, test } from 'vitest';
-import { IconoCorreo, IconoEnviar, IconoFlecha, IconoOjo, IconoOjoTachado, IconoUsuario } from './iconos';
+import { IconoCorreo, IconoEnviar, IconoFlecha, IconoLlave, IconoOjo, IconoOjoTachado, IconoUsuario } from './iconos';
 
 test.each([
   ['usuario', IconoUsuario],
@@ -9,6 +9,7 @@ test.each([
   ['flecha', IconoFlecha],
   ['correo', IconoCorreo],
   ['enviar', IconoEnviar],
+  ['llave', IconoLlave],
 ])('el ícono %s es decorativo y hereda el color del texto', (_nombre, Icono) => {
   const { container } = render(<Icono />);
   const svg = container.querySelector('svg');

@@ -172,6 +172,16 @@
     padding-inline-end: calc(var(--ds-target-min) + var(--ds-space-1));
   }
 
+  /* Texto de ejemplo (placeholder) de los campos del acceso (2026-09-17). El navegador
+     hereda su gris por defecto (117/117/117 en RGB), que sobre `.aia-input` medía 4,19:1 en
+     claro y 3,94:1 en oscuro: por debajo del 4,5:1 de WCAG 2.2 AA (SC 1.4.3). El texto
+     secundario del tema activo sí cumple. `opacity: 1` es necesario porque Firefox aplica
+     0,54 de opacidad por defecto a `::placeholder` y diluiría el contraste otra vez. */
+  .aia-auth .aia-input::placeholder {
+    color: var(--ds-active-text-secondary);
+    opacity: 1;
+  }
+
   .aia-auth__campo-adorno,
   .aia-auth__clave-toggle {
     position: absolute;

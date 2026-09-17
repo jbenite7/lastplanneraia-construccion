@@ -438,6 +438,8 @@ goals/ci-en-verde/*
 !tests/browser/login-react.visual.mjs
 !tests/browser/password-recovery-react.spec.mjs
 !tests/browser/password-recovery-react.visual.mjs
+!tests/browser/password-reset-react.spec.mjs
+!tests/browser/password-reset-react.visual.mjs
 !tests/browser/auth-errores-contrato.spec.mjs
 !tests/browser/lps-errores-contrato.spec.mjs
 

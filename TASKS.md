@@ -380,14 +380,19 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   React, y eso pide su propio ajuste. Dos arreglos posibles: adaptar el validador a manifiestos con
   fuentes `.tsx`, o al menos que su mensaje no diga `PASS` cuando saltó. Solo `project-selector.json`
   declara hoy la clave.
-- [x] **Migrar recuperación de clave (S02) — código cerrado el 2026-09-16, pendiente de PR/merge:**
+- [x] **Migrar recuperación de clave (S02) — en `main` desde el PR #43 (2026-09-16):**
   `password-forgot` vive en React (`/password/forgot`, `POST /api/auth/password/forgot`) y su vista
   PHP se retiró por autorización expresa de Felipe («sí, retira la pantalla PHP», 2026-09-16), tras
   aprobar los 8 candidatos visuales. Estado `MIGRATION_COMPLETE` en la rama
   `s02-recuperar-clave-react`; cierre y verificación en
-  `docs/superpowers/plans/2026-08-30-s02-recuperar-clave-react.md` (`## Cierre`). Lo siguiente de
-  la serie es `…-s03-restablecer-clave-react.md` (`password-reset` sigue en PHP), que no arranca
-  hasta que S02 esté en `main`.
+  `docs/superpowers/plans/2026-08-30-s02-recuperar-clave-react.md` (`## Cierre`).
+- [x] **Migrar restablecimiento de clave (S03) — código cerrado el 2026-09-17, pendiente de
+  PR/merge:** `password-reset` vive en React (`/password/reset`, `POST
+  /api/auth/password/reset/validate` y `POST /api/auth/password/reset`) y su vista PHP se retiró
+  por autorización expresa de Felipe («sí, retírala», 2026-09-17), tras aprobar los 16 candidatos
+  visuales y el arreglo de contraste del texto de ejemplo. Estado `MIGRATION_COMPLETE` en la rama
+  `s03-restablecer-clave-react`; cierre y verificación en
+  `docs/superpowers/plans/2026-08-30-s03-restablecer-clave-react.md` (`## Cierre`).
 - [ ] **Resolver el menú contextual de Semanas:** definir su comportamiento y su lugar en la
   navegación React antes de migrar los módulos de programación.
 - [ ] **Definir QA y goldens durante la convivencia:** decidir por cada módulo si su golden PHP se
@@ -863,13 +868,17 @@ estado por defecto mientras Felipe no reparta.
   con el legado todavía disponible como respaldo**; **no** exige `MIGRATION_COMPLETE` (retirar el
   legado ni cerrar la ventana de reversión). Estado medido el 2026-09-16 leyendo la sección
   `## Cierre` de cada plan: **S01 cumple el criterio en cuanto este frente esté en `main`**
-  (paridad visual: marca, íconos, bienvenida y pie del legado) — código completo en la rama
-  `s01-paridad-visual`, pendiente de PR/merge; ver
-  `docs/superpowers/plans/2026-09-16-s01-paridad-visual.md`; **S02 cumple el criterio cuando esté
-  en `main`** — código cerrado en la rama `s02-recuperar-clave-react`, pendiente de PR/merge; quedó
+  (paridad visual: marca, íconos, bienvenida y pie del legado) — **en `main` desde el PR #42**; ver
+  `docs/superpowers/plans/2026-09-16-s01-paridad-visual.md`; **S02 cumple el criterio: está en `main`
+  desde el PR #43** — rama `s02-recuperar-clave-react`; quedó
   **sin legado de respaldo** por autorización expresa de Felipe del 2026-09-16 («sí, retira la
-  pantalla PHP»), que aplica solo a S02 y no generaliza la cláusula a otras superficies; ver
-  `docs/superpowers/plans/2026-08-30-s02-recuperar-clave-react.md`; **S03–S27 no están
+  pantalla PHP»); ver `docs/superpowers/plans/2026-08-30-s02-recuperar-clave-react.md`; **S03
+  cumple el criterio cuando esté en `main`** — código cerrado en la rama
+  `s03-restablecer-clave-react`, pendiente de PR/merge; también quedó **sin legado de respaldo**,
+  por la misma autorización expresa de Felipe del 2026-09-17 («sí, retírala», dicha al aprobar los
+  candidatos visuales); ver `docs/superpowers/plans/2026-08-30-s03-restablecer-clave-react.md`.
+  Las dos autorizaciones son puntuales —una para S02 y otra para S03— y **no** generalizan la
+  cláusula a otras superficies: cada retiro de legado se pregunta aparte. **S04–S27 no están
   implementadas**, sus cierres lo dicen expresamente.
   `pdc-app/` y `ct-app/` ya son React pero van por fuera de esa serie, así que cuentan solo cuando
   su plan S lo acepte. Consecuencia: producción sigue en `fix/pdc-duraciones-pasos` hasta entonces,

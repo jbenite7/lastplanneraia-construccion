@@ -773,7 +773,7 @@
       "family": "forms-filters",
       "label": "Ayuda de campo",
       "sources": [
-        "views/auth/password-reset.view.php"
+        "frontend/src/shell/auth/PantallaRestablecerClave.tsx"
       ],
       "catalogIds": [
         "field",

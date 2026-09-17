@@ -6,7 +6,9 @@
  * Comprueba la frontera desde Apache: las rutas del shell (`/app`, y desde la Tarea 13 también
  * `/`/`/login`, y desde la Tarea 8 (S02) también `/password/forgot`, en GET/HEAD) devuelven el
  * HTML inicial sin autenticar, sus assets se sirven como archivos, y las rutas que NUNCA deben
- * cruzar al host SPA (`/password/reset`, `/api/*`, `/app/assets*`) siguen siendo del sitio PHP.
+ * cruzar al host SPA (`/api/*`, `/app/assets*`) siguen siendo del sitio PHP. Desde la Tarea 8 (S03)
+ * GET/HEAD `/password/reset` también cruzan, con no-referrer/no-store; su POST se retiró en la
+ * Tarea 10 (S03 MIGRATION_COMPLETE, gate explícito de Felipe) y responde el 404 controlado.
  * `POST /login` sigue siendo del sitio PHP mientras dure la ventana de rollback de S01.
  * `POST /password/forgot` se retiró en la Tarea 10 (gate explícito de Felipe, S02
  * MIGRATION_COMPLETE): ya no hay controlador legado que lo atienda y responde el 404
@@ -179,10 +181,60 @@ try {
     comprobarFronteraSpa($forgotApp['codigo'] === 200, "GET /app/password/forgot debe responder 200, llegó {$forgotApp['codigo']}");
     comprobarFronteraSpa(str_contains($forgotApp['cuerpo'], '<div id="root"></div>'), 'GET /app/password/forgot debe devolver el HTML del shell React');
 
-    // --- '/password/reset' (S03) sigue siendo del sitio PHP: NUNCA debe cruzar al host SPA. ---
-    $reset = pedirFronteraSpa("{$base}/password/reset");
-    comprobarFronteraSpa($reset['codigo'] === 200, "/password/reset debe conservar su 200, llegó {$reset['codigo']}");
-    comprobarFronteraSpa(!str_contains($reset['cuerpo'], '<div id="root"></div>'), '/password/reset no debe ser robada por el shell SPA (S03 sin migrar)');
+    // --- El corte de la Tarea 8 (S03): GET/HEAD '/password/reset' sirven el shell React con
+    // Referrer-Policy no-referrer y Cache-Control no-store (la URL lleva el token). ---
+    $resetGet = pedirFronteraSpa("{$base}/password/reset?token=" . str_repeat('a', 64));
+    comprobarFronteraSpa($resetGet['codigo'] === 200, "GET /password/reset debe responder 200, llegó {$resetGet['codigo']}");
+    comprobarFronteraSpa(str_contains($resetGet['cuerpo'], '<div id="root"></div>'), 'GET /password/reset debe devolver el HTML del shell React');
+    comprobarFronteraSpa(!str_contains($resetGet['cuerpo'], 'data-auth-form'), 'GET /password/reset ya no debe devolver el formulario PHP legado');
+    comprobarFronteraSpa(preg_match('/^Referrer-Policy:\s*no-referrer\s*$/mi', $resetGet['cabeceras']) === 1, 'GET /password/reset debe enviar Referrer-Policy: no-referrer');
+    comprobarFronteraSpa(preg_match('/^Cache-Control:[^\r\n]*no-store[^\r\n]*max-age=0/mi', $resetGet['cabeceras']) === 1, 'GET /password/reset debe enviar Cache-Control: no-store…max-age=0');
+
+    $resetHead = pedirFronteraSpaConMetodo("{$base}/password/reset", 'HEAD');
+    comprobarFronteraSpa($resetHead['codigo'] === 200, "HEAD /password/reset debe responder 200, llegó {$resetHead['codigo']}");
+    comprobarFronteraSpa($resetHead['cuerpo'] === '', 'HEAD /password/reset no debe llevar cuerpo');
+    comprobarFronteraSpa(preg_match('/^Referrer-Policy:\s*no-referrer\s*$/mi', $resetHead['cabeceras']) === 1, 'HEAD /password/reset debe enviar Referrer-Policy: no-referrer');
+    comprobarFronteraSpa(preg_match('/^Cache-Control:[^\r\n]*no-store[^\r\n]*max-age=0/mi', $resetHead['cabeceras']) === 1, 'HEAD /password/reset debe enviar Cache-Control: no-store…max-age=0');
+
+    // --- POST /password/reset se retiró en la Tarea 10: sin controlador legado cae al 404
+    // controlado del producto porque '/password/reset' sigue en el allowlist público por path,
+    // nunca a un redirect de autenticación. CSRF inválido y token vacío a propósito: nunca
+    // llega a cambiar una clave real. ---
+    $resetPost = pedirFronteraSpaConMetodo("{$base}/password/reset", 'POST', [
+        'token' => '',
+        'csrf_token' => 'invalido',
+        'password' => '',
+        'confirm_password' => '',
+    ]);
+    comprobarFronteraSpa($resetPost['codigo'] === 404, "POST /password/reset debe responder 404 tras el retiro, llegó {$resetPost['codigo']}");
+    comprobarFronteraSpa(!str_contains($resetPost['cabeceras'], 'Location: /login'), 'POST /password/reset no debe redirigir a /login');
+    comprobarFronteraSpa(!str_contains($resetPost['cuerpo'], 'login-brand-page'), 'POST /password/reset no debe devolver la vista PHP legada retirada');
+    comprobarFronteraSpa(!str_contains($resetPost['cuerpo'], 'data-auth-form'), 'POST /password/reset no debe devolver el formulario PHP legado retirado');
+    comprobarFronteraSpa(!str_contains($resetPost['cuerpo'], '<div id="root"></div>'), 'POST /password/reset no debe devolver el HTML del shell React');
+
+    // --- Las cabeceras de privacidad son SOLO de '/password/reset': S01/S02 no cambian. ---
+    comprobarFronteraSpa(preg_match('/^Referrer-Policy:\s*no-referrer/mi', $forgotGet['cabeceras']) !== 1, 'GET /password/forgot no debe heredar Referrer-Policy de S03');
+    comprobarFronteraSpa(preg_match('/^Referrer-Policy:\s*no-referrer/mi', $loginGet['cabeceras']) !== 1, 'GET /login no debe heredar Referrer-Policy de S03');
+
+    // --- El piloto '/app/password/reset' también sirve el shell. ---
+    $resetApp = pedirFronteraSpa("{$base}/app/password/reset");
+    comprobarFronteraSpa($resetApp['codigo'] === 200, "GET /app/password/reset debe responder 200, llegó {$resetApp['codigo']}");
+    comprobarFronteraSpa(str_contains($resetApp['cuerpo'], '<div id="root"></div>'), 'GET /app/password/reset debe devolver el HTML del shell React');
+    comprobarFronteraSpa(preg_match('/^Referrer-Policy:\s*no-referrer\s*$/mi', $resetApp['cabeceras']) === 1, 'GET /app/password/reset debe enviar Referrer-Policy: no-referrer (lleva el token en la URL)');
+    comprobarFronteraSpa(preg_match('/^Cache-Control:[^\r\n]*no-store[^\r\n]*max-age=0/mi', $resetApp['cabeceras']) === 1, 'GET /app/password/reset debe enviar Cache-Control: no-store…max-age=0');
+    $resetAppHead = pedirFronteraSpaConMetodo("{$base}/app/password/reset", 'HEAD');
+    comprobarFronteraSpa(preg_match('/^Referrer-Policy:\s*no-referrer\s*$/mi', $resetAppHead['cabeceras']) === 1, 'HEAD /app/password/reset debe enviar Referrer-Policy: no-referrer');
+    comprobarFronteraSpa(preg_match('/^Cache-Control:[^\r\n]*no-store[^\r\n]*max-age=0/mi', $resetAppHead['cabeceras']) === 1, 'HEAD /app/password/reset debe enviar Cache-Control: no-store…max-age=0');
+
+    // --- Y no se filtran a otras rutas del shell. ---
+    foreach (['/app', '/app/login', '/app/password/forgot'] as $otraRuta) {
+        $otra = pedirFronteraSpa("{$base}{$otraRuta}");
+        comprobarFronteraSpa(preg_match('/^Referrer-Policy:\s*no-referrer/mi', $otra['cabeceras']) !== 1, "GET {$otraRuta} no debe heredar Referrer-Policy de S03");
+    }
+
+    // --- Subrutas y API vecinas no caen en la ruta exacta. ---
+    $resetExtra = pedirFronteraSpa("{$base}/password/reset-extra");
+    comprobarFronteraSpa(!str_contains($resetExtra['cuerpo'], '<div id="root"></div>'), '/password/reset-extra no debe devolver el HTML del shell');
 
     $apiSession = pedirFronteraSpa("{$base}/api/session");
     comprobarFronteraSpa(!str_contains($apiSession['cabeceras'], 'text/html'), '/api/session debe seguir respondiendo JSON, no el HTML del shell');

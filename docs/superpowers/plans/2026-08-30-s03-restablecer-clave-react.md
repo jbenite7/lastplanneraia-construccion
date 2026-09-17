@@ -1573,3 +1573,142 @@ Record that SHA. Branch closeout must re-run the repository gate on the committe
 ## Completion Gate
 
 S03 is `CODE_COMPLETE` when Tasks 1–9 pass on one worktree content set and visual candidates are approved without silent baseline regeneration. It is `MIGRATION_COMPLETE` only after Task 10 retires VIEW-03/legacy POST/assets, commits the result and re-verifies that exact SHA. Neither state authorizes deploy, DDL/DML, RLS changes, `/admin/` edits, real tokens or real password changes.
+
+## Cierre
+
+**Estado:** `MIGRATION_COMPLETE` en la rama `s03-restablecer-clave-react`, **pendiente de PR y merge
+a `main`**. El restablecimiento de clave vive en React (`/password/reset` servida por
+`SpaRouter`/`SpaHostRenderer`, API `POST /api/auth/password/reset/validate` y
+`POST /api/auth/password/reset`); la vista PHP `views/auth/password-reset.view.php`, su controlador y
+el `POST /password/reset` legado se retiraron, y los 16 goldens aprobados están congelados. No
+autoriza deploy.
+
+**Autorizaciones de Felipe (2026-09-17, encuesta):** (1) aprueba los **16 candidatos visuales** como
+goldens; (2) ordena arreglar **ya** el contraste del texto de ejemplo de los campos de acceso
+(`::placeholder` sube a `--ds-active-text-secondary`: 7,03:1 en claro y 11,86:1 en oscuro),
+aceptando que eso **regenera también los 8 goldens de S02**, que se aprueban junto con los de S03;
+(3) «sí, retírala» sobre la pantalla PHP, que abrió la Tarea 10. S03 queda **sin legado de
+respaldo** por esa autorización expresa, puntual para S03 y sin generalizar la cláusula del criterio
+de deploy a otras superficies.
+
+**Tareas y commits** (del ledger `.superpowers/sdd/2026-08-30-s03-restablecer-clave-react/progress.md`):
+
+| Tarea | Commits |
+|---|---|
+| Task 1 (contratos y gateway) | `07b9c3b6..fb8696fc` |
+| Task 2 (API JSON de restablecimiento) | `fb8696fc..60b0bd31` (1 ronda de arreglo) |
+| Task 3 (matriz HTTP) | `60b0bd31..0ca16cba` |
+| Task 4 (ruta pública en el shell) | `0ca16cba..78b9fa86` |
+| Task 5 (validación de enlace y estados terminales) | `78b9fa86..e602379a` |
+| Task 6 (formulario de nueva clave) | `e602379a..afa5a5ac` (1 ronda de arreglo) |
+| Task 7 (envío, errores y salida a `/login?reset=1`) | `afa5a5ac..12c298d7` |
+| Task 8 (corte de la ruta, no-referrer, HEAD, bundle) | `12c298d7..c654e587` (1 ronda de arreglo) |
+| Task 9 (navegador, Axe y candidatos visuales) | `c654e587..5bc8651f` |
+| Task 9b (arreglo de contraste del texto de ejemplo) | `0a6aa03e` |
+| Task 9c (16 goldens S03 + 8 regenerados de S02) | `588c8fd8` |
+| Task 10 (retiro de VIEW-03 y docs) | `588c8fd8..20457e98` (1 ronda de arreglo) |
+| Ola final de la revisión | `ac5f778b` (smoke de consumidores), `d1cedfc2` (`TASKS.md`) + este cierre |
+
+**Verificación medida.** En la ola final (2026-09-17, sobre `d1cedfc2`, contenedor efímero `lps-s03`
+en `:8100`), cada RC leído en su propia línea:
+
+- `npm --prefix frontend test` → 54 archivos, **729 tests**, RC=0.
+- `npm run frontend:typecheck` RC=0; `npm run frontend:build` RC=0 (bundle idéntico al commiteado,
+  `git status` limpio tras construir).
+- `node tests/test_login_design_system_contract.mjs` RC=0; `npm run test:design-system:static` RC=0
+  (8/8 gates); `npm run css:minify:check` RC=0 (espejo `public/dist-css` al día).
+- `tests/test_spa_frontera.php` (puro, `docker compose run --rm --no-deps`) RC=0;
+  `tests/test_spa_frontera_http.php` RC=0; `tests/test_api_password_reset_http.php` RC=0.
+- `scripts/run-php-tests.php --nivel=http` → **112 scripts** en verde y **31 clases PHPUnit**
+  (299 tests, 752 aserciones), RC=0.
+- Playwright `tests/browser/design-system-consumer-smoke.mjs` contra `:8100` → 2 passed, 1 failed.
+  El caso de acceso y el de `/proyectos` pasan; el que falla es «the 15 shared-head consumers»,
+  byte a byte el mismo que en `main` y sobre 12 rutas que esta rama no toca. **Su mecanismo no se
+  aisló** y hay dos observaciones distintas: en Playwright el snapshot del fallo muestra el marco de
+  acceso React (la navegación a `/control-cambios` acabó en login, sin sesión), y con sesión de la
+  puerta de desarrollo por `curl` la misma ruta responde 200 pero sirve el core segmentado en vez
+  del agregador `/runtime/css/aia-design-system.css` que el caso exige. Ninguna de las dos pasa por
+  el diff de S03. Ese caso solo se midió en verde en su carril aislado
+  (`E2E_REQUIRE_ISOLATED_DB=1`, base propia, `:18081`; ver
+  `goals/segmentacion-entrypoint-css/validation-log.md:256`), nunca contra la base de dev, y el spec
+  no corre en CI.
+- `npm run test:wiki` RC=0; `git diff --check` RC=0.
+
+De las tareas previas, medido en su momento y no repetido aquí porque sus entradas no cambiaron:
+Playwright de acceso contra `:8100` (`password-reset-react.spec.mjs`, `login-react.spec.mjs`,
+`password-recovery-react.spec.mjs`, `shell-control-actividad.spec.mjs`, `auth-errores-contrato.spec.mjs`),
+Axe sin violaciones, y los **goldens congelados = candidatos aprobados byte a byte** (sha256 idéntico,
+16 de S03 y 8 regenerados de S02, Task 9c), con el contraste ya arreglado en los que se congelaron.
+
+**Rulings (del ledger, en orden, con su costo):**
+
+1. Se ejecuta el plan de agosto con `correcciones.md` en vez de reescribirlo, mismo criterio que
+   S02 — costo si fuera error: un implementador sigue el texto viejo; mitigado pasando el archivo a
+   cada dispatch y revisor.
+2. Botón «Actualizar contraseña» en tipo oración con ícono de llave, consistente con «Entrar» y
+   «Enviar enlace» ya aprobados — costo: cambiar un texto y sus tests al ver los candidatos.
+3. El controlador de S03 adopta la forma de error del PR #44 y su contrato PHP↔Zod aunque el plan
+   dijera otra cosa, porque el #44 es el contrato vigente — costo: ninguno esperable.
+4. La Tarea 10 solo se ejecuta con autorización explícita de Felipe, y `login-brand-unified.css` y
+   `auth_forms.js` no se borran por tener consumidor vivo (`views/auth/login.view.php`, POST
+   legado) — costo: dos archivos legados siguen en el repo.
+5. Paradas del frente: candidatos visuales y Tarea 10 — costo: ninguno.
+6. Los errores de campo se mapean por **clave** de `fieldErrors` del servicio (`password`;
+   `confirmation`→`confirmPassword`), no por el texto del mensaje, y el test puro usa la política
+   real — costo: ninguno.
+7. «Usuario no encontrado» conserva el literal porque `UserPasswordService` no distingue por
+   estructura un usuario inexistente de un fallo al guardar; si cambia, degrada a 503 sin fuga. El
+   arreglo de raíz (código de resultado en el servicio) queda para otra tarea — costo: un caso raro
+   responde 503 en vez de 410.
+8. §10 (rebuild del bundle + specs de acceso contra `:8100`) se difiere a la Tarea 8 para las tareas
+   de UI 5–7, como en S02 — costo: una regresión del shell se detectaría hasta tres tareas después.
+9. La re-revisión de la ronda 1 de la Tarea 6 la hace el controlador leyendo el diff, por ser 13
+   líneas de marcado — costo si fuera error: lo vería la revisión final.
+10. Se cierran ya los dos minors de la Tarea 8 (no-referrer en el piloto `/app/password/reset`,
+    `HEAD /password/reset` explícito como en S01): el token en la URL justifica `no-referrer` —
+    costo: ninguno.
+11. El arreglo de contraste va **antes** de congelar: los goldens que se congelan son los candidatos
+    regenerados tras el arreglo, y a Felipe se le muestra la comparación posterior para confirmar
+    que solo cambió el texto de ejemplo — costo si fuera error: una ronda más de aprobación.
+12. En la Tarea 10 se cierran los dos Important (`docs/qa/workflows.md` y `docs/VISTAS-MODULOS.md`
+    describían VIEW-03 como viva) y se regenera `memoria/arquitectura/autenticacion.md`; el
+    `themes:["dark"]` no se toca porque rompería tres gates, y el comentario histórico del `.tsx`
+    queda — costo: ninguno.
+
+**Correcciones de ejecución (resumen de `correcciones.md`, que mandó sobre el texto del plan):** tema
+de entrada **claro** (ambos contractuales); errores del cliente con `ApiError` y `camposInvalidos`
+(string, no array) en vez de los `ErrorApi`/`fieldErrors` del plan; forma de error del servidor
+copiada del PR #44 (bloque `error` sin claves vacías ni nulas) con su contrato PHP↔Zod; un único
+`BrowserRouter` en `Rutas`, con la ruta pública resuelta antes del switch por sesión y sobreviviendo
+a la revalidación fallida; Docker **efímero** `lps-s03` en `:8100` (nunca `:8081` ni `docker compose
+exec`); paridad **visual** con el legado (subtítulo, placeholders, ayuda de política, ícono de
+llave, estado inválido); espejo obligatorio `public/dist-css` con `npm run css:minify`; y §14: los
+CSS y JS legados de acceso (`public/css/login-brand-unified.css`,
+`public/js/modules/aia_ui/auth_forms.js`) **se conservan** porque el POST legado de `/login` los
+sigue consumiendo.
+
+**Minors que esperan (triaje de la revisión final, ninguno bloqueante):**
+
+- Comentario `TextEncoder` en `frontend/src/lib/api/esquemas/auth.ts:95-96` invierte la razón.
+- El test de `restablecerClave` no fija la ausencia de `signal` (`auth.test.ts:97-100`).
+- El rechazo de campos extra solo está probado en `EsquemaSolicitudValidarReset`.
+- Sin test separado de `forma_invalida`/`json_invalido` en la validación del enlace.
+- Los tests de doble click/Enter no abren la ventana sincrónica que cubre `enviandoRef`.
+- Golden `password-forgot-light-390x844` con carrera de foco al recapturar en vivo (preexistente;
+  esa mitad no corre en CI).
+- `themes:["dark"]` del manifiesto: es constante de esquema, no herencia; tocarlo rompería tres gates.
+- Comentario histórico en `PantallaRestablecerClave.tsx:356`.
+- No hay caso de navegador→servidor real para `update` (el real cubre `validate`).
+- El caso real usa un token **sintácticamente válido** (consulta sin efectos), no uno vivo.
+
+**Lecciones:**
+
+- **Una premisa falsa sobre el legado casi se convierte en regresión inventada.** El reporte de la
+  Tarea 9 afirmaba que el legado sí resolvía el color del texto de ejemplo: no lo hacía —
+  `--ds-active-text-tertiary` **no existe** (F0-072), así que la regla del legado era inerte y
+  pintaba el mismo gris. Era deuda compartida, no regresión de React; y como la paridad incluye lo
+  visual, Felipe decidió arreglarla en ambos antes de congelar goldens.
+- **Cortar una superficie a React deja inventarios y specs manuales describiendo la vista PHP.**
+  `docs/qa/workflows.md`, `docs/VISTAS-MODULOS.md`, la wiki de rutas generada y
+  `tests/browser/design-system-consumer-smoke.mjs` seguían afirmando VIEW-03 viva o head PHP; el
+  último no lo detecta nadie solo, porque el CI no corre los specs de navegador del acceso.
