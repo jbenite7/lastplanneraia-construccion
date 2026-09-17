@@ -380,7 +380,7 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   React, y eso pide su propio ajuste. Dos arreglos posibles: adaptar el validador a manifiestos con
   fuentes `.tsx`, o al menos que su mensaje no diga `PASS` cuando saltó. Solo `project-selector.json`
   declara hoy la clave.
-- [x] **Migrar recuperación de clave (S02) — código cerrado el 2026-09-16, pendiente de PR/merge:**
+- [x] **Migrar recuperación de clave (S02) — en `main` desde el PR #43 (2026-09-16):**
   `password-forgot` vive en React (`/password/forgot`, `POST /api/auth/password/forgot`) y su vista
   PHP se retiró por autorización expresa de Felipe («sí, retira la pantalla PHP», 2026-09-16), tras
   aprobar los 8 candidatos visuales. Estado `MIGRATION_COMPLETE` en la rama
@@ -868,10 +868,9 @@ estado por defecto mientras Felipe no reparta.
   con el legado todavía disponible como respaldo**; **no** exige `MIGRATION_COMPLETE` (retirar el
   legado ni cerrar la ventana de reversión). Estado medido el 2026-09-16 leyendo la sección
   `## Cierre` de cada plan: **S01 cumple el criterio en cuanto este frente esté en `main`**
-  (paridad visual: marca, íconos, bienvenida y pie del legado) — código completo en la rama
-  `s01-paridad-visual`, pendiente de PR/merge; ver
-  `docs/superpowers/plans/2026-09-16-s01-paridad-visual.md`; **S02 cumple el criterio cuando esté
-  en `main`** — código cerrado en la rama `s02-recuperar-clave-react`, pendiente de PR/merge; quedó
+  (paridad visual: marca, íconos, bienvenida y pie del legado) — **en `main` desde el PR #42**; ver
+  `docs/superpowers/plans/2026-09-16-s01-paridad-visual.md`; **S02 cumple el criterio: está en `main`
+  desde el PR #43** — rama `s02-recuperar-clave-react`; quedó
   **sin legado de respaldo** por autorización expresa de Felipe del 2026-09-16 («sí, retira la
   pantalla PHP»); ver `docs/superpowers/plans/2026-08-30-s02-recuperar-clave-react.md`; **S03
   cumple el criterio cuando esté en `main`** — código cerrado en la rama
