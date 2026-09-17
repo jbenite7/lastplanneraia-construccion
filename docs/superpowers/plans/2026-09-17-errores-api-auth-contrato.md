@@ -87,4 +87,5 @@ Efectos:
 
 - `logout()` responde su 403 con la forma plana, sin bloque `error`. No es `respondError()` y el plan no lo cubría.
 - `login-react.spec.mjs` usa códigos en mayúsculas (`INVALID_CREDENTIALS`, `VALIDATION_ERROR`) y el servidor los emite en minúsculas. Hoy es inocuo porque la pantalla decide por status.
-- Queda pendiente el PR con la condición de hecho declarada antes del CI.
+- **`LpsApiController` tiene el mismo defecto y sí se ve hoy** (hallazgo de la revisión, medido en `:8098`). `src/Controllers/Api/LpsApiController.php:313` y `:335` emiten `error.fields: []` en todo error que no es de validación (`LpsApiError.php:18`). `GET /api/lps/comments?consecutivo=999999999&modulo=PS` responde 404 `LPS_TARGET_NOT_FOUND` con `fields: []`, el esquema descarta el cuerpo y `pedir()` entrega `HTTP_404`. `LpsDrawerProvider.tsx:140` no reconoce el código y el cajón muestra «/api/lps/comments respondió 404» en vez de la rama «no disponible». Frente propio.
+- `tests/browser/auth-errores-contrato.spec.mjs` no corre en CI, igual que `login-react.spec.mjs`. La guarda de `cuerpoError()` solo protege en corridas manuales; el contrato PHP y el test de Vitest sí corren en CI.
