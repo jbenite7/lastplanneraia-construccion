@@ -36,6 +36,7 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 | POST | `/api/auth/logout` | `App\Controllers\Api\AuthApiController::logout` |
 | POST | `/api/auth/password/cancel` | `App\Controllers\Api\AuthApiController::cancelPasswordChange` |
 | POST | `/api/auth/password/change` | `App\Controllers\Api\AuthApiController::changePassword` |
+| POST | `/api/auth/password/forgot` | `App\Controllers\Api\PasswordRecoveryApiController::request` |
 | GET | `/api/session` | `App\Controllers\Api\SessionApiController::show` |
 | GET | `/dev/entrar` | `App\Controllers\Core\DevDoorController::enter` |
 | GET | `/` | `App\Controllers\Auth\LoginController::index` |
@@ -43,14 +44,13 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 | GET | `/login` | `App\Controllers\Auth\LoginController::index` |
 | POST | `/login` | `App\Controllers\Auth\LoginController::login` |
 | GET | `/logout` | `App\Controllers\Auth\LoginController::logout` |
-| GET | `/password/forgot` | `App\Controllers\Auth\PasswordResetController::forgot` |
-| POST | `/password/forgot` | `App\Controllers\Auth\PasswordResetController::sendLink` |
 | GET | `/password/reset` | `App\Controllers\Auth\PasswordResetController::reset` |
 | POST | `/password/reset` | `App\Controllers\Auth\PasswordResetController::update` |
 | POST | `/password/update` | `App\Controllers\Auth\LoginController::updatePassword` |
 
 ### Controladores
 - `App\Controllers\Api\AuthApiController`
+- `App\Controllers\Api\PasswordRecoveryApiController`
 - `App\Controllers\Api\SessionApiController`
 - `App\Controllers\Auth\LoginController`
 - `App\Controllers\Auth\MaintenanceLoginController`
