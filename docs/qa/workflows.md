@@ -108,25 +108,39 @@ Auditoria tecnica:
 
 Tipo: usuario normal.
 
+**Corregido (S02, Tarea 10, 2026-09-16):** `GET /password/forgot` es la pantalla React
+(`PantallaRecuperarClave`, shell `frontend/src/shell/auth/`), servida por
+`SpaHostRenderer` antes del dispatch de FastRoute. El envío ya no es un POST de
+formulario HTML: es fetch a `POST /api/auth/password/forgot` con body `{email}` y
+cabecera `X-CSRF-Token`, atendido por `App\Controllers\Api\PasswordRecoveryApiController`.
+El legado `POST /password/forgot` (formulario PHP, `PasswordResetController::sendLink()`)
+se retiró tras el gate explícito de Felipe sobre los candidatos visuales aprobados: sin
+controlador registrado, ese verbo cae en el 404 controlado del producto, nunca en el
+formulario ni en redirect de login. `/password/reset` (S03) sigue siendo del sitio PHP,
+sin migrar, servido por `PasswordResetController::reset()`/`update()`.
+
 Pasos:
 
-1. Entrar a `/password/forgot`.
-2. Enviar email con CSRF.
-3. Recibir enlace generado con `APP_URL`.
-4. Entrar a `/password/reset`.
-5. Enviar nueva clave.
-6. Volver a login.
+1. Entrar a `/password/forgot` (React).
+2. Escribir el correo y enviar el formulario.
+3. Recibir 200 genérico — el mismo mensaje exista o no la cuenta, para no enumerar
+   correos; el enlace real solo llega si la cuenta existe (email generado con `APP_URL`).
+4. Si el correo es inválido o falta CSRF, ver 422/403 asociado al campo o a la alerta,
+   sin mutar nada; si el envío de correo falla, 503 con aviso honesto y correo preservado.
+5. Entrar a `/password/reset` (legado PHP) desde el enlace recibido.
+6. Enviar nueva clave.
+7. Volver a login.
 
 Auditoria tecnica:
 
 | Campo | Detalle |
 |---|---|
-| UI | `/password/forgot`, `/password/reset` |
-| API/ruta | `POST /password/forgot`, `POST /password/reset` |
-| Controlador | `App\Controllers\Auth\PasswordResetController` |
+| UI | `/password/forgot` (React, `PantallaRecuperarClave`), `/password/reset` (PHP legado, S03) |
+| API/ruta | `GET /password/forgot` (React), `POST /api/auth/password/forgot` (JSON, CSRF), `GET/POST /password/reset` (legado) |
+| Controlador | `App\Controllers\Api\PasswordRecoveryApiController` (recuperación); `App\Controllers\Auth\PasswordResetController::reset()`/`update()` (reset, S03) |
 | Persistencia | `password_reset_tokens`, usuario |
 | Dependencia | SMTP en `.env`, patch de tokens aplicado |
-| Tests actuales | Sin cobertura E2E dedicada |
+| Tests actuales | `tests/test_api_password_recovery_contract.php`, `tests/test_api_password_recovery_http.php`, `tests/browser/password-recovery-react.spec.mjs`, goldens en `tests/browser/password-recovery-react.visual.mjs` |
 | Riesgo | Muta clave; requiere SMTP |
 
 ### 3.3 Selector de proyecto
