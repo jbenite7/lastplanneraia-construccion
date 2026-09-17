@@ -335,6 +335,27 @@ try {
     );
     $capturas['422_password_change_validation_error'] = ['ruta' => '/api/auth/password/change'] + $cambioInvalido;
 
+    // Lo vacío se omite (plan 2026-09-17): ningún error de /api/auth emite `redirect` ni
+    // `correlationId` en null, y sin errores de campo no hay `fieldErrors` ni `error.campos`
+    // (un `[]` de PHP invalida el cuerpo entero en el esquema del cliente).
+    foreach ($capturas as $caso => $captura) {
+        $cuerpo = $captura['json'] ?? [];
+        $conCampos = str_starts_with($caso, '422_');
+        comprobar(
+            "{$caso}: sin redirect ni correlationId en null"
+                . ($conCampos ? ', con campos como objeto' : ', sin fieldErrors ni error.campos'),
+            is_array($cuerpo)
+                && !array_key_exists('redirect', $cuerpo)
+                && !array_key_exists('correlationId', $cuerpo)
+                && ($conCampos
+                    ? str_contains($captura['raw'], '"campos":{')
+                        && ($cuerpo['error']['campos'] ?? null) === ($cuerpo['fieldErrors'] ?? null)
+                    : !array_key_exists('fieldErrors', $cuerpo)
+                        && is_array($cuerpo['error'] ?? null)
+                        && !array_key_exists('campos', $cuerpo['error'])),
+        );
+    }
+
     contrastarCuerposDeError($capturas);
 
     // Una sesión ya completa (forjada, sin login real) no debe ser destruida por cancelar el

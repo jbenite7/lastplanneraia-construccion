@@ -267,34 +267,34 @@ class AuthApiController
     /**
      * Puente de coexistencia entre dos envoltorios de error, deliberado, no diseño final.
      *
-     * Publica las claves planas de nivel superior (`success`, `code`, `message`, `fieldErrors`,
-     * `redirect`, `correlationId`) para consumidores legados, y además un bloque `error`
-     * anidado (`codigo`, `mensaje`, `campos`) porque es el que `frontend/src/lib/api/cliente.ts`
-     * (`pedir()`) sabe leer: sin él, un 422 de este endpoint le llega al cliente como mensaje
-     * genérico `"<ruta> respondió <status>"`, sin ningún `fieldErrors` — el aplanado con `'; '`
-     * quedaría producido y nunca visto. Es aditivo (`EsquemaCuerpoErrorApi` es `.passthrough()`)
-     * y sigue la convención ya vigente en `NotificationController`, `ContextController`,
-     * `PlanComprasJsonRespuestas` y `LpsApiController`, que es la anidada — la plana es el estilo
-     * viejo propio de `Api/*ApiController`. Se retira el día que ya no quede ningún consumidor de
-     * la forma plana leyendo estas respuestas.
+     * Publica las claves planas de nivel superior (`success`, `code`, `message` y, si hay errores
+     * de campo, `fieldErrors`) para consumidores legados, y además un bloque `error` anidado
+     * (`codigo`, `mensaje` y, si hay, `campos`) porque es el que `frontend/src/lib/api/cliente.ts`
+     * (`pedir()`) sabe leer. Sigue la convención anidada de `NotificationController`,
+     * `ContextController`, `PlanComprasJsonRespuestas` y `LpsApiController`; la plana es el estilo
+     * viejo propio de `Api/*ApiController` y se retira el día que no quede quien la lea.
+     *
+     * **Lo vacío se omite, nunca se emite en `null` ni como `[]`** (plan 2026-09-17, mismo
+     * criterio que `PasswordRecoveryApiController::respondError()`). Un arreglo vacío de PHP se
+     * serializa como `[]` y `EsquemaCuerpoErrorApi` exige un objeto en `campos`; `redirect` y
+     * `correlationId` son `string` opcionales y un `null` no pasa. Cualquiera de los dos invalida
+     * el cuerpo ENTERO en `pedir()`, y el 422 de la política de contraseñas llegaba a
+     * `CambioClaveObligatorio` sin razón por campo. Lo vigila el contrato
+     * `tests/fixtures/api-auth-error-bodies.json` (PHP) + `error.contrato.test.ts` (Zod).
      *
      * @param array<string,string> $fieldErrors
      */
     private function respondError(int $status, string $code, string $message, array $fieldErrors = []): void
     {
-        $this->respond($status, [
-            'success' => false,
-            'code' => $code,
-            'message' => $message,
-            'fieldErrors' => $fieldErrors,
-            'redirect' => null,
-            'correlationId' => null,
-            'error' => [
-                'codigo' => $code,
-                'mensaje' => $message,
-                'campos' => $fieldErrors,
-            ],
-        ]);
+        $payload = ['success' => false, 'code' => $code, 'message' => $message];
+        $error = ['codigo' => $code, 'mensaje' => $message];
+        if ($fieldErrors !== []) {
+            $payload['fieldErrors'] = $fieldErrors;
+            $error['campos'] = $fieldErrors;
+        }
+        $payload['error'] = $error;
+
+        $this->respond($status, $payload);
     }
 
     private function sendJsonHeaders(): void

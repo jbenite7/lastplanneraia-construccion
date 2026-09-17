@@ -6,13 +6,9 @@
             "success": false,
             "code": "csrf_invalid",
             "message": "Solicitud no permitida.",
-            "fieldErrors": [],
-            "redirect": null,
-            "correlationId": null,
             "error": {
                 "codigo": "csrf_invalid",
-                "mensaje": "Solicitud no permitida.",
-                "campos": []
+                "mensaje": "Solicitud no permitida."
             }
         }
     },
@@ -27,8 +23,6 @@
                 "username": "Escribe tu usuario.",
                 "password": "Escribe tu contraseña."
             },
-            "redirect": null,
-            "correlationId": null,
             "error": {
                 "codigo": "validation_error",
                 "mensaje": "Escribe tu usuario y tu contraseña.",
@@ -46,13 +40,9 @@
             "success": false,
             "code": "invalid_credentials",
             "message": "Usuario o contraseña incorrectos.",
-            "fieldErrors": [],
-            "redirect": null,
-            "correlationId": null,
             "error": {
                 "codigo": "invalid_credentials",
-                "mensaje": "Usuario o contraseña incorrectos.",
-                "campos": []
+                "mensaje": "Usuario o contraseña incorrectos."
             }
         }
     },
@@ -66,8 +56,6 @@
             "fieldErrors": {
                 "password": "La contraseña debe tener al menos 6 caracteres; Debe contener al menos una letra mayúscula; Debe contener al menos un carácter especial (!@#$%...)"
             },
-            "redirect": null,
-            "correlationId": null,
             "error": {
                 "codigo": "validation_error",
                 "mensaje": "La contraseña debe tener al menos 6 caracteres",
