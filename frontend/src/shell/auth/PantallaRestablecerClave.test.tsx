@@ -1,9 +1,13 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, test, vi } from 'vitest';
 import { restablecerClave, validarEnlaceReset } from '../../lib/api/auth';
 import { ApiError } from '../../lib/api/cliente';
-import { MENSAJE_ENLACE_RESET_INVALIDO, type EstadoEnlaceReset } from '../../lib/api/esquemas/auth';
+import {
+  MENSAJE_ENLACE_RESET_INVALIDO,
+  type EstadoEnlaceReset,
+  type RestablecimientoAceptado,
+} from '../../lib/api/esquemas/auth';
 import type { EnlaceReset } from './tokenReset';
 import { PantallaRestablecerClave } from './PantallaRestablecerClave';
 
@@ -21,6 +25,7 @@ function propiedades(enlace: EnlaceReset = CANDIDATO) {
     enlace,
     csrfToken: 'b'.repeat(64),
     alRevalidar: vi.fn().mockResolvedValue(undefined),
+    alCompletar: vi.fn(),
   };
 }
 
@@ -293,6 +298,8 @@ test('la ayuda de política es un párrafo único, tras el campo "Nueva contrase
 test('con las cuatro reglas satisfechas, el envío local no marca error', async () => {
   const user = userEvent.setup();
   vi.mocked(validarEnlaceReset).mockResolvedValue({ success: true, state: 'valid' });
+  // Desde la Tarea 7 el envío válido llama al servidor: queda en vuelo para mirar solo lo local.
+  vi.mocked(restablecerClave).mockReturnValue(new Promise(() => {}));
   render(<PantallaRestablecerClave {...propiedades()} />);
 
   await user.type(await screen.findByLabelText('Nueva contraseña'), 'Abcdef!');
@@ -300,4 +307,190 @@ test('con las cuatro reglas satisfechas, el envío local no marca error', async 
   await user.click(screen.getByRole('button', { name: 'Actualizar contraseña' }));
 
   expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+});
+
+// --- Tarea 7: mutación, errores y navegación segura ------------------------------
+
+const CLAVE_VALIDA = 'Abcdef!';
+const MENSAJE_REUSO = 'La nueva contraseña no puede ser igual a la anterior';
+const MENSAJE_NO_CONFIRMADO =
+  'No pudimos confirmar el cambio. Intenta iniciar sesión; si no funciona, solicita un enlace nuevo.';
+
+function errorHttp(status: number, codigo: string, mensaje: string, campos?: Record<string, string>) {
+  return new ApiError(mensaje, { tipo: 'http', status, codigo, camposInvalidos: campos ?? null });
+}
+
+async function formularioValido(props = propiedades()) {
+  const user = userEvent.setup();
+  vi.mocked(validarEnlaceReset).mockResolvedValue({ success: true, state: 'valid' });
+  const vista = render(<PantallaRestablecerClave {...props} />);
+  await user.type(await screen.findByLabelText('Nueva contraseña'), CLAVE_VALIDA);
+  await user.type(screen.getByLabelText('Confirmar contraseña'), CLAVE_VALIDA);
+  return { user, props, ...vista };
+}
+
+async function esperarSecretosLimpios() {
+  await waitFor(() => expect(screen.getByLabelText('Nueva contraseña')).toHaveValue(''));
+  expect(screen.getByLabelText('Confirmar contraseña')).toHaveValue('');
+}
+
+test('doble click produce una sola mutación, bloquea controles y el éxito navega a /login?reset=1', async () => {
+  const { user, props } = await formularioValido();
+  let resolver!: (valor: RestablecimientoAceptado) => void;
+  vi.mocked(restablecerClave).mockReturnValue(
+    new Promise((resolve) => {
+      resolver = resolve;
+    }),
+  );
+
+  await user.dblClick(screen.getByRole('button', { name: 'Actualizar contraseña' }));
+
+  expect(restablecerClave).toHaveBeenCalledOnce();
+  expect(restablecerClave).toHaveBeenCalledWith(
+    { token: TOKEN, password: CLAVE_VALIDA, confirmPassword: CLAVE_VALIDA },
+    'b'.repeat(64),
+  );
+  expect(screen.getByRole('button', { name: 'Actualizando…' })).toBeDisabled();
+  expect(screen.getByLabelText('Nueva contraseña')).toBeDisabled();
+  expect(screen.getByLabelText('Confirmar contraseña')).toBeDisabled();
+
+  // Enter (submit) mientras está ocupado: sigue siendo una sola mutación.
+  fireEvent.submit(screen.getByRole('button', { name: 'Actualizando…' }).closest('form')!);
+  expect(restablecerClave).toHaveBeenCalledOnce();
+
+  resolver({ success: true, message: 'Contraseña restablecida correctamente.', redirect: '/login?reset=1' });
+
+  await waitFor(() => expect(props.alCompletar).toHaveBeenCalledWith('/login?reset=1'));
+  expect(props.alCompletar).toHaveBeenCalledOnce();
+});
+
+test('Enter en el campo envía una sola vez', async () => {
+  const { user } = await formularioValido();
+  vi.mocked(restablecerClave).mockReturnValue(new Promise(() => {}));
+
+  await user.type(screen.getByLabelText('Confirmar contraseña'), '{Enter}');
+  await user.keyboard('{Enter}');
+
+  expect(restablecerClave).toHaveBeenCalledOnce();
+});
+
+test('un redirect distinto de la ruta segura no navega y avisa sin afirmar éxito', async () => {
+  const { user, props } = await formularioValido();
+  vi.mocked(restablecerClave).mockResolvedValue({
+    success: true,
+    message: 'Contraseña restablecida correctamente.',
+    redirect: '//evil.example/login' as '/login?reset=1',
+  });
+
+  await user.click(screen.getByRole('button', { name: 'Actualizar contraseña' }));
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(MENSAJE_NO_CONFIRMADO);
+  expect(props.alCompletar).not.toHaveBeenCalled();
+  await esperarSecretosLimpios();
+});
+
+test.each([
+  [422, 'validation_error', MENSAJE_REUSO, 'password', 'Nueva contraseña'],
+  [422, 'validation_error', 'Las contraseñas no coinciden', 'confirmPassword', 'Confirmar contraseña'],
+])('422 %s (%s → %s): limpia secretos, marca el campo y enfoca', async (status, codigo, mensaje, campo, etiqueta) => {
+  const { user, props } = await formularioValido();
+  vi.mocked(restablecerClave).mockRejectedValue(errorHttp(status, codigo, mensaje, { [campo]: mensaje }));
+
+  await user.click(screen.getByRole('button', { name: 'Actualizar contraseña' }));
+
+  expect(await screen.findByText(mensaje)).toBeVisible();
+  await esperarSecretosLimpios();
+  await waitFor(() => expect(screen.getByLabelText(etiqueta)).toHaveFocus());
+  expect(screen.getByLabelText(etiqueta)).toHaveAttribute('aria-invalid', 'true');
+  expect(props.alCompletar).not.toHaveBeenCalled();
+  expect(restablecerClave).toHaveBeenCalledOnce();
+});
+
+test('tras cualquier respuesta los alternadores vuelven a ocultar', async () => {
+  const { user } = await formularioValido();
+  vi.mocked(restablecerClave).mockRejectedValue(
+    errorHttp(422, 'validation_error', MENSAJE_REUSO, { password: MENSAJE_REUSO }),
+  );
+
+  for (const boton of screen.getAllByRole('button', { name: 'Mostrar contraseña' })) {
+    await user.click(boton);
+  }
+  expect(screen.getByLabelText('Nueva contraseña')).toHaveAttribute('type', 'text');
+  expect(screen.getByLabelText('Confirmar contraseña')).toHaveAttribute('type', 'text');
+
+  await user.click(screen.getByRole('button', { name: 'Actualizar contraseña' }));
+
+  await screen.findByText(MENSAJE_REUSO);
+  expect(screen.getByLabelText('Nueva contraseña')).toHaveAttribute('type', 'password');
+  expect(screen.getByLabelText('Confirmar contraseña')).toHaveAttribute('type', 'password');
+  expect(screen.queryByRole('button', { name: 'Ocultar contraseña' })).not.toBeInTheDocument();
+});
+
+test('403 limpia secretos, ofrece "Actualizar sesión" y nunca reenvía', async () => {
+  const { user, props } = await formularioValido();
+  const mensaje = 'No fue posible validar la solicitud. Intenta nuevamente.';
+  vi.mocked(restablecerClave).mockRejectedValue(errorHttp(403, 'csrf_invalid', mensaje));
+
+  await user.click(screen.getByRole('button', { name: 'Actualizar contraseña' }));
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(mensaje);
+  await esperarSecretosLimpios();
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Actualizar sesión' })).toHaveFocus());
+
+  await user.click(screen.getByRole('button', { name: 'Actualizar sesión' }));
+
+  expect(props.alRevalidar).toHaveBeenCalledOnce();
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Actualizar sesión' })).not.toBeInTheDocument());
+  await waitFor(() => expect(screen.getByLabelText('Nueva contraseña')).toHaveFocus());
+  expect(restablecerClave).toHaveBeenCalledOnce();
+  expect(validarEnlaceReset).toHaveBeenCalledOnce();
+});
+
+test('403 y la revalidación falla: conserva la acción, avisa dentro y no reenvía', async () => {
+  const props = propiedades();
+  props.alRevalidar.mockRejectedValue(new Error('fallo'));
+  const { user } = await formularioValido(props);
+  vi.mocked(restablecerClave).mockRejectedValue(
+    errorHttp(403, 'csrf_invalid', 'No fue posible validar la solicitud. Intenta nuevamente.'),
+  );
+
+  await user.click(screen.getByRole('button', { name: 'Actualizar contraseña' }));
+  await user.click(await screen.findByRole('button', { name: 'Actualizar sesión' }));
+
+  expect(await screen.findByText('No pudimos actualizar la sesión. Intenta nuevamente.')).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Actualizar sesión' })).toHaveFocus());
+  expect(restablecerClave).toHaveBeenCalledOnce();
+});
+
+test('410 pasa al estado de enlace inválido, sin formulario', async () => {
+  const { user, props } = await formularioValido();
+  vi.mocked(restablecerClave).mockRejectedValue(errorHttp(410, 'reset_link_invalid', MENSAJE_ENLACE_RESET_INVALIDO));
+
+  await user.click(screen.getByRole('button', { name: 'Actualizar contraseña' }));
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(MENSAJE_ENLACE_RESET_INVALIDO);
+  expect(screen.queryByLabelText('Nueva contraseña')).not.toBeInTheDocument();
+  await waitFor(() => expect(screen.getByRole('link', { name: 'Solicitar un nuevo enlace' })).toHaveFocus());
+  expect(props.alCompletar).not.toHaveBeenCalled();
+});
+
+test.each([
+  ['503', () => errorHttp(503, 'reset_unavailable', 'Error al actualizar la contraseña.'), 'Error al actualizar la contraseña.'],
+  ['red', () => new ApiError('Failed to fetch', { tipo: 'red' }), MENSAJE_NO_CONFIRMADO],
+  ['2xx malformado', () => new ApiError('forma', { tipo: 'forma_invalida', status: 200 }), MENSAJE_NO_CONFIRMADO],
+  ['error desconocido', () => new Error('boom'), MENSAJE_NO_CONFIRMADO],
+])('%s: aviso técnico honesto, secretos limpios y foco en la alerta', async (_caso, crear, mensaje) => {
+  const { user, props, container } = await formularioValido();
+  vi.mocked(restablecerClave).mockRejectedValue(crear());
+
+  await user.click(screen.getByRole('button', { name: 'Actualizar contraseña' }));
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(mensaje);
+  await esperarSecretosLimpios();
+  await waitFor(() => expect(screen.getByRole('alert')).toHaveFocus());
+  expect(screen.getByRole('button', { name: 'Actualizar contraseña' })).toBeEnabled();
+  expect(screen.queryByText(/restablecida correctamente/i)).not.toBeInTheDocument();
+  expect(props.alCompletar).not.toHaveBeenCalled();
+  expect(container.innerHTML).not.toContain(TOKEN);
+  expect(restablecerClave).toHaveBeenCalledOnce();
 });

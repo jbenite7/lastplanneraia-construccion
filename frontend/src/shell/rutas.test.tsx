@@ -745,3 +745,45 @@ test('403 al validar, revalidación exitosa: la segunda validación usa el CSRF 
   expect(await screen.findByLabelText('Nueva contraseña')).toBeVisible();
   expect(llamadasValidate).toBe(2);
 });
+
+test('éxito del restablecimiento: reemplaza el historial hacia /login?reset=1 y muestra el aviso de S01', async () => {
+  // S03, Tarea 7: la URL con el token no debe quedar en el historial (navegación con `replace`),
+  // y el aviso `reset=1` lo pinta el login de S01 sin duplicarlo aquí.
+  window.history.pushState({}, '', `/password/reset?token=${TOKEN_RESET}`);
+  const largoInicial = window.history.length;
+  let llamadasReset = 0;
+
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/auth/password/reset/validate')) {
+        return Promise.resolve(new Response(JSON.stringify({ success: true, state: 'valid' }), { status: 200 }));
+      }
+      if (url.includes('/api/auth/password/reset')) {
+        llamadasReset += 1;
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({ success: true, message: 'Contraseña restablecida correctamente.', redirect: '/login?reset=1' }),
+            { status: 200 },
+          ),
+        );
+      }
+      return Promise.resolve(new Response(JSON.stringify(ANONIMA_MISSING_SESSION), { status: 200 }));
+    }),
+  );
+
+  const user = userEvent.setup();
+  render(<Rutas />);
+
+  await user.type(await screen.findByLabelText('Nueva contraseña'), 'Abcdef!');
+  await user.type(screen.getByLabelText('Confirmar contraseña'), 'Abcdef!');
+  await user.click(screen.getByRole('button', { name: 'Actualizar contraseña' }));
+
+  await screen.findByRole('heading', { name: /bienvenido a last planner aia/i });
+  expect(await screen.findByText(/restablecida correctamente/i)).toBeInTheDocument();
+  expect(llamadasReset).toBe(1);
+  expect(window.history.length).toBe(largoInicial);
+  expect(window.location.pathname).toBe('/login');
+  expect(window.location.href).not.toContain(TOKEN_RESET);
+});

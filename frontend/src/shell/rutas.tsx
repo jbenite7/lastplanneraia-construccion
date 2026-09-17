@@ -1,5 +1,5 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import type { ConfiguracionRuntime } from '../lib/runtime/configuracion';
 import { AppShell } from './AppShell';
 import { CambioClaveObligatorio } from './auth/CambioClaveObligatorio';
@@ -154,13 +154,21 @@ function RutaRecuperacion() {
 /**
  * Ruta pública de restablecimiento (S03). El token se lee de la query UNA vez por `search`
  * (`leerTokenReset`, estricto) y solo viaja por props a la pantalla: nunca a contexto, estado
- * global, logs ni DOM. La pantalla recibe `csrfToken`, `enlace` y `alRevalidar`; jamás
+ * global, logs ni DOM. La pantalla recibe `csrfToken`, `enlace`, `alRevalidar` y `alCompletar`; jamás
  * usuario ni proyecto.
  */
 function RutaRestablecimiento() {
   const { search } = useLocation();
+  const navigate = useNavigate();
   const enlace = useMemo(() => leerTokenReset(search), [search]);
-  return <RutaPublicaAcceso pintar={(props) => <PantallaRestablecerClave enlace={enlace} {...props} />} />;
+  // Tarea 7: `replace` saca del historial la URL con el token; el aviso `reset=1` lo pinta el
+  // login de S01. La pantalla solo llama esto con la ruta segura fija (`RUTA_EXITO`).
+  const alCompletar = useCallback((ruta: string) => navigate(ruta, { replace: true }), [navigate]);
+  return (
+    <RutaPublicaAcceso
+      pintar={(props) => <PantallaRestablecerClave enlace={enlace} alCompletar={alCompletar} {...props} />}
+    />
+  );
 }
 
 /**

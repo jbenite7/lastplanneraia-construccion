@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { validarEnlaceReset } from '../../lib/api/auth';
+import { restablecerClave, validarEnlaceReset } from '../../lib/api/auth';
 import { ApiError } from '../../lib/api/cliente';
 import { EsquemaSolicitudRestablecerClave, MENSAJE_ENLACE_RESET_INVALIDO } from '../../lib/api/esquemas/auth';
 import { CampoClave } from './CampoClave';
@@ -19,8 +19,14 @@ import type { EnlaceReset } from './tokenReset';
  * independientes y validación local contra `EsquemaSolicitudRestablecerClave` — el mismo esquema
  * cliente↔servidor de la Tarea 1. La validación se detiene en la primera regla que falla (orden
  * fijo: longitud, mayúscula, carácter especial, coincidencia) y mueve el foco al campo señalado;
- * mientras alguna regla local falle, `restablecerClave()` no se llama. El envío real contra el
- * servidor y sus errores 422/403/503 son de la Tarea 7.
+ * mientras alguna regla local falle, `restablecerClave()` no se llama.
+ *
+ * Envío real (Tarea 7): una sola mutación por envío (candado síncrono `enviandoRef` además del
+ * `disabled`), sin reintentos automáticos. Tras CUALQUIER liquidación se limpian los dos secretos
+ * y los alternadores vuelven a ocultar (los campos se remontan por `key`). 422 marca el campo y lo
+ * enfoca; 403 ofrece «Actualizar sesión» sin reenviar; 410 pasa al estado inválido; 503 muestra
+ * el mensaje del servidor y red/contrato un aviso fijo que no afirma éxito. El éxito solo navega
+ * si `redirect` es exactamente `RUTA_EXITO` — nunca una redirección abierta.
  */
 type Props = {
   enlace: EnlaceReset;
@@ -30,6 +36,11 @@ type Props = {
    * acción de recuperación de un 403 `csrf_invalid`: el token CSRF quedó viejo, no el enlace.
    */
   alRevalidar: () => Promise<void>;
+  /**
+   * Navega tras el éxito. Solo recibe `RUTA_EXITO`; la ruta la implementa reemplazando el
+   * historial para que la URL con el token no quede atrás.
+   */
+  alCompletar: (ruta: string) => void;
 };
 
 type LinkState =
@@ -40,6 +51,11 @@ type LinkState =
 
 const MENSAJE_TECNICO = 'No pudimos validar el enlace. Intenta nuevamente.';
 const MENSAJE_REVALIDAR_FALLIDO = 'No pudimos actualizar la sesión. Intenta nuevamente.';
+// Red, respuesta malformada o redirect inesperado: el cambio pudo o no aplicarse, así que no se
+// afirma éxito ni fracaso — se orienta a comprobarlo.
+const MENSAJE_NO_CONFIRMADO =
+  'No pudimos confirmar el cambio. Intenta iniciar sesión; si no funciona, solicita un enlace nuevo.';
+export const RUTA_EXITO = '/login?reset=1';
 // Paridad visual (correcciones §7, referencia `legacy-{valido,invalido}-*.png`): el subtítulo se
 // ve en TODOS los estados, no solo en el formulario — incluido el inválido.
 const SUBTITULO = 'Usa al menos 6 caracteres, una mayúscula y un carácter especial.';
@@ -52,14 +68,20 @@ function esApiError503(causa: unknown): boolean {
   return causa instanceof ApiError && causa.tipo === 'http' && causa.status === 503;
 }
 
-export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar }: Props) {
+function esApiErrorHttp(causa: unknown, status: number): causa is ApiError {
+  return causa instanceof ApiError && causa.tipo === 'http' && causa.status === status;
+}
+
+type Foco = 'solicitar-enlace' | 'accion-error' | 'alerta' | 'password' | 'confirm' | 'revalidar';
+
+export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar, alCompletar }: Props) {
   const [linkState, setLinkState] = useState<LinkState>(
     enlace.kind === 'invalid' ? { kind: 'invalid', message: MENSAJE_ENLACE_RESET_INVALIDO } : { kind: 'validating' },
   );
   const [reintentando, setReintentando] = useState(false);
   // Marca qué destino debe recibir el foco tras el próximo commit, igual que
   // `PantallaRecuperarClave`: se consume una vez y se limpia.
-  const [focoPendiente, setFocoPendiente] = useState<'solicitar-enlace' | 'accion-error' | 'alerta' | null>(null);
+  const [focoPendiente, setFocoPendiente] = useState<Foco | null>(null);
   const [validationAttempt, setValidationAttempt] = useState(0);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -69,9 +91,17 @@ export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar }: Pro
     password: null,
     confirmPassword: null,
   });
-  // El envío real contra el servidor (estado ocupado, 422/403/503) llega en la Tarea 7 — aquí el
-  // formulario nunca queda ocupado porque nunca llama a `restablecerClave()`.
-  const submitting = false;
+  const [submitting, setSubmitting] = useState(false);
+  // Candado síncrono: dos eventos en el mismo tick (doble click, Enter) llegan antes de que
+  // `submitting` se pinte, así que el estado solo no cierra la ventana.
+  const enviandoRef = useRef(false);
+  // Avanza tras cada liquidación: la `key` remonta los `CampoClave` y sus alternadores vuelven a
+  // ocultar, sin exponer un reset imperativo en el componente compartido.
+  const [versionSecretos, setVersionSecretos] = useState(0);
+  const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
+  const [requiereRevalidar, setRequiereRevalidar] = useState(false);
+  const [revalidando, setRevalidando] = useState(false);
+  const revalidarRef = useRef<HTMLButtonElement>(null);
   const csrfTokenRef = useRef(csrfToken);
   csrfTokenRef.current = csrfToken;
   const solicitarEnlaceRef = useRef<HTMLAnchorElement>(null);
@@ -125,15 +155,17 @@ export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar }: Pro
   useEffect(() => {
     if (!focoPendiente) return;
 
-    const destino =
-      focoPendiente === 'solicitar-enlace'
-        ? solicitarEnlaceRef.current
-        : focoPendiente === 'accion-error'
-          ? accionErrorRef.current
-          : alertaRef.current;
-    destino?.focus();
+    const destinos: Record<Foco, { current: HTMLElement | null }> = {
+      'solicitar-enlace': solicitarEnlaceRef,
+      'accion-error': accionErrorRef,
+      alerta: alertaRef,
+      password: passwordRef,
+      confirm: confirmRef,
+      revalidar: revalidarRef,
+    };
+    destinos[focoPendiente].current?.focus();
     setFocoPendiente(null);
-  }, [focoPendiente, linkState]);
+  }, [focoPendiente, linkState, versionSecretos]);
 
   async function reintentarValidacion() {
     if (reintentando) return;
@@ -156,9 +188,9 @@ export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar }: Pro
   // foco al campo señalado por el primer issue — nunca los dos campos a la vez. `token` viaja
   // solo para que `superRefine` corra completo; su propio patrón ya lo garantizó `leerTokenReset`
   // antes de llegar aquí, así que nunca es la causa del primer issue en la práctica.
-  function enviarFormulario(evento: FormEvent<HTMLFormElement>) {
+  async function enviarFormulario(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    if (submitting || enlace.kind !== 'candidate') return;
+    if (enviandoRef.current || enlace.kind !== 'candidate') return;
 
     const resultado = EsquemaSolicitudRestablecerClave.safeParse({
       token: enlace.token,
@@ -167,8 +199,7 @@ export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar }: Pro
     });
 
     if (resultado.success) {
-      // El envío real contra el servidor llega en la Tarea 7 — aquí solo se confirma que las
-      // cuatro reglas visibles al cliente ya pasaron.
+      await enviarAlServidor(resultado.data);
       return;
     }
 
@@ -181,6 +212,74 @@ export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar }: Pro
     requestAnimationFrame(() => {
       (campo === 'confirmPassword' ? confirmRef.current : passwordRef.current)?.focus();
     });
+  }
+
+  function limpiarSecretos() {
+    setPassword('');
+    setConfirmPassword('');
+    setVersionSecretos((actual) => actual + 1);
+  }
+
+  async function enviarAlServidor(solicitud: Parameters<typeof restablecerClave>[0]) {
+    enviandoRef.current = true;
+    setSubmitting(true);
+    setErrorGeneral(null);
+    setRequiereRevalidar(false);
+    setFieldErrors({ password: null, confirmPassword: null });
+
+    try {
+      const respuesta = await restablecerClave(solicitud, csrfToken);
+      limpiarSecretos();
+      if (respuesta.redirect !== RUTA_EXITO) {
+        setErrorGeneral(MENSAJE_NO_CONFIRMADO);
+        setFocoPendiente('alerta');
+        return;
+      }
+      alCompletar(RUTA_EXITO);
+    } catch (causa) {
+      limpiarSecretos();
+      if (esApiErrorHttp(causa, 422)) {
+        const campos = causa.camposInvalidos ?? {};
+        const errorConfirmacion = campos.confirmPassword ?? null;
+        const errorPassword = campos.password ?? (errorConfirmacion ? null : causa.message);
+        setFieldErrors({ password: errorPassword, confirmPassword: errorPassword ? null : errorConfirmacion });
+        setFocoPendiente(errorPassword ? 'password' : 'confirm');
+      } else if (esApiErrorHttp(causa, 403)) {
+        setRequiereRevalidar(true);
+        setErrorGeneral(causa.message);
+        setFocoPendiente('revalidar');
+      } else if (esApiErrorHttp(causa, 410)) {
+        setLinkState({ kind: 'invalid', message: MENSAJE_ENLACE_RESET_INVALIDO });
+        setFocoPendiente('solicitar-enlace');
+      } else if (esApiErrorHttp(causa, 503)) {
+        setErrorGeneral(causa.message);
+        setFocoPendiente('alerta');
+      } else {
+        setErrorGeneral(MENSAJE_NO_CONFIRMADO);
+        setFocoPendiente('alerta');
+      }
+    } finally {
+      enviandoRef.current = false;
+      setSubmitting(false);
+    }
+  }
+
+  // «Actualizar sesión» tras un 403 del envío: solo revalida, nunca reenvía la mutación.
+  async function actualizarSesion() {
+    if (revalidando) return;
+    setRevalidando(true);
+
+    try {
+      await alRevalidar();
+      setRequiereRevalidar(false);
+      setErrorGeneral(null);
+      setFocoPendiente('password');
+    } catch {
+      setErrorGeneral(MENSAJE_REVALIDAR_FALLIDO);
+      setFocoPendiente('revalidar');
+    } finally {
+      setRevalidando(false);
+    }
   }
 
   if (linkState.kind === 'invalid') {
@@ -231,12 +330,13 @@ export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar }: Pro
     );
   }
 
-  // `valid`: formulario accesible con política visible, dos toggles independientes y validación
-  // local (Tarea 6). El envío real contra el servidor llega en la Tarea 7.
+  // `valid`: formulario accesible con política visible, dos toggles independientes, validación
+  // local (Tarea 6) y envío real con sus errores (Tarea 7).
   return (
     <MarcoAcceso titulo="Define tu nueva contraseña" subtitulo={SUBTITULO}>
-      <form onSubmit={enviarFormulario} aria-busy={submitting} noValidate>
+      <form onSubmit={(evento) => void enviarFormulario(evento)} aria-busy={submitting} noValidate>
         <CampoClave
+          key={`password-${versionSecretos}`}
           ref={passwordRef}
           id="reset-password"
           name="password"
@@ -260,6 +360,7 @@ export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar }: Pro
         </p>
 
         <CampoClave
+          key={`confirm-${versionSecretos}`}
           ref={confirmRef}
           id="reset-confirm"
           name="confirmPassword"
@@ -274,6 +375,26 @@ export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar }: Pro
           error={fieldErrors.confirmPassword}
           disabled={submitting}
         />
+
+        {errorGeneral && (
+          <p role="alert" className="aia-alert" ref={alertaRef} tabIndex={-1}>
+            {errorGeneral}
+            {requiereRevalidar && (
+              <>
+                {' '}
+                <button
+                  ref={revalidarRef}
+                  type="button"
+                  className="aia-btn aia-btn--secondary"
+                  onClick={() => void actualizarSesion()}
+                  disabled={revalidando}
+                >
+                  {revalidando ? 'Actualizando…' : 'Actualizar sesión'}
+                </button>
+              </>
+            )}
+          </p>
+        )}
 
         <div className="aia-auth__acciones">
           <button type="submit" className="aia-btn" disabled={submitting}>
