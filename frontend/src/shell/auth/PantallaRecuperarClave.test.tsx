@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, test, vi } from 'vitest';
 import { solicitarRecuperacion } from '../../lib/api/auth';
+import { ApiError } from '../../lib/api/cliente';
 import { PantallaRecuperarClave } from './PantallaRecuperarClave';
 
 vi.mock('../../lib/api/auth', () => ({
@@ -113,7 +114,99 @@ test('un fallo de transporte conserva el correo y muestra el aviso técnico', as
   await user.type(screen.getByLabelText('Correo electrónico'), 'persona@empresa.com');
   await user.click(screen.getByRole('button', { name: 'Enviar enlace' }));
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos conectar. Intenta nuevamente.');
+  const alerta = await screen.findByRole('alert');
+  expect(alerta).toHaveTextContent('No pudimos conectar. Intenta nuevamente.');
+  expect(alerta).toHaveFocus();
   expect(screen.getByLabelText('Correo electrónico')).toHaveValue('persona@empresa.com');
   expect(screen.getByRole('button', { name: 'Enviar enlace' })).toBeEnabled();
+});
+
+test('un 422 asocia el error al campo, conserva el correo y enfoca el email', async () => {
+  vi.mocked(solicitarRecuperacion).mockRejectedValue(
+    new ApiError('Revisa el correo electrónico.', {
+      tipo: 'http',
+      status: 422,
+      codigo: 'validation_error',
+      camposInvalidos: { email: 'Ingresa un correo electrónico válido.' },
+    }),
+  );
+  const user = userEvent.setup();
+  render(<PantallaRecuperarClave {...propiedades()} />);
+
+  await user.type(screen.getByLabelText('Correo electrónico'), 'persona@empresa.com');
+  await user.click(screen.getByRole('button', { name: 'Enviar enlace' }));
+
+  const campo = screen.getByLabelText('Correo electrónico');
+  expect(await screen.findByText('Ingresa un correo electrónico válido.')).toBeVisible();
+  expect(campo).toHaveAttribute('aria-invalid', 'true');
+  expect(campo).toHaveValue('persona@empresa.com');
+  expect(campo).toHaveFocus();
+  expect(solicitarRecuperacion).toHaveBeenCalledTimes(1);
+});
+
+test('un 503 muestra el aviso técnico del servidor, conserva el correo y enfoca la alerta', async () => {
+  const mensajeServidor =
+    'No pudimos enviar el correo en este momento por un problema técnico. Vuelve a intentarlo en unos minutos; si sigue fallando, avisa al administrador.';
+  vi.mocked(solicitarRecuperacion).mockRejectedValue(
+    new ApiError(mensajeServidor, { tipo: 'http', status: 503, codigo: 'recovery_unavailable' }),
+  );
+  const user = userEvent.setup();
+  render(<PantallaRecuperarClave {...propiedades()} />);
+
+  await user.type(screen.getByLabelText('Correo electrónico'), 'persona@empresa.com');
+  await user.click(screen.getByRole('button', { name: 'Enviar enlace' }));
+
+  const alerta = await screen.findByRole('alert');
+  expect(alerta).toHaveTextContent(mensajeServidor);
+  expect(alerta).toHaveFocus();
+  expect(screen.getByLabelText('Correo electrónico')).toHaveValue('persona@empresa.com');
+  expect(screen.getByRole('button', { name: 'Enviar enlace' })).toBeEnabled();
+});
+
+test('un 403 ofrece actualizar sesión, conserva el correo y no reenvía el correo', async () => {
+  const props = propiedades();
+  vi.mocked(solicitarRecuperacion).mockRejectedValue(
+    new ApiError('No fue posible validar la solicitud. Intenta nuevamente.', {
+      tipo: 'http',
+      status: 403,
+      codigo: 'csrf_invalid',
+    }),
+  );
+  const user = userEvent.setup();
+  render(<PantallaRecuperarClave {...props} />);
+
+  await user.type(screen.getByLabelText('Correo electrónico'), 'persona@empresa.com');
+  await user.click(screen.getByRole('button', { name: 'Enviar enlace' }));
+
+  const actualizar = await screen.findByRole('button', { name: 'Actualizar sesión' });
+  expect(actualizar).toHaveFocus();
+  expect(screen.getByLabelText('Correo electrónico')).toHaveValue('persona@empresa.com');
+
+  await user.click(actualizar);
+
+  expect(props.alRevalidar).toHaveBeenCalledOnce();
+  expect(solicitarRecuperacion).toHaveBeenCalledOnce();
+  expect(screen.queryByRole('button', { name: 'Actualizar sesión' })).not.toBeInTheDocument();
+  expect(screen.getByLabelText('Correo electrónico')).toHaveFocus();
+});
+
+test('editar el correo tras un 422 limpia el error de campo', async () => {
+  vi.mocked(solicitarRecuperacion).mockRejectedValue(
+    new ApiError('Revisa el correo electrónico.', {
+      tipo: 'http',
+      status: 422,
+      codigo: 'validation_error',
+      camposInvalidos: { email: 'Ingresa un correo electrónico válido.' },
+    }),
+  );
+  const user = userEvent.setup();
+  render(<PantallaRecuperarClave {...propiedades()} />);
+
+  await user.type(screen.getByLabelText('Correo electrónico'), 'persona@empresa.com');
+  await user.click(screen.getByRole('button', { name: 'Enviar enlace' }));
+  await screen.findByText('Ingresa un correo electrónico válido.');
+
+  await user.type(screen.getByLabelText('Correo electrónico'), 'x');
+
+  expect(screen.queryByText('Ingresa un correo electrónico válido.')).not.toBeInTheDocument();
 });

@@ -1,30 +1,53 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { solicitarRecuperacion } from '../../lib/api/auth';
+import { ApiError } from '../../lib/api/cliente';
 import { EsquemaSolicitudRecuperacion } from '../../lib/api/esquemas/auth';
 import { IconoCorreo, IconoEnviar } from './iconos';
 import { MarcoAcceso } from './MarcoAcceso';
 
 /**
- * Pantalla pública de recuperación de clave (S02, Tarea 5). `alRevalidar` se conserva en la
- * interfaz sin usarse aquí — la Tarea 6 la conecta al manejo de 403 (`csrf_invalid`), que
- * necesita refrescar el bootstrap sin reenviar el correo. Task 6 también clasifica 403/422/503;
- * aquí solo hay validación local (formato) y un error técnico genérico para cualquier fallo de
- * transporte (spec §"Red/contrato": «No pudimos conectar. Intenta nuevamente.»).
+ * Pantalla pública de recuperación de clave (S02). Clasifica los fallos de
+ * `solicitarRecuperacion()` en las cuatro variantes que distingue la spec (§9 «Estados de
+ * interfaz»): 422 (formato, asociado al campo), 403 (CSRF vencido — ofrece «Actualizar sesión»
+ * sin reenviar el correo), 503 (aviso técnico honesto del propio servidor) y red/contrato
+ * (aviso técnico fijo del frontend). Ninguna variante reintenta la mutación por su cuenta.
  */
 type Props = {
   csrfToken: string;
+  /**
+   * Revalida la sesión (recarga el bootstrap) sin reenviar el correo — la acción de
+   * recuperación de un 403 `csrf_invalid`: el token quedó viejo, no el correo ingresado.
+   */
   alRevalidar: () => Promise<void>;
 };
 
 const MENSAJE_FORMATO = 'Ingresa un correo electrónico válido.';
 const MENSAJE_TECNICO = 'No pudimos conectar. Intenta nuevamente.';
+const MENSAJE_REVALIDAR_FALLIDO = 'No pudimos actualizar la sesión. Intenta nuevamente.';
 
-export function PantallaRecuperarClave({ csrfToken }: Props) {
+export function PantallaRecuperarClave({ csrfToken, alRevalidar }: Props) {
   const [email, setEmail] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [exito, setExito] = useState<string | null>(null);
   const [errorEmail, setErrorEmail] = useState<string | null>(null);
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
+  const [requiereRevalidar, setRequiereRevalidar] = useState(false);
+  const [revalidando, setRevalidando] = useState(false);
+  // Marca qué destino debe recibir el foco tras el próximo commit (spec §9): el `useEffect`
+  // de abajo lo consume una vez y lo limpia, para no robar foco en renders posteriores.
+  const [focoPendiente, setFocoPendiente] = useState<'email' | 'alerta' | 'revalidar' | null>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const alertaRef = useRef<HTMLParagraphElement>(null);
+  const revalidarRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!focoPendiente) return;
+
+    const destino =
+      focoPendiente === 'email' ? emailRef.current : focoPendiente === 'alerta' ? alertaRef.current : revalidarRef.current;
+    destino?.focus();
+    setFocoPendiente(null);
+  }, [focoPendiente]);
 
   async function enviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
@@ -35,6 +58,7 @@ export function PantallaRecuperarClave({ csrfToken }: Props) {
       setErrorEmail(MENSAJE_FORMATO);
       setExito(null);
       setErrorGeneral(null);
+      setRequiereRevalidar(false);
       return;
     }
 
@@ -42,17 +66,46 @@ export function PantallaRecuperarClave({ csrfToken }: Props) {
     setExito(null);
     setErrorEmail(null);
     setErrorGeneral(null);
+    setRequiereRevalidar(false);
 
     try {
       const respuesta = await solicitarRecuperacion(validacion.data.email, csrfToken);
       setEmail('');
       setExito(respuesta.message);
-    } catch {
-      // Task 5 no distingue 403/422/503 (Task 6): cualquier fallo de transporte cae en el mismo
-      // aviso técnico genérico, conservando el correo (spec S02-UX-08).
-      setErrorGeneral(MENSAJE_TECNICO);
+    } catch (causa) {
+      if (causa instanceof ApiError && causa.tipo === 'http' && causa.status === 422) {
+        setErrorEmail(causa.camposInvalidos?.email ?? MENSAJE_FORMATO);
+        setFocoPendiente('email');
+      } else if (causa instanceof ApiError && causa.tipo === 'http' && causa.status === 403) {
+        setRequiereRevalidar(true);
+        setErrorGeneral(causa.message);
+        setFocoPendiente('revalidar');
+      } else if (causa instanceof ApiError && causa.tipo === 'http' && causa.status === 503) {
+        setErrorGeneral(causa.message);
+        setFocoPendiente('alerta');
+      } else {
+        setErrorGeneral(MENSAJE_TECNICO);
+        setFocoPendiente('alerta');
+      }
     } finally {
       setEnviando(false);
+    }
+  }
+
+  async function actualizarSesion() {
+    if (revalidando) return;
+    setRevalidando(true);
+
+    try {
+      await alRevalidar();
+      setRequiereRevalidar(false);
+      setErrorGeneral(null);
+      setFocoPendiente('email');
+    } catch {
+      setErrorGeneral(MENSAJE_REVALIDAR_FALLIDO);
+      setFocoPendiente('revalidar');
+    } finally {
+      setRevalidando(false);
     }
   }
 
@@ -68,6 +121,7 @@ export function PantallaRecuperarClave({ csrfToken }: Props) {
           </label>
           <div className="aia-auth__campo-icono">
             <input
+              ref={emailRef}
               id="recuperacion-email"
               name="email"
               type="email"
@@ -105,8 +159,22 @@ export function PantallaRecuperarClave({ csrfToken }: Props) {
         )}
 
         {errorGeneral && (
-          <p role="alert" className="aia-alert">
+          <p role="alert" className="aia-alert" ref={alertaRef} tabIndex={-1}>
             {errorGeneral}
+            {requiereRevalidar && (
+              <>
+                {' '}
+                <button
+                  ref={revalidarRef}
+                  type="button"
+                  className="aia-btn aia-btn--secondary"
+                  onClick={() => void actualizarSesion()}
+                  disabled={revalidando}
+                >
+                  {revalidando ? 'Actualizando…' : 'Actualizar sesión'}
+                </button>
+              </>
+            )}
           </p>
         )}
 
