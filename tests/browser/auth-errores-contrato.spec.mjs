@@ -1,6 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { arranqueAnonimo, arranqueCambioClave, simularSesion } from './support/login-react-fixtures.mjs';
+import {
+  arranqueAnonimo,
+  arranqueCambioClave,
+  cuerpoError,
+  simularSesion,
+} from './support/login-react-fixtures.mjs';
 
 /**
  * Errores de `/api/auth/*` contra la forma REAL del servidor (plan 2026-09-17).
@@ -66,5 +71,12 @@ test.describe('errores de /api/auth con la forma real del servidor', () => {
     await expect(campo).toHaveAttribute('aria-invalid', 'true');
     await expect(page.locator('#clave-nueva-error')).toHaveText(real.cuerpo.error.campos.password);
     await expect(campo).toBeFocused();
+  });
+
+  test('cuerpoError() de las fixtures del login produce exactamente la forma real del servidor', () => {
+    for (const caso of ['403_csrf_invalid', '401_invalid_credentials', '422_login_validation_error', '422_password_change_validation_error']) {
+      const real = CUERPOS_REALES[caso].cuerpo;
+      expect(cuerpoError({ code: real.code, message: real.message, fieldErrors: real.fieldErrors ?? null }), caso).toEqual(real);
+    }
   });
 });
