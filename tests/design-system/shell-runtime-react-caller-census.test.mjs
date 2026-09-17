@@ -86,14 +86,16 @@ test('VIEW-26 (views/errors/error.view.php) tiene exactamente 1 llamador real de
   assert.equal(censo.callers[0].file, 'src/Core/ErrorPage.php');
 });
 
-test('VIEW-29 (views/partials/head_brand.php) tiene exactamente 19 llamadores reales de producción hoy', () => {
+test('VIEW-29 (views/partials/head_brand.php) tiene exactamente 18 llamadores reales de producción hoy', () => {
   // Bajó de 20 a 19 el 2026-09-16: la Tarea 10 de S02 retiró VIEW-02
   // (views/auth/password-forgot.view.php), que incluía este partial, tras el gate
-  // explícito de Felipe. Este censo se actualiza a propósito, no se silencia.
+  // explícito de Felipe. Bajó de 19 a 18 el 2026-09-17: la Tarea 10 de S03 retiró
+  // VIEW-03 (views/auth/password-reset.view.php), que también lo incluía, con el mismo
+  // gate. Este censo se actualiza a propósito, no se silencia.
   const censo = censarLlamadores('head_brand.php', 'views/partials/head_brand.php');
   assert.equal(
     censo.count,
-    19,
+    18,
     `censo cambió: ${JSON.stringify(censo.callers, null, 2)} — actualiza este test a propósito, no lo silencies`,
   );
   // VIEW-26 es a su vez llamador de VIEW-29: retirar una no retira la otra automáticamente.

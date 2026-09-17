@@ -104,14 +104,12 @@ $router->post('/login', [\App\Controllers\Auth\LoginController::class, 'login'])
 // SpaHostRenderer antes de llegar aquí (RUTAS_EXACTAS_MIGRADAS sigue incluyendo la ruta),
 // y el POST legado ya no tiene controlador — cae al 404 controlado del producto porque
 // '/password/forgot' permanece en $publicRoutes.
-// GET/HEAD '/password/reset' los sirve SpaRouter/SpaHostRenderer desde la Tarea 8 (S03); el
-// registro GET y el POST legados se conservan como rollback hasta la Tarea 10.
-$router->get('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'reset']);
-// HEAD junto a GET, como '/' y '/login': el rollback (quitar la ruta de RUTAS_EXACTAS_MIGRADAS)
-// tiene que devolver ambos métodos al legado sin depender del fallback interno de FastRoute —
-// ver App\Core\Router::head().
-$router->head('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'reset']);
-$router->post('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'update']);
+// '/password/reset' (GET/HEAD/POST) se retiró de este bloque en la Tarea 10 (S03
+// MIGRATION_COMPLETE, gate explícito de Felipe): GET/HEAD ya los sirve SpaRouter/
+// SpaHostRenderer antes de llegar aquí (RUTAS_EXACTAS_MIGRADAS sigue incluyendo la ruta),
+// y el POST legado ya no tiene controlador — cae al 404 controlado del producto porque
+// '/password/reset' permanece en $publicRoutes. El restablecimiento real vive en
+// '/api/auth/password/reset/validate' y '/api/auth/password/reset'.
 $router->post('/password/update', [\App\Controllers\Auth\LoginController::class, 'updatePassword']);
 $router->get('/login/cancelar', [\App\Controllers\Auth\LoginController::class, 'cancelPasswordChange']);
 $router->get('/logout', [\App\Controllers\Auth\LoginController::class, 'logout']);

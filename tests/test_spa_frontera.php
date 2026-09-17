@@ -175,8 +175,10 @@ function comprobarSinRollbackS02(): void
     }
 }
 
-// --- Rollback S03: la vista y el controlador legados siguen vivos hasta la Tarea 10, así que
-// quitar '/password/reset' del mapa devuelve GET/HEAD al PHP sin tocar las demás rutas. ---
+// --- S03 tras la Tarea 10: el corte de '/password/reset' depende SOLO del mapa de SpaRouter,
+// porque ya no hay vista ni controlador legados a los que volver (se retiraron con el gate
+// explícito de Felipe). Se fija que el mapa gobierna y que public/index.php no registra
+// handler PHP para la ruta. ---
 comprobarRollbackS03();
 
 function comprobarRollbackS03(): void
@@ -206,13 +208,24 @@ function comprobarRollbackS03(): void
         $fallos++;
     }
 
-    // El legado al que volver sigue registrado (GET y POST) mientras dure la ventana de rollback.
+    // No hay legado al que volver: ningún `$router->get|head|post|any(...)` para la ruta, y el
+    // POST anónimo debe caer en el 404 controlado, así que la ruta sigue en $publicRoutes.
     $index = (string) file_get_contents(__DIR__ . '/../public/index.php');
-    foreach (['get', 'head', 'post'] as $verbo) {
-        if (preg_match('~\$router->' . $verbo . "\\(\\s*'/password/reset'~", $index) !== 1) {
-            echo "FALLO: S03 — public/index.php debe conservar \$router->{$verbo}('/password/reset') hasta la Tarea 10\n";
-            $fallos++;
-        }
+    if (preg_match("~\\\$router->\\w+\\(\\s*'/password/reset'~", $index) === 1) {
+        echo "FALLO: S03 — public/index.php registra un handler PHP para '/password/reset'; el legado se retiró en la Tarea 10\n";
+        $fallos++;
+    }
+    if (preg_match("~\\\$publicRoutes = \\[[^\\]]*'/password/reset'~", $index) !== 1) {
+        echo "FALLO: S03 — '/password/reset' debe seguir en \$publicRoutes para que el POST retirado caiga en el 404 controlado\n";
+        $fallos++;
+    }
+    if (is_file(__DIR__ . '/../views/auth/password-reset.view.php')) {
+        echo "FALLO: S03 — views/auth/password-reset.view.php debe estar retirada (Tarea 10)\n";
+        $fallos++;
+    }
+    if (is_file(__DIR__ . '/../src/Controllers/Auth/PasswordResetController.php')) {
+        echo "FALLO: S03 — src/Controllers/Auth/PasswordResetController.php debe estar retirado (Tarea 10)\n";
+        $fallos++;
     }
 
     // El mapa real de producción incluye la ruta tras el corte.

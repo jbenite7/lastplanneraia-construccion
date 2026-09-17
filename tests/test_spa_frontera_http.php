@@ -7,7 +7,8 @@
  * `/`/`/login`, y desde la Tarea 8 (S02) también `/password/forgot`, en GET/HEAD) devuelven el
  * HTML inicial sin autenticar, sus assets se sirven como archivos, y las rutas que NUNCA deben
  * cruzar al host SPA (`/api/*`, `/app/assets*`) siguen siendo del sitio PHP. Desde la Tarea 8 (S03)
- * GET/HEAD `/password/reset` también cruzan, con no-referrer/no-store; su POST sigue legado.
+ * GET/HEAD `/password/reset` también cruzan, con no-referrer/no-store; su POST se retiró en la
+ * Tarea 10 (S03 MIGRATION_COMPLETE, gate explícito de Felipe) y responde el 404 controlado.
  * `POST /login` sigue siendo del sitio PHP mientras dure la ventana de rollback de S01.
  * `POST /password/forgot` se retiró en la Tarea 10 (gate explícito de Felipe, S02
  * MIGRATION_COMPLETE): ya no hay controlador legado que lo atienda y responde el 404
@@ -195,16 +196,20 @@ try {
     comprobarFronteraSpa(preg_match('/^Referrer-Policy:\s*no-referrer\s*$/mi', $resetHead['cabeceras']) === 1, 'HEAD /password/reset debe enviar Referrer-Policy: no-referrer');
     comprobarFronteraSpa(preg_match('/^Cache-Control:[^\r\n]*no-store[^\r\n]*max-age=0/mi', $resetHead['cabeceras']) === 1, 'HEAD /password/reset debe enviar Cache-Control: no-store…max-age=0');
 
-    // --- POST /password/reset sigue en el legado durante la ventana de rollback (hasta la
-    // Tarea 10). CSRF inválido y token vacío a propósito: nunca cambia una clave real. ---
+    // --- POST /password/reset se retiró en la Tarea 10: sin controlador legado cae al 404
+    // controlado del producto porque '/password/reset' sigue en el allowlist público por path,
+    // nunca a un redirect de autenticación. CSRF inválido y token vacío a propósito: nunca
+    // llega a cambiar una clave real. ---
     $resetPost = pedirFronteraSpaConMetodo("{$base}/password/reset", 'POST', [
         'token' => '',
         'csrf_token' => 'invalido',
         'password' => '',
         'confirm_password' => '',
     ]);
-    comprobarFronteraSpa($resetPost['codigo'] === 200, "POST /password/reset debe seguir llegando al adaptador legado, llegó {$resetPost['codigo']}");
-    comprobarFronteraSpa(str_contains($resetPost['cuerpo'], 'login-brand-page'), 'POST /password/reset debe seguir devolviendo la vista PHP legada (token vacío: sin formulario, con su alerta)');
+    comprobarFronteraSpa($resetPost['codigo'] === 404, "POST /password/reset debe responder 404 tras el retiro, llegó {$resetPost['codigo']}");
+    comprobarFronteraSpa(!str_contains($resetPost['cabeceras'], 'Location: /login'), 'POST /password/reset no debe redirigir a /login');
+    comprobarFronteraSpa(!str_contains($resetPost['cuerpo'], 'login-brand-page'), 'POST /password/reset no debe devolver la vista PHP legada retirada');
+    comprobarFronteraSpa(!str_contains($resetPost['cuerpo'], 'data-auth-form'), 'POST /password/reset no debe devolver el formulario PHP legado retirado');
     comprobarFronteraSpa(!str_contains($resetPost['cuerpo'], '<div id="root"></div>'), 'POST /password/reset no debe devolver el HTML del shell React');
 
     // --- Las cabeceras de privacidad son SOLO de '/password/reset': S01/S02 no cambian. ---
