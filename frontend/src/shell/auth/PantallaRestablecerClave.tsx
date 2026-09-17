@@ -236,12 +236,6 @@ export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar }: Pro
   return (
     <MarcoAcceso titulo="Define tu nueva contraseña" subtitulo={SUBTITULO}>
       <form onSubmit={enviarFormulario} aria-busy={submitting} noValidate>
-        <ul id="reset-password-policy" className="aia-auth__policy">
-          <li>Mínimo 6 caracteres</li>
-          <li>Al menos una letra mayúscula</li>
-          <li>Al menos un carácter especial</li>
-        </ul>
-
         <CampoClave
           ref={passwordRef}
           id="reset-password"
@@ -258,6 +252,13 @@ export function PantallaRestablecerClave({ enlace, csrfToken, alRevalidar }: Pro
           error={fieldErrors.password}
           disabled={submitting}
         />
+        {/* Fix ronda 1 (correcciones §7): paridad exacta con el legado
+            (`views/auth/password-reset.view.php:50`) — una frase única, tras el campo, no una
+            lista con otro texto ni colocada antes de ambos campos. */}
+        <p id="reset-password-policy" className="aia-helper">
+          Mínimo 6 caracteres, una mayúscula y un carácter especial.
+        </p>
+
         <CampoClave
           ref={confirmRef}
           id="reset-confirm"

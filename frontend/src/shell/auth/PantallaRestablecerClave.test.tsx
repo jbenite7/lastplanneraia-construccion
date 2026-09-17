@@ -273,6 +273,23 @@ test('editar el campo con error lo limpia sin tocar el otro, y conserva lo tecle
   expect(screen.getByLabelText('Confirmar contraseña')).toHaveValue('abc');
 });
 
+// --- Fix ronda 1: paridad visual de la ayuda de política (correcciones §7) -------
+
+test('la ayuda de política es un párrafo único, tras el campo "Nueva contraseña", asociado por aria-describedby', async () => {
+  vi.mocked(validarEnlaceReset).mockResolvedValue({ success: true, state: 'valid' });
+  render(<PantallaRestablecerClave {...propiedades()} />);
+
+  const password = await screen.findByLabelText('Nueva contraseña');
+  const ayuda = screen.getByText('Mínimo 6 caracteres, una mayúscula y un carácter especial.');
+
+  expect(ayuda.tagName).toBe('P');
+  expect(password).toHaveAttribute('aria-describedby', ayuda.id);
+
+  const posicionCampo = password.compareDocumentPosition(ayuda);
+  expect(Boolean(posicionCampo & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+  expect(screen.queryByRole('list')).not.toBeInTheDocument();
+});
+
 test('con las cuatro reglas satisfechas, el envío local no marca error', async () => {
   const user = userEvent.setup();
   vi.mocked(validarEnlaceReset).mockResolvedValue({ success: true, state: 'valid' });
