@@ -8,8 +8,7 @@
             "mensaje": "No fue posible completar la acción.",
             "error": {
                 "code": "LPS_TARGET_NOT_FOUND",
-                "message": "No fue posible completar la acción.",
-                "fields": []
+                "message": "No fue posible completar la acción."
             },
             "meta": {
                 "requestId": "<requestId>"
@@ -26,8 +25,7 @@
             "mensaje": "El contexto de la alerta cambió; recarga la actividad.",
             "error": {
                 "code": "LPS_TARGET_STALE",
-                "message": "El contexto de la alerta cambió; recarga la actividad.",
-                "fields": []
+                "message": "El contexto de la alerta cambió; recarga la actividad."
             },
             "meta": {
                 "requestId": "<requestId>"
@@ -43,8 +41,7 @@
             "mensaje": "La bitácora queda disponible en modo lectura.",
             "error": {
                 "code": "PROFILE_REQUIRED",
-                "message": "La bitácora queda disponible en modo lectura.",
-                "fields": []
+                "message": "La bitácora queda disponible en modo lectura."
             },
             "meta": {
                 "requestId": "<requestId>"

@@ -308,13 +308,29 @@ class LpsApiController
             'respuesta' => 'ERROR',
             'ok' => false,
             'mensaje' => $error->message,
-            'error' => [
-                'code' => $error->code,
-                'message' => $error->message,
-                'fields' => $error->fields,
-            ],
+            'error' => $this->errorBlock($error->code, $error->message, $error->fields),
             'meta' => ['requestId' => bin2hex(random_bytes(8))],
         ], JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * Bloque `error` del sobre. `fields` solo viaja cuando trae campos: un array vacío de PHP se
+     * serializa como `[]`, y `EsquemaCuerpoErrorApi` (frontend/src/lib/api/esquemas/error.ts) exige
+     * objeto — el cliente descartaba el cuerpo entero y el cajón perdía `LPS_TARGET_NOT_FOUND`/
+     * `LPS_TARGET_STALE` (plan 2026-09-17-errores-api-lps-contrato). Lo vigila
+     * `tests/fixtures/api-lps-error-bodies.json`.
+     *
+     * @param array<string, string> $fields
+     * @return array<string, mixed>
+     */
+    private function errorBlock(string $code, string $message, array $fields): array
+    {
+        $block = ['code' => $code, 'message' => $message];
+        if ($fields !== []) {
+            $block['fields'] = $fields;
+        }
+
+        return $block;
     }
 
     /**
@@ -330,11 +346,7 @@ class LpsApiController
             'respuesta' => 'ERROR',
             'ok' => false,
             'mensaje' => $mensaje,
-            'error' => [
-                'code' => 'VALIDATION_FAILED',
-                'message' => $mensaje,
-                'fields' => $fields,
-            ],
+            'error' => $this->errorBlock('VALIDATION_FAILED', $mensaje, $fields),
             'meta' => ['requestId' => bin2hex(random_bytes(8))],
         ], JSON_UNESCAPED_UNICODE);
     }

@@ -247,6 +247,10 @@ if (!preg_match('/<meta name="lps-drawer-csrf-token" content="([a-f0-9]{64})"/',
     afirmar($code === 200, "POST comments/add legacy puro con consecutivo=0 debería responder HTTP 200 (fue $code)");
     afirmar(($data['mensaje'] ?? null) === 'Comentario y actividad requeridos.', 'mensaje legacy literal se conserva byte a byte (D-T02-08)');
     afirmar(($data['ok'] ?? null) === false, 'el sobre legacy también trae ok=false de forma aditiva');
+    afirmar(
+        ($data['error']['fields']['comentario'] ?? null) === 'Requerido.' && str_contains($ultimoCuerpo, '"fields":{'),
+        'el error legacy con campos conserva error.fields como objeto',
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -336,6 +340,25 @@ $capturas['409_lps_target_stale'] = [
 ];
 
 ksort($capturas);
+
+// Lo vacío se omite: sin campos no hay `error.fields` (un `[]` de PHP invalida el cuerpo entero en
+// el esquema del cliente); con campos, `fields` es un objeto no vacío.
+foreach ($capturas as $caso => $captura) {
+    $cuerpo = json_decode($captura['raw'], true);
+    $bloque = is_array($cuerpo) ? ($cuerpo['error'] ?? null) : null;
+    if (str_starts_with($caso, '422_')) {
+        afirmar(
+            is_array($bloque) && str_contains($captura['raw'], '"fields":{') && ($bloque['fields'] ?? []) !== [],
+            "{$caso}: error.fields viaja como objeto no vacío",
+        );
+    } else {
+        afirmar(
+            is_array($bloque) && !array_key_exists('fields', $bloque) && !str_contains($captura['raw'], '"fields"'),
+            "{$caso}: sin campos no emite error.fields",
+        );
+    }
+}
+
 contrastarCuerposDeError($capturas);
 
 // ---------------------------------------------------------------------------
