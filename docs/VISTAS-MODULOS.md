@@ -214,7 +214,9 @@ consumidores. Para estado usa la escalera `--ds-state-tint-*` de
 
 ---
 
-### 4. Reset de Contraseña (`auth/password-reset.view.php`)
+### 4. Reset de Contraseña (`auth/password-reset.view.php`) ⚠️ RETIRADO
+
+**Estado (2026-09-17):** **Retirada el 2026-09-17** (S03, Tarea 10, autorización explícita de Felipe sobre los candidatos visuales aprobados). `GET/HEAD /password/reset` los sirve la SPA React (`frontend/src/shell/auth/PantallaRestablecerClave.tsx`); la validación del enlace va a `POST /api/auth/password/reset/validate` y el cambio a `POST /api/auth/password/reset` (`App\Controllers\Api\PasswordResetApiController`). El `POST /password/reset` legado responde el 404 controlado del producto, y `src/Controllers/Auth/PasswordResetController.php` se retiró con la vista. Lo de abajo describe la vista que existía y se conserva como historia.
 
 **Propósito:** Establecer nueva contraseña tras hacer clic en enlace de reset.
 
