@@ -1,0 +1,80 @@
+{
+    "403_csrf_invalid": {
+        "ruta": "/api/auth/login",
+        "status": 403,
+        "cuerpo": {
+            "success": false,
+            "code": "csrf_invalid",
+            "message": "Solicitud no permitida.",
+            "fieldErrors": [],
+            "redirect": null,
+            "correlationId": null,
+            "error": {
+                "codigo": "csrf_invalid",
+                "mensaje": "Solicitud no permitida.",
+                "campos": []
+            }
+        }
+    },
+    "422_login_validation_error": {
+        "ruta": "/api/auth/login",
+        "status": 422,
+        "cuerpo": {
+            "success": false,
+            "code": "validation_error",
+            "message": "Escribe tu usuario y tu contraseña.",
+            "fieldErrors": {
+                "username": "Escribe tu usuario.",
+                "password": "Escribe tu contraseña."
+            },
+            "redirect": null,
+            "correlationId": null,
+            "error": {
+                "codigo": "validation_error",
+                "mensaje": "Escribe tu usuario y tu contraseña.",
+                "campos": {
+                    "username": "Escribe tu usuario.",
+                    "password": "Escribe tu contraseña."
+                }
+            }
+        }
+    },
+    "401_invalid_credentials": {
+        "ruta": "/api/auth/login",
+        "status": 401,
+        "cuerpo": {
+            "success": false,
+            "code": "invalid_credentials",
+            "message": "Usuario o contraseña incorrectos.",
+            "fieldErrors": [],
+            "redirect": null,
+            "correlationId": null,
+            "error": {
+                "codigo": "invalid_credentials",
+                "mensaje": "Usuario o contraseña incorrectos.",
+                "campos": []
+            }
+        }
+    },
+    "422_password_change_validation_error": {
+        "ruta": "/api/auth/password/change",
+        "status": 422,
+        "cuerpo": {
+            "success": false,
+            "code": "validation_error",
+            "message": "La contraseña debe tener al menos 6 caracteres",
+            "fieldErrors": {
+                "password": "La contraseña debe tener al menos 6 caracteres; Debe contener al menos una letra mayúscula; Debe contener al menos un carácter especial (!@#$%...)"
+            },
+            "redirect": null,
+            "correlationId": null,
+            "error": {
+                "codigo": "validation_error",
+                "mensaje": "La contraseña debe tener al menos 6 caracteres",
+                "campos": {
+                    "password": "La contraseña debe tener al menos 6 caracteres; Debe contener al menos una letra mayúscula; Debe contener al menos un carácter especial (!@#$%...)"
+                }
+            }
+        }
+    }
+}
