@@ -20,7 +20,7 @@ export const MODULOS = [
     nota: 'La puerta de servicio /dev/entrar solo se registra en desarrollo. '
       + '/_aia/operacion/7f3c9b es la ruta secreta de acceso en mantenimiento '
       + '(MaintenanceMode::SECRET_PATH, ver src/Core/MaintenanceMode.php); '
-      + 'sirve el mismo LoginController. '
+      + 'la sirve MaintenanceLoginController (desde el 2026-09-01). '
       + '/api/session y /api/auth/* son la sesión JSON del shell React (2026-08-28): '
       + 'SessionApiController y AuthApiController.',
   },

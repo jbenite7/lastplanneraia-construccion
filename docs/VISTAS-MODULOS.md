@@ -109,6 +109,8 @@ consumidores. Para estado usa la escalera `--ds-state-tint-*` de
 
 ### 1. Login (`auth/login.view.php`)
 
+**Estado (2026-09-17):** `GET/HEAD /` y `/login` los sirve la SPA React (`frontend/src/shell/auth/PantallaLogin.tsx`, S01, con paridad visual desde el PR #42). Esta vista sigue registrada para el `POST /login` legado; Felipe decidió el 2026-09-16 que no necesita poder activarse como respaldo.
+
 **Propósito:** Página de inicio de sesión principal de la aplicación.
 
 **Dependencias externas:**
@@ -184,7 +186,9 @@ consumidores. Para estado usa la escalera `--ds-state-tint-*` de
 
 ---
 
-### 3. Olvidé mi Contraseña (`auth/password-forgot.view.php`)
+### 3. Olvidé mi Contraseña (`auth/password-forgot.view.php`) ⚠️ RETIRADO
+
+**Estado (2026-09-17):** **Retirada el 2026-09-16** (S02, PR #43, autorización de Felipe). `GET /password/forgot` lo sirve la SPA React (`frontend/src/shell/auth/PantallaRecuperarClave.tsx`) y el envío va a `POST /api/auth/password/forgot`; el `POST /password/forgot` legado responde 404. Lo de abajo describe la vista que existía y se conserva como historia.
 
 **Propósito:** Página para solicitar restablecimiento de contraseña.
 
