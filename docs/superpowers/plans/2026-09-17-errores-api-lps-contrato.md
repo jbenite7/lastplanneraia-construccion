@@ -4,7 +4,7 @@ tipo: plan
 estado: vigente
 fecha: 2026-09-17
 areas: [arquitectura, lps, qa]
-resumen: "LpsApiController emite error.fields vacío como lista y el cliente descarta el error entero; el cajón LPS muestra «respondió 404» en vez de «no disponible». Se corrige en el servidor y se extiende el contrato PHP↔Zod"
+resumen: "LpsApiController emite error.fields vacío como lista y el cliente descarta el error entero; el cajón LPS pinta su cuerpo normal sobre una actividad inexistente en vez de «no disponible». Se corrige en el servidor y se extiende el contrato PHP↔Zod"
 ---
 
 # Errores de `/api/lps/*` alineados con el esquema del cliente
@@ -17,7 +17,7 @@ resumen: "LpsApiController emite error.fields vacío como lista y el cliente des
 
 - **Emisores:** `LpsApiController::renderApiError()` (`src/Controllers/Api/LpsApiController.php:304-319`) y `renderLegacyError()` (`:327-341`) emiten siempre `error.fields`. `LpsApiError` lo inicializa en `[]` (`src/Services/Lps/LpsApiError.php:18`), y PHP lo serializa como lista.
 - **Por qué se descarta:** `EsquemaCuerpoErrorApi` (`frontend/src/lib/api/esquemas/error.ts`) exige un objeto en `fields`. `pedir()` (`frontend/src/lib/api/cliente.ts`) descarta entonces el cuerpo **entero** y entrega `codigo = HTTP_<status>` y un mensaje genérico.
-- **Lo que ve el usuario:** medido en la revisión del #44, `GET /api/lps/comments?consecutivo=999999999&modulo=PS` responde 404 `LPS_TARGET_NOT_FOUND` con `fields: []`. `LpsDrawerProvider.tsx:140` no reconoce el código y `noDisponible` queda en `false`. `CajonContextualLps.tsx:200` no muestra la rama «no disponible», así que el usuario lee «/api/lps/comments respondió 404». Con el 409 `LPS_TARGET_STALE` pasa lo mismo.
+- **Lo que ve el usuario:** medido en la revisión del #44, `GET /api/lps/comments?consecutivo=999999999&modulo=PS` responde 404 `LPS_TARGET_NOT_FOUND` con `fields: []`. `LpsDrawerProvider.tsx:140` no reconoce el código y `noDisponible` queda en `false`. `CajonContextualLps.tsx:200` no muestra la rama «no disponible». **Corrección del cierre (2026-09-17):** este diagnóstico era inexacto en el efecto. El usuario no lee «respondió 404», porque `CajonContextualLps.tsx:200-204` no pinta el mensaje del error cuando `noDisponible` es falso. Lo que ve es el cajón normal (estado, restricciones y «0 comentario(s)», con su formulario) sobre una actividad que no existe. Lo midió la captura RED del spec de navegador. Con el 409 `LPS_TARGET_STALE` pasa lo mismo.
 
 ## Decisión: se corrige en el servidor
 
@@ -66,7 +66,7 @@ Es el mismo criterio del #44, por las mismas razones:
 - Spec de navegador antes del arreglo: el cajón abría con el cuerpo normal (diagnóstico, restricciones, «0 comentario(s)») y sin la alerta «no disponible». Después: `1 passed`.
 - El contrato PHP detectó solo la divergencia tras el arreglo (`FALLOS: 1 de 68`) hasta regenerar el archivo.
 
-**Verificación final** (cada RC en su propia línea): `npm --prefix frontend test` 638 passed RC=0 · `npm run frontend:typecheck` RC=0 · `npm run frontend:build` RC=0, sin cambios en `public/app` · `test_lps_api_contract.php` 73 aserciones RC=0 · `test_api_auth_contract.php` RC=0 · `run-php-tests.php --nivel=http` 110/110 y 31 clases PHPUnit RC=0 · Playwright contra `:8099` (el spec nuevo, `auth-errores-contrato`, `escalamientos-sin-errores`, `lps-drawer-fetch-lifecycle` y `lps-drawer-design-system`): 11 passed y 1 failed, RC=1; el fallo es previo, ver abajo · `npm run test:design-system:static` RC=0 · `git diff --check` RC=0 · `npm run test:wiki` RC=1, con un único hallazgo: la alarma de veracidad cuenta 41 commits de código desde el pase del 2026-09-16, contra un umbral de 40. Los tres commits de código de este frente la cruzan. La forma de la wiki está en verde, y el pase de veracidad es una operación aparte que queda pendiente.
+**Verificación final** (cada RC en su propia línea): `npm --prefix frontend test` 638 passed RC=0 · `npm run frontend:typecheck` RC=0 · `npm run frontend:build` RC=0, sin cambios en `public/app` · `test_lps_api_contract.php` 73 aserciones RC=0 · `test_api_auth_contract.php` RC=0 · `run-php-tests.php --nivel=http` 110/110 y 31 clases PHPUnit RC=0 · Playwright contra `:8099` (el spec nuevo, `auth-errores-contrato`, `escalamientos-sin-errores`, `lps-drawer-fetch-lifecycle` y `lps-drawer-design-system`): 11 passed y 1 failed, RC=1; el fallo es previo, ver abajo · `npm run test:design-system:static` RC=0 · `git diff --check` RC=0 · `npm run test:wiki`: la primera corrida dio RC=1 con 41 commits, pero esa cifra no se reproduce. Remedido sobre `af8260e3`, `node scripts/wiki-lint.mjs --estricto` da RC=0 con 39 commits de código contra un umbral de 40. La diferencia viene de que `scripts/wiki-veracidad.mjs:129` usa `--since=<fecha>` sin hora, y la ventana se mueve durante el día. **La deuda real sigue:** el pase de veracidad está pendiente y el umbral se cruza con muy pocos commits de código más.
 
 **Desvíos**
 
@@ -85,4 +85,7 @@ Es el mismo criterio del #44, por las mismas razones:
 
 - `tests/browser/lps-drawer-design-system.mjs` falla por su golden (`lps-drawer-dark-1180x820.png`, ratio 0,94 de píxeles distintos). Es previo: con el controlador de `a33d87d6` restaurado temporalmente falla igual. La página es el cajón legado de `/dashboard/escalamientos`, que el arreglo no toca. Ese spec además entra por `/login` con credenciales, no por la puerta de servicio.
 - `tests/browser/escalamientos-acciones.spec.mjs` no se corrió: siembra y borra una alerta con `docker compose exec`, y eso es DML y está prohibido en este frente.
-- `tests/browser/lps-errores-contrato.spec.mjs` no corre en CI, igual que `auth-errores-contrato.spec.mjs`. El contrato PHP y Vitest sí corren en CI.
+- `tests/browser/lps-errores-contrato.spec.mjs` no corre en CI, igual que `auth-errores-contrato.spec.mjs`.
+- **En CI solo se vigila el lado cliente.** `tests/test_lps_api_contract.php` es `@requiere: datos-proyecto`, y el CI solo corre los niveles `puro`, `http` y `admin-db` (`.github/workflows/ci.yml:124,280`; niveles en `scripts/run-php-tests.php:19`). Vitest compara contra el archivo guardado, así que si el servidor volviera a emitir `fields: []` el CI seguiría verde. Solo lo detecta una corrida local del contrato PHP. **Pendiente:** bajar la captura a nivel `http`, a condición de confirmar antes que la base del CI siembra el proyecto `PDC Sandbox E2E` y la cuenta `test.R` que usa el test. No se implementó.
+- **(minor)** La ventana de la alarma de veracidad depende de la hora de la corrida (`scripts/wiki-veracidad.mjs:129`, `--since` sin hora), así que la cifra cambia a lo largo del día.
+- **(minor, fragilidad conocida)** `tests/browser/lps-errores-contrato.spec.mjs:66-78` copia a mano `configuracionPorDefecto()`. Si la forma de la configuración de restricciones cambia, la copia se queda vieja en silencio.
