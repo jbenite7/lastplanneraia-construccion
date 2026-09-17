@@ -219,9 +219,11 @@ npm run format:frontend
 ### Front controller & routing
 
 `public/index.php` is a flat, plain-PHP front controller (no framework): loads Composer autoload,
-applies `MaintenanceMode` and `SessionMiddleware::check()`, then dispatches through
-`App\Core\Router` — a thin wrapper around **nikic/FastRoute** (`src/Core/Router.php`). All ~150+
-routes are registered inline in `index.php` as one long list grouped by comment headers (Auth,
+applies `MaintenanceMode` and `SessionMiddleware::beginRequest()` (which replaced `check()` on
+2026-08-29), serves the React SPA host for migrated GET/HEAD routes (`App\Core\SpaRouter` +
+`SpaHostRenderer`: `/`, `/login`, `/password/forgot`, `/app/*`), and otherwise dispatches through
+`App\Core\Router` — a thin wrapper around **nikic/FastRoute** (`src/Core/Router.php`). The 217
+route registrations (measured 2026-09-17; it said ~150+ until then) live inline in `index.php` as one long list grouped by comment headers (Auth,
 Programacion, Gestion, APIs, BI, Legacy). Some routes point to closures that `require_once` a
 procedural script under `src/Legacy/` instead of a controller method — that's the "Legacy" lane
 mentioned in AGENTS.md/GEMINI.md, not a bug.
