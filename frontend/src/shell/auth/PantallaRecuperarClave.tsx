@@ -34,8 +34,9 @@ export function PantallaRecuperarClave({ csrfToken, alRevalidar }: Props) {
   const [requiereRevalidar, setRequiereRevalidar] = useState(false);
   const [revalidando, setRevalidando] = useState(false);
   // Marca qué destino debe recibir el foco tras el próximo commit (spec §9): el `useEffect`
-  // de abajo lo consume una vez y lo limpia, para no robar foco en renders posteriores.
-  const [focoPendiente, setFocoPendiente] = useState<'email' | 'alerta' | 'revalidar' | null>(null);
+  // de abajo lo consume una vez y lo limpia, para no robar foco en renders posteriores. Arranca
+  // en `email`: al montar, el foco entra al campo (ola final de la revisión S02).
+  const [focoPendiente, setFocoPendiente] = useState<'email' | 'alerta' | 'revalidar' | null>('email');
   const emailRef = useRef<HTMLInputElement>(null);
   const alertaRef = useRef<HTMLParagraphElement>(null);
   const revalidarRef = useRef<HTMLButtonElement>(null);
@@ -59,6 +60,7 @@ export function PantallaRecuperarClave({ csrfToken, alRevalidar }: Props) {
       setExito(null);
       setErrorGeneral(null);
       setRequiereRevalidar(false);
+      setFocoPendiente('email');
       return;
     }
 
@@ -72,6 +74,9 @@ export function PantallaRecuperarClave({ csrfToken, alRevalidar }: Props) {
       const respuesta = await solicitarRecuperacion(validacion.data.email, csrfToken);
       setEmail('');
       setExito(respuesta.message);
+      // El `disabled` del envío soltó el foco a BODY: se devuelve al campo, que se rehabilita en
+      // el mismo commit que este aviso (el `finally` se agrupa con estas actualizaciones).
+      setFocoPendiente('email');
     } catch (causa) {
       if (causa instanceof ApiError && causa.tipo === 'http' && causa.status === 422) {
         setErrorEmail(causa.camposInvalidos?.email ?? MENSAJE_FORMATO);
@@ -125,6 +130,7 @@ export function PantallaRecuperarClave({ csrfToken, alRevalidar }: Props) {
               id="recuperacion-email"
               name="email"
               type="email"
+              inputMode="email"
               className="aia-input"
               value={email}
               onChange={(evento) => {

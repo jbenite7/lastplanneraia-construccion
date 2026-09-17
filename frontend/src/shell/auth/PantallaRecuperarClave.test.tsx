@@ -242,3 +242,54 @@ test('editar el correo tras un 422 limpia el error de campo', async () => {
 
   expect(screen.queryByText('Ingresa un correo electrónico válido.')).not.toBeInTheDocument();
 });
+
+// --- Foco (spec §9), ola final de la revisión S02 -------------------------------------------
+
+test('al montar, el foco entra al campo de correo, que declara inputMode email', () => {
+  render(<PantallaRecuperarClave {...propiedades()} />);
+
+  expect(screen.getByLabelText('Correo electrónico')).toHaveFocus();
+  expect(screen.getByLabelText('Correo electrónico')).toHaveAttribute('inputmode', 'email');
+});
+
+test('un correo inválido detectado localmente devuelve el foco al campo', async () => {
+  const user = userEvent.setup();
+  render(<PantallaRecuperarClave {...propiedades()} />);
+
+  await user.type(screen.getByLabelText('Correo electrónico'), 'sin-formato');
+  await user.click(screen.getByRole('button', { name: 'Enviar enlace' }));
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('Ingresa un correo electrónico válido.');
+  expect(screen.getByLabelText('Correo electrónico')).toHaveFocus();
+});
+
+test('tras un 200 el foco vuelve al campo y nunca queda en BODY', async () => {
+  vi.mocked(solicitarRecuperacion).mockResolvedValue({ success: true, message: MENSAJE_GENERICO });
+  const user = userEvent.setup();
+  render(<PantallaRecuperarClave {...propiedades()} />);
+
+  // Se envía con clic: en el navegador el `disabled` del envío suelta el foco del botón a BODY;
+  // jsdom no lo suelta, así que la prueba exige el destino (el campo), no solo «no BODY».
+  await user.type(screen.getByLabelText('Correo electrónico'), 'persona@empresa.com');
+  await user.click(screen.getByRole('button', { name: 'Enviar enlace' }));
+
+  expect(await screen.findByRole('status')).toHaveTextContent(MENSAJE_GENERICO);
+  expect(document.activeElement).not.toBe(document.body);
+  expect(screen.getByLabelText('Correo electrónico')).toHaveFocus();
+});
+
+test('si la revalidación falla, conserva el correo, avisa y deja el foco en «Actualizar sesión»', async () => {
+  vi.mocked(solicitarRecuperacion).mockRejectedValue(
+    new ApiError('No fue posible validar la solicitud. Intenta nuevamente.', { tipo: 'http', status: 403, codigo: 'csrf_invalid' }),
+  );
+  const props = { ...propiedades(), alRevalidar: vi.fn().mockRejectedValue(new Error('sesión no disponible')) };
+  const user = userEvent.setup();
+  render(<PantallaRecuperarClave {...props} />);
+
+  await user.type(screen.getByLabelText('Correo electrónico'), 'persona@empresa.com{Enter}');
+  await user.click(await screen.findByRole('button', { name: 'Actualizar sesión' }));
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos actualizar la sesión. Intenta nuevamente.');
+  expect(screen.getByLabelText('Correo electrónico')).toHaveValue('persona@empresa.com');
+  expect(screen.getByRole('button', { name: 'Actualizar sesión' })).toHaveFocus();
+});
