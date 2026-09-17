@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import cuerposAuth from '../../../../../tests/fixtures/api-auth-error-bodies.json';
 import cuerposLps from '../../../../../tests/fixtures/api-lps-error-bodies.json';
+import cuerposReset from '../../../../../tests/fixtures/api-password-reset-error-bodies.json';
 import { ApiError, pedir } from '../cliente';
 import { EsquemaCuerpoErrorApi } from './error';
 
@@ -27,7 +28,7 @@ type CasoReal = {
     ok?: boolean;
     code?: string;
     message?: string;
-    fieldErrors?: Record<string, string>;
+    fieldErrors?: Record<string, string | string[]>;
     error?: {
       codigo?: string;
       code?: string;
@@ -41,6 +42,7 @@ type CasoReal = {
 
 const casosAuth = Object.entries(cuerposAuth as unknown as Record<string, CasoReal>);
 const casosLps = Object.entries(cuerposLps as unknown as Record<string, CasoReal>);
+const casosReset = Object.entries(cuerposReset as unknown as Record<string, CasoReal>);
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -61,6 +63,22 @@ test('el archivo de /api/lps trae los cuatro cuerpos que el contrato vigila', ()
     '409_lps_target_stale',
     '409_profile_required',
     '422_validation_failed',
+  ]);
+});
+
+/**
+ * `/api/auth/password/reset*` (S03): los captura `tests/test_api_password_reset_contract.php` del
+ * render real del controlador en proceso (`origen: render-puro`, sin DB), con el mismo flag
+ * `LPS_REGENERAR_CUERPOS=1`.
+ */
+test('el archivo de /api/auth/password/reset trae los seis cuerpos que el contrato vigila', () => {
+  expect(casosReset.map(([nombre]) => nombre).sort()).toEqual([
+    '403_csrf_invalid',
+    '410_reset_link_invalid',
+    '422_reset_confirm_validation_error',
+    '422_reset_password_validation_error',
+    '503_reset_unavailable',
+    '503_reset_validate_unavailable',
   ]);
 });
 
@@ -89,6 +107,38 @@ describe.each(casosAuth)('auth %s', (_nombre, caso) => {
     if (caso.status === 422) {
       expect(error.camposInvalidos).toEqual(caso.cuerpo.error?.campos);
       expect(Object.keys(error.camposInvalidos ?? {}).length).toBeGreaterThan(0);
+    } else {
+      expect(error.camposInvalidos).toBeNull();
+    }
+  });
+});
+
+describe.each(casosReset)('reset %s', (_nombre, caso) => {
+  test('el cuerpo real cumple EsquemaCuerpoErrorApi', () => {
+    const resultado = EsquemaCuerpoErrorApi.safeParse(caso.cuerpo);
+
+    expect(resultado.success ? [] : resultado.error.issues).toEqual([]);
+    expect(caso.cuerpo.success).toBe(false);
+    expect(caso.origen).toBe('render-puro');
+  });
+
+  test('pedir() extrae código, mensaje y campos del servidor', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify(caso.cuerpo), { status: caso.status })),
+    );
+
+    const causa = await pedir(caso.ruta, z.unknown(), { method: 'POST' }).catch((error: unknown) => error);
+
+    expect(causa).toBeInstanceOf(ApiError);
+    const error = causa as ApiError;
+    expect(error.status).toBe(caso.status);
+    expect(error.codigo).toBe(caso.cuerpo.code);
+    expect(error.message).toBe(caso.cuerpo.message);
+
+    if (caso.status === 422) {
+      expect(error.camposInvalidos).toEqual(caso.cuerpo.error?.campos);
+      expect(Object.keys(error.camposInvalidos ?? {})).toHaveLength(1);
     } else {
       expect(error.camposInvalidos).toBeNull();
     }
