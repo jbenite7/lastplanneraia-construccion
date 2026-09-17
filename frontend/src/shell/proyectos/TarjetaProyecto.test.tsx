@@ -79,5 +79,18 @@ test('el clic invoca onSelect con el proyecto', async () => {
 
   await usuario.click(screen.getByRole('button', { name: 'Ingresar al proyecto Da Porto' }));
 
-  expect(onSelect).toHaveBeenCalledWith(proyecto());
+  expect(onSelect).toHaveBeenCalledWith(proyecto(), expect.any(HTMLButtonElement));
+});
+
+test('onSelect recibe el propio botón para que el llamador pueda devolverle el foco', async () => {
+  const onSelect = vi.fn();
+  const usuario = userEvent.setup();
+  render(
+    <TarjetaProyecto project={proyecto()} current={false} busy={false} disabled={false} onSelect={onSelect} />,
+  );
+
+  const boton = screen.getByRole('button', { name: 'Ingresar al proyecto Da Porto' });
+  await usuario.click(boton);
+
+  expect(onSelect).toHaveBeenCalledWith(proyecto(), boton);
 });

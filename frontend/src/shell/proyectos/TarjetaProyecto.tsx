@@ -5,7 +5,8 @@ type PropiedadesTarjetaProyecto = {
   current: boolean;
   busy: boolean;
   disabled: boolean;
-  onSelect: (project: ProyectoDisponible) => void;
+  /** Recibe también el botón pulsado: el llamador le devuelve el foco al cerrar un aviso. */
+  onSelect: (project: ProyectoDisponible, button: HTMLButtonElement) => void;
 };
 
 const ETIQUETAS_AREA: Record<ProyectoDisponible['area'], string> = {
@@ -20,8 +21,10 @@ const ETIQUETAS_AREA: Record<ProyectoDisponible['area'], string> = {
  * `aia-*` existentes; el marcado BEM (`project-selector-react__*`) solo aporta ganchos de layout,
  * el CSS tokenizado llega en la Tarea 8.
  *
- * `busy`/`disabled` ya forman parte de la interfaz (Tarea 6 los activa de verdad durante una
- * selección en curso); aquí solo controlan el estado visual del botón.
+ * `busy`/`disabled` los gobierna el contenedor durante una selección en curso (Tarea 6): `busy`
+ * marca la tarjeta que se está abriendo —cambia su nombre accesible a «Abriendo …» y pone
+ * `aria-busy`— y `disabled` bloquea el resto de las tarjetas para que un clic no dispare un
+ * segundo POST.
  */
 export function TarjetaProyecto({ project, current, busy, disabled, onSelect }: PropiedadesTarjetaProyecto) {
   const tituloId = `project-title-${project.id}`;
@@ -52,7 +55,7 @@ export function TarjetaProyecto({ project, current, busy, disabled, onSelect }: 
           className="aia-btn aia-btn--block"
           disabled={disabled}
           aria-busy={busy}
-          onClick={() => onSelect(project)}
+          onClick={(event) => onSelect(project, event.currentTarget)}
         >
           {busy ? `Abriendo ${project.name}…` : `Ingresar al proyecto ${project.name}`}
         </button>
