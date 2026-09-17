@@ -79,18 +79,14 @@ test('el clic invoca onSelect con el proyecto', async () => {
 
   await usuario.click(screen.getByRole('button', { name: 'Ingresar al proyecto Da Porto' }));
 
-  expect(onSelect).toHaveBeenCalledWith(proyecto(), expect.any(HTMLButtonElement));
+  expect(onSelect).toHaveBeenCalledWith(proyecto());
 });
 
-test('onSelect recibe el propio botón para que el llamador pueda devolverle el foco', async () => {
-  const onSelect = vi.fn();
-  const usuario = userEvent.setup();
+test('el botón lleva un id estable para que el contenedor pueda devolverle el foco', () => {
   render(
-    <TarjetaProyecto project={proyecto()} current={false} busy={false} disabled={false} onSelect={onSelect} />,
+    <TarjetaProyecto project={proyecto({ id: 7 })} current={false} busy={false} disabled={false} onSelect={vi.fn()} />,
   );
 
-  const boton = screen.getByRole('button', { name: 'Ingresar al proyecto Da Porto' });
-  await usuario.click(boton);
-
-  expect(onSelect).toHaveBeenCalledWith(proyecto(), boton);
+  expect(screen.getByRole('button', { name: 'Ingresar al proyecto Da Porto' }))
+    .toHaveAttribute('id', 'project-select-7');
 });

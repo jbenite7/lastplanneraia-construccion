@@ -5,8 +5,7 @@ type PropiedadesTarjetaProyecto = {
   current: boolean;
   busy: boolean;
   disabled: boolean;
-  /** Recibe también el botón pulsado: el llamador le devuelve el foco al cerrar un aviso. */
-  onSelect: (project: ProyectoDisponible, button: HTMLButtonElement) => void;
+  onSelect: (project: ProyectoDisponible) => void;
 };
 
 const ETIQUETAS_AREA: Record<ProyectoDisponible['area'], string> = {
@@ -26,6 +25,15 @@ const ETIQUETAS_AREA: Record<ProyectoDisponible['area'], string> = {
  * `aria-busy`— y `disabled` bloquea el resto de las tarjetas para que un clic no dispare un
  * segundo POST.
  */
+/**
+ * Id estable del botón de ingreso. El contenedor recupera el foco buscando este id en el DOM vivo,
+ * no guardando el nodo: la lista se desmonta o se refiltra mientras un POST vuela, y un nodo
+ * guardado queda desconectado, con lo que `focus()` se vuelve un no-op y el foco cae al `<body>`.
+ */
+export function idBotonSeleccion(projectId: number): string {
+  return `project-select-${projectId}`;
+}
+
 export function TarjetaProyecto({ project, current, busy, disabled, onSelect }: PropiedadesTarjetaProyecto) {
   const tituloId = `project-title-${project.id}`;
 
@@ -51,11 +59,12 @@ export function TarjetaProyecto({ project, current, busy, disabled, onSelect }: 
         {current && <p className="project-selector-react__card-current">Proyecto actual</p>}
 
         <button
+          id={idBotonSeleccion(project.id)}
           type="button"
           className="aia-btn aia-btn--block"
           disabled={disabled}
           aria-busy={busy}
-          onClick={(event) => onSelect(project, event.currentTarget)}
+          onClick={() => onSelect(project)}
         >
           {busy ? `Abriendo ${project.name}…` : `Ingresar al proyecto ${project.name}`}
         </button>

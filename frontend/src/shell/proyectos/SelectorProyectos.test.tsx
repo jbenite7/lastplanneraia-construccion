@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, test, vi } from 'vitest';
 import { ApiError } from '../../lib/api/cliente';
@@ -235,8 +235,17 @@ test('éxito bloquea la concurrencia y entrega exactamente el route del servidor
 
   render(<SelectorProyectos {...propiedades} />);
 
-  await usuario.click(await screen.findByRole('button', { name: 'Ingresar al proyecto Da Porto' }));
+  const boton = await screen.findByRole('button', { name: 'Ingresar al proyecto Da Porto' });
 
+  // Dos despachos dentro del mismo `act`, sin flush entre ellos: en el segundo el botón todavía
+  // está habilitado (React no ha repintado), así que lo único que puede frenarlo es `enviandoRef`.
+  // Con `user.click` el test no mordería: user-event no despacha sobre un botón ya `disabled`.
+  await act(async () => {
+    boton.click();
+    boton.click();
+  });
+
+  expect(seleccionarProyecto).toHaveBeenCalledOnce();
   expect(screen.getByRole('button', { name: 'Abriendo Da Porto…' })).toBeDisabled();
   const otro = screen.getByRole('button', { name: 'Ingresar al proyecto Ágora' });
   expect(otro).toBeDisabled();
@@ -406,7 +415,7 @@ test('si la revalidación del 403 falla, el aviso lo dice y el foco vuelve a "Ac
   await usuario.click(await screen.findByRole('button', { name: 'Actualizar sesión' }));
 
   expect(await screen.findByRole('alert')).toHaveTextContent(
-    'No pudimos actualizar tu sesión. Vuelve a intentarlo.',
+    'No pudimos actualizar la sesión. Intenta nuevamente.',
   );
   await waitFor(() => expect(screen.getByRole('button', { name: 'Actualizar sesión' })).toHaveFocus());
   expect(propiedades.onOpen).not.toHaveBeenCalled();
@@ -452,4 +461,76 @@ test('el proyecto actual conserva su chip y se puede volver a seleccionar', asyn
 
   await waitFor(() => expect(propiedades.onOpen).toHaveBeenCalledWith('/inicio'));
   expect(screen.getByText('Proyecto actual')).toBeVisible();
+});
+
+test('si onOpen lanza, la pantalla sigue operable en vez de quedar bloqueada', async () => {
+  vi.mocked(listarProyectos).mockResolvedValue(lista([proyecto({ id: 1, name: 'Da Porto' })]));
+  vi.mocked(seleccionarProyecto).mockResolvedValue({ success: true, message: null, route: '/inicio' });
+  const usuario = userEvent.setup();
+  const propiedades = props();
+  propiedades.onOpen.mockImplementation(() => { throw new Error('el shell no pudo navegar'); });
+
+  render(<SelectorProyectos {...propiedades} />);
+
+  const boton = await screen.findByRole('button', { name: 'Ingresar al proyecto Da Porto' });
+  await usuario.click(boton);
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(
+    'No pudimos confirmar si el proyecto se abrió. Inténtalo nuevamente.',
+  );
+  // El candado se suelta: si el shell no navegó, dejar todo bloqueado obliga a recargar a mano.
+  expect(screen.getByRole('button', { name: 'Ingresar al proyecto Da Porto' })).toBeEnabled();
+});
+
+test('tras un 401, "Actualizar sesión" con éxito devuelve el foco a la tarjeta remontada', async () => {
+  vi.mocked(listarProyectos).mockResolvedValue(lista([proyecto({ id: 1, name: 'Da Porto' })]));
+  vi.mocked(seleccionarProyecto).mockRejectedValue(
+    new ApiError('sesión caída', { tipo: 'http', status: 401, codigo: 'session_invalid' }),
+  );
+  const usuario = userEvent.setup();
+  const propiedades = props();
+  propiedades.onRevalidate
+    .mockRejectedValueOnce(new Error('sin red'))
+    .mockResolvedValueOnce(undefined);
+
+  render(<SelectorProyectos {...propiedades} />);
+
+  await usuario.click(await screen.findByRole('button', { name: 'Ingresar al proyecto Da Porto' }));
+  await usuario.click(await screen.findByRole('button', { name: 'Actualizar sesión' }));
+
+  // La lista se desmontó y volvió: el nodo del botón es otro, así que el foco no puede ir por
+  // referencia guardada; se resuelve por el id del proyecto contra el DOM vivo.
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: 'Ingresar al proyecto Da Porto' })).toHaveFocus(),
+  );
+  expect(propiedades.onOpen).not.toHaveBeenCalled();
+});
+
+test('si la tarjeta de origen quedó filtrada fuera, el foco cae en la pantalla y no en el body', async () => {
+  vi.mocked(listarProyectos).mockResolvedValue(lista([
+    proyecto({ id: 1, name: 'Da Porto' }),
+    proyecto({ id: 2, name: 'Ágora' }),
+  ]));
+  let resolverSeleccion!: (valor: ResultadoSeleccionProyecto) => void;
+  vi.mocked(seleccionarProyecto).mockReturnValue(
+    new Promise((resolve) => { resolverSeleccion = resolve; }),
+  );
+  const usuario = userEvent.setup();
+  const propiedades = props();
+
+  render(<SelectorProyectos {...propiedades} />);
+
+  await usuario.click(await screen.findByRole('button', { name: 'Ingresar al proyecto Da Porto' }));
+  // Mientras el POST vuela, el usuario filtra fuera su propia tarjeta.
+  await usuario.type(screen.getByRole('searchbox', { name: 'Buscar proyecto' }), 'agora');
+
+  await act(async () => {
+    resolverSeleccion({ success: false, message: MENSAJE_RECHAZO_PROYECTO, route: null });
+  });
+
+  await usuario.click(await screen.findByRole('button', { name: 'Cerrar aviso' }));
+
+  expect(screen.queryByRole('button', { name: 'Ingresar al proyecto Da Porto' })).not.toBeInTheDocument();
+  await waitFor(() => expect(document.getElementById('main-content')).toHaveFocus());
+  expect(document.body).not.toHaveFocus();
 });

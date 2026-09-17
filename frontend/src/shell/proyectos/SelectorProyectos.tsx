@@ -4,7 +4,7 @@ import { listarProyectos, seleccionarProyecto } from '../../lib/api/proyectos';
 import type { ArranqueAutenticado } from '../../lib/api/esquemas/arranque';
 import type { ListaProyectos, ProyectoDisponible } from '../../lib/api/esquemas/proyectos';
 import { filtrarProyectos, normalizarBusqueda, textoConteo } from './filtrarProyectos';
-import { TarjetaProyecto } from './TarjetaProyecto';
+import { idBotonSeleccion, TarjetaProyecto } from './TarjetaProyecto';
 
 /**
  * Lo único de la sesión que este componente necesita: el CSRF para la Tarea 6 (selección real) y
@@ -29,7 +29,8 @@ const MENSAJE_ERROR_CARGA = 'No pudimos cargar tus proyectos. Intenta de nuevo.'
  */
 const MENSAJE_RECHAZO_UI = 'No pudimos abrir ese proyecto. Verifica tu acceso e inténtalo de nuevo.';
 const MENSAJE_CSRF = 'Tu sesión de seguridad cambió. Actualízala antes de volver a intentar.';
-const MENSAJE_REVALIDAR_FALLIDO = 'No pudimos actualizar tu sesión. Vuelve a intentarlo.';
+/** Mismo literal que `PantallaRestablecerClave` (S03): un evento, un copy. */
+const MENSAJE_REVALIDAR_FALLIDO = 'No pudimos actualizar la sesión. Intenta nuevamente.';
 /** 422, 5xx, red y contrato roto comparten copy: ninguno permite afirmar que el proyecto se abrió. */
 const MENSAJE_NO_CONFIRMADO = 'No pudimos confirmar si el proyecto se abrió. Inténtalo nuevamente.';
 
@@ -70,7 +71,8 @@ function esApiErrorHttp(causa: unknown, status: number): causa is ApiError {
  * `PantallaRestablecerClave` (S03).
  *
  * El candado de concurrencia es ref + estado: `seleccionandoId` pinta la UI, pero quien impide el
- * segundo POST es `enviandoRef`, que no espera al re-render de React.
+ * segundo POST es `enviandoRef`, que no espera al re-render de React. El `disabled` del botón es
+ * presentación, no el candado: entre el clic y el repintado sigue habilitado.
  *
  * **Duplicación pendiente (decisión de la Tarea 6):** este componente conserva su propio fetch con
  * `AbortController` y su propio POST, en vez de reusar `useSelectorProyecto.ts`. No se absorbe
@@ -91,7 +93,13 @@ export function SelectorProyectos({ session, onOpen, onRevalidate }: Propiedades
   const [revalidando, setRevalidando] = useState(false);
   const [focoPendiente, setFocoPendiente] = useState<FocoPendiente>(null);
   const enviandoRef = useRef(false);
-  const origenRef = useRef<HTMLButtonElement | null>(null);
+  /**
+   * El origen se guarda por **id de proyecto**, no por nodo: la lista se desmonta (401) o se
+   * refiltra mientras el POST vuela, y un `HTMLButtonElement` guardado queda desconectado. Un ref
+   * a un nodo suelto convierte `focus()` en un no-op silencioso y el foco cae al `<body>`.
+   */
+  const origenIdRef = useRef<number | null>(null);
+  const pantallaRef = useRef<HTMLElement | null>(null);
   const revalidarRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
@@ -121,13 +129,27 @@ export function SelectorProyectos({ session, onOpen, onRevalidate }: Propiedades
 
   useEffect(() => {
     if (focoPendiente === null) return;
-    const destino = focoPendiente === 'revalidar' ? revalidarRef.current : origenRef.current;
-    if (destino?.isConnected) destino.focus();
+
+    const origenVivo =
+      origenIdRef.current === null
+        ? null
+        : document.getElementById(idBotonSeleccion(origenIdRef.current));
+    const candidatos =
+      focoPendiente === 'revalidar' ? [revalidarRef.current, origenVivo] : [origenVivo];
+    // Ancla de último recurso: la pantalla misma (`tabIndex={-1}`). Si la tarjeta de origen ya no
+    // está —filtrada fuera o desmontada—, el foco tiene que quedar en algo anunciable, no en el
+    // `<body>`, desde donde el lector de pantalla pierde el hilo.
+    const destino = [...candidatos, pantallaRef.current].find((nodo) => nodo?.isConnected);
+
+    destino?.focus();
     setFocoPendiente(null);
   }, [focoPendiente]);
 
   /** Revalidación de sesión: nunca reenvía el POST, solo repara la sesión. */
   async function revalidarSesion(focoSiFalla: FocoPendiente, devolverFoco: boolean) {
+    // Guarda de estado, con la misma ventana que el `disabled` del botón: no es un candado real,
+    // solo evita la revalidación doble más obvia. Puede permitirse porque `/api/session` es una
+    // lectura idempotente; el candado que sí protege una mutación es `enviandoRef`.
     if (revalidando) return;
     setRevalidando(true);
 
@@ -135,8 +157,8 @@ export function SelectorProyectos({ session, onOpen, onRevalidate }: Propiedades
       await onRevalidate();
       setSesionVencida(false);
       setErrorSeleccion(null);
-      // Tras un 403 la lista nunca se ocultó, así que el botón de origen sigue conectado y el
-      // foco puede volver a él. Tras un 401 sí se desmontó: ese nodo ya no existe y no se pide.
+      // El foco vuelve a la tarjeta de origen resuelta contra el DOM vivo, así que da igual si la
+      // lista se desmontó por el camino (401) o nunca se ocultó (403).
       if (devolverFoco) setFocoPendiente('origen');
     } catch {
       setSesionVencida(true);
@@ -147,18 +169,23 @@ export function SelectorProyectos({ session, onOpen, onRevalidate }: Propiedades
     }
   }
 
-  async function handleSelect(project: ProyectoDisponible, button: HTMLButtonElement) {
+  function soltarCandado() {
+    enviandoRef.current = false;
+    setSeleccionandoId(null);
+  }
+
+  async function handleSelect(project: ProyectoDisponible) {
     // El ref es el candado real: `seleccionandoId` solo existe después del re-render.
     if (enviandoRef.current) return;
     enviandoRef.current = true;
-    origenRef.current = button;
+    origenIdRef.current = project.id;
     setSeleccionandoId(project.id);
     setErrorSeleccion(null);
     setSesionVencida(false);
 
     // En el éxito el candado no se suelta: el shell ya está navegando y reactivar las tarjetas
     // solo abriría la puerta a un segundo POST contra una pantalla que se va.
-    let mantenerBloqueo = false;
+    let rutaDestino: string | null = null;
 
     try {
       const resultado = await seleccionarProyecto(project.name, session.csrfToken);
@@ -168,8 +195,7 @@ export function SelectorProyectos({ session, onOpen, onRevalidate }: Propiedades
         return;
       }
 
-      mantenerBloqueo = true;
-      onOpen(resultado.route);
+      rutaDestino = resultado.route;
     } catch (causa) {
       if (esApiErrorHttp(causa, 401)) {
         await revalidarSesion('origen', false);
@@ -185,10 +211,21 @@ export function SelectorProyectos({ session, onOpen, onRevalidate }: Propiedades
 
       setErrorSeleccion(MENSAJE_NO_CONFIRMADO);
     } finally {
-      if (!mantenerBloqueo) {
-        enviandoRef.current = false;
-        setSeleccionandoId(null);
-      }
+      if (rutaDestino === null) soltarCandado();
+    }
+
+    // Sin ruta no hubo éxito: el `catch` genérico (422, 5xx, red, contrato) llega hasta aquí
+    // porque no retorna, y sin esta guarda navegaría con `null`.
+    if (rutaDestino === null) return;
+
+    // `onOpen` va FUERA del try: si se clasificara como fallo del POST, una excepción del shell
+    // se leería como error de red y dejaría la pantalla bloqueada sin más salida que recargar.
+    try {
+      onOpen(rutaDestino);
+    } catch {
+      soltarCandado();
+      setErrorSeleccion(MENSAJE_NO_CONFIRMADO);
+      setFocoPendiente('origen');
     }
   }
 
@@ -199,7 +236,7 @@ export function SelectorProyectos({ session, onOpen, onRevalidate }: Propiedades
   }
 
   return (
-    <main id="main-content" className="project-selector-react" tabIndex={-1}>
+    <main ref={pantallaRef} id="main-content" className="project-selector-react" tabIndex={-1}>
       <header className="project-selector-react__header">
         <div>
           <h1>Tus proyectos</h1>
@@ -304,7 +341,7 @@ export function SelectorProyectos({ session, onOpen, onRevalidate }: Propiedades
                     current={session.project?.id === project.id}
                     busy={seleccionandoId === project.id}
                     disabled={seleccionandoId !== null}
-                    onSelect={(elegido, boton) => void handleSelect(elegido, boton)}
+                    onSelect={(elegido) => void handleSelect(elegido)}
                   />
                 ))}
               </ul>
