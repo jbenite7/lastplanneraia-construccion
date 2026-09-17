@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { iniciarSesion } from '../../lib/api/auth';
 import { ApiError } from '../../lib/api/cliente';
 import { CampoClave } from './CampoClave';
+import { IconoFlecha, IconoUsuario } from './iconos';
 import { MarcoAcceso } from './MarcoAcceso';
 import type { AvisoAcceso } from './avisos';
 
@@ -93,7 +94,7 @@ export function PantallaLogin({ csrfToken, aviso, alResolver, alRevalidar, modo 
     // vuelve a servir este mismo host con una configuración de runtime nueva; esta pantalla
     // no interpreta ni retiene nada entre envíos.
     return (
-      <MarcoAcceso titulo="Entrar">
+      <MarcoAcceso titulo="Bienvenido a Last Planner AIA" subtitulo="Ingresa tus credenciales para continuar">
         {modo.error && (
           <p role="alert" className="aia-alert">
             {MENSAJE_CREDENCIALES}
@@ -107,18 +108,23 @@ export function PantallaLogin({ csrfToken, aviso, alResolver, alRevalidar, modo 
             <label className="aia-label" htmlFor="usuario">
               Usuario
             </label>
-            <input
-              id="usuario"
-              name="usuario"
-              className="aia-input"
-              value={usuario}
-              onChange={(evento) => setUsuario(evento.target.value)}
-              autoComplete="username"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              required
-            />
+            <div className="aia-auth__campo-icono">
+              <input
+                id="usuario"
+                name="usuario"
+                className="aia-input"
+                value={usuario}
+                onChange={(evento) => setUsuario(evento.target.value)}
+                autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                required
+              />
+              <span className="aia-auth__campo-adorno">
+                <IconoUsuario />
+              </span>
+            </div>
           </div>
 
           <CampoClave
@@ -132,7 +138,10 @@ export function PantallaLogin({ csrfToken, aviso, alResolver, alRevalidar, modo 
 
           <div className="aia-auth__acciones">
             <button type="submit" className="aia-btn">
-              Entrar
+              <span>Entrar</span>
+              <span className="aia-auth__boton-flecha">
+                <IconoFlecha />
+              </span>
             </button>
           </div>
         </form>
@@ -169,7 +178,7 @@ export function PantallaLogin({ csrfToken, aviso, alResolver, alRevalidar, modo 
   const errorClave = error?.tipo === 'campos' ? (error.campos.password ?? null) : null;
 
   return (
-    <MarcoAcceso titulo="Entrar">
+    <MarcoAcceso titulo="Bienvenido a Last Planner AIA" subtitulo="Ingresa tus credenciales para continuar">
       {aviso && (
         <p role="status" className="aia-alert">
           {aviso.mensaje}
@@ -199,21 +208,26 @@ export function PantallaLogin({ csrfToken, aviso, alResolver, alRevalidar, modo 
           <label className="aia-label" htmlFor="usuario">
             Usuario
           </label>
-          <input
-            id="usuario"
-            name="username"
-            className="aia-input"
-            value={usuario}
-            onChange={(evento) => setUsuario(evento.target.value)}
-            autoComplete="username"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            disabled={enviando}
-            required
-            aria-invalid={errorUsuario ? true : undefined}
-            aria-describedby={errorUsuario ? 'usuario-error' : undefined}
-          />
+          <div className="aia-auth__campo-icono">
+            <input
+              id="usuario"
+              name="username"
+              className="aia-input"
+              value={usuario}
+              onChange={(evento) => setUsuario(evento.target.value)}
+              autoComplete="username"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              disabled={enviando}
+              required
+              aria-invalid={errorUsuario ? true : undefined}
+              aria-describedby={errorUsuario ? 'usuario-error' : undefined}
+            />
+            <span className="aia-auth__campo-adorno">
+              <IconoUsuario />
+            </span>
+          </div>
           {errorUsuario && (
             <p id="usuario-error" role="alert" className="aia-helper">
               {errorUsuario}
@@ -238,7 +252,10 @@ export function PantallaLogin({ csrfToken, aviso, alResolver, alRevalidar, modo 
             secundaria debajo. */}
         <div className="aia-auth__acciones">
           <button type="submit" className="aia-btn" disabled={enviando}>
-            {enviando ? 'Entrando…' : 'Entrar'}
+            <span>{enviando ? 'Entrando…' : 'Entrar'}</span>
+            <span className="aia-auth__boton-flecha">
+              <IconoFlecha />
+            </span>
           </button>
 
           <a href="/password/forgot">¿Olvidaste tu contraseña?</a>

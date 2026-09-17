@@ -117,7 +117,7 @@ test.describe('ControlActividad — red completamente interceptada', () => {
     // `ControlActividad` es la única autoridad sobre el timeout de inactividad.
     await page.clock.fastForward('01:00:00');
 
-    await expect(page.getByRole('heading', { name: /entrar/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /bienvenido a last planner aia/i })).toBeVisible();
 
     const logout = requests.find((r) => r.url.includes('/api/auth/logout'));
     expect(logout).toBeTruthy();
@@ -131,7 +131,7 @@ test.describe('ControlActividad — red completamente interceptada', () => {
     await page.getByRole('button', { name: /cuenta ·/i }).click();
     await page.getByRole('menuitem', { name: /cerrar sesión/i }).click();
 
-    await expect(page.getByRole('heading', { name: /entrar/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /bienvenido a last planner aia/i })).toBeVisible();
 
     const llamadasLogout = requests.filter((r) => r.url.includes('/api/auth/logout'));
     expect(llamadasLogout).toHaveLength(1);
@@ -158,7 +158,7 @@ test.describe('ControlActividad — red completamente interceptada', () => {
     await page.getByRole('button', { name: /cuenta ·/i }).click();
     await page.getByRole('menuitem', { name: /cerrar sesión/i }).click();
 
-    await expect(page.getByRole('heading', { name: /entrar/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /bienvenido a last planner aia/i })).toBeVisible();
 
     const llamadasLogout = requests.filter((r) => r.url.includes('/api/auth/logout'));
     expect(llamadasLogout).toHaveLength(1);

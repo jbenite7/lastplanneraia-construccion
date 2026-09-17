@@ -38,7 +38,7 @@ test.describe('acceso React — comportamiento', () => {
     const sesion = await simularSesion(page, [arranqueAnonimo()]);
     await page.goto('/login');
 
-    await esperarPantallaDeAcceso(page, /^Entrar$/);
+    await esperarPantallaDeAcceso(page, /^Bienvenido a Last Planner AIA$/);
 
     // Etiquetas asociadas de verdad: `getByLabel` resuelve por la relación label/control,
     // así que falla si alguien deja el texto suelto al lado del input.
@@ -173,7 +173,7 @@ test.describe('acceso React — comportamiento', () => {
     await page.getByRole('button', { name: 'Confirmar salida' }).click();
 
     await expect.poll(() => cancelacion.total).toBe(1);
-    await esperarPantallaDeAcceso(page, /^Entrar$/);
+    await esperarPantallaDeAcceso(page, /^Bienvenido a Last Planner AIA$/);
     // Tras cancelar, el foco vuelve al campo de usuario, no a un botón que ya no existe.
     await expect(page.getByLabel('Usuario')).toBeFocused();
   });
@@ -188,7 +188,7 @@ test.describe('acceso React — comportamiento', () => {
     await expect(page.getByRole('button', { name: 'Entrar' })).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Reintentar' }).click();
-    await esperarPantallaDeAcceso(page, /^Entrar$/);
+    await esperarPantallaDeAcceso(page, /^Bienvenido a Last Planner AIA$/);
     await expect.poll(() => sesion.total).toBe(2);
   });
 });
@@ -212,7 +212,7 @@ test.describe('acceso React — accesibilidad en la matriz', () => {
         await fijarTema(page, tema);
         await simularSesion(page, [arranqueAnonimo()]);
         await page.goto('/login');
-        await esperarPantallaDeAcceso(page, /^Entrar$/);
+        await esperarPantallaDeAcceso(page, /^Bienvenido a Last Planner AIA$/);
 
         // El tema pedido es el que el documento aplica: si el conmutador o el script de
         // arranque se desalinearan, el resto de la comprobación mediría la paleta equivocada.

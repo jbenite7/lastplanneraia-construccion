@@ -16,6 +16,58 @@
     max-inline-size: 26rem;
     box-shadow: var(--ds-shadow-lg);
   }
+  .aia-auth__marca {
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    justify-content: center;
+    gap: var(--ds-space-2);
+    margin-inline: auto;
+    margin-block-end: var(--ds-space-4);
+    padding: var(--ds-space-2) var(--ds-space-3);
+    border: 1px solid var(--ds-active-border);
+    border-radius: var(--ds-radius-pill);
+    color: var(--ds-active-text-primary);
+    box-shadow: var(--ds-shadow-xs);
+  }
+  .aia-auth__layout > .aia-card {
+    display: flex;
+    flex-direction: column;
+  }
+  .aia-auth__marca-glifo {
+    inline-size: 1.65rem;
+    block-size: 1.65rem;
+    background: currentColor;
+    -webkit-mask: var(--ds-nav-brand-mark-image) center / contain no-repeat;
+    mask: var(--ds-nav-brand-mark-image) center / contain no-repeat;
+  }
+  .aia-auth__marca-nombre {
+    font-family: var(--ds-font-display);
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .aia-auth__layout > .aia-card > h1 {
+    text-align: center;
+    font-family: var(--ds-font-display);
+    font-size: clamp(1.2rem, 2.7vw, 1.55rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    margin: 0;
+  }
+  .aia-auth__subtitulo {
+    margin-block: 0.45rem var(--ds-space-4);
+    text-align: center;
+    color: var(--ds-active-text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+  .aia-auth__pie .aia-copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-1);
+  }
   .aia-auth :where(form) {
     display: flex;
     flex-direction: column;
@@ -35,30 +87,49 @@
   .aia-auth__acciones > a {
     justify-content: center;
   }
-  .aia-auth__clave {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: var(--ds-space-1);
+  .aia-auth__campo-icono {
+    position: relative;
   }
-  .aia-auth__clave > .aia-input {
+  .aia-auth__campo-icono > .aia-input {
     inline-size: 100%;
+    padding-inline-end: calc(var(--ds-target-min) + var(--ds-space-1));
+  }
+  .aia-auth__campo-adorno,
+  .aia-auth__clave-toggle {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    inline-size: var(--ds-target-min);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ds-active-text-secondary);
+  }
+  .aia-auth__campo-adorno {
+    pointer-events: none;
   }
   .aia-auth__clave-toggle {
     min-block-size: var(--ds-target-min);
-    display: inline-flex;
-    align-items: center;
-    padding-inline: var(--ds-space-2);
+    padding: 0;
     border: 0;
     background: none;
-    color: var(--ds-active-action-primary);
-    text-decoration: underline;
     cursor: pointer;
-    font: inherit;
   }
   .aia-auth__clave-toggle:disabled {
     cursor: not-allowed;
     opacity: var(--ds-opacity-disabled, 0.6);
+  }
+  .aia-auth__icono {
+    inline-size: 1.125rem;
+    block-size: 1.125rem;
+    flex: 0 0 auto;
+  }
+  .aia-auth__acciones > .aia-btn {
+    gap: var(--ds-space-2);
+  }
+  .aia-auth__cabecera .aia-sidebar__utility,
+  .aia-auth__cabecera .aia-sidebar__label {
+    color: var(--ds-active-text-secondary);
   }
   .aia-auth :where(a) {
     min-block-size: var(--ds-target-min);
