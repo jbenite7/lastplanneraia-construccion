@@ -17,6 +17,7 @@ declare(strict_types=1);
 
 use App\Controllers\Api\PasswordResetApiController;
 use App\Security\CsrfTokenManager;
+use App\Services\Auth\PasswordPolicyService;
 use App\Services\Auth\PasswordResetService;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -207,23 +208,34 @@ $espacios = new PasswordResetServiceFake(null, ['success' => true, 'message' => 
 [$s] = ejecutar('update', $updateBody(' Abcdef! ', ' Abcdef! '), $csrf, $espacios);
 check($espacios->resetCalls === [[TOKEN, 'app', ' Abcdef! ', ' Abcdef! ']], 'update: las contraseñas no se recortan');
 
-$politica = [
-    'longitud' => ['La contraseña debe tener al menos 6 caracteres', 'password', '422_reset_password_validation_error'],
-    'mayuscula' => ['Debe contener al menos una letra mayúscula', 'password', null],
-    'especial' => ['Debe contener al menos un carácter especial (!@#$%...)', 'password', null],
-    'coincidencia' => ['Las contraseñas no coinciden', 'confirmPassword', '422_reset_confirm_validation_error'],
-    'anterior' => ['La nueva contraseña no puede ser igual a la anterior', 'password', null],
+// Política REAL (`PasswordPolicyService` no toca DB): el fake devuelve la forma exacta que
+// `UserPasswordService::changePasswordForUsername()` propaga por `PasswordResetService::reset()`
+// — `{success:false, message: validate(), fieldErrors: validateFields()}` —, así que el campo y
+// el mensaje del 422 se comprueban contra lo que el servicio emitiría hoy, no contra literales.
+$policyService = new PasswordPolicyService();
+$hashAnterior = password_hash('Anterior!1', PASSWORD_DEFAULT);
+/** @return array<string,mixed> */
+$resultadoReal = static fn (string $password, string $confirm, ?string $hash = null): array => [
+    'success' => false,
+    'message' => $policyService->validate($password, $confirm, $hash),
+    'fieldErrors' => $policyService->validateFields($password, $confirm, $hash),
 ];
-foreach ($politica as $etiqueta => [$mensaje, $campo, $captura]) {
-    $fake = new PasswordResetServiceFake(null, [
-        'success' => false,
-        'message' => $mensaje,
-        'fieldErrors' => [$campo === 'confirmPassword' ? 'confirmation' : 'password' => [$mensaje]],
-    ]);
-    [$s, $b, $raw] = ejecutar('update', $updateBody('abc', 'abd'), $csrf, $fake);
+$politica = [
+    'longitud' => ['Ab!', 'Ab!', null, 'password', 'La contraseña debe tener al menos 6 caracteres', '422_reset_password_validation_error'],
+    'mayuscula' => ['abcdef!', 'abcdef!', null, 'password', 'Debe contener al menos una letra mayúscula', null],
+    'especial' => ['Abcdefg', 'Abcdefg', null, 'password', 'Debe contener al menos un carácter especial (!@#$%...)', null],
+    'coincidencia' => ['Abcdef!', 'Abcdef?', null, 'confirmPassword', 'Las contraseñas no coinciden', '422_reset_confirm_validation_error'],
+    'anterior' => ['Anterior!1', 'Anterior!1', $hashAnterior, 'password', 'La nueva contraseña no puede ser igual a la anterior', null],
+    'varias a la vez (primera falla)' => ['abc', 'abd', null, 'password', 'La contraseña debe tener al menos 6 caracteres', null],
+];
+foreach ($politica as $etiqueta => [$password, $confirm, $hash, $campo, $mensaje, $captura]) {
+    $real = $resultadoReal($password, $confirm, $hash);
+    check($real['fieldErrors'] !== [], "política real {$etiqueta}: el servicio produce fieldErrors");
+    $fake = new PasswordResetServiceFake(null, $real);
+    [$s, $b, $raw] = ejecutar('update', $updateBody($password, $confirm), $csrf, $fake);
     check(
         $s === 422 && bloqueError($b, 'validation_error', $campo) && ($b['error']['campos'][$campo] ?? null) === $mensaje && ($b['message'] ?? null) === $mensaje,
-        "update: política {$etiqueta} responde 422 con error.campos.{$campo}",
+        "update: política real {$etiqueta} responde 422 con error.campos.{$campo}",
     );
     check(count($fake->resetCalls) === 1, "update: política {$etiqueta} consulta el servicio una vez");
     check(!str_contains($raw, 'confirmation') && !str_contains($raw, TOKEN), "update: política {$etiqueta} sin clave confirmation ni token");
@@ -232,8 +244,18 @@ foreach ($politica as $etiqueta => [$mensaje, $campo, $captura]) {
     }
 }
 
+// Redacción nueva de una regla: el campo se decide por la clave del servicio, no por el texto.
+foreach (['password' => 'password', 'confirmation' => 'confirmPassword'] as $claveServicio => $campo) {
+    $reescrito = new PasswordResetServiceFake(null, ['success' => false, 'message' => 'Texto reescrito', 'fieldErrors' => [$claveServicio => ['Texto reescrito', 'Segundo']]]);
+    [$s, $b] = ejecutar('update', $updateBody('Abcdef!', 'Abcdef!'), $csrf, $reescrito);
+    check($s === 422 && ($b['error']['campos'] ?? null) === [$campo => 'Texto reescrito'], "update: mensaje reescrito en {$claveServicio} sigue en 422 campos.{$campo}");
+}
+
 $enlaceInvalido = new PasswordResetServiceFake(null, ['success' => false, 'message' => MENSAJE_INVALIDO]);
 [$s1, $b1, $raw1] = ejecutar('update', $updateBody('Abcdef!', 'Abcdef!'), $csrf, $enlaceInvalido);
+$enlaceReescrito = new PasswordResetServiceFake(null, ['success' => false, 'message' => 'Enlace caducado (texto nuevo)']);
+[$s3, , $raw3] = ejecutar('update', $updateBody('Abcdef!', 'Abcdef!'), $csrf, $enlaceReescrito);
+check($s3 === 410 && $raw3 === $raw1, 'update: enlace inválido con texto reescrito (sin fieldErrors) sigue en el mismo 410');
 $sinUsuario = new PasswordResetServiceFake(null, ['success' => false, 'message' => 'Usuario no encontrado', 'fieldErrors' => []]);
 [$s2, $b2, $raw2] = ejecutar('update', $updateBody('Abcdef!', 'Abcdef!'), $csrf, $sinUsuario);
 check($s1 === 410 && bloqueError($b1, 'reset_link_invalid', null) && ($b1['message'] ?? null) === MENSAJE_INVALIDO, 'update: enlace inválido responde 410 reset_link_invalid');
@@ -248,8 +270,10 @@ check($s === 410 && $raw === $raw1 && $formatoMalo->totalCalls() === 0, 'update:
 
 $indisponibles = [
     'almacenamiento' => ['success' => false, 'message' => 'Error al actualizar la contraseña.', 'fieldErrors' => []],
-    'desconocido' => ['success' => false, 'message' => 'algo raro interno'],
-    'sin mensaje' => ['success' => false],
+    'almacenamiento reescrito' => ['success' => false, 'message' => 'algo raro interno', 'fieldErrors' => []],
+    'sin mensaje' => ['success' => false, 'fieldErrors' => []],
+    'fieldErrors con clave desconocida' => ['success' => false, 'message' => 'x', 'fieldErrors' => ['otra' => ['algo raro interno']]],
+    'fieldErrors sin lista' => ['success' => false, 'message' => 'x', 'fieldErrors' => 'algo raro interno'],
     'excepción' => new RuntimeException('SQLSTATE secreto ' . TOKEN),
 ];
 $raw503 = null;

@@ -18,7 +18,7 @@ use Throwable;
  * distinto a hex minúscula de 64 caracteres se rechaza antes de llegar al servicio. Enlace
  * inválido, vencido, usado o de un usuario que ya no existe responden igual, sin identidad.
  * `scope` se fija a `app` del lado del servidor. La política de contraseña la decide el servicio:
- * aquí solo se traduce su mensaje al campo que espera el cliente (`password` o `confirmPassword`).
+ * aquí solo se traduce la primera clave de su `fieldErrors` al campo que espera el cliente.
  */
 final class PasswordResetApiController
 {
@@ -29,17 +29,21 @@ final class PasswordResetApiController
     private const SUCCESS_MESSAGE = 'Contraseña restablecida correctamente.';
 
     /**
-     * Mensaje del servicio → campo del cliente. Se mapea por mensaje y no por el `fieldErrors` que
-     * trae `UserPasswordService`, porque ese usa la clave `confirmation` (contrato de S02) y acumula
-     * todas las fallas; el cliente espera `confirmPassword` y la primera falla.
+     * Clave de `fieldErrors` del servicio (`PasswordPolicyService::validateFields()`, propagada por
+     * `UserPasswordService` y `PasswordResetService::reset()`) → campo que espera el cliente.
      */
-    private const POLICY_FIELDS = [
-        'La contraseña debe tener al menos 6 caracteres' => 'password',
-        'Debe contener al menos una letra mayúscula' => 'password',
-        'Debe contener al menos un carácter especial (!@#$%...)' => 'password',
-        'Las contraseñas no coinciden' => 'confirmPassword',
-        'La nueva contraseña no puede ser igual a la anterior' => 'password',
+    private const SERVICE_FIELDS = [
+        'password' => 'password',
+        'confirmation' => 'confirmPassword',
     ];
+
+    /**
+     * Único literal que queda: `UserPasswordService` devuelve la misma estructura
+     * (`success:false`, `fieldErrors:[]`) para usuario inexistente y para fallo al guardar, así que
+     * solo el mensaje los distingue. Si cambia, el usuario inexistente degrada a 503 (mismo body
+     * genérico, sin identidad), nunca a una fuga.
+     */
+    private const USER_MISSING_MESSAGE = 'Usuario no encontrado';
 
     private PasswordResetService $service;
     private Closure $bodyReader;
@@ -140,13 +144,26 @@ final class PasswordResetApiController
             return;
         }
 
-        $message = is_string($result['message'] ?? null) ? $result['message'] : '';
-        if (isset(self::POLICY_FIELDS[$message])) {
-            $this->respondError(422, 'validation_error', $message, [self::POLICY_FIELDS[$message] => $message]);
+        // Sin `fieldErrors`: solo lo produce la rama de token no vigente de `reset()` → 410.
+        if (!array_key_exists('fieldErrors', $result)) {
+            $this->respondInvalidLink();
 
             return;
         }
-        if (in_array($message, [self::INVALID_MESSAGE, 'Usuario no encontrado'], true)) {
+
+        $fieldErrors = $result['fieldErrors'];
+        if (is_array($fieldErrors) && $fieldErrors !== []) {
+            $serviceKey = array_key_first($fieldErrors);
+            $messages = $fieldErrors[$serviceKey];
+            $first = is_array($messages) ? reset($messages) : null;
+            if (is_string($serviceKey) && isset(self::SERVICE_FIELDS[$serviceKey]) && is_string($first) && $first !== '') {
+                $this->respondError(422, 'validation_error', $first, [self::SERVICE_FIELDS[$serviceKey] => $first]);
+
+                return;
+            }
+        }
+
+        if ($fieldErrors === [] && ($result['message'] ?? null) === self::USER_MISSING_MESSAGE) {
             $this->respondInvalidLink();
 
             return;
