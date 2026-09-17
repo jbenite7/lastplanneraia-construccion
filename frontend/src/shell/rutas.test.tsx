@@ -486,13 +486,59 @@ test('403 csrf_invalid: "Actualizar sesión" revalida sin perder el correo ni de
   // Mientras la revalidación sigue en vuelo: la pantalla de recuperación sigue montada, con el
   // correo intacto — nunca "Cargando…" ni el login.
   expect(screen.getByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
-  expect(screen.queryByRole('status', { name: /cargando/i })).not.toBeInTheDocument();
+  expect(screen.queryByText(/cargando/i)).not.toBeInTheDocument();
   expect((screen.getByLabelText('Correo electrónico') as HTMLInputElement).value).toBe('persona@example.test');
 
   resolverSegundaSesion(new Response(JSON.stringify(ANONIMA_MISSING_SESSION), { status: 200 }));
 
   await waitFor(() => expect(screen.getByLabelText('Correo electrónico')).toHaveFocus());
   expect((screen.getByLabelText('Correo electrónico') as HTMLInputElement).value).toBe('persona@example.test');
+});
+
+test('403 csrf_invalid: si la revalidación falla, la pantalla sigue montada con el correo y avisa dentro', async () => {
+  // Ola final de la revisión S02: con `/api/session` en 500 durante "Actualizar sesión", la ruta
+  // pública caía en `ErrorArranqueRecuperable` («No pudimos conectar con la aplicación») y se
+  // perdía el correo. Tras un arranque previo, el fallo se cuenta dentro de la pantalla.
+  window.history.pushState({}, '', '/password/forgot');
+  let llamadasSesion = 0;
+
+  vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes('/api/auth/password/forgot')) {
+      return Promise.resolve(new Response(JSON.stringify({
+        success: false,
+        code: 'csrf_invalid',
+        message: 'No fue posible validar la solicitud. Intenta nuevamente.',
+        error: { codigo: 'csrf_invalid', mensaje: 'No fue posible validar la solicitud. Intenta nuevamente.' },
+      }), { status: 403 }));
+    }
+
+    llamadasSesion += 1;
+    if (llamadasSesion === 2) {
+      return Promise.resolve(new Response('<h1>Error</h1>', { status: 500, headers: { 'Content-Type': 'text/html' } }));
+    }
+    return Promise.resolve(new Response(JSON.stringify(ANONIMA_MISSING_SESSION), { status: 200 }));
+  }));
+
+  render(<Rutas />);
+
+  const campo = (await screen.findByLabelText('Correo electrónico')) as HTMLInputElement;
+  fireEvent.change(campo, { target: { value: 'persona@example.test' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Enviar enlace' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Actualizar sesión' }));
+
+  expect(await screen.findByText('No pudimos actualizar la sesión. Intenta nuevamente.')).toBeInTheDocument();
+  expect(screen.queryByText(/no pudimos conectar con la aplicación/i)).not.toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Restablecer contraseña' })).toBeInTheDocument();
+  expect((screen.getByLabelText('Correo electrónico') as HTMLInputElement).value).toBe('persona@example.test');
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Actualizar sesión' })).toHaveFocus());
+
+  // Un segundo intento con `/api/session` sano limpia el aviso y devuelve el foco al campo.
+  fireEvent.click(screen.getByRole('button', { name: 'Actualizar sesión' }));
+  await waitFor(() => expect(screen.queryByText('No pudimos actualizar la sesión. Intenta nuevamente.')).not.toBeInTheDocument());
+  await waitFor(() => expect(screen.getByLabelText('Correo electrónico')).toHaveFocus());
+  expect((screen.getByLabelText('Correo electrónico') as HTMLInputElement).value).toBe('persona@example.test');
+  expect(llamadasSesion).toBe(3);
 });
 
 test('App monta la recuperación de clave en /password/forgot', async () => {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import type { ConfiguracionRuntime } from '../lib/runtime/configuracion';
 import { AppShell } from './AppShell';
@@ -86,11 +86,42 @@ function ErrorArranqueRecuperable({ logoutSinConfirmar, recargar }: { logoutSinC
  * "Cargando…", como ya prueba el escenario de bootstrap en vuelo/fallido de más abajo) de "ya
  * hubo una, se está revalidando" (se queda montada la pantalla). `csrfDeUltimoArranque` conserva
  * el último token conocido durante ese hueco, en vez de mandar uno vacío mientras se resuelve.
+ *
+ * **Ola final de la revisión S02:** la revalidación también puede FALLAR (`/api/session` en 500).
+ * Antes, ese `error_recuperable` reemplazaba la pantalla por `ErrorArranqueRecuperable` y se
+ * perdía el correo. Ahora, si ya hubo un arranque, la pantalla sigue montada y `alRevalidar`
+ * **rechaza**, para que `PantallaRecuperarClave` cuente el fallo dentro («No pudimos actualizar la
+ * sesión») y deje el foco en «Actualizar sesión». `recargar()` no lanza ni devuelve el resultado,
+ * así que la promesa se liquida desde un efecto cuando la sesión sale de `cargando`: leer `estado`
+ * justo después de `await recargar()` daría el valor viejo. `generacion` va en las dependencias
+ * por si React agrupa `cargando` y el resultado final en un solo commit.
  */
 function RutaRecuperacion() {
-  const { estado, arranque, recargar, logoutSinConfirmar } = useSesion();
+  const { estado, arranque, recargar, logoutSinConfirmar, generacion } = useSesion();
   const huboArranquePrevio = useRef(false);
   const csrfDeUltimoArranque = useRef('');
+  const revalidacionPendiente = useRef<{ resolver: () => void; rechazar: (causa: Error) => void } | null>(null);
+
+  useEffect(() => {
+    const pendiente = revalidacionPendiente.current;
+    if (!pendiente || estado === 'cargando') return;
+
+    revalidacionPendiente.current = null;
+    if (estado === 'error_recuperable') {
+      pendiente.rechazar(new Error('No se pudo revalidar la sesión'));
+    } else {
+      pendiente.resolver();
+    }
+  }, [estado, generacion]);
+
+  const alRevalidar = useCallback(
+    () =>
+      new Promise<void>((resolver, rechazar) => {
+        revalidacionPendiente.current = { resolver, rechazar };
+        void recargar();
+      }),
+    [recargar],
+  );
 
   if (arranque) {
     huboArranquePrevio.current = true;
@@ -101,14 +132,14 @@ function RutaRecuperacion() {
     return <p role="status">Cargando…</p>;
   }
 
-  if (estado === 'error_recuperable') {
+  if (estado === 'error_recuperable' && !huboArranquePrevio.current) {
     return <ErrorArranqueRecuperable logoutSinConfirmar={logoutSinConfirmar} recargar={recargar} />;
   }
 
   return (
     <PantallaRecuperarClave
       csrfToken={arranque?.csrfToken ?? csrfDeUltimoArranque.current}
-      alRevalidar={recargar}
+      alRevalidar={alRevalidar}
     />
   );
 }
