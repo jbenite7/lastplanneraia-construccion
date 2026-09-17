@@ -25,18 +25,19 @@ resumen: "Reabre S01 por paridad visual: el login React conserva su base y trae 
 2. **React es el cimiento.** No se copia la pantalla legacy: se adaptan **logo e íconos**.
 3. **Pie de legacy:** `© 2026 Arquitectos e Ingenieros Asociados` / `Construyendo con +CERTEZA` sustituye a `© Last Planner AIA`.
 4. **Logo dentro de la tarjeta, encima del título** (opción A). El texto suelto «Last Planner AIA» de la cabecera sale; en la cabecera queda solo el conmutador de tema.
-5. Se conservan el título **«Entrar»**, el botón **«Entrar»** y el **conmutador de tema**.
+5. Se conservan el botón **«Entrar»** y el **conmutador de tema**.
+6. **Bienvenida y subtítulo del legado** (2026-09-16, opción A): el `h1` pasa a «Bienvenido a Last Planner AIA» con «Ingresa tus credenciales para continuar» debajo, centrados y con el tamaño de `.login-title`/`.login-subtitle`; el botón sigue «Entrar». Sustituye a lo que la decisión 5 decía del título.
 
 ## Global Constraints
 
 - Íconos como **SVG embebido** con `fill`/`stroke` en `currentColor` y `aria-hidden="true"`. **Nada de Font Awesome** en el shell React (evita tocar `vendors.json` y `design-system-entrypoint-partition`).
 - El logo usa el token existente `--ds-nav-brand-mark-image` (`public/css/tokens.css:808`, `/img/brand/glyph-mono.svg`) con `mask`, igual que legacy. Sin imagen nueva.
 - CSS nuevo solo en `public/css/auth-react.css`, dentro de `@layer module`, con selectores bajo `.aia-auth`. Sin hex, sin estilos inline, solo tokens `--ds-*`.
-- **Los nombres accesibles no cambian:** botón `Entrar` / `Entrando…`, alternador `Mostrar contraseña` / `Ocultar contraseña` con `aria-pressed`, `h1` único «Entrar».
+- **Los nombres accesibles no cambian:** botón `Entrar` / `Entrando…`, alternador `Mostrar contraseña` / `Ocultar contraseña` con `aria-pressed`. El `h1` único es «Bienvenido a Last Planner AIA» (decisión 6).
 - Objetivos táctiles ≥ `--ds-target-min`; contraste AA (4,5:1 texto, 3:1 íconos y controles) en **los dos temas**.
 - Viewports de la pantalla: 390×844, 768×1024, 1180×820 (canónico), 1440×900.
 - Goldens: **no** se regeneran sin aprobación explícita de Felipe sobre los candidatos. Para forzar la recaptura se borran los PNG (bajo tolerancia, `--update-snapshots` no reescribe).
-- Fuera de alcance: placeholders de legacy, textos «Bienvenido…», activar el legacy sin deploy (decisión abierta, ver Tarea 6), el golden huérfano `tests/browser/__screenshots__/auth/login-dark-1180x820.png`.
+- Fuera de alcance: placeholders de legacy, activar el legacy sin deploy (decisión abierta, ver Tarea 6), el golden huérfano `tests/browser/__screenshots__/auth/login-dark-1180x820.png`.
 
 ## Referencia medida
 
@@ -536,6 +537,35 @@ git commit -m "feat(s01): íconos de usuario, contraseña y botón; contraste de
 
 ---
 
+### Task 3b: Bienvenida y subtítulo del legado (añadida en ejecución)
+
+Decisión de Felipe en el chat (2026-09-16, opción A), tras ver Task 3 en curso: el `h1` pasa de
+«Entrar» a **«Bienvenido a Last Planner AIA»**, con el subtítulo **«Ingresa tus credenciales para
+continuar»** debajo, en los dos modos de `PantallaLogin` (normal y mantenimiento); el botón sigue
+diciendo «Entrar»/«Entrando…». `CambioClaveObligatorio` conserva su título «Actualiza tu
+contraseña» y no lleva subtítulo. Brief completo:
+`.superpowers/sdd/2026-09-16-s01-paridad-visual/task-3b-brief.md`.
+
+Alcance: `MarcoAcceso.tsx` gana una prop `subtitulo?: string`; `PantallaLogin.tsx` pasa el nuevo
+título y subtítulo en sus dos formularios; `public/css/auth-react.css` centra el `h1` y el
+subtítulo bajo la marca con `--ds-font-display`; se regenera el espejo `public/dist-css/auth-react.css`
+(`npm run css:minify`) y el bundle (`npm run frontend:build`); y se actualiza todo lugar que
+esperaba el `h1` «Entrar» dentro del alcance de S01 (`PantallaLogin.test.tsx`,
+`CambioClaveObligatorio.test.tsx`, `tests/browser/login-react.spec.mjs`,
+`tests/browser/login-react.visual.mjs`, `tests/browser/zz-sonda-temporal.spec.mjs`,
+`frontend/src/shell/rutas.tsx` en su comentario).
+
+**Ronda de arreglo de tamaño (1/5, 0 abiertos):** el candidato inicial mostraba el `h1` con el
+tamaño por defecto de un heading en vez del tamaño de `.login-title`/`.login-subtitle` del legado;
+se corrigió con las reglas de tamaño explícitas sobre `.aia-auth__layout > .aia-card > h1` y
+`.aia-auth__subtitulo` (commits `c9e735dc..e6894478`). Felipe aprobó los candidatos resultantes
+(«Aprobados, congela los goldens») y se congelaron en la Tarea 5.
+
+Commits: `80d150ce..c9e735dc` (código+tests+CSS+espejo, bundle) y `c9e735dc..e6894478` (fix de
+tamaño).
+
+---
+
 ### Task 4: Bundle, navegador y suites
 
 **Files:**
@@ -613,3 +643,85 @@ git commit -m "test(visual): goldens del acceso con paridad visual, aprobados po
 - [ ] **Step 3:** Escribir `## Cierre` en este plan con lo verificado y los SHA.
 - [ ] **Step 4:** Ingest en `memoria/` (una línea en `log.md` y la página que corresponda) y `npm run test:wiki` → RC=0.
 - [ ] **Step 5:** Commit, `git fetch origin`, integrar `origin/main` si avanzó, re-verificar (`npm --prefix frontend test`, `npm run test:design-system:static`), push y PR contra `main` con la **condición de hecho declarada en el cuerpo antes del CI**: `design-system-static` en `success` y los 13 `G_*` en `success` en las dos patas.
+
+## Cierre
+
+**Estado:** código completo en la rama `s01-paridad-visual`, pendiente de PR y merge a `main`. La
+paridad visual (marca, íconos, bienvenida y pie del legado) está implementada, probada y con
+goldens congelados; falta publicar.
+
+**Tareas y commits:**
+
+| Tarea | Commits |
+|---|---|
+| Task 0 | `489bc29a..9a038d8e` |
+| Task 1 | `9a038d8e..c4448bec` |
+| Task 2 | `c4448bec..b5c9aea8` |
+| Task 3 | `b5c9aea8..c1fadb18` |
+| Task 4 | `c1fadb18..80d150ce` |
+| Task 3b | `80d150ce..c9e735dc` (código+CSS+espejo+bundle), `c9e735dc..e6894478` (fix de tamaño) |
+| Task 5 | `e6894478..7baca3b5` |
+| Final fix (revisión final) | `4f741797` (spec `shell-control-actividad.spec.mjs`) + este cierre |
+
+**Verificación:**
+- `npm --prefix frontend test` → 587 tests, PASS.
+- `tests/browser/login-react.spec.mjs` → 16 tests, PASS.
+- `tests/browser/shell-control-actividad.spec.mjs` (hoy, contra el contenedor efímero `:8096`) →
+  3 tests, PASS, RC=0.
+- `npm run test:design-system:static` → RC=0.
+- Contraste AA medido en los dos temas: 24 combinaciones, todas cumplen (texto ≥4,5:1, íconos y
+  controles ≥3:1).
+- Goldens: los 8 PNG de `login-react.visual.mjs` son idénticos byte a byte a los candidatos
+  aprobados por Felipe (`shasum -a 256`).
+
+**Rulings (del ledger, en orden, con su costo):**
+1. Tarea 0 la ejecuta el controlador (solo TASKS.md + commit del plan) — es registro, no
+   implementación — costo si fuera error: nulo, dos líneas de doc revisables en el PR.
+2. Tarea 4 sirve la rama en el contenedor compartido 8081 con `LPS_CODE_ROOT` y lo devuelve a la
+   raíz al terminar la tarea, como manda CLAUDE.md — costo: una verificación ajena confundida
+   durante minutos si otra sesión lo usa en el intervalo.
+3. Tarea 5 se detiene tras generar candidatos hasta aprobación explícita de Felipe, lo exige
+   AGENTS.md para cambios visuales — costo: espera.
+4. `check:frontend` global sale rojo por errores preexistentes en `admin/public/css` (rama no los
+   toca); el gate de las tareas es Biome sobre los archivos tocados con RC=0 — costo si fuera
+   error: un rojo real en `public/css` pasaría desapercibido, mitigado porque la suite estática del
+   DS corre en Tarea 4.
+5. El commit `c1fadb18` firma `Co-Authored-By` con Sonnet 5 (el modelo que lo escribió) en vez de
+   Opus 5 — es la atribución veraz; no se reescribe historia — costo si fuera error: una línea de
+   atribución distinta en un commit.
+6. La Tarea 4 NO usa el contenedor compartido 8081: se sirve la rama en un contenedor efímero
+   `lps-s01-paridad` en `:8096` (vendor montado de la raíz) y los e2e corren con
+   `E2E_BASE_URL=http://localhost:8096` — reemplaza el ruling anterior sobre 8081 — costo si fuera
+   error: el efímero comparte la base de dev, igual que el compartido.
+7. `public/dist-css/auth-react.css` entra en la rama (espejo versionado que `.htaccess` sirve en
+   lugar de `public/css`); el plan lo omitía — costo si fuera error: un archivo generado de más en
+   el PR.
+8. Tarea 5 pasos 1-2 (generar candidatos y presentarlos) los corre el controlador: es un comando
+   sin cambios de código y termina en la parada por aprobación de Felipe — costo si fuera error:
+   ninguno, no hay commit.
+9. Título y subtítulo centrados con fuente display — replica el legado — costo si fuera error:
+   ajuste de CSS tras ver candidatos.
+10. El centrado y la fuente display del `h1` también alcanzan a «Actualiza tu contraseña» de
+    `CambioClaveObligatorio` — se acepta: misma familia de pantallas de acceso, coherencia visual;
+    no hay goldens de esa pantalla — costo si fuera error: un ajuste de selector.
+11. Los `rem`/`clamp` literales del título, subtítulo y glifo se aceptan como excepción
+    documentada en este Cierre — calcan el legado por decisión de paridad y la suite estática los
+    acepta — costo si fuera error: tokenizarlos después.
+
+**Excepciones aceptadas:**
+- `rem`/`clamp` literales del título, subtítulo y glifo, calcados del legado por decisión de
+  paridad (ruling 11).
+- El `h1` centrado con fuente display alcanza también a `CambioClaveObligatorio` (ruling 10).
+- `public/dist-css/auth-react.css` se añadió al alcance de la rama, fuera de lo previsto en el
+  plan original (ruling 7).
+
+**Minors que esperan (deferred, sin bloquear el cierre):**
+- `.aia-auth__layout > .aia-card` declarado dos veces en `auth-react.css` (Task 2).
+- `.aia-auth__acciones > .aia-btn` declarado dos veces en `auth-react.css` (Task 3).
+- `.aia-auth__boton-flecha` sin reglas propias, solo marcador estructural (Task 3).
+
+**Decisión abierta de Felipe:** si el respaldo legado debe poder activarse sin deploy — hoy exige
+quitar `'/login'` de `SpaRouter::RUTAS_EXACTAS_MIGRADAS` y publicar.
+
+**Golden huérfano:** `tests/browser/__screenshots__/auth/login-dark-1180x820.png` sigue sin
+consumidor (fuera de alcance de este plan).

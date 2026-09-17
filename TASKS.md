@@ -861,12 +861,15 @@ estado por defecto mientras Felipe no reparta.
   superficies de la migración (`docs/superpowers/plans/2026-08-30-s01…s27`) **funciona en React
   con el legado todavía disponible como respaldo**; **no** exige `MIGRATION_COMPLETE` (retirar el
   legado ni cerrar la ventana de reversión). Estado medido el 2026-09-16 leyendo la sección
-  `## Cierre` de cada plan: **S01 no cumple desde el 2026-09-16**: Felipe fijó que la
-  paridad **incluye lo visual** y el login React no la tiene (marca, íconos y pie de legado); se
-  reabre en `docs/superpowers/plans/2026-09-16-s01-paridad-visual.md`; **S02–S27 no están implementadas**, sus cierres lo dicen expresamente.
+  `## Cierre` de cada plan: **S01 cumple el criterio en cuanto este frente esté en `main`**
+  (paridad visual: marca, íconos, bienvenida y pie del legado) — código completo en la rama
+  `s01-paridad-visual`, pendiente de PR/merge; ver
+  `docs/superpowers/plans/2026-09-16-s01-paridad-visual.md`; **S02–S27 no están implementadas**, sus cierres lo dicen expresamente.
   `pdc-app/` y `ct-app/` ya son React pero van por fuera de esa serie, así que cuentan solo cuando
   su plan S lo acepte. Consecuencia: producción sigue en `fix/pdc-duraciones-pasos` hasta entonces,
   y cualquier urgencia de producción es un hotfix sobre esa rama que después se trae a `main`.
+  **Decisión abierta (2026-09-16):** si el respaldo legado de `/login` debe poder activarse sin
+  deploy — hoy exige quitar `'/login'` de `SpaRouter::RUTAS_EXACTAS_MIGRADAS` y publicar.
 - **Gobierno del catálogo de duraciones desde `/admin/`** (decisión de Felipe, 2026-09-01):
   frente propio. Contexto: `docs/superpowers/specs/2026-09-01-duraciones-por-obra-design.md` §3.2.
 - **Diferidos del triaje final de duraciones por obra**, ninguno bloqueante: e2e con paso
