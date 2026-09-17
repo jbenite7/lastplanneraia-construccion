@@ -39,11 +39,7 @@ final class PasswordRecoveryApiController
         $this->headers();
         $csrf = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
         if (!CsrfTokenManager::validate(is_string($csrf) ? $csrf : null, 'shell_api')) {
-            $this->respond(403, [
-                'success' => false,
-                'code' => 'csrf_invalid',
-                'message' => 'No fue posible validar la solicitud. Intenta nuevamente.',
-            ]);
+            $this->respondError(403, 'csrf_invalid', 'No fue posible validar la solicitud. Intenta nuevamente.');
 
             return;
         }
@@ -52,12 +48,7 @@ final class PasswordRecoveryApiController
         $emailValue = is_array($payload) ? ($payload['email'] ?? null) : null;
         $email = is_string($emailValue) ? trim($emailValue) : '';
         if ($payload === null || array_keys($payload) !== ['email'] || !is_string($emailValue) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->respond(422, [
-                'success' => false,
-                'code' => 'validation_error',
-                'message' => 'Revisa el correo electrónico.',
-                'fieldErrors' => ['email' => ['Ingresa un correo electrónico válido.']],
-            ]);
+            $this->respondError(422, 'validation_error', 'Revisa el correo electrónico.', ['email' => 'Ingresa un correo electrónico válido.']);
 
             return;
         }
@@ -95,11 +86,31 @@ final class PasswordRecoveryApiController
 
     private function respondUnavailable(): void
     {
-        $this->respond(503, [
-            'success' => false,
-            'code' => 'recovery_unavailable',
-            'message' => self::UNAVAILABLE_MESSAGE,
-        ]);
+        $this->respondError(503, 'recovery_unavailable', self::UNAVAILABLE_MESSAGE);
+    }
+
+    /**
+     * Claves planas (`success`, `code`, `message` y, si hay, `fieldErrors` como listas) para los
+     * consumidores de la forma vieja, MÁS el bloque `error` anidado (`codigo`, `mensaje`,
+     * `campos`), que es el único que lee `frontend/src/lib/api/cliente.ts`. Sin ese bloque, un
+     * 403 o un 503 real llegaban a la pantalla como «/api/auth/password/forgot respondió 403»
+     * (ola final de la revisión S02). Mismo criterio que `AuthApiController::respondError()`,
+     * con una diferencia a propósito: `campos` solo se emite si hay errores de campo, porque un
+     * arreglo vacío de PHP se serializa como `[]` y `EsquemaCuerpoErrorApi` exige un objeto
+     * `{campo: string}` — un `[]` invalidaría el bloque entero y volvería el mensaje genérico.
+     *
+     * @param array<string, string> $fieldErrors
+     */
+    private function respondError(int $status, string $code, string $message, array $fieldErrors = []): void
+    {
+        $payload = ['success' => false, 'code' => $code, 'message' => $message];
+        $error = ['codigo' => $code, 'mensaje' => $message];
+        if ($fieldErrors !== []) {
+            $payload['fieldErrors'] = array_map(static fn (string $mensaje): array => [$mensaje], $fieldErrors);
+            $error['campos'] = $fieldErrors;
+        }
+        $payload['error'] = $error;
+        $this->respond($status, $payload);
     }
 
     /**

@@ -112,5 +112,26 @@ $listPayload = new PasswordResetServiceFake(PasswordResetService::RESULTADO_ENVI
 [$listPayloadStatus] = ejecutar('["persona@example.test"]', $csrf, $listPayload);
 check($listPayloadStatus === 422 && $listPayload->calls === [], 'body en forma de lista responde 422 sin llamar al servicio');
 
+// Bloque `error` anidado: es el único que lee `frontend/src/lib/api/cliente.ts`. Sin él, la
+// pantalla mostraba «/api/auth/password/forgot respondió 403» en vez del mensaje humano. `campos`
+// debe ser un objeto `{campo: string}` (esquema `z.record(z.string(), z.string())`): un `[]` de PHP
+// rompería el parseo del bloque entero, así que en 403/503 la clave no se emite.
+function bloqueErrorValido(?array $body, string $code, bool $conCampos): bool
+{
+    $error = $body['error'] ?? null;
+    if (!is_array($error) || ($error['codigo'] ?? null) !== $code || ($error['mensaje'] ?? null) !== ($body['message'] ?? false)) {
+        return false;
+    }
+    if (!$conCampos) {
+        return !array_key_exists('campos', $error);
+    }
+
+    return is_array($error['campos'] ?? null) && !array_is_list($error['campos']) && is_string($error['campos']['email'] ?? null);
+}
+check(bloqueErrorValido($blockedBody, 'csrf_invalid', false), '403 emite bloque error {codigo, mensaje} sin campos');
+check(bloqueErrorValido($invalidBody, 'validation_error', true), '422 emite bloque error con campos.email como string');
+check(bloqueErrorValido($failedBody, 'recovery_unavailable', false), '503 (fallido) emite bloque error sin campos');
+check(bloqueErrorValido($exceptionBody, 'recovery_unavailable', false), '503 (excepción) emite bloque error sin campos');
+
 echo (string) ob_get_clean();
 exit($failures === 0 ? 0 : 1);
