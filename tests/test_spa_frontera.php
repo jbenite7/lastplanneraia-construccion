@@ -35,8 +35,7 @@ comprobarMatrizSpa([
     // Otros verbos de mutación tampoco cruzan al host SPA — fijado por prueba, no solo
     // inferido de la lista blanca GET/HEAD dentro de coincideConMapa().
     ['PUT', '/login', false], ['DELETE', '/login', false], ['OPTIONS', '/login', false],
-    // Estas tres NUNCA deben pasar al host SPA: S03 sin migrar, API y assets del bundle.
-    ['GET', '/password/reset', false],
+    // Estas dos NUNCA deben pasar al host SPA: API y assets del bundle.
     ['GET', '/api/session', false],
     ['GET', '/app/assets/x.js', false],
 ]);
@@ -47,9 +46,23 @@ comprobarMatrizSpa([
     ['GET', '/password/forgot', true],
     ['HEAD', '/password/forgot', true],
     ['POST', '/password/forgot', false],
-    ['GET', '/password/reset', false],
     ['POST', '/api/auth/password/forgot', false],
     ['GET', '/app/password/forgot', true],
+]);
+
+// --- Matriz canónica S03 (Tarea 8): '/password/reset' cruza en GET/HEAD; POST sigue en el
+// legado durante la ventana de rollback; ni subrutas ni la API caen en la ruta exacta. ---
+comprobarMatrizSpa([
+    ['GET', '/password/reset', true],
+    ['HEAD', '/password/reset', true],
+    ['POST', '/password/reset', false],
+    ['GET', '/password/reset-extra', false],
+    ['GET', '/password/reset/x', false],
+    ['GET', '/api/auth/password/reset', false],
+    ['POST', '/api/auth/password/reset', false],
+    ['GET', '/api/auth/password/reset/validate', false],
+    ['GET', '/app/password/reset', true],
+    ['HEAD', '/app/password/reset', true],
 ]);
 
 // --- El resto del sitio PHP no migrado sigue intacto. ---
@@ -158,6 +171,57 @@ function comprobarSinRollbackS02(): void
     // El mapa real de producción (sin argumento explícito) sigue incluyendo la ruta.
     if (!SpaRouter::sirveLaSpa('/password/forgot')) {
         echo "FALLO: S02 — el mapa real de producción debe seguir sirviendo '/password/forgot' desde la SPA\n";
+        $fallos++;
+    }
+}
+
+// --- Rollback S03: la vista y el controlador legados siguen vivos hasta la Tarea 10, así que
+// quitar '/password/reset' del mapa devuelve GET/HEAD al PHP sin tocar las demás rutas. ---
+comprobarRollbackS03();
+
+function comprobarRollbackS03(): void
+{
+    global $fallos;
+
+    $mapaConReset = ['/', '/login', '/password/forgot', '/password/reset'];
+    $mapaSinReset = ['/', '/login', '/password/forgot'];
+    $prefijoPiloto = ['/app'];
+
+    foreach (['GET', 'HEAD'] as $metodo) {
+        if (!SpaRouter::coincideConMapa('/password/reset', $metodo, $mapaConReset, $prefijoPiloto)) {
+            echo "FALLO: S03 — {$metodo} '/password/reset' debe servirlo la SPA con la ruta en el mapa\n";
+            $fallos++;
+        }
+        if (SpaRouter::coincideConMapa('/password/reset', $metodo, $mapaSinReset, $prefijoPiloto)) {
+            echo "FALLO: S03 — rollback: sin '/password/reset' en el mapa, {$metodo} debe volver al legado\n";
+            $fallos++;
+        }
+        if (!SpaRouter::coincideConMapa('/app/password/reset', $metodo, $mapaSinReset, $prefijoPiloto)) {
+            echo "FALLO: S03 — rollback: el piloto '/app/password/reset' sigue en React por el prefijo\n";
+            $fallos++;
+        }
+    }
+    if (!SpaRouter::coincideConMapa('/password/forgot', 'GET', $mapaSinReset, $prefijoPiloto)) {
+        echo "FALLO: S03 — sacar '/password/reset' del mapa no debe arrastrar a '/password/forgot'\n";
+        $fallos++;
+    }
+
+    // El legado al que volver sigue registrado (GET y POST) mientras dure la ventana de rollback.
+    $index = (string) file_get_contents(__DIR__ . '/../public/index.php');
+    foreach (['get', 'post'] as $verbo) {
+        if (preg_match('~\$router->' . $verbo . "\\(\\s*'/password/reset'~", $index) !== 1) {
+            echo "FALLO: S03 — public/index.php debe conservar \$router->{$verbo}('/password/reset') hasta la Tarea 10\n";
+            $fallos++;
+        }
+    }
+
+    // El mapa real de producción incluye la ruta tras el corte.
+    if (!SpaRouter::sirveLaSpa('/password/reset') || !SpaRouter::sirveLaSpa('/password/reset', 'HEAD')) {
+        echo "FALLO: S03 — el mapa real de producción debe servir GET/HEAD '/password/reset' desde la SPA\n";
+        $fallos++;
+    }
+    if (SpaRouter::sirveLaSpa('/password/reset', 'POST')) {
+        echo "FALLO: S03 — POST '/password/reset' no debe servirlo la SPA\n";
         $fallos++;
     }
 }

@@ -104,6 +104,8 @@ $router->post('/login', [\App\Controllers\Auth\LoginController::class, 'login'])
 // SpaHostRenderer antes de llegar aquí (RUTAS_EXACTAS_MIGRADAS sigue incluyendo la ruta),
 // y el POST legado ya no tiene controlador — cae al 404 controlado del producto porque
 // '/password/forgot' permanece en $publicRoutes.
+// GET/HEAD '/password/reset' los sirve SpaRouter/SpaHostRenderer desde la Tarea 8 (S03); el
+// registro GET y el POST legados se conservan como rollback hasta la Tarea 10.
 $router->get('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'reset']);
 $router->post('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'update']);
 $router->post('/password/update', [\App\Controllers\Auth\LoginController::class, 'updatePassword']);
@@ -403,6 +405,12 @@ $router->get('/bi/curva-s', [\App\Controllers\Bi\BiViewController::class, 'curva
 // el mismo HTML y React decide qué pantalla mostrar. Solo GET/HEAD cruzan aquí —
 // ver App\Core\SpaRouter::coincideConMapa().
 if (\App\Core\SpaRouter::sirveLaSpa($requestUri, $requestMethod)) {
+    // S03 (Tarea 8): la URL de restablecimiento lleva el token en la query. no-referrer evita
+    // que viaje en el Referer de cualquier recurso o enlace, y no-store que quede en caché.
+    if ($requestUri === '/password/reset') {
+        header('Referrer-Policy: no-referrer');
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    }
     \App\Core\SpaHostRenderer::render([], 200, $requestMethod);
     exit;
 }
