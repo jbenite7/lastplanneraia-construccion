@@ -6,14 +6,18 @@ fecha: 2026-08-03
 areas: [lps, arquitectura]
 tags: [generado]
 fuente: public/index.php
-resumen: "Escalamientos y crisis: comentarios y avisos que suben un problema de actividad a Dirección"
+resumen: "Escalamientos y crisis: comentarios y avisos que suben un problema de actividad a Dirección, con una vista propia en /dashboard/escalamientos"
 ---
 # Escalamientos, crisis y avisos
 
 **Qué resuelve.** Cuando una actividad no puede resolverse en el nivel donde surgió, este módulo
 es el canal para escalarla: guarda comentarios asociados a un `escalamiento_id` y avisa a quien
-corresponda. Es infraestructura de comunicación del LPS, no una vista con ruta propia — se consume
-desde dentro de otros módulos vía `LpsApiController`.
+corresponda. Es sobre todo infraestructura de comunicación del LPS que se consume desde dentro de
+otros módulos vía `LpsApiController`, **pero sí tiene vista con ruta propia**: `GET
+/dashboard/escalamientos` → `DashboardController::escalamientos()`, que carga las crisis activas del
+proyecto y pinta `views/dashboard/escalamientos.php` (`src/Controllers/Core/DashboardController.php:39-59`).
+*(Corregido el 2026-09-17: decía «no una vista con ruta propia», y la tabla generada de abajo ya lo
+desmentía.)*
 
 **Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
 

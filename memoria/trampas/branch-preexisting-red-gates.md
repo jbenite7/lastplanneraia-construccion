@@ -14,8 +14,8 @@ cadena que los ocultaba tampoco.**
 - `npm run test:design-system:static` corre **en verde sus ocho gates** (`entrypoint-partition`,
   `unlayered-delivery`, `bi-utilities`, `table-contract`, `node-tests`, `contracts`,
   `consumer-contract`, `audit`), medido en el árbol principal.
-- Ya **no es una cadena `&&`**: `package.json:9` apunta a `scripts/design-system-static-suite.mjs`,
-  que corre los ocho pasos aunque alguno falle y cierra con un resumen (`:26-36`). El motivo está
+- Ya **no es una cadena `&&`**: `package.json:12` apunta a `scripts/design-system-static-suite.mjs`,
+  que corre los ocho pasos aunque alguno falle y cierra con un resumen (`:32-47`). El motivo está
   escrito en su cabecera (`:2-4`): la cadena escondía `contracts`, `consumer-contract` y `audit`
   tras el primer rojo. Ya no hace falta correr esos tres a mano.
 - `tests/design-system/laboratory-hardening.test.mjs` pasa **7/7**.
