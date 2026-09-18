@@ -4,6 +4,7 @@ tipo: spec
 estado: vigente
 id: S26
 fecha: 2026-08-31
+version: 1.1
 superficie: design-system
 rutas:
   - "/internal/design-system"
@@ -1118,3 +1119,10 @@ decisiones abiertas de esta spec.
 - claro/oscuro, responsive, accesibilidad, performance, evidence y rollback están cerrados;
 - 150 criterios tienen resultado verificable;
 - no se implementó, no se regeneró evidencia y no se tocó dato.
+
+## Adoptado de planes derogados (2026-09-17)
+
+Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
+
+- De `2026-08-28-paridad-shell-react` (Task 8): las primitivas React del sistema visual aprobado.
+- De `2026-08-24-p3-design-system-contrato-y-control` (DS-F1 a DS-F3): el contrato y su control se redefinen sobre React, no por adaptadores PHP; cada tabla (Handsontable, DataTables, legacyCards) la reemplaza el spec S de su módulo.

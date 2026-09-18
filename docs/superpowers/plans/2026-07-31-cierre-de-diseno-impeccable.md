@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: derogada
 fecha: 2026-07-31
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-07-31-cierre-de-diseno-impeccable.md
@@ -191,10 +191,13 @@ git commit -m "chore(design-system): spec de cierre de diseño e integracion de 
 
 ---
 
-## Estado verificado — sigue vigente
+## Estado verificado — derogada
 
-Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+Verificado contra el código el 2026-09-17, por decisión de Felipe del mismo día. La decisión que contiene **dejó de ser cierta**; el documento se conserva con su lápida.
 
-**Qué falta:** Task 2 y 3 sin ejecutar: hot_actualizar.js y programacion_intermedia/hot.js siguen con los hex que el plan manda reemplazar por tokens
+**Qué dejó de ser cierto:** remediar los hex de `hot_actualizar.js` y `programacion_intermedia/hot.js` (Tasks 2–3) sobre las vistas PHP; esas dos pantallas las reescriben **S06** y **S07** en React, y arreglar el PHP que se retira es trabajo doble. Las Tasks 1, 4 y 5 (partición de vendedores con `tom-select`, `access.css` del login PHP que S01 ya reemplazó, hook impeccable) no tienen objeto.
+
+**Qué lo sustituye:** el criterio «sin hex fuera de tokens en los archivos que reemplazan a esos dos» adoptado en [[docs/superpowers/specs/2026-08-30-s06-actualizar-cronograma-react-design]] y [[docs/superpowers/specs/2026-08-30-s07-programacion-intermedia-react-design]] (sección «Adoptado de planes derogados»).
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
+

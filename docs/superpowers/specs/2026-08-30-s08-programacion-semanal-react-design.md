@@ -4,6 +4,7 @@ tipo: spec
 estado: vigente
 id: S08
 fecha: 2026-08-30
+version: 1.1
 superficie: programacion-semanal
 rutas: ["/programacion-semanal"]
 depende_de: [T01, T02, S05, S06, S07]
@@ -957,3 +958,9 @@ Invocar `superpowers:writing-plans` para escribir
 `docs/superpowers/plans/2026-08-30-s08-programacion-semanal-react.md`, autorrevisarlo, comprobar
 trazabilidad de los 16 endpoints y 25 criterios, actualizar el atlas maestro y continuar con S09 sin
 implementar.
+
+## Adoptado de planes derogados (2026-09-17)
+
+Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
+
+- De `2026-08-28-paridad-shell-react` (Task 5): extraer el dominio semanal y ofrecer sus contratos JSON. Es el corazón de esta spec; aquel plan lo describía antes de que existiera.

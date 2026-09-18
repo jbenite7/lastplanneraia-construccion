@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: derogada
 fecha: 2026-08-04
 areas: [pdc]
 fuente: docs/superpowers/plans/2026-08-04-biblia-t3-pdc.md
@@ -354,37 +354,13 @@ Y comprueba las condiciones de hecho del spec (`docs/superpowers/specs/2026-08-0
 
 ---
 
-## Estado verificado — sigue vigente (ampliado)
+## Estado verificado — derogada
 
-Verificado contra el código el 2026-08-25 (dos pasadas). La primera encontró: manda 3 documentos
-(`pdc-presupuesto-maestro`/`pdc-paquetes`/`pdc-plan-seguimiento`) y ninguno existe —solo
-`docs/flujos/compras-v2.md`, consolidado (mismo criterio de alcance ya aceptado en T4/T5)— con
-«falta la cadena de dominio» (`README.md:95`). Ver
-[[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]] y
-[[memoria/trampas/el-goal-cierra-un-alcance-menor-que-el-del-plan]].
+Verificado contra el código el 2026-09-17, por decisión de Felipe del mismo día. La decisión que contiene **dejó de ser cierta**; el documento se conserva con su lápida.
 
-**Sigue vigente, deliberadamente: es el frente más grande de los tres y no cabía completo en esta
-sesión.** Se avanzó una parte real y verificada, no se cerró de más:
+**Qué dejó de ser cierto:** los tres documentos de escenarios del PDC (presupuesto y maestro, paquetes, plan con fechas) como biblia aparte. El PDC se reescribe en React por **S12** y su BI por **S22**, y los escenarios valen más como aceptación de esas specs que como documento que nadie ejecuta; `docs/flujos/compras-v2.md` sigue siendo el consolidado.
 
-- **Presupuesto** (`PDC-006` a `PDC-010`, 7 rutas de `PlanComprasImportController`): preview sin
-  persistir, confirmar idempotente por token, una sola versión activa por proyecto con el cambio
-  transaccional, recargar contenido idéntico no crea versión y recargar contenido distinto no
-  borra la anterior, árbol/comparar de solo lectura con 404 de dominio.
-- **Seguimiento** (`PDC-011` a `PDC-015`, 4 rutas de `PlanComprasSeguimientoController`): la
-  tanda que la primera pasada dejó «entera». Cuaterna completa contra cruce entre lotes del mismo
-  paquete, deshacer borra también la auditoría, fecha en formato estricto, «sin responsable» como
-  filtro de primera clase.
-
-11 de las 70 rutas de `/plan-compras` quedan cubiertas con cita. **Sigue faltando, en el orden en
-que el plan original lo dimensionaba:** Maestro de insumos (13 rutas), Paquetes y subpaquetes (21
-rutas), la SPA (`pdc-app/src/`) y las deudas de datos de `docs/pdc-v2.md` como escenarios de
-primera clase. `PlanComprasPlanController` (23 rutas, plan de fechas) ya tenía su invariante más
-peligrosa cubierta por `PDC-005` desde la primera pasada; el resto de sus rutas sigue sin
-escenario propio.
-
-**Recomendación de este cierre parcial:** Maestro de insumos es el siguiente candidato natural —
-es el eslabón entre lo ya cubierto (Presupuesto) y lo que falta (Paquetes), y el propio código deja
-una pista ya citada (`PlanComprasMaestroController:172`, el contador de «reenganchados») que merece
-verificarse antes que adivinarse.
+**Qué lo sustituye:** Tasks 2–6 → criterios de aceptación de [[docs/superpowers/specs/2026-08-30-s12-plan-compras-react-design]] y [[docs/superpowers/specs/2026-08-30-s22-bi-pdc-react-design]] (sección «Adoptado de planes derogados»).
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
+

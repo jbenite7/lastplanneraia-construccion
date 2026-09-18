@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: derogada
 fecha: 2026-08-24
 areas: [design-system, lps]
 fuente: docs/superpowers/plans/2026-08-24-p4-movil-y-tema-claro.md
@@ -108,10 +108,13 @@ y `bi-control-tower-gemini` cerrado con su condición rehecha.
 
 ---
 
-## Estado verificado — sigue vigente
+## Estado verificado — derogada
 
-Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+Verificado contra el código el 2026-09-17, por decisión de Felipe del mismo día. La decisión que contiene **dejó de ser cierta**; el documento se conserva con su lápida.
 
-**Qué falta:** MO-F2b (13 modulos) y MO-F3 (tema claro) sin ejecutar, con evidencia negativa fechada 2026-08-25 en el propio plan (:47-52 y :56-62). No es derogacion: el plan lo prioriza explicitamente en :69
+**Qué dejó de ser cierto:** MO-F2b (13 módulos del piloto móvil sobre PHP) lo absorbió la serie S por módulo —D21, ya recogido en `AGENTS.md`—, y MO-F3 (tema claro) lo cerró el frente `bloqueo-tema-claro` (PR #37, 2026-09-07). Su «Estado verificado» del 08-25 decía «no es derogación» porque entonces no existía el programa de 27 specs.
+
+**Qué lo sustituye:** los viewports móviles se validan por módulo según el plan de cada S; el tema claro, [[docs/superpowers/plans/2026-09-06-bloqueo-tema-claro]].
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
+

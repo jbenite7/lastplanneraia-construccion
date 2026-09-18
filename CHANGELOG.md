@@ -28,6 +28,18 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Derogado: cinco planes anteriores al programa React, cuyos pendientes pasan a las specs S/T (2026-09-17)
+
+Mismo frente `docs/cierre-planes-hechos`, decisión de Felipe. `cierre-de-diseno-impeccable`,
+`paridad-shell-react`, `biblia-t3-pdc`, P3 `design-system-contrato-y-control` y P4
+`movil-y-tema-claro` describían trabajo sobre pantallas PHP que la serie S01–S27 reescribe en
+React, o versiones previas de T01–T03. Cada uno lleva su lápida con qué dejó de ser cierto y qué lo
+sustituye. Sus pendientes reales entran como «Adoptado de planes derogados» (ronda 1.1) en las specs
+S04, S06, S07, S08, S12, S17, S22, S25, S26, T01 y T03: los «no reproducir H-xx» de usabilidad, los
+escenarios del PDC como aceptación, y las tareas de paridad del shell repartidas en T01/T02/S04/
+S08/S26. Lo que no tiene superficie S/T (migraciones de datos, hosting, gate RLS, deploy) sigue
+`vigente` donde estaba.
+
 ### Cerrado: doce planes y tres specs que ya estaban hechos y seguían `vigente` (2026-09-17)
 
 Frente `docs/cierre-planes-hechos`, por orden de Felipe al ver el tablero de avance de specs.

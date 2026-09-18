@@ -4,6 +4,7 @@ tipo: spec
 estado: vigente
 id: S07
 fecha: 2026-08-30
+version: 1.1
 superficie: programacion-intermedia
 rutas: ["/programacion-intermedia"]
 depende_de: [T01, T02, S04, S05]
@@ -1030,3 +1031,9 @@ Invocar `superpowers:writing-plans` para producir
 `docs/superpowers/plans/2026-08-30-s07-programacion-intermedia-react.md`, con TDD, archivos exactos,
 contratos sin DML, checkpoints verticales, dependencia T02, gate visual explícito, corte reversible
 y retiro por búsqueda de consumidores. No implementar antes de cerrar y autorrevisar ese plan.
+
+## Adoptado de planes derogados (2026-09-17)
+
+Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
+
+- De `2026-07-31-cierre-de-diseno-impeccable` (Task 3): la versión React de Intermedia **no reproduce ningún hex fuera de tokens** de `public/js/modules/programacion_intermedia/hot.js`.

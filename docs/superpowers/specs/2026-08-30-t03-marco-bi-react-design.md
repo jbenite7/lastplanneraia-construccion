@@ -4,6 +4,7 @@ tipo: spec
 estado: vigente
 id: T03
 fecha: 2026-08-31
+version: 1.1
 superficie: marco-bi-compartido
 rutas:
   - "/bi/control-tower"
@@ -796,3 +797,9 @@ thresholds, poblaciones y mutaciones permanecen cerradas en S17–S24.
 
 Escribir y autorrevisar `docs/superpowers/plans/2026-08-30-t03-marco-bi-react.md` con trazabilidad
 exacta de todos los criterios. No implementar en esta sesión.
+
+## Adoptado de planes derogados (2026-09-17)
+
+Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
+
+- De `2026-08-03-usabilidad-altas-y-medias` (Tasks 12 y 21): **no reproducir H-34** (contraste del chip de BI por debajo de AA) ni **H-16** (las pestañas de BI ocultan módulos). El chip y las pestañas son primitivas de este marco, así que el criterio vive aquí y lo heredan S17–S24.
