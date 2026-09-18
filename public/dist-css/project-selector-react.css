@@ -195,4 +195,21 @@
       transition: none;
     }
   }
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"][data-sidebar-state="expanded"]
+    .aia-sidebar__header {
+    column-gap: 0;
+  }
+  body.aia-shell--sidebar
+    .aia-navigation--sidebar[data-shell-pattern="sidebar"][data-sidebar-state="expanded"]
+    .aia-sidebar__brand {
+    gap: var(--ds-space-1);
+  }
+  body.aia-shell--sidebar
+    .aia-navigation--sidebar[data-shell-pattern="sidebar"][data-sidebar-state="expanded"]
+    .aia-sidebar__brand
+    img {
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-basis: 1.75rem;
+  }
 }

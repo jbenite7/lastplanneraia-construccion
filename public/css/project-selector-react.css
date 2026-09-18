@@ -345,4 +345,52 @@
       transition: none;
     }
   }
+
+  /* Tarea 9b, ronda de arreglo 1 (arreglo 2 — pedido de Felipe: "Last Planner AIA" en una sola
+     línea en el rail de escritorio). Medido contra `:8102` con `test.R` a 1180x820: el nombre
+     necesita ~183px de línea (ícono 36px + 8px de separación + 139px de texto) y el adaptador
+     compartido (`shell-sidebar.css`, `@layer components`, `body.aia-shell--sidebar
+     [data-sidebar-state="expanded"] .aia-sidebar__header`) solo deja 175px libres tras reservar
+     la columna del toggle (ya plegado a solo-ícono ahí mismo) — corto por ~8px, así que el
+     nombre se parte en dos líneas. La causa no es la tipografía: `--ds-sidebar-brand-mark-size`
+     (2.25rem) y `.aia-sidebar__brand-name` no se tocan aquí.
+
+     Se recupera espacio en dos huecos que ese adaptador deja SIN `!important` (por eso basta con
+     `@layer module`, sin `!important` propio: gana por orden de capa, `module` va después de
+     `components` en `aia-design-system.css:1`; su `padding-inline` sí lleva `!important` y por
+     eso no se toca — un `!important` en una capa anterior gana igual sobre uno en una posterior):
+     el hueco entre la columna de la marca y la del toggle (`column-gap`), el hueco entre el
+     ícono y el nombre dentro de la marca (`.aia-sidebar__brand`'s `gap`, ya reducido por el
+     adaptador de `--ds-space-3` a `--ds-space-2`), y el tamaño del propio ícono. El toggle NO se
+     toca: es un target de 44px (`--ds-target-min`, mínimo de accesibilidad) y encogerlo sería un
+     regresión peor que el problema que arregla esto.
+
+     Acotado a React: este archivo solo lo enlaza `frontend/index.html`
+     (`public/app/index.html` es su copia de build) — el rail PHP (`shell_sidebar.php` y las
+     vistas que lo incluyen) no lo carga y conserva el espaciado canónico del adaptador sin
+     cambios. Acotado a `[data-sidebar-state="expanded"]`: en colapsado el nombre ya se oculta a
+     1px de ancho (`navigation.css:480-511`) y esta regla sería inocua ahí, pero se deja explícito
+     para no depender de eso y para no rozar "sin romper el rail colapsado (ahí solo va el
+     ícono)". Alcanza tanto al selector standalone (`BarraLateral` autónoma, `rutas.tsx`) como al
+     shell con proyecto (`NavegacionLateral` vía `AppShell`): las dos montan el mismo
+     `.aia-sidebar__header` bajo `body.aia-shell--sidebar`. */
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"][data-sidebar-state="expanded"]
+    .aia-sidebar__header {
+    column-gap: 0;
+  }
+
+  body.aia-shell--sidebar
+    .aia-navigation--sidebar[data-shell-pattern="sidebar"][data-sidebar-state="expanded"]
+    .aia-sidebar__brand {
+    gap: var(--ds-space-1);
+  }
+
+  body.aia-shell--sidebar
+    .aia-navigation--sidebar[data-shell-pattern="sidebar"][data-sidebar-state="expanded"]
+    .aia-sidebar__brand
+    img {
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-basis: 1.75rem;
+  }
 }
