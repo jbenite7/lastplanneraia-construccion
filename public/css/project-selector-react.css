@@ -77,10 +77,27 @@
      capa posterior sin tocarla es `!important`, y se scopea a esta pantalla
      (`body:has(.project-selector-react)`) para no alterar ningún otro consumidor de
      `BarraLateral`/`NavegacionLateral`. Nota para quien migre la próxima pantalla a React: este
-     mismo problema le espera ahí también — es un bug de la capa compartida, no de esta hoja. */
+     mismo problema le espera ahí también — es un bug de la capa compartida, no de esta hoja.
+
+     Ronda de arreglo 2 (defecto reportado tras la ronda 1): el fix de arriba deja el activo
+     legible en oscuro pero SIGUE indistinguible en claro. Causa medida en tokens.css:
+     `--ds-active-action-primary` en claro resuelve a `--ds-color-action-primary-bg-light`
+     (`#1a5633`) y el rail (`--ds-active-nav-bg` → `--ds-nav-bg-light`) es **el mismo hex,
+     `#1a5633`** — el relleno del activo es idéntico al fondo que lo contiene, así que no hay
+     ningún color de relleno posible que lo resuelva sin inventar un tono nuevo. El propio
+     sistema ya resolvió este caso: en colapsado, `.aia-navigation--sidebar[data-sidebar-state=
+     "collapsed"] .aia-sidebar__link[aria-current="page"]` (`adapters/shell-sidebar.css`) no
+     confía en el relleno — añade un anillo con `--aia-green-light`, un token que NO seguí el
+     tema de página (mismo valor en claro y oscuro) y por eso sí contrasta contra el rail fijo
+     en los dos temas. Se copia esa misma declaración, verbatim, para el estado expandido de
+     esta pantalla: sigue sin `!important` propio (no compite con ninguna capa posterior, nadie
+     más declara `box-shadow` en `.aia-sidebar__link`) y no toca ningún token nuevo. En oscuro es
+     un añadido inocuo sobre la píldora ya visible (el relleno sage sigue siendo el contraste
+     principal); en claro es el único contraste. */
   body:has(.project-selector-react) .aia-sidebar__link[aria-current="page"] {
     background: var(--ds-active-action-primary) !important;
     color: var(--ds-active-action-text) !important;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--aia-green-light) 35%, transparent);
   }
 
   .project-selector-react {

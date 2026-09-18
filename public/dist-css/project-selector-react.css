@@ -14,6 +14,7 @@
   body:has(.project-selector-react) .aia-sidebar__link[aria-current="page"] {
     background: var(--ds-active-action-primary) !important;
     color: var(--ds-active-action-text) !important;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--aia-green-light) 35%, transparent);
   }
   .project-selector-react {
     display: flex;
