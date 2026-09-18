@@ -8,6 +8,7 @@ import { ContextoSemana } from './ContextoSemana';
 import { LimiteErrorRuta } from './errores/LimiteErrorRuta';
 import { MenuCuenta } from './MenuCuenta';
 import { esBarraLateralFlotante } from './modoBarraLateral';
+import { MarcaLockup } from './navegacion/MarcaLockup';
 import { NavegacionLateral } from './NavegacionLateral';
 import { useTituloDocumento } from './useTituloDocumento';
 
@@ -206,18 +207,25 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
         Saltar al contenido
       </a>
 
+      {/* Tarea 9b, S04: misma fila `.shell-mobile-topbar` que `BarraLateral` autónoma — ver el
+          comentario ahí sobre por qué el disparador deja `shell-menu-trigger` (capa
+          `legacy-overrides`, imposible de vencer desde `module`) por una clase propia dentro de
+          la fila en flujo normal. */}
       {flotante && (
-        <button
-          ref={disparadorRef}
-          type="button"
-          className="aia-btn aia-btn--secondary shell-menu-trigger"
-          aria-controls="app-shell-nav"
-          aria-expanded={abierto}
-          aria-label="Abrir menú de navegación"
-          onClick={abrirDrawer}
-        >
-          Menú
-        </button>
+        <div className="shell-mobile-topbar">
+          <button
+            ref={disparadorRef}
+            type="button"
+            className="aia-btn aia-btn--secondary shell-mobile-topbar__trigger"
+            aria-controls="app-shell-nav"
+            aria-expanded={abierto}
+            aria-label="Abrir menú de navegación"
+            onClick={abrirDrawer}
+          >
+            Menú
+          </button>
+          <MarcaLockup className="shell-mobile-topbar__brand" />
+        </div>
       )}
 
       {flotante && abierto && (
@@ -232,12 +240,7 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
         alAlternarEstado={() => setColapsado((valor) => !valor)}
         abiertoEnMovil={flotante ? abierto : undefined}
       >
-        <MenuCuenta
-          nombre={sesion.user.displayName}
-          csrfToken={sesion.csrfToken}
-          alCambiarProyecto={recargar}
-          cerrarSesion={cerrarSesion}
-        />
+        <MenuCuenta nombre={sesion.user.displayName} cerrarSesion={cerrarSesion} />
       </NavegacionLateral>
 
       {/* Anuncios en vivo (spec T01 §14): un cambio de ruta actualiza `document.title` y esta

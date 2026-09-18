@@ -91,7 +91,13 @@ async function interceptarRed(page, { proyectoInicial = 'Da Porto' } = {}) {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ projects: [{ id: 73, name: 'Da Porto', role: 'R' }, { id: 91, name: 'Otro Proyecto', role: 'R' }] }),
+      body: JSON.stringify({
+        projects: [
+          { id: 73, name: 'Da Porto', area: 'Construccion', active: true, role: 'R', roleLabel: 'Residente de Obra' },
+          { id: 91, name: 'Otro Proyecto', area: 'Construccion', active: true, role: 'R', roleLabel: 'Residente de Obra' },
+        ],
+        navigation: { bi: { visible: false, href: null } },
+      }),
     });
   });
 
@@ -99,7 +105,11 @@ async function interceptarRed(page, { proyectoInicial = 'Da Porto' } = {}) {
     const body = route.request().postDataJSON();
     requests.push({ url: route.request().url(), method: route.request().method(), body });
     estado.proyecto = body.name;
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, message: null }) });
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ success: true, message: null, route: '/app' }),
+    });
   });
 
   return { estado, requests };
@@ -138,23 +148,42 @@ test.describe('ControlActividad — red completamente interceptada', () => {
     expect(llamadasLogout[0].headers['x-csrf-token']).toBe(CSRF);
   });
 
+  // T7-1 (Tarea 7, S04): "Cambiar proyecto" dejó de abrir una lista en sitio dentro del menú de
+  // cuenta y pasó a un enlace de navegación completa a `/proyectos` (spec S04 §421, descarta las
+  // cachés del proyecto anterior antes de cualquier render operativo). Ese `href` literal es el
+  // contrato que se comprueba abajo.
+  //
+  // Hasta la Tarea 10 este test seguía por el alias SPA-nativo `/app/proyectos`: con la red 100%
+  // interceptada (sin backend PHP real detrás), `/proyectos` a secas aterrizaba en el `/login`
+  // legado porque `SpaRouter` todavía no migraba esa ruta exacta, solo el prefijo `/app`. Desde
+  // la Tarea 10 (S04 «Corte, conservando el PHP», Felipe 2026-09-18) `SpaRouter` sirve GET
+  // `/proyectos` directo — es HTML estático del shell (`SpaHostRenderer`), no toca el backend
+  // mockeado —, así que el test ya sigue el `href` real en vez de un alias.
   test('cambiar de proyecto conserva el mismo ControlActividad — un logout posterior sigue funcionando en un solo POST', async ({ page }) => {
     const { requests } = await interceptarRed(page);
 
     await page.goto('/app');
     await page.getByRole('button', { name: /cuenta ·/i }).click();
-    await page.getByRole('menuitem', { name: /cambiar proyecto/i }).click();
-    await page.getByRole('menuitem', { name: /otro proyecto/i }).click();
+
+    const cambiarProyecto = page.getByRole('menuitem', { name: /cambiar proyecto/i });
+    await expect(cambiarProyecto).toHaveAttribute('href', '/proyectos');
+
+    await page.goto('/proyectos');
+    await page.getByRole('button', { name: /ingresar al proyecto otro proyecto/i }).click();
+
+    // La selección real navega de documento completo a la `route` que devolvió el servidor
+    // (mockeada como `/app` arriba) — el bootstrap que sigue trae el proyecto ya cambiado.
+    await expect(page).toHaveURL(/\/app$/);
 
     // `{ exact: true }` a propósito: desde la Tarea 8 (T01 §14) existe una región `aria-live`
     // oculta con el título de la pestaña ("App · Otro Proyecto · Last Planner AIA"), que también
     // contiene el nombre del proyecto como subcadena — sin `exact` el match deja de ser único.
     await expect(page.getByText('Otro Proyecto', { exact: true })).toBeVisible();
 
-    // El cambio de proyecto recarga el bootstrap (nueva generación) pero el CSRF de sesión es el
-    // mismo — `ControlActividad` no debió destruirse y recrearse de forma que perdiera su reloj;
-    // lo comprobamos indirectamente: el logout que sigue funciona en un único POST, igual que
-    // antes del cambio.
+    // Tras T7-1, la navegación completa SÍ destruye y recrea el árbol de React (documento nuevo,
+    // `ControlActividad` incluido) — ya no hay una única instancia que sobreviva al cambio. Lo
+    // que sigue vigente es el resultado observable: el CSRF de la sesión nueva sigue siendo
+    // válido y el logout posterior funciona en un único POST, igual que antes del cambio.
     await page.getByRole('button', { name: /cuenta ·/i }).click();
     await page.getByRole('menuitem', { name: /cerrar sesión/i }).click();
 

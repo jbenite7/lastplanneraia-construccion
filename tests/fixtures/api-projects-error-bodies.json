@@ -1,0 +1,61 @@
+{
+    "403_csrf_invalid": {
+        "ruta": "/api/proyectos/seleccionar",
+        "status": 403,
+        "origen": "render-puro",
+        "cuerpo": {
+            "success": false,
+            "code": "csrf_invalid",
+            "message": "No fue posible validar la solicitud. Intenta nuevamente.",
+            "error": {
+                "codigo": "csrf_invalid",
+                "mensaje": "No fue posible validar la solicitud. Intenta nuevamente."
+            }
+        }
+    },
+    "422_validation_error": {
+        "ruta": "/api/proyectos/seleccionar",
+        "status": 422,
+        "origen": "render-puro",
+        "cuerpo": {
+            "success": false,
+            "code": "validation_error",
+            "message": "Selecciona un proyecto de la lista.",
+            "error": {
+                "codigo": "validation_error",
+                "mensaje": "Selecciona un proyecto de la lista.",
+                "campos": {
+                    "name": "Selecciona un proyecto de la lista."
+                }
+            }
+        }
+    },
+    "500_invalid_landing": {
+        "ruta": "/api/proyectos/seleccionar",
+        "status": 500,
+        "origen": "render-puro",
+        "cuerpo": {
+            "success": false,
+            "code": "invalid_landing",
+            "message": "No se pudo abrir el proyecto seleccionado.",
+            "error": {
+                "codigo": "invalid_landing",
+                "mensaje": "No se pudo abrir el proyecto seleccionado."
+            }
+        }
+    },
+    "500_invalid_navigation": {
+        "ruta": "/api/proyectos",
+        "status": 500,
+        "origen": "render-puro",
+        "cuerpo": {
+            "success": false,
+            "code": "invalid_navigation",
+            "message": "No se pudo preparar la navegación del shell.",
+            "error": {
+                "codigo": "invalid_navigation",
+                "mensaje": "No se pudo preparar la navegación del shell."
+            }
+        }
+    }
+}

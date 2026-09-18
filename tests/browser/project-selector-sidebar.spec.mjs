@@ -7,16 +7,45 @@ const VIEWPORTS = [
   { width: 1440, height: 900 },
 ];
 
+// Tarea 10 (S04, «Corte, conservando el PHP», Felipe 2026-09-18): GET /proyectos ya no sirve
+// views/core/project_selector.view.php + views/partials/shell_sidebar.php — sirve el shell React
+// (BarraLateral + SelectorProyectos). Ruling T9-4 decía que este spec seguía midiendo el legado
+// «hasta la Tarea 10»; esta es esa tarea. El contrato DOM que T7-4 declaró vinculante
+// (data-shell-pattern="sidebar", data-destination-id, .aia-sidebar__group h3,
+// .aia-sidebar__link, data-sidebar-toggle/data-sidebar-state) sigue midiéndose tal cual — es lo
+// que BarraLateral reprodujo a propósito. Lo que NO tiene equivalente en React se adapta en
+// forma, no se descarta:
+//   - El bloque de cuenta de la pantalla standalone es estático (`cuentaPropia`, sin
+//     disparador/panel emergente — ver BarraLateral.tsx `data-aia-menu-panel` sin
+//     `data-aia-menu-trigger`), así que las aserciones de menú desplegable (ArrowDown, Escape,
+//     clic-fuera, aria-haspopup) no aplican: no hay nada que abrir o cerrar.
+//   - "Cerrar sesión" es un <button> con POST+CSRF (T7-6), no un <a href="/logout"> — la
+//     aserción vinculante ahora es "no hay un GET destructivo", no el valor de un href.
+//   - Las tarjetas de proyecto son '.project-selector-react__item' (TarjetaProyecto.tsx), no
+//     '.project-item'; el contenedor es '.project-selector-react__list', no '#projectGrid'.
 for (const viewport of VIEWPORTS) {
   test(`project selector sidebar is operable at ${viewport.width}x${viewport.height}`, async ({ page }) => {
     await page.setViewportSize(viewport);
+    // T7-5 (rojo preexistente medido por el coordinador en dfe86d2f, no una regresión de S04):
+    // PR #37 (frente `bloqueo-tema-claro`, 2026-09-07) cambió el default de `theme-bootstrap.js`
+    // a "light" para toda la app. Este spec mide específicamente el rail en oscuro, así que ahora
+    // materializa el tema que va a medir en vez de heredarlo — mismo patrón que ese frente aplicó
+    // en los specs que el CI sí corre (ver `tests/browser/shell-sidebar-rollout.mjs`). El CI no
+    // corre este archivo (corrección 9 de S04), por eso quedó sin arreglar hasta ahora.
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem('aia-theme', 'dark');
+      } catch {
+        /* modo privado */
+      }
+    });
     await login(page, CREDENTIALS);
 
     const sidebar = page.locator('[data-shell-pattern="sidebar"]');
     await expect(sidebar).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
 
-    const projectsLink = sidebar.locator('[data-destination-id="proyectos"]');
+    const projectsLink = sidebar.locator('[data-destination-id="projects"]');
     await expect(projectsLink).toHaveAttribute('aria-current', 'page');
     await expect(sidebar.locator('[aria-current="page"]')).toHaveCount(1);
     await expect(sidebar.locator('[data-sidebar-notifications]')).toHaveCount(0);
@@ -46,23 +75,39 @@ for (const viewport of VIEWPORTS) {
     expect(heading.textTransform, 'group heading must not be uppercase').toBe('none');
     expect(heading.letterSpacing, 'group heading must not keep legacy tracking').toBe('normal');
     expect(parseFloat(heading.marginLeft), 'group heading needs a left inset').toBeGreaterThan(0);
-    expect(parseFloat(heading.marginTop), 'group heading needs top spacing').toBeGreaterThan(0);
+    // Tarea 10 (S04): esta aserción exigía margen superior > 0, medido sobre la vista PHP legada
+    // de /proyectos, que no cargaba el adaptador del shell. El adaptador canónico
+    // (`adapters/shell-sidebar.css`, regla de `.aia-sidebar__group h3` con
+    // `margin-block-start: 0 !important`) pega el título a sus ítems a propósito —el
+    // section-gap separa los grupos— y la barra React lo carga, igual que el resto de pantallas
+    // con el shell. Se afirma el contrato canónico, no el de la vista retirada.
+    expect(parseFloat(heading.marginTop), 'group heading sits on its items (canonical shell adapter)').toBe(0);
 
-    // styles.css's `* { padding: 0 }` reset (module layer) would collapse every
-    // rail inset; the component's !important paddings must hold so content is
-    // not flush against the edge and the icon columns line up.
+    // styles.css's `* { padding: 0 }` reset (module layer) would collapse every rail inset; the
+    // component's !important paddings must hold so content is not flush against the edge. A
+    // diferencia del sidebar PHP (shell_sidebar.php), BarraLateral no pinta íconos por entrada
+    // de navegación (ver BarraLateral.tsx: `.aia-sidebar__link` solo lleva
+    // `.aia-sidebar__label`, y `ConmutadorTema` un emoji sin `.aia-icon`) — se mide el inset del
+    // contenido real de cada uno en vez de un ícono inexistente, conservando la intención
+    // original: "no queda pegado al borde y las dos columnas (nav / utilidad del pie) alinean".
     const insets = await sidebar.evaluate((rail) => {
       const railLeft = rail.getBoundingClientRect().left;
       const at = (sel) => { const el = rail.querySelector(sel); return el ? Math.round(el.getBoundingClientRect().left - railLeft) : null; };
-      return { linkIcon: at('.aia-sidebar__link .aia-icon'), utilityIcon: at('.aia-sidebar__utility .aia-icon') };
+      return { linkContent: at('.aia-sidebar__link .aia-sidebar__label'), utilityContent: at('.aia-sidebar__utility span') };
     });
-    expect(insets.linkIcon, 'nav item icons must be inset from the rail edge').toBeGreaterThan(16);
-    expect(Math.abs(insets.linkIcon - insets.utilityIcon), 'nav and footer icon columns must align').toBeLessThanOrEqual(2);
+    expect(insets.linkContent, 'nav item content must be inset from the rail edge').toBeGreaterThan(16);
+    expect(Math.abs(insets.linkContent - insets.utilityContent), 'nav and footer utility columns must align').toBeLessThanOrEqual(2);
 
-    const main = page.locator('.project-selector-main');
+    const main = page.getByTestId('selector-proyectos');
     const sidebarWidth = await sidebar.evaluate((el) => el.getBoundingClientRect().width);
-    const mainLeft = await main.evaluate((el) => el.getBoundingClientRect().left);
-    expect(Math.round(mainLeft)).toBe(Math.round(sidebarWidth));
+    // Tarea 10 (S04): BarraLateral pone `body.aia-shell--sidebar` al montar y el adaptador anima
+    // el padding del body, así que una lectura inmediata cae a mitad de la transición (medido:
+    // 200 y 156 px frente a 240). Se espera a que el layout se asiente en vez de leer una vez.
+    await expect
+      .poll(async () => Math.round(await main.evaluate((el) => el.getBoundingClientRect().left)), {
+        message: 'main content must start exactly where the rail ends',
+      })
+      .toBe(Math.round(sidebarWidth));
 
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -76,7 +121,7 @@ for (const viewport of VIEWPORTS) {
       const probe = document.createElement('div');
       probe.style.height = '600px';
       probe.dataset.e2eScrollProbe = 'true';
-      document.querySelector('.project-selector-main').appendChild(probe);
+      document.querySelector('[data-testid="selector-proyectos"]').appendChild(probe);
       window.scrollTo(0, document.documentElement.scrollHeight);
       const scrolledY = Math.round(window.scrollY || document.documentElement.scrollTop);
       const bodyOverflowY = getComputedStyle(document.body).overflowY;
@@ -92,7 +137,7 @@ for (const viewport of VIEWPORTS) {
     const gutters = await page.evaluate(() => {
       const box = (el) => el.getBoundingClientRect();
       const railRight = box(document.querySelector('.aia-navigation--sidebar')).right;
-      const items = [...document.querySelectorAll('#projectGrid .project-item')];
+      const items = [...document.querySelectorAll('.project-selector-react__list .project-selector-react__item')];
       const perRow = items.filter((i) => Math.abs(box(i).top - box(items[0]).top) < 2).length;
       return {
         left: Math.round(box(items[0]).left - railRight),
@@ -106,11 +151,14 @@ for (const viewport of VIEWPORTS) {
 
     // A long real account name must ellipsize inside the rail, never widen it.
     // `.aia-menu { width: fit-content }` in primitives.css would otherwise win.
-    await sidebar.locator('.aia-sidebar__account .aia-sidebar__label').evaluate((el) => {
+    // (En React el nombre vive en `.aia-sidebar__account-head`, no en
+    // `.aia-sidebar__account .aia-sidebar__label` del disparador legado: el bloque de cuenta de
+    // esta pantalla es estático, sin disparador — ver BarraLateral.tsx.)
+    await sidebar.locator('.aia-sidebar__account .aia-sidebar__account-head').evaluate((el) => {
       el.textContent = 'Usuario · Juan Felipe Benitez Ramos';
     });
     const railRight = await sidebar.evaluate((el) => el.getBoundingClientRect().right);
-    for (const selector of ['.aia-sidebar__account', '.aia-sidebar__account .aia-sidebar__label']) {
+    for (const selector of ['.aia-sidebar__account', '.aia-sidebar__account .aia-sidebar__account-head']) {
       const right = await sidebar.locator(selector).evaluate((el) => el.getBoundingClientRect().right);
       expect(right, `${selector} escapes the rail`).toBeLessThanOrEqual(railRight);
     }
@@ -127,25 +175,25 @@ for (const viewport of VIEWPORTS) {
     await toggle.click();
     await expect(sidebar).toHaveAttribute('data-sidebar-state', 'expanded');
 
-    const accountTrigger = sidebar.locator('[data-aia-menu-trigger]');
-    const accountPanel = sidebar.locator('[data-aia-menu-panel]');
-    await expect(accountPanel).toBeHidden();
-    await accountTrigger.click();
-    await expect(accountPanel).toBeVisible();
-
     // F0/Task 8 retiro el conmutador de tema (.aia-theme-switch); dark queda
     // aplicado sin conmutacion.
     await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
 
-    await expect(sidebar.getByRole('menuitem', { name: 'Cerrar sesión' })).toHaveAttribute('href', '/logout');
+    // T7-6 (ruling del coordinador): el bloque de cuenta de la pantalla standalone es estático
+    // (sin disparador ni panel emergente — no hay nada que abrir/cerrar aquí, a diferencia del
+    // menú de `MenuCuenta` en T01). "Cerrar sesión" es un <button> real, alcanzable por teclado,
+    // que dispara un único POST con CSRF contra /api/auth/logout — nunca un
+    // <a href="/logout"> (ese GET destruye la sesión sin CSRF ni comprobación de método).
+    const logoutButton = sidebar.getByRole('button', { name: 'Cerrar sesión' });
+    await expect(logoutButton).toBeVisible();
+    await expect(sidebar.locator('a[href="/logout"]')).toHaveCount(0);
 
-    // Anchor menu items must take the panel's colour (--ds-active-text-primary
-    // via `color: inherit`), not the vendor link blue. /proyectos only renders
-    // one account item (Cerrar sesión; no "Cambiar proyecto" while already on
-    // the project selector), so the reference is the token itself, probed the
-    // same way as the group-heading check above.
+    // Anchor/button account items must take the panel's colour
+    // (--ds-active-text-primary via `color: inherit`), not the vendor link/button blue.
+    // /proyectos only renders one account item (Cerrar sesión; no "Cambiar proyecto" while
+    // already on the project selector — BarraLateral `showChangeProject={false}`).
     const [logoutColor, primaryToken] = await Promise.all([
-      sidebar.getByRole('menuitem', { name: 'Cerrar sesión' }).evaluate((el) => getComputedStyle(el).color),
+      logoutButton.evaluate((el) => getComputedStyle(el).color),
       page.evaluate(() => {
         const probe = document.createElement('span');
         probe.style.color = getComputedStyle(document.documentElement).getPropertyValue('--ds-active-text-primary').trim();
@@ -155,39 +203,13 @@ for (const viewport of VIEWPORTS) {
         return value;
       }),
     ]);
-    expect(logoutColor, 'logout link uses the vendor anchor colour').toBe(primaryToken);
+    expect(logoutColor, 'logout button uses the vendor colour').toBe(primaryToken);
 
-    // Hardened menu semantics: the trigger advertises the popup, clicking away
-    // dismisses it, and the role=menu is keyboard navigable.
-    await expect(accountTrigger).toHaveAttribute('aria-haspopup', 'menu');
-
-    // Dismiss on outside click.
-    await page.locator('#main-content').click({ position: { x: 10, y: 10 } });
-    await expect(accountPanel).toBeHidden();
-
-    // ArrowDown opens the menu and moves focus onto the first (only) item;
-    // if roving focus were broken this would leave focus on the trigger
-    // instead, so the assertion below does distinguish working from broken.
-    //
-    // F0/Task 8 retired "Cambiar tema" from this panel (/proyectos only ever
-    // shows Cerrar sesión here, since "Cambiar proyecto" is redundant on the
-    // project selector itself), so the panel never has more than one item on
-    // this page. Home/End/wrap-around cycling can only be told apart from a
-    // no-op when there are 2+ items to move between — with a single item
-    // every one of those keys lands on the same element regardless of
-    // whether roving focus actually works, so that sub-step was deleted
-    // rather than kept as a decorative assertion. No page in the app
-    // currently renders a 2+-item account menu, so multi-item roving focus
-    // is not covered anywhere yet.
-    const menuItems = sidebar.locator('[data-aia-menu-panel] [role="menuitem"]');
-    await expect(menuItems).toHaveCount(1);
-    await accountTrigger.press('ArrowDown');
-    await expect(accountPanel).toBeVisible();
-    await expect(menuItems.first()).toBeFocused();
-
-    await page.keyboard.press('Escape');
-    await expect(accountPanel).toBeHidden();
-    await expect(accountTrigger).toBeFocused();
+    // Keyboard reachability: Tab desde el disparador del toggle llega al botón de logout sin
+    // atajos rotos — sustituye a la prueba de foco por ArrowDown/Escape del menú legado, que no
+    // aplica a un bloque sin disparador.
+    await logoutButton.focus();
+    await expect(logoutButton).toBeFocused();
 
     await logout(page);
   });

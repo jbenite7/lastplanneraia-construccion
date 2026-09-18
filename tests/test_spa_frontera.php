@@ -65,9 +65,18 @@ comprobarMatrizSpa([
     ['HEAD', '/app/password/reset', true],
 ]);
 
+// --- Tarea 10 (S04, «Corte, conservando el PHP», Felipe 2026-09-18): GET/HEAD '/proyectos'
+// cruzan al shell React; POST sigue sin cruzar (no hay POST a esa ruta exacta). El legado
+// (vista, controlador y CSS) NO se retira — a diferencia de S02/S03, el rollback de esta ruta
+// vuelve a servir la pantalla PHP real, no un 404 controlado. ---
+comprobarMatrizSpa([
+    ['GET', '/proyectos', true],
+    ['HEAD', '/proyectos', true],
+    ['POST', '/proyectos', false],
+]);
+
 // --- El resto del sitio PHP no migrado sigue intacto. ---
 comprobarMatrizSpa([
-    ['GET', '/proyectos', false],
     ['GET', '/programa-general', false],
     ['GET', '/plan-compras', false],
     ['GET', '/dashboard', false],
@@ -235,6 +244,78 @@ function comprobarRollbackS03(): void
     }
     if (SpaRouter::sirveLaSpa('/password/reset', 'POST')) {
         echo "FALLO: S03 — POST '/password/reset' no debe servirlo la SPA\n";
+        $fallos++;
+    }
+}
+
+// --- Rollback de la Tarea 10 (S04): a diferencia de '/password/forgot' y '/password/reset'
+// (S02/S03, legado RETIRADO), aquí el legado se CONSERVA a propósito — «Corte, conservando el
+// PHP», Felipe 2026-09-18. Rollback real es sacar '/proyectos' del mapa; el legado ya está listo
+// para recibir la petición porque nunca se tocó. ---
+comprobarRollbackConservandoElPhpS04();
+
+function comprobarRollbackConservandoElPhpS04(): void
+{
+    global $fallos;
+
+    $mapaConProyectos = ['/', '/login', '/password/forgot', '/password/reset', '/proyectos'];
+    $mapaSinProyectos = ['/', '/login', '/password/forgot', '/password/reset'];
+    $prefijoPiloto = ['/app'];
+
+    foreach (['GET', 'HEAD'] as $metodo) {
+        if (!SpaRouter::coincideConMapa('/proyectos', $metodo, $mapaConProyectos, $prefijoPiloto)) {
+            echo "FALLO: S04 — {$metodo} '/proyectos' debe servirlo la SPA con la ruta en el mapa\n";
+            $fallos++;
+        }
+        if (SpaRouter::coincideConMapa('/proyectos', $metodo, $mapaSinProyectos, $prefijoPiloto)) {
+            echo "FALLO: S04 — rollback: sin '/proyectos' en el mapa, {$metodo} debe volver al legado\n";
+            $fallos++;
+        }
+    }
+    if (!SpaRouter::coincideConMapa('/app/proyectos', 'GET', $mapaSinProyectos, $prefijoPiloto)) {
+        echo "FALLO: S04 — rollback: el piloto '/app/proyectos' sigue en React por el prefijo\n";
+        $fallos++;
+    }
+    if (!SpaRouter::coincideConMapa('/password/reset', 'GET', $mapaSinProyectos, $prefijoPiloto)) {
+        echo "FALLO: S04 — sacar '/proyectos' del mapa no debe arrastrar a '/password/reset'\n";
+        $fallos++;
+    }
+
+    // El legado SIGUE en el repo y SIGUE registrado en el router: el rollback de esta ruta no es
+    // un 404 controlado, es una pantalla PHP real esperando la petición (a diferencia de S02/S03).
+    $index = (string) file_get_contents(__DIR__ . '/../public/index.php');
+    if (preg_match("~\\\$router->get\\(\\s*'/proyectos'~", $index) !== 1) {
+        echo "FALLO: S04 — public/index.php debe seguir registrando el GET legado de '/proyectos' (rollback conserva el PHP)\n";
+        $fallos++;
+    }
+    if (preg_match("~\\\$router->head\\(\\s*'/proyectos'~", $index) !== 1) {
+        echo "FALLO: S04 — public/index.php debe registrar también el HEAD legado de '/proyectos', como '/' y '/login'\n";
+        $fallos++;
+    }
+    if (preg_match("~\\\$router->post\\(\\s*'/proyecto/seleccionar'~", $index) !== 1) {
+        echo "FALLO: S04 — POST '/proyecto/seleccionar' debe seguir registrado (no se retira en la Tarea 10)\n";
+        $fallos++;
+    }
+    if (!is_file(__DIR__ . '/../views/core/project_selector.view.php')) {
+        echo "FALLO: S04 — views/core/project_selector.view.php NO debe borrarse (decisión de Felipe: conservar el PHP)\n";
+        $fallos++;
+    }
+    if (!is_file(__DIR__ . '/../src/Controllers/Core/ProjectSelectorController.php')) {
+        echo "FALLO: S04 — src/Controllers/Core/ProjectSelectorController.php NO debe borrarse (decisión de Felipe: conservar el PHP)\n";
+        $fallos++;
+    }
+    if (!is_file(__DIR__ . '/../public/css/project-selector.css')) {
+        echo "FALLO: S04 — public/css/project-selector.css NO debe borrarse (decisión de Felipe: conservar el PHP)\n";
+        $fallos++;
+    }
+
+    // El mapa real de producción sirve GET/HEAD desde React tras el corte.
+    if (!SpaRouter::sirveLaSpa('/proyectos') || !SpaRouter::sirveLaSpa('/proyectos', 'HEAD')) {
+        echo "FALLO: S04 — el mapa real de producción debe servir GET/HEAD '/proyectos' desde la SPA\n";
+        $fallos++;
+    }
+    if (SpaRouter::sirveLaSpa('/proyectos', 'POST')) {
+        echo "FALLO: S04 — POST '/proyectos' no debe servirlo la SPA\n";
         $fallos++;
     }
 }

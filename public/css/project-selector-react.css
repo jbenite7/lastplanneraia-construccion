@@ -1,0 +1,457 @@
+/*
+ * Composición responsive del selector de proyectos React (S04, Tarea 8).
+ *
+ * Ámbito: `.project-selector-react` es el `<main>` que monta `SelectorProyectos.tsx`
+ * (`frontend/src/shell/proyectos/SelectorProyectos.tsx`), hermano —no envoltorio— del
+ * `<aside data-shell-pattern="sidebar">` que monta `BarraLateral.tsx` en modo autónomo
+ * (`RutaProyectos`, `frontend/src/shell/rutas.tsx`). Esta hoja NO reimplementa el rail: en modo
+ * autónomo `BarraLateral` añade `body.aia-shell--sidebar` al montar (mismo patrón que
+ * `AppShell.tsx` usa para sí mismo), y esa clase ya trae de `shell-sidebar.css` el rail fijo, el
+ * padding del contenido y el drawer bajo 1180px — reescribirlo aquí sería duplicar la primitiva.
+ * Lo único nuevo de verdad es la composición interna del selector (cabecera, buscador, grilla de
+ * tarjetas) y el bloqueo del fondo mientras el drawer propio está abierto.
+ *
+ * No colisiona con la vista PHP legado (`views/core/project_selector.view.php`,
+ * `public/css/project-selector.css`, VIEW-11 pendiente de retiro): esa vista usa
+ * `body.project-selector-page` / `#projectGrid` / `.project-item`, nombres distintos a los de
+ * aquí. `project-selector-sidebar.spec.mjs` mide esa página legado, no ésta.
+ *
+ * Excepción de ámbito (Tarea 9b, S04): `.shell-mobile-topbar` NO es del selector — es la fila
+ * bajo 1180px compartida por las dos pantallas React (`BarraLateral` autónoma aquí, y
+ * `AppShell.tsx` para el shell con proyecto). Vive en este archivo porque es el único CSS del
+ * módulo que `frontend/index.html` enlaza en las dos rutas (`<link rel="stylesheet"
+ * href="/css/project-selector-react.css">`, sin condicionar por ruta); crear una hoja nueva solo
+ * para esta fila la habría dejado sin enlazar en `AppShell`.
+ *
+ * Cuatro composiciones de grilla, mismos cortes que el resto del sistema (DESIGN.md, `auth-react.css`):
+ *   - móvil   (< 48rem / 768px):  una columna, drawer con velo.
+ *   - tablet  (>= 48rem / 768px): dos columnas, sigue en drawer bajo 1180px.
+ *   - desktop (>= 73.75rem / 1180px): tres columnas, rail persistente.
+ *   - wide    (>= 90rem / 1440px): tres columnas, con más aire.
+ * 1180px (no 1200px de `--ds-breakpoint-desktop`) porque es el único corte de todo el shell entre
+ * rail persistente y drawer flotante (`modoBarraLateral.ts`, `shell-drawer.js`) — un breakpoint
+ * distinto aquí desincronizaría la grilla del propio rail que la contiene.
+ */
+
+@layer module {
+  /* Bloqueo del fondo mientras el drawer autónomo de `BarraLateral` está abierto (Tarea 8,
+     pendiente dejado por la Tarea 7). A propósito una CLASE, nunca `document.body.style`: así el
+     valor de reposo queda declarado en una hoja legible en vez de calculado en JS, en vez de una
+     prioridad forzada sobre `overflow` que compitiera en especificidad con otra regla. */
+  /* S04, Tarea 10 (destapado por project-selector-sidebar.spec.mjs al medir la barra React):
+     el agregador `aia-design-system.css` que enlaza `frontend/index.html` trae
+     `handsontable-module.css`, cuya regla `html, body { overflow: hidden }` (capa `vendor`)
+     sirve a las pantallas de grilla y aquí dejaba el documento sin scroll: con más proyectos de
+     los que caben en la ventana, los de abajo quedaban inalcanzables (medido: contenido de
+     2.324 px, `scrollY` en 0). El host React es un documento que se desplaza: lo desplaza `html`
+     (la ventana), y `body` —que tiene alto de 100 %— deja de ser un contenedor con scroll propio
+     (`visible`; con el `overflow-x: hidden` de `foundation.css` se volvía `auto` y era él quien
+     se desplazaba, no la ventana). `module` gana a `vendor` por orden de capa; el bloqueo del
+     drawer de abajo sigue ganando por especificidad. */
+  html {
+    overflow-y: auto;
+  }
+
+  body {
+    overflow: visible;
+  }
+
+  body.aia-shell-drawer-open {
+    overflow: hidden;
+  }
+
+  /* Tarea 9, S04 (hallazgo Axe original + ronda de arreglo 1, hallazgo visual V2).
+     El bloque de cuenta propio de `BarraLateral` (`cuentaPropia`) está siempre visible, sin
+     disparador ni popover. La primera versión de este fix lo envolvía en un `div` con una clase
+     nueva que solo copiaba fondo/borde — eso arregló el contraste de `.aia-sidebar__account-head`
+     (Axe) pero dejó "Cerrar sesión" como botón crudo del navegador (V2): el reset real de
+     `<button>`/`<a>` dentro de un panel de cuenta no vive en una clase propia, vive en
+     `[data-aia-menu-panel] :is(button, a)` (`components/primitives.css`) — el mismo selector de
+     atributo que también da el fondo opaco (`:where([data-aia-menu-panel], …)`, mismo archivo).
+     `buttons.css:37` excluye a propósito `.aia-sidebar__account-item` de su reset genérico
+     PORQUE espera que ese selector de atributo sea quien lo resetee; sin el atributo, el botón
+     cae al `buttonface` nativo.
+     La solución correcta es dar el atributo real (`data-aia-menu-panel`) para heredar TODO
+     (fondo, borde, reset de botón/enlace) del mismo sitio que usa `MenuCuenta`, y solo anular el
+     `position: absolute` que esa misma regla trae (`.aia-sidebar__account [data-aia-menu-panel]`,
+     pensada para flotar sobre un disparador que aquí no existe). La capa `module` (esta hoja) va
+     DESPUÉS de `components` en el orden declarado en `aia-design-system.css`, así que gana sin
+     necesitar forzar prioridad. */
+  .aia-sidebar__account-panel--estatico {
+    position: static;
+    inset-inline-start: auto;
+    inset-block-end: auto;
+    margin-block-start: 0;
+    max-width: none;
+    min-width: 0;
+    inline-size: 100%;
+  }
+
+  /* "Tus proyectos" (`aria-current="page"`) no se distinguía del resto: `.aia-sidebar__link
+     { background: transparent }` (`adapters/shell-sidebar.css`) es un valor LITERAL en la capa
+     `legacy-overrides` (la última del orden en `aia-design-system.css`), así que gana siempre
+     sobre el `background` de `.aia-sidebar__link[aria-current="page"]` sin que haya ningún token
+     que sobreescribir desde un ancestro — y no se toca ese adaptador porque también lo consume
+     la vista PHP. Además, en claro el relleno propuesto no serviría igual: `--ds-active-action-
+     primary` resuelve al mismo hex que el rail fijo (el mismo verde en ambos temas). Se marca el activo solo
+     con el anillo que el propio sistema ya usa para este caso en colapsado
+     (`.aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link[aria-current=
+     "page"]`, `adapters/shell-sidebar.css`): `--aia-green-light` no sigue el tema de página, así
+     que contrasta contra el rail fijo en los dos temas sin forzar prioridad (nadie más declara
+     `box-shadow` en `.aia-sidebar__link`) y sin inventar ningún token. Es también lo que aprobó
+     el golden canónico en claro (recuadro, no relleno).
+
+     `color`: la base (`components/navigation.css`) pone `--ds-active-action-text` ahí, un color
+     pensado para leerse SOBRE el relleno que ya no ponemos — en oscuro esa variable resuelve a
+     texto oscuro que, sin relleno, cae casi invisible sobre el rail oscuro fijo
+     (medido con `getComputedStyle`: legible en claro, ilegible en oscuro). Se cancela esa
+     variable con `--ds-active-nav-text`, el mismo color que ya llevan los ítems inactivos y que
+     es legible contra el rail fijo en los dos temas — el anillo + el peso semibold (heredado de
+     la base) son lo que distingue al activo, no el color de texto. La capa `module` gana sobre
+     `components` sin forzar prioridad por orden de capas (ver nota de arriba en este archivo sobre
+     `.aia-sidebar__account-panel--estatico`). */
+  body:has(.project-selector-react) .aia-sidebar__link[aria-current="page"] {
+    color: var(--ds-active-nav-text);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--aia-green-light) 35%, transparent);
+  }
+
+  .project-selector-react {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-6);
+    min-block-size: 100dvh;
+    box-sizing: border-box;
+    padding: var(--ds-space-6);
+    background: var(--ds-active-bg-page);
+    color: var(--ds-active-text-primary);
+  }
+
+  .project-selector-react :focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+  }
+
+  .project-selector-react__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--ds-space-4);
+  }
+
+  /* Tarea 9b, S04 (reemplaza la reserva de espacio de la ronda de arreglo 1, hallazgo visual V1):
+     antes el disparador era `position: fixed` en solitario y flotaba sobre el `h1`, así que había
+     que reservarle un padding-left calculado a mano. Ahora `.shell-mobile-topbar` es una fila REAL
+     en flujo normal, `position: sticky` (no `fixed`: no necesita salir del flujo, solo quedarse
+     visible al hacer scroll) — el contenido queda debajo por construcción, sin padding que
+     mantener sincronizado con el ancho del botón. `top: 0` porque esta fila es lo primero que
+     pinta `BarraLateral`/`AppShell`, antes de cualquier posible barra del navegador o composición
+     ajena. Ruling T9b-10: el drawer abierto (`<aside>`, `z-index: var(--ds-z-shell-overlay)` en
+     `shell-sidebar.css`) debe quedar por encima de esta fila, no al revés — subir el `<aside>`
+     (773797eb) tapaba en el shell PHP a `.shell-menu-trigger` (overlay+1,
+     `views/partials/shell_sidebar.php:152`), que cierra el drawer PHP con un segundo clic
+     (`shell-drawer.js:73-76`); ese commit revirtió. En su lugar esta fila baja por DEBAJO del
+     velo (`--ds-z-shell-overlay - 1` en `shell-sidebar.css`): con el drawer abierto el velo la
+     cubre y la oscurece (fuera del ancho del `<aside>`), y el `<aside>` (overlay) queda encima de
+     ambos. Con el drawer cerrado esta fila sigue por encima del contenido de la página (`sticky`,
+     mayor que cualquier z-index del contenido normal), que es lo único que necesita en reposo. */
+  .shell-mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-3);
+    position: sticky;
+    top: 0;
+    z-index: calc(var(--ds-z-shell-overlay) - 2);
+    padding: var(--ds-space-3) var(--ds-space-4);
+    background: var(--ds-active-bg-page);
+    border-block-end: var(--ds-border-width) solid var(--ds-active-border);
+  }
+
+  .shell-mobile-topbar__trigger {
+    flex: 0 0 auto;
+  }
+
+  .shell-mobile-topbar__brand {
+    min-width: 0;
+  }
+
+  /* Hallazgo visual del implementador al mirar los ocho candidatos (Tarea 9b, ronda 1):
+     `.aia-brand-lockup` fija `color: var(--ds-active-nav-text)` (`navigation.css`, `@layer
+     components`, gana `module` la pelea por capas así que basta con declarar aquí) — un token
+     pensado para texto sobre el fondo VERDE OSCURO del rail (`--ds-active-nav-bg`), donde da
+     8,25:1. Dentro de `.shell-mobile-topbar` el fondo es `--ds-active-bg-page` (blanco en claro),
+     así que ese mismo token deja "Last Planner AIA" casi ilegible: gris claro sobre blanco. La
+     fila usa el token de texto de PÁGINA, no el de nav, porque su fondo es de página, no de rail. */
+  .shell-mobile-topbar__brand {
+    color: var(--ds-active-text-primary);
+  }
+
+  /* Scroll fantasma (Tarea 9b, corrección tras la aprobación de los candidatos): bajo 1180px
+     `.shell-mobile-topbar` (sticky, en flujo normal) y `.project-selector-react` (que fija su
+     propio `min-block-size: 100dvh` arriba) son hermanos dentro de `#root` — React los monta ahí
+     como fragmentos hermanos (`BarraLateral` + `SelectorProyectos` en `RutaProyectos`,
+     `rutas.tsx`), y `#root` no tenía ninguna regla propia. El resultado eran dos alturas que se
+     SUMABAN en vez de compartirse: el documento medía la fila (~69px) más un 100dvh completo
+     debajo, 69px de scroll hacia fondo puro sin contenido (medido: 390x844 → 913px de alto real;
+     768x1024 → 1093px; la diferencia en los dos es exactamente la altura de la fila, y a
+     1180/1440 —sin fila móvil— el alto ya coincidía exacto, lo que confirmó que la fila era la
+     causa). El arreglo: bajo el mismo umbral que decide `flotante` en React
+     (`esBarraLateralFlotante`, `modoBarraLateral.ts`, 1180px), `#root` pasa a columna con
+     `min-block-size: 100dvh` y la fila fija su alto intrínseco (`flex: 0 0 auto`); el contenido
+     dejó de declarar su propio `min-block-size` y en su lugar CRECE (`flex: 1 1 auto`) para
+     repartirse la altura restante de la ventana — la fila y el contenido pasan a compartir una
+     sola altura de 100dvh en vez de sumar dos. El `<aside>` del drawer no participa: es
+     `position: fixed` en todo el rango (`shell-sidebar.css`), fuera del flujo normal, así que no
+     lo toca esta regla. Alcance con `:has()` a `.project-selector-react` (mismo patrón que
+     `body:has(.project-selector-react) .aia-sidebar__link[…]` más arriba en esta hoja) para no
+     tocar el `#root` de `AppShell` (pantallas con proyecto activo), que arma su propio layout con
+     `.lps-layout-cajon` y no comparte esta fila. En 1180px+ no hay fila móvil que compartir
+     altura, así que fuera de este `@media` `.project-selector-react` conserva su
+     `min-block-size: 100dvh` de la regla de arriba sin cambios. */
+  @media (max-width: 1179px) {
+    #root:has(> .project-selector-react) {
+      display: flex;
+      flex-direction: column;
+      min-block-size: 100dvh;
+    }
+
+    #root:has(> .project-selector-react) > .shell-mobile-topbar {
+      flex: 0 0 auto;
+    }
+
+    #root:has(> .project-selector-react) > .project-selector-react {
+      flex: 1 1 auto;
+      min-block-size: 0;
+    }
+  }
+
+  /* `min-width: 0` es lo que impide que el título largo empuje el botón de Control Tower fuera
+     del viewport a 390px — sin él, un flex item hereda `min-width: auto` y nunca se encoge. */
+  .project-selector-react__header-text {
+    min-width: 0;
+  }
+
+  .project-selector-react__header h1 {
+    margin: 0;
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-xl);
+    font-weight: 700;
+    line-height: var(--ds-type-line-compact);
+    letter-spacing: 0;
+  }
+
+  .project-selector-react__header p {
+    margin: var(--ds-space-1) 0 0;
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-sm);
+  }
+
+  .project-selector-react__loading,
+  .project-selector-react__selection-alert {
+    margin: 0;
+  }
+
+  /* T9-7 (ronda de arreglo 1, hallazgo visual V4): etiqueta SIEMPRE apilada encima del
+     campo, en los cuatro anchos — decisión del coordinador, mismo patrón que los campos
+     de login de S01 (`.aia-field`, `filter-form.css`: `display: grid`). Antes era
+     `display: flex` en fila, y en 768/1180/1440 la etiqueta quedaba a la izquierda del
+     input y desalineada respecto al resto del formulario. */
+  .project-selector-react__search {
+    display: grid;
+    gap: var(--ds-space-2);
+    align-items: start;
+    /* Ronda de arreglo 2 (hallazgo del coordinador, no cubierto por ningún candidato porque
+       ninguno tenía texto en el campo): sin esto, `justify-items` cae en su default `stretch` y
+       el botón «Limpiar búsqueda» —que solo nace cuando hay texto y resultados— se estira a todo
+       el ancho de la grilla. Confirmado con `boundingBox()` (876px de ancho, igual al del
+       contenedor) antes de este cambio. `align-items: start` de arriba ya lo pedía la etiqueta
+       apilada de V4; con `justify-items: start` la fila del botón también se comporta como el
+       resto (ancho intrínseco). */
+    justify-items: start;
+  }
+
+  .project-selector-react__search label {
+    font-family: var(--ds-font-body);
+    font-weight: 500;
+    color: var(--ds-active-text-secondary);
+  }
+
+  .project-selector-react__search input[type="search"] {
+    inline-size: 100%;
+    max-inline-size: 32rem;
+    min-height: var(--ds-target-min);
+    padding: var(--ds-control-padding-block) var(--ds-space-4);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-search);
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+    font-family: var(--ds-font-body);
+  }
+
+  .project-selector-react__search button {
+    min-height: var(--ds-target-min);
+  }
+
+  .project-selector-react__empty {
+    margin: 0;
+  }
+
+  /* Una columna por defecto (móvil, brief: "390/768 usan drawer/una o dos columnas"). */
+  .project-selector-react__list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ds-space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .project-selector-react__item {
+    min-width: 0;
+  }
+
+  .project-selector-react__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-3);
+    min-width: 0;
+    height: 100%;
+    box-sizing: border-box;
+    padding: var(--ds-card-padding);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-card);
+    background: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-xs);
+    color: var(--ds-active-text-primary);
+    transition: border-color var(--ds-motion-fast);
+  }
+
+  .project-selector-react__card:hover {
+    border-color: var(--ds-color-border-strong);
+  }
+
+  .project-selector-react__card-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--ds-space-2);
+  }
+
+  .project-selector-react__card-title {
+    min-width: 0;
+    margin: 0;
+    flex: 1 1 auto;
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-lg);
+    font-weight: 700;
+    line-height: var(--ds-type-line-compact);
+    letter-spacing: 0;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .project-selector-react__card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ds-space-2);
+  }
+
+  .project-selector-react__card-role {
+    margin: 0;
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-sm);
+  }
+
+  .project-selector-react__card-current {
+    margin: 0;
+    color: var(--ds-active-action-primary);
+    font-weight: 600;
+    font-size: var(--ds-type-size-sm);
+  }
+
+  .project-selector-react .aia-btn--block {
+    inline-size: 100%;
+    margin-block-start: auto;
+  }
+
+  /* Tablet (brief: "390/768 usan drawer/una o dos columnas"): dos columnas, todavía en drawer. */
+  @media (min-width: 48rem) {
+    .project-selector-react__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  /* Desktop (brief: "1180/1440 rail persistente y tres columnas"). El rail en sí ya pasó a
+     persistente en este mismo corte vía `shell-sidebar.css` (`body.aia-shell--sidebar`); aquí solo
+     sube la grilla a tres columnas. */
+  @media (min-width: 73.75rem) {
+    .project-selector-react {
+      padding: var(--ds-space-8);
+    }
+
+    .project-selector-react__list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 90rem) {
+    .project-selector-react {
+      padding: var(--ds-space-8) var(--ds-space-12);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-selector-react__card {
+      transition: none;
+    }
+  }
+
+  /* Tarea 9b, ronda de arreglo 1 (arreglo 2 — pedido de Felipe: "Last Planner AIA" en una sola
+     línea en el rail de escritorio). Medido contra `:8102` con `test.R` a 1180x820: el nombre
+     necesita ~183px de línea (ícono 36px + 8px de separación + 139px de texto) y el adaptador
+     compartido (`shell-sidebar.css`, `@layer components`, `body.aia-shell--sidebar
+     [data-sidebar-state="expanded"] .aia-sidebar__header`) solo deja 175px libres tras reservar
+     la columna del toggle (ya plegado a solo-ícono ahí mismo) — corto por ~8px, así que el
+     nombre se parte en dos líneas. La causa no es la tipografía: `--ds-sidebar-brand-mark-size`
+     (2.25rem) y `.aia-sidebar__brand-name` no se tocan aquí.
+
+     Se recupera espacio en dos huecos que ese adaptador deja SIN forzar (por eso basta con
+     `@layer module`, sin forzar nada: gana por orden de capa, `module` va después de
+     `components` en `aia-design-system.css:1`; su `padding-inline` sí va forzado y por
+     eso no se toca — una declaración forzada en una capa anterior gana igual sobre una forzada en una posterior):
+     el hueco entre la columna de la marca y la del toggle (`column-gap`), el hueco entre el
+     ícono y el nombre dentro de la marca (`.aia-sidebar__brand`'s `gap`, ya reducido por el
+     adaptador de `--ds-space-3` a `--ds-space-2`), y el tamaño del propio ícono. El toggle NO se
+     toca: es un target de 44px (`--ds-target-min`, mínimo de accesibilidad) y encogerlo sería un
+     regresión peor que el problema que arregla esto.
+
+     Acotado a React: este archivo solo lo enlaza `frontend/index.html`
+     (`public/app/index.html` es su copia de build) — el rail PHP (`shell_sidebar.php` y las
+     vistas que lo incluyen) no lo carga y conserva el espaciado canónico del adaptador sin
+     cambios. Acotado a `[data-sidebar-state="expanded"]`: en colapsado el nombre ya se oculta a
+     1px de ancho (`navigation.css:480-511`) y esta regla sería inocua ahí, pero se deja explícito
+     para no depender de eso y para no rozar "sin romper el rail colapsado (ahí solo va el
+     ícono)". Alcanza tanto al selector standalone (`BarraLateral` autónoma, `rutas.tsx`) como al
+     shell con proyecto (`NavegacionLateral` vía `AppShell`): las dos montan el mismo
+     `.aia-sidebar__header` bajo `body.aia-shell--sidebar`. */
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"][data-sidebar-state="expanded"]
+    .aia-sidebar__header {
+    column-gap: 0;
+  }
+
+  body.aia-shell--sidebar
+    .aia-navigation--sidebar[data-shell-pattern="sidebar"][data-sidebar-state="expanded"]
+    .aia-sidebar__brand {
+    gap: var(--ds-space-1);
+  }
+
+  body.aia-shell--sidebar
+    .aia-navigation--sidebar[data-shell-pattern="sidebar"][data-sidebar-state="expanded"]
+    .aia-sidebar__brand
+    img {
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-basis: 1.75rem;
+  }
+}

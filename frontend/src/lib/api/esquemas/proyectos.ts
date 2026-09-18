@@ -1,0 +1,58 @@
+import { z } from 'zod';
+
+/**
+ * Contratos de `/api/proyectos` y `/api/proyectos/seleccionar` (Tarea 1, S04). Movidos aquí desde
+ * `useSelectorProyecto.ts`, donde vivían inline, para que el shell consuma un único gateway
+ * tipado — mismo patrón que `esquemas/auth.ts` en S01.
+ *
+ * El esquema se escribió antes que el servidor (igual que `RespuestaLogin.next` en S01 y
+ * `EsquemaEstadoEnlaceReset` en S03), pero **desde la Tarea 2 ya no es contrato objetivo sino
+ * vigente**: `ProjectApiController::index()` emite `area`, `active`, `roleLabel` y
+ * `navigation.bi`, y `::select()` emite `route`. El contrato puro que lo sostiene es
+ * `tests/test_api_projects_pure_contract.php`.
+ *
+ * La clase del regex de ruta interna va con escapes (`\x00-\x1f\x7f`), no con los bytes de
+ * control crudos: escritos crudos, git marcaba este archivo como binario y ni el PR ni un merge
+ * a tres bandas podían leerlo.
+ */
+
+export const EsquemaRutaInterna = z.string().regex(
+  /^\/(?!\/)[^\x00-\x1f\x7f\\]+$/,
+  'route debe ser un path interno seguro',
+);
+
+export const EsquemaProyectoDisponible = z.object({
+  id: z.number().int().positive(),
+  name: z.string().trim().min(1),
+  area: z.enum(['Construccion', 'Pre-Construccion']),
+  active: z.literal(true),
+  role: z.string().trim().min(1),
+  roleLabel: z.string().trim().min(1),
+}).strict();
+
+const EsquemaNavegacionBi = z.discriminatedUnion('visible', [
+  z.object({ visible: z.literal(true), href: EsquemaRutaInterna }).strict(),
+  z.object({ visible: z.literal(false), href: z.null() }).strict(),
+]);
+
+export const EsquemaListaProyectos = z.object({
+  projects: z.array(EsquemaProyectoDisponible),
+  navigation: z.object({ bi: EsquemaNavegacionBi }).strict(),
+}).strict();
+
+export const EsquemaSolicitudSeleccionProyecto = z.object({
+  name: z.string().trim().min(1),
+}).strict();
+
+export const MENSAJE_RECHAZO_PROYECTO = 'No se pudo acceder al proyecto seleccionado.';
+export const EsquemaResultadoSeleccionProyecto = z.discriminatedUnion('success', [
+  z.object({ success: z.literal(true), message: z.null(), route: EsquemaRutaInterna }).strict(),
+  z.object({
+    success: z.literal(false), message: z.literal(MENSAJE_RECHAZO_PROYECTO), route: z.null(),
+  }).strict(),
+]);
+
+export type ProyectoDisponible = z.infer<typeof EsquemaProyectoDisponible>;
+export type ListaProyectos = z.infer<typeof EsquemaListaProyectos>;
+export type SolicitudSeleccionProyecto = z.infer<typeof EsquemaSolicitudSeleccionProyecto>;
+export type ResultadoSeleccionProyecto = z.infer<typeof EsquemaResultadoSeleccionProyecto>;

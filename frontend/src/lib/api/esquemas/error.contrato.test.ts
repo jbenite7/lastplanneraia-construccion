@@ -2,6 +2,7 @@ import { z } from 'zod';
 import cuerposAuth from '../../../../../tests/fixtures/api-auth-error-bodies.json';
 import cuerposLps from '../../../../../tests/fixtures/api-lps-error-bodies.json';
 import cuerposReset from '../../../../../tests/fixtures/api-password-reset-error-bodies.json';
+import cuerposProyectos from '../../../../../tests/fixtures/api-projects-error-bodies.json';
 import { ApiError, pedir } from '../cliente';
 import { EsquemaCuerpoErrorApi } from './error';
 
@@ -43,6 +44,7 @@ type CasoReal = {
 const casosAuth = Object.entries(cuerposAuth as unknown as Record<string, CasoReal>);
 const casosLps = Object.entries(cuerposLps as unknown as Record<string, CasoReal>);
 const casosReset = Object.entries(cuerposReset as unknown as Record<string, CasoReal>);
+const casosProyectos = Object.entries(cuerposProyectos as unknown as Record<string, CasoReal>);
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -80,6 +82,57 @@ test('el archivo de /api/auth/password/reset trae los seis cuerpos que el contra
     '503_reset_unavailable',
     '503_reset_validate_unavailable',
   ]);
+});
+
+/**
+ * `/api/proyectos*` (S04): los captura `tests/test_api_projects_pure_contract.php` del render real
+ * del controlador en proceso (`origen: render-puro`, sin DB), con el mismo flag
+ * `LPS_REGENERAR_CUERPOS=1`. Dos ausencias a propósito: el rechazo de selección es un 200 con
+ * `{success:false, message, route:null}`, no un error de transporte; y el 401 del controlador es
+ * defensa en profundidad que el navegador nunca recibe, porque `/api/proyectos*` no es ruta
+ * pública y `SessionMiddleware::finishUnauthorized()` corta antes con
+ * `{success,sessionExpired,reason,redirect}` — esa forma la cubre `cliente.test.ts`.
+ */
+test('el archivo de /api/proyectos trae los cuatro cuerpos que el contrato vigila', () => {
+  expect(casosProyectos.map(([nombre]) => nombre).sort()).toEqual([
+    '403_csrf_invalid',
+    '422_validation_error',
+    '500_invalid_landing',
+    '500_invalid_navigation',
+  ]);
+});
+
+describe.each(casosProyectos)('proyectos %s', (_nombre, caso) => {
+  test('el cuerpo real cumple EsquemaCuerpoErrorApi', () => {
+    const resultado = EsquemaCuerpoErrorApi.safeParse(caso.cuerpo);
+
+    expect(resultado.success ? [] : resultado.error.issues).toEqual([]);
+    expect(caso.cuerpo.success).toBe(false);
+    expect(caso.origen).toBe('render-puro');
+  });
+
+  test('pedir() extrae código, mensaje y campos del servidor', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify(caso.cuerpo), { status: caso.status })),
+    );
+
+    const causa = await pedir(caso.ruta, z.unknown(), { method: 'POST' }).catch((error: unknown) => error);
+
+    expect(causa).toBeInstanceOf(ApiError);
+    const error = causa as ApiError;
+    expect(error.status).toBe(caso.status);
+    expect(error.codigo).toBe(caso.cuerpo.code);
+    expect(error.codigo).not.toMatch(/^HTTP_/);
+    expect(error.message).toBe(caso.cuerpo.message);
+
+    if (caso.status === 422) {
+      expect(error.camposInvalidos).toEqual(caso.cuerpo.error?.campos);
+      expect(Object.keys(error.camposInvalidos ?? {})).toHaveLength(1);
+    } else {
+      expect(error.camposInvalidos).toBeNull();
+    }
+  });
 });
 
 describe.each(casosAuth)('auth %s', (_nombre, caso) => {

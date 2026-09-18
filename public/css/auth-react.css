@@ -273,11 +273,18 @@
        cuando `.aia-auth` no distribuía nada y el layout tenía que estirarse solo. Con las tres
        filas de arriba se volvió redundante **y dañino**: la fila del contenido ya no puede bajar
        de esa altura, así que cabecera + contenido + pie sumaban más de `100dvh` y, como el
-       documento va con `overflow: hidden`, el pie quedaba recortado sin scroll con el que
-       alcanzarlo. Medido a 1180×820, el viewport canónico: pie en 889–976 con ventana de 820,
-       `scrollY` clavado en 0 y **0 px visibles**. Lo fija ahora el escenario «el pie es
+       documento iba con `overflow: hidden` en ese momento, el pie quedaba recortado sin scroll
+       con el que alcanzarlo. Medido a 1180×820, el viewport canónico: pie en 889–976 con ventana
+       de 820, `scrollY` clavado en 0 y **0 px visibles**. Lo fija ahora el escenario «el pie es
        alcanzable» de `login-react.spec.mjs`. La fila `1fr` ya ocupa el sobrante y `align-content`
-       centra la tarjeta dentro, que era todo lo que este `min-block-size` aportaba. */
+       centra la tarjeta dentro, que era todo lo que este `min-block-size` aportaba.
+       Corrección de revisión final (S04, T10): la premisa "el documento va con `overflow:
+       hidden`" dejó de ser cierta desde `4e675bbe` (S04 T10) — `project-selector-react.css`
+       (enlazada sin condicionar por ruta en `frontend/index.html`, así que alcanza también a
+       esta pantalla) pone `html { overflow-y: auto }` / `body { overflow: visible }` para que el
+       selector de proyectos pueda desplazarse. No se tocó este bloque de `auth-react.css`: nadie
+       verificó aquí si esa nueva regla global vuelve a dejar sitio a un `min-block-size`, así que
+       queda solo la corrección de la prosa, sin cambio de comportamiento. */
     .aia-auth__layout > .aia-card {
       max-inline-size: 28rem;
     }
