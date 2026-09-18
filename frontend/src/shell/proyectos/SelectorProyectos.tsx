@@ -81,13 +81,13 @@ function esApiErrorHttp(causa: unknown, status: number): causa is ApiError {
  * segundo POST es `enviandoRef`, que no espera al re-render de React. El `disabled` del botón es
  * presentación, no el candado: entre el clic y el repintado sigue habilitado.
  *
- * **Duplicación pendiente (decisión de la Tarea 6):** este componente conserva su propio fetch con
- * `AbortController` y su propio POST, en vez de reusar `useSelectorProyecto.ts`. No se absorbe
- * porque las semánticas divergen de verdad: el hook cierra con `alElegir()` (recargar la sesión en
- * sitio, que es lo que necesita `PanelCambiarProyecto`) mientras aquí la salida es
- * `onOpen(route)` (navegación completa del shell al destino que decidió el servidor); además el
- * hook no distingue 401 de 403 ni maneja foco. Unificarlos exigiría tocar `PanelCambiarProyecto`
- * y sus tests, fuera del alcance de esta tarea. Queda para la Tarea 7, que ya toca ese frente.
+ * **Corrección de revisión final (S04, T10):** este párrafo citaba `useSelectorProyecto.ts` y
+ * `PanelCambiarProyecto` como la alternativa no absorbida — ninguno de los dos existe ya en el
+ * árbol. Este componente sigue con su propio fetch (`AbortController`) y su propio POST porque es
+ * el único selector de proyectos que queda: la pantalla standalone `/proyectos`/`/app/proyectos`
+ * (`RutaProyectos` en `rutas.tsx`), que navega con `onOpen(route)` (documento completo, al destino
+ * que decidió el servidor) y distingue 401 de 403 con manejo de foco propio (ver `focoPendiente`
+ * más abajo).
  */
 export function SelectorProyectos({ session, onOpen, onRevalidate, onNavigation }: PropiedadesSelectorProyectos) {
   const [lista, setLista] = useState<ListaProyectos | null>(null);

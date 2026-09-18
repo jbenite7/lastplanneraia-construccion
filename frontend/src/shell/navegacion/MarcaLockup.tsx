@@ -6,8 +6,12 @@
  * `navigation.css` (`.aia-sidebar__brand img`, tamaño `--ds-sidebar-brand-mark-size`, sin
  * filtro) y las reglas de contraste de `.aia-sidebar__brand` le den estilo sin CSS nuevo.
  *
- * `<a href>` normal, no `<Link>` de react-router: durante el piloto `/proyectos` lo sirve PHP
- * (recarga completa), igual que hace el propio `DesignSystemComponent`.
+ * `<a href>` normal, no `<Link>` de react-router: navega con recarga completa de documento,
+ * igual que hace el propio `DesignSystemComponent`. Corrección de revisión final (S04, T10):
+ * este comentario decía que `/proyectos` lo servía PHP durante el piloto — dejó de ser cierto
+ * con el corte de la Tarea 10 (`SpaRouter::RUTAS_EXACTAS_MIGRADAS` ya incluye `/proyectos`,
+ * servida por el mismo host SPA). El `<a>` normal se conserva igual: sigue siendo la forma
+ * correcta de enlazar a una ruta fuera del árbol de `react-router` de esta pantalla.
  *
  * Se usa en tres sitios (Tarea 9b): la cabecera del `<aside>` (`BarraLateral`, paridad de
  * escritorio con el rail colapsado "solo ícono" que ya resuelve `navigation.css:480-511`), y la
