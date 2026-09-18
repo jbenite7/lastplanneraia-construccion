@@ -222,7 +222,7 @@
     }
     body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-drawer-open="true"] {
       transform: translateX(0);
-      z-index: calc(var(--ds-z-shell-overlay) + 2);
+      z-index: var(--ds-z-shell-overlay);
     }
     .shell-menu-velo {
       position: fixed;
