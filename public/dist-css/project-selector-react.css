@@ -53,6 +53,9 @@
   .shell-mobile-topbar__brand {
     min-width: 0;
   }
+  .shell-mobile-topbar__brand {
+    color: var(--ds-active-text-primary);
+  }
   .project-selector-react__header-text {
     min-width: 0;
   }

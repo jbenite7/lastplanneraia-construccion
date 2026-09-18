@@ -153,6 +153,17 @@
     min-width: 0;
   }
 
+  /* Hallazgo visual del implementador al mirar los ocho candidatos (Tarea 9b, ronda 1):
+     `.aia-brand-lockup` fija `color: var(--ds-active-nav-text)` (`navigation.css`, `@layer
+     components`, gana `module` la pelea por capas así que basta con declarar aquí) — un token
+     pensado para texto sobre el fondo VERDE OSCURO del rail (`--ds-active-nav-bg`), donde da
+     8,25:1. Dentro de `.shell-mobile-topbar` el fondo es `--ds-active-bg-page` (blanco en claro),
+     así que ese mismo token deja "Last Planner AIA" casi ilegible: gris claro sobre blanco. La
+     fila usa el token de texto de PÁGINA, no el de nav, porque su fondo es de página, no de rail. */
+  .shell-mobile-topbar__brand {
+    color: var(--ds-active-text-primary);
+  }
+
   /* `min-width: 0` es lo que impide que el título largo empuje el botón de Control Tower fuera
      del viewport a 390px — sin él, un flex item hereda `min-width: auto` y nunca se encoge. */
   .project-selector-react__header-text {
