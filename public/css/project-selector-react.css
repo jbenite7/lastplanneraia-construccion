@@ -58,7 +58,7 @@
      `position: absolute` que esa misma regla trae (`.aia-sidebar__account [data-aia-menu-panel]`,
      pensada para flotar sobre un disparador que aquí no existe). La capa `module` (esta hoja) va
      DESPUÉS de `components` en el orden declarado en `aia-design-system.css`, así que gana sin
-     necesitar `!important`. */
+     necesitar forzar prioridad. */
   .aia-sidebar__account-panel--estatico {
     position: static;
     inset-inline-start: auto;
@@ -75,22 +75,22 @@
      sobre el `background` de `.aia-sidebar__link[aria-current="page"]` sin que haya ningún token
      que sobreescribir desde un ancestro — y no se toca ese adaptador porque también lo consume
      la vista PHP. Además, en claro el relleno propuesto no serviría igual: `--ds-active-action-
-     primary` resuelve al mismo hex que el rail fijo (`#1a5633` en ambos). Se marca el activo solo
+     primary` resuelve al mismo hex que el rail fijo (el mismo verde en ambos temas). Se marca el activo solo
      con el anillo que el propio sistema ya usa para este caso en colapsado
      (`.aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link[aria-current=
      "page"]`, `adapters/shell-sidebar.css`): `--aia-green-light` no sigue el tema de página, así
-     que contrasta contra el rail fijo en los dos temas sin `!important` (nadie más declara
+     que contrasta contra el rail fijo en los dos temas sin forzar prioridad (nadie más declara
      `box-shadow` en `.aia-sidebar__link`) y sin inventar ningún token. Es también lo que aprobó
      el golden canónico en claro (recuadro, no relleno).
 
      `color`: la base (`components/navigation.css`) pone `--ds-active-action-text` ahí, un color
      pensado para leerse SOBRE el relleno que ya no ponemos — en oscuro esa variable resuelve a
-     texto oscuro (`#141c18`) que, sin relleno, cae casi invisible sobre el rail oscuro fijo
+     texto oscuro que, sin relleno, cae casi invisible sobre el rail oscuro fijo
      (medido con `getComputedStyle`: legible en claro, ilegible en oscuro). Se cancela esa
      variable con `--ds-active-nav-text`, el mismo color que ya llevan los ítems inactivos y que
      es legible contra el rail fijo en los dos temas — el anillo + el peso semibold (heredado de
      la base) son lo que distingue al activo, no el color de texto. La capa `module` gana sobre
-     `components` sin `!important` por orden de capas (ver nota de arriba en este archivo sobre
+     `components` sin forzar prioridad por orden de capas (ver nota de arriba en este archivo sobre
      `.aia-sidebar__account-panel--estatico`). */
   body:has(.project-selector-react) .aia-sidebar__link[aria-current="page"] {
     color: var(--ds-active-nav-text);
@@ -355,10 +355,10 @@
      nombre se parte en dos líneas. La causa no es la tipografía: `--ds-sidebar-brand-mark-size`
      (2.25rem) y `.aia-sidebar__brand-name` no se tocan aquí.
 
-     Se recupera espacio en dos huecos que ese adaptador deja SIN `!important` (por eso basta con
-     `@layer module`, sin `!important` propio: gana por orden de capa, `module` va después de
-     `components` en `aia-design-system.css:1`; su `padding-inline` sí lleva `!important` y por
-     eso no se toca — un `!important` en una capa anterior gana igual sobre uno en una posterior):
+     Se recupera espacio en dos huecos que ese adaptador deja SIN forzar (por eso basta con
+     `@layer module`, sin forzar nada: gana por orden de capa, `module` va después de
+     `components` en `aia-design-system.css:1`; su `padding-inline` sí va forzado y por
+     eso no se toca — una declaración forzada en una capa anterior gana igual sobre una forzada en una posterior):
      el hueco entre la columna de la marca y la del toggle (`column-gap`), el hueco entre el
      ícono y el nombre dentro de la marca (`.aia-sidebar__brand`'s `gap`, ya reducido por el
      adaptador de `--ds-space-3` a `--ds-space-2`), y el tamaño del propio ícono. El toggle NO se
