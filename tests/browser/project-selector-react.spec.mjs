@@ -287,6 +287,34 @@ test.describe('selector de proyectos React — comportamiento', () => {
     await expect(page.getByRole('button', { name: 'Abrir menú de navegación' })).toBeFocused();
   });
 
+  // Correcciones de revisión final S04 (T10): el drawer autónomo solo tenía foco de entrada y
+  // Escape, sin atrapar Tab/Shift+Tab — spec T01 §508 exige "Escape, trampa y retorno de foco".
+  // Primero y último enfocable REAL del `<aside>` no son enlaces de navegación: son la marca
+  // (cabecera) y "Cerrar sesión" (pie, `cuentaPropia` en esta pantalla standalone).
+  test('drawer móvil en 390px: Tab y Shift+Tab quedan atrapados dentro del <aside>', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await simularSesion(page, [arranqueAutenticadoConProyecto()]);
+    await simularProyectos(page, [listaProyectos()]);
+
+    await page.goto('/app/proyectos');
+    await esperarPantalla(page);
+
+    await page.getByRole('button', { name: 'Abrir menú de navegación' }).click();
+    await expect(page.getByRole('button', { name: 'Cerrar menú de navegación' })).toBeVisible();
+
+    const aside = page.locator('aside.aia-navigation--sidebar');
+    const primero = aside.getByRole('link', { name: 'Last Planner AIA' });
+    const ultimo = aside.getByRole('button', { name: /cerrar sesión/i });
+
+    await ultimo.focus();
+    await page.keyboard.press('Tab');
+    await expect(primero).toBeFocused();
+
+    await primero.focus();
+    await page.keyboard.press('Shift+Tab');
+    await expect(ultimo).toBeFocused();
+  });
+
   // Ronda 2 (T9b, hallazgo del coordinador): con el drawer abierto, `.shell-mobile-topbar`
   // (sticky, z-index por encima del token base) tapaba la cabecera del `<aside>` — la marca
   // quedaba enfocable (el atrapa-foco la alcanza) pero invisible, tapada por otro elemento.

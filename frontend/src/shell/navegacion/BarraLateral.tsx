@@ -219,13 +219,39 @@ export function BarraLateral({
     primero?.focus();
   }, [barraAutonoma, flotante, abierto]);
 
-  // `Escape` cierra el drawer propio y devuelve el foco a su disparador.
+  // `Escape` cierra el drawer propio y devuelve el foco a su disparador. Mientras está abierto,
+  // Tab/Shift+Tab quedan atrapados dentro del `<aside>` — mismo patrón que `AppShell.tsx`
+  // (T01) aplica para el suyo. Correcciones de revisión final S04 (T10): este drawer solo tenía
+  // foco de entrada y Escape, sin atrapa-Tab (spec T01 §508 "Escape, trampa y retorno de foco").
+  // El contenedor es `asideRef`, NO `navRef`: el primer/último enfocable real del `<aside>` son
+  // el enlace de la marca (cabecera) y "Cerrar sesión"/"Cambiar proyecto" (pie), ninguno vive
+  // dentro de `<nav>` — atrapar solo ahí dejaría el pie inalcanzable por teclado con el drawer
+  // abierto.
   useEffect(() => {
     if (!barraAutonoma || !flotante || !abierto) return;
     function alTeclado(evento: KeyboardEvent) {
       if (evento.key === 'Escape') {
         evento.preventDefault();
         cerrarDrawer();
+        return;
+      }
+      if (evento.key !== 'Tab') return;
+      const contenedor = asideRef.current;
+      if (!contenedor) return;
+      const enfocables = contenedor.querySelectorAll<HTMLElement>(SELECTOR_ENFOCABLES);
+      if (enfocables.length === 0) return;
+      const primero = enfocables[0];
+      const ultimo = enfocables[enfocables.length - 1];
+      const activo = document.activeElement;
+      if (!contenedor.contains(activo)) {
+        evento.preventDefault();
+        primero.focus();
+      } else if (evento.shiftKey && activo === primero) {
+        evento.preventDefault();
+        ultimo.focus();
+      } else if (!evento.shiftKey && activo === ultimo) {
+        evento.preventDefault();
+        primero.focus();
       }
     }
     document.addEventListener('keydown', alTeclado);

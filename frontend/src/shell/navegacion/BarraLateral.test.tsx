@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, test, vi } from 'vitest';
 import { BarraLateral } from './BarraLateral';
@@ -265,6 +265,65 @@ test('drawer móvil: el disparador anuncia estado, abre, Escape cierra y devuelv
   const disparadorCerrado = screen.getByRole('button', { name: /abrir menú de navegación/i });
   expect(disparadorCerrado).toHaveAttribute('aria-expanded', 'false');
   expect(disparadorCerrado).toHaveFocus();
+});
+
+// Correcciones de revisión final S04 (T10): el drawer autónomo (`barraAutonoma && flotante`)
+// solo tenía foco de entrada y Escape — nunca atrapaba Tab/Shift+Tab, a diferencia de
+// `AppShell.tsx` (T01), que sí lo hace para el suyo. La spec T01 §508 exige "Escape, trampa y
+// retorno de foco" para todo drawer flotante. Primero y último enfocable del `<aside>`, en orden
+// real de DOM: el enlace de la marca (`MarcaLockup`, cabecera) y "Cerrar sesión" (pie, con
+// `cuentaPropia`) — ninguno es un link de navegación, así que atrapar solo dentro de `navRef`
+// (como hace el foco de entrada, a propósito) dejaría el pie inalcanzable por teclado.
+test('drawer móvil: Tab en el último control del <aside> vuelve al primero (foco atrapado)', async () => {
+  fijarAncho(390);
+  const usuario = userEvent.setup();
+  render(
+    <BarraLateral
+      activeId="projects"
+      accountName="Ana"
+      groups={GRUPOS}
+      showChangeProject={false}
+      cuentaPropia
+      cerrarSesion={vi.fn().mockResolvedValue(undefined)}
+    />,
+  );
+
+  await usuario.click(screen.getByRole('button', { name: /abrir menú de navegación/i }));
+
+  const aside = document.querySelector<HTMLElement>('aside.aia-navigation--sidebar')!;
+  const primero = within(aside).getByRole('link', { name: 'Last Planner AIA' });
+  const ultimo = within(aside).getByRole('button', { name: /cerrar sesión/i });
+
+  ultimo.focus();
+  fireEvent.keyDown(document, { key: 'Tab' });
+
+  expect(primero).toHaveFocus();
+});
+
+test('drawer móvil: Shift+Tab en el primer control del <aside> vuelve al último (foco atrapado)', async () => {
+  fijarAncho(390);
+  const usuario = userEvent.setup();
+  render(
+    <BarraLateral
+      activeId="projects"
+      accountName="Ana"
+      groups={GRUPOS}
+      showChangeProject={false}
+      cuentaPropia
+      cerrarSesion={vi.fn().mockResolvedValue(undefined)}
+    />,
+  );
+
+  await usuario.click(screen.getByRole('button', { name: /abrir menú de navegación/i }));
+
+  const aside = document.querySelector<HTMLElement>('aside.aia-navigation--sidebar')!;
+  const primero = within(aside).getByRole('link', { name: 'Last Planner AIA' });
+  const ultimo = within(aside).getByRole('button', { name: /cerrar sesión/i });
+
+  primero.focus();
+  fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+
+  expect(ultimo).toHaveFocus();
 });
 
 // Tarea 8, S04: pendiente dejado a propósito por la Tarea 7 (ver BarraLateral.tsx). En modo
