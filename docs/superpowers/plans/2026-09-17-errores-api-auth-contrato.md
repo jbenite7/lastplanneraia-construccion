@@ -1,13 +1,21 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-09-17
 areas: [arquitectura, qa]
 resumen: "Los errores de /api/auth/* emiten nulos y listas vacías que el esquema del cliente rechaza; se corrige en el servidor y se ata la forma real al esquema con un contrato entre PHP y Zod"
 ---
 
 # Errores de `/api/auth/*` alineados con el esquema del cliente
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill. El `## Cierre` de abajo se escribió antes de publicar y dice «pendiente de PR»; esta sección lo supera, no lo corrige.
+
+**Evidencia:** PR #44 mergeado en `main` (`f0096ab3`, 2026-09-17): arreglo `233a8bda`, contrato PHP↔Zod `0837170d`, navegador `d053717f`. `tests/test_api_auth_contract.php` y `tests/browser/auth-errores-contrato.spec.mjs` existen en `origin/main`.
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 **Goal:** que el cliente React reciba siempre `codigo`, `mensaje` y `camposInvalidos` de los errores de `AuthApiController`, y que un test falle si la forma real del servidor vuelve a divergir del esquema.
 

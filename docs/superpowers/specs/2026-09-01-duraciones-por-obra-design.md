@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 version: "1.0"
 fecha: 2026-09-01
 areas: [pdc]
@@ -10,6 +10,14 @@ resumen: "Cada obra puede corregir la duración de los pasos de contratación de
 ---
 
 # Duraciones de contratación por obra — diseño v1.0
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** los ocho puntos de «§12 Cuándo está hecho» los cubre el plan `2026-09-01-duraciones-por-obra`, liberado en `CHANGELOG.md:423`; el gobierno del catálogo desde `/admin/` está excluido en §3.2 y anotado en `TASKS.md` como frente propio (decisión de Felipe, 2026-09-01).
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **Estado: aprobado por Felipe el 2026-09-01 para escribir el plan.** No autoriza implementación,
 > migración ni deploy: cada uno tiene su propia puerta.

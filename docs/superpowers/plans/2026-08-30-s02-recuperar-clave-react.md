@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-30
 areas: [arquitectura, rbac, design-system]
 fuente: docs/superpowers/plans/2026-08-30-s02-recuperar-clave-react.md
@@ -9,6 +9,14 @@ resumen: "migrar /password/forgot a la SPA React con formulario accesible, contr
 ---
 
 # S02 Password Recovery React Implementation Plan
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill. El `## Cierre` de abajo se escribió antes de publicar y dice «pendiente de PR»; esta sección lo supera, no lo corrige.
+
+**Evidencia:** PR #43 mergeado en `main` (`ccab071a`, 2026-09-16). `frontend/src/shell/auth/` contiene la pantalla React y `views/auth/password-forgot.view.php` ya no existe en `origin/main` (retiro autorizado por Felipe el 2026-09-16, citado en el `## Cierre`). `TASKS.md:383-388` lo registra en `main` desde ese PR.
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

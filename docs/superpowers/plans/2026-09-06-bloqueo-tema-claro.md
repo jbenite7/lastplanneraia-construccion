@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-09-06
 areas: [design-system]
 fuente: docs/superpowers/plans/2026-09-06-bloqueo-tema-claro.md
@@ -9,6 +9,14 @@ resumen: "Levantar el bloqueo del tema claro: theme.js deja de forzar el oscuro 
 ---
 
 # Bloqueo del tema claro — Implementation Plan
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** PR #37 mergeado en `main` (`b2305c7b`, 2026-09-07) y el cierre del frente registrado en `fa27ea87` (`goals/bloqueo-tema-claro/goal.md` con su `## Cierre`); `CHANGELOG.md:31` («Arreglado: el tema claro llega a las pantallas PHP y al laboratorio»). La sección «Ejecución (2026-09-07)» de abajo cuenta en qué se apartó del plan; ninguna de sus cuatro desviaciones dejó tarea sin hacer.
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 id: S03
 fecha: 2026-08-30
 superficie: restablecer-clave
@@ -14,6 +14,14 @@ resumen: "Migracion del enlace de restablecimiento a React, conservando token de
 ---
 
 # S03 — Restablecer contraseña en React
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** su plan `2026-08-30-s03-restablecer-clave-react` está en `main` desde el PR #48 (`701506ff`) con `MIGRATION_COMPLETE`: `/password/reset` la sirve React y la vista PHP se retiró por autorización de Felipe (2026-09-17).
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **Estado:** diseño técnico autorrevisado, sin decisiones de negocio, producto, estrategia o PM
 > pendientes. Esta spec no autoriza implementación, cambios de contraseña, DDL/DML, RLS, deploy,

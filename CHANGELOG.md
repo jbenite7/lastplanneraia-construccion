@@ -28,6 +28,22 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Cerrado: doce planes y tres specs que ya estaban hechos y seguían `vigente` (2026-09-17)
+
+Frente `docs/cierre-planes-hechos`, por orden de Felipe al ver el tablero de avance de specs.
+Doce planes tenían su trabajo en `main` —seis con `## Cierre` escrito y PR mergeado, otros con
+entrada en este registro y sus archivos en el árbol— y el frontmatter seguía en `vigente` (uno en
+`abierto`, que no es valor de la taxonomía). Cada uno recibe `estado: cerrado` y una sección
+«Estado verificado — cerrado» con la evidencia citada, según el criterio del 2026-08-25:
+`s01-paridad-visual` (PR #42), `s02-recuperar-clave-react` (PR #43), `s03-restablecer-clave-react`
+(PR #48), `errores-api-auth-contrato` (PR #44), `errores-api-lps-contrato` (PR #45),
+`ola1-torre-etapa-piloto` (PR #12), `tarea-cero-lista-canonica-de-pantallas`,
+`bitacora-avance-manual`, `shell-minimo-react`, `rls-runtime-boundary` (sus dos gates puros
+corridos hoy, `RC=0` cada uno), `duraciones-por-obra` y `bloqueo-tema-claro` (PR #37). Cierran
+con ellos los specs de S02, S03 y duraciones por obra. `s01-login-react` **no** cierra: su segunda
+mitad (retirar el login PHP) sigue abierta a propósito. `TASKS.md` deja de decir que S03 está
+pendiente de PR.
+
 ### Arreglado: el tema claro llega a las pantallas PHP y al laboratorio (2026-09-07)
 
 Frente `bloqueo-tema-claro`. El claro es el tema de entrada desde D12, pero no llegaba a

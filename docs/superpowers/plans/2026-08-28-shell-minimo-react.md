@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: abierto
+estado: cerrado
 fecha: 2026-08-28
 areas: [arquitectura, rbac, design-system]
 fuente: docs/superpowers/specs/2026-08-28-migracion-react-typescript-design.md
@@ -9,6 +9,14 @@ resumen: "Frente 1 de la migración a React: el shell mínimo — login, selecto
 ---
 
 # Shell mínimo React — plan de implementación
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** `CHANGELOG.md:524` («Añadido: shell mínimo React», 2026-08-28): `/app` con login, selector, navegación, tema y endpoints JSON. Los archivos de las doce tareas existen en `origin/main` bajo `frontend/src/shell/`; la Tarea 8 quedó en `frontend/src/shell/auth/PantallaLogin.tsx`, no en la ruta que el plan escribió. El `estado: abierto` que tenía no es un valor de la taxonomía del pase.
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
