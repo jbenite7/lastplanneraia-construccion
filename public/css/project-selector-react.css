@@ -35,6 +35,26 @@
     overflow: hidden;
   }
 
+  /* Tarea 9, S04 (hallazgo Axe): el bloque de cuenta propio de `BarraLateral` (`cuentaPropia`)
+     está siempre visible, sin disparador ni popover, así que no puede reutilizar
+     `[data-aia-menu-panel]` — esa regla (`components/navigation.css`) lo pondría en
+     `position: absolute`, pensado para flotar sobre un disparador que aquí no existe. Esta clase
+     copia solo el fondo/borde/radio del panel de `MenuCuenta` (`--ds-active-surface-raised`,
+     `components/primitives.css`), que es lo que `.aia-sidebar__account-head` necesita detrás para
+     cumplir contraste (era 2.04:1 contra el `<aside>` directamente; el panel resuelve 4.5:1+).
+     Sin position/z-index: se queda en el flujo normal del pie, como el resto de esta hoja. */
+  .aia-sidebar__account--estatico {
+    padding: var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+
+  .aia-sidebar__account--estatico .aia-sidebar__account-head {
+    border-block-end-color: var(--ds-active-border);
+  }
+
   .project-selector-react {
     display: flex;
     flex-direction: column;

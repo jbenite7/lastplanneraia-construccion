@@ -319,24 +319,40 @@ export function BarraLateral({
         <footer className="aia-sidebar__footer">
           <ConmutadorTema />
           {children}
+          {/*
+            Tarea 9, S04 (hallazgo Axe de la primera corrida en navegador — `color-contrast`
+            `serious`, 2.04:1 contra el mínimo 4.5:1): a diferencia de `MenuCuenta`, este bloque
+            no tiene disparador ni estado abierto/cerrado — está siempre visible en la pantalla
+            standalone `/proyectos`. Pero `.aia-sidebar__account-head` (navigation.css) da por
+            hecho que SIEMPRE vive dentro de `[data-aia-menu-panel]`: es ese wrapper el que pinta
+            el fondo opaco (`--ds-active-surface-raised`, primitives.css) contra el que su color
+            de texto (`--ds-active-text-primary`) sí cumple contraste. Reutilizar
+            `[data-aia-menu-panel]` aquí NO sirve: esa misma regla lo posiciona en
+            `position: absolute` (`.aia-sidebar__account [data-aia-menu-panel]`, pensado para
+            flotar sobre un disparador que aquí no existe) y habría sacado el bloque del flujo
+            del pie. `.aia-sidebar__account--estatico` (nueva, en `project-selector-react.css`)
+            copia solo el fondo/borde/color del panel, sin el posicionamiento del popover.
+          */}
           {!children && cuentaPropia && (
             <div className="aia-menu aia-sidebar__account" data-aia-component="menu">
-              <span className="aia-sidebar__account-head" role="presentation">
-                {accountName}
-              </span>
-              {showChangeProject && (
-                <a className="aia-sidebar__account-item" href="/proyectos">
-                  Cambiar proyecto
-                </a>
-              )}
-              <button
-                type="button"
-                className="aia-sidebar__account-item"
-                disabled={cerrandoSesion}
-                onClick={() => void alCerrarSesion()}
-              >
-                {cerrandoSesion ? 'Cerrando sesión…' : 'Cerrar sesión'}
-              </button>
+              <div className="aia-sidebar__account--estatico">
+                <span className="aia-sidebar__account-head" role="presentation">
+                  {accountName}
+                </span>
+                {showChangeProject && (
+                  <a className="aia-sidebar__account-item" href="/proyectos">
+                    Cambiar proyecto
+                  </a>
+                )}
+                <button
+                  type="button"
+                  className="aia-sidebar__account-item"
+                  disabled={cerrandoSesion}
+                  onClick={() => void alCerrarSesion()}
+                >
+                  {cerrandoSesion ? 'Cerrando sesión…' : 'Cerrar sesión'}
+                </button>
+              </div>
             </div>
           )}
         </footer>

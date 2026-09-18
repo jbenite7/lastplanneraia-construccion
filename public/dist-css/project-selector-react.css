@@ -2,6 +2,16 @@
   body.aia-shell-drawer-open {
     overflow: hidden;
   }
+  .aia-sidebar__account--estatico {
+    padding: var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+  .aia-sidebar__account--estatico .aia-sidebar__account-head {
+    border-block-end-color: var(--ds-active-border);
+  }
   .project-selector-react {
     display: flex;
     flex-direction: column;
