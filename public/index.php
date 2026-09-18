@@ -114,8 +114,14 @@ $router->post('/password/update', [\App\Controllers\Auth\LoginController::class,
 $router->get('/login/cancelar', [\App\Controllers\Auth\LoginController::class, 'cancelPasswordChange']);
 $router->get('/logout', [\App\Controllers\Auth\LoginController::class, 'logout']);
 
-// Project Selector (Phase 2)
+// Project Selector (Phase 2). GET/HEAD '/proyectos' los sirve SpaRouter/SpaHostRenderer desde la
+// Tarea 10 (S04 «Corte, conservando el PHP», gate explícito de Felipe 2026-09-18): a diferencia
+// de S02/S03, el legado NO se retira. Sigue registrado aquí, junto con HEAD (mismo patrón que
+// '/' y '/login' — ver App\Core\Router::head()) para que el rollback (quitar '/proyectos' de
+// SpaRouter::RUTAS_EXACTAS_MIGRADAS) devuelva ambos métodos a esta pantalla PHP real, no a un
+// 404 controlado.
 $router->get('/proyectos', [\App\Controllers\Core\ProjectSelectorController::class, 'index']);
+$router->head('/proyectos', [\App\Controllers\Core\ProjectSelectorController::class, 'index']);
 $router->post('/proyecto/seleccionar', [\App\Controllers\Core\ProjectSelectorController::class, 'select']);
 
 // Puerta de servicio de desarrollo. Fuera de desarrollo la ruta NO se registra: el router

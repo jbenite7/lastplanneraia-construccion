@@ -15,7 +15,7 @@ class SpaRouter
      * Rutas puntuales que ya sirve la SPA. No cubren subrutas: `/login/cancelar` NO cae aquí a
      * menos que se liste explícitamente.
      */
-    public const RUTAS_EXACTAS_MIGRADAS = ['/', '/login', '/password/forgot', '/password/reset'];
+    public const RUTAS_EXACTAS_MIGRADAS = ['/', '/login', '/password/forgot', '/password/reset', '/proyectos'];
 
     /** Prefijos que ya sirve la SPA (esa ruta y todo lo que cuelgue de ella). */
     public const PREFIJOS_MIGRADOS = ['/app'];
