@@ -846,14 +846,14 @@ for (const pathname of ['/app/proyectos', '/proyectos']) {
   });
 }
 
-test('/app sin proyecto redirige al alias piloto /app/proyectos', async () => {
+test('/app sin proyecto redirige a la ruta canónica /proyectos (Tarea 10)', async () => {
   window.history.pushState({}, '', '/app');
   responderSesion(AUTENTICADA_SIN_PROYECTO);
 
   render(<Rutas />);
 
   expect(await screen.findByTestId('selector-proyectos')).toBeVisible();
-  await waitFor(() => expect(window.location.pathname).toBe('/app/proyectos'));
+  await waitFor(() => expect(window.location.pathname).toBe('/proyectos'));
 });
 
 test('/app/proyectos: un error de sesión (red) muestra la alerta global, no el selector', async () => {

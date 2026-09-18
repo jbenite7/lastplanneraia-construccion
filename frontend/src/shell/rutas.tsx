@@ -397,10 +397,12 @@ function RutasSegunSesion() {
 
     // Tarea 7, S04: la pantalla ya no se pinta aquí — vive en `RutaProyectos`
     // (`/app/proyectos`/`/proyectos`), con su propio rail. Una sesión sin proyecto en
-    // cualquier otro path se redirige al alias piloto (`/app/proyectos` sirve por prefijo
-    // migrado de `SpaRouter`; `/proyectos` a secas no, hasta la Tarea 10).
+    // cualquier otro path se redirige a la ruta canónica `/proyectos` (Tarea 10: `SpaRouter`
+    // ya la sirve por GET/HEAD, «Corte, conservando el PHP», Felipe 2026-09-18). El alias
+    // piloto `/app/proyectos` sigue vivo por el prefijo migrado, pero deja de ser el destino
+    // por defecto.
     case 'autenticado_sin_proyecto':
-      return <Navigate replace to="/app/proyectos" />;
+      return <Navigate replace to="/proyectos" />;
 
     case 'listo':
       if (!autenticado || !autenticado.project) {
