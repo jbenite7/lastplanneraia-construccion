@@ -342,6 +342,7 @@ export function BarraLateral({
                       <a
                         aria-current={item.id === activeId ? 'page' : undefined}
                         className="aia-sidebar__link"
+                        data-destination-id={item.id}
                         href={item.href}
                       >
                         <span className="aia-sidebar__label">{item.label}</span>

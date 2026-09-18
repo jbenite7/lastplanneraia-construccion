@@ -40,6 +40,11 @@ test('marca un único aria-current en la entrada activa, sin "Cambiar proyecto" 
   expect(screen.getAllByRole('link', { current: 'page' })).toHaveLength(1);
   expect(screen.queryByRole('link', { name: 'Cambiar proyecto' })).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: /tema/i })).toBeVisible();
+  // T7-4/Tarea 10: contrato DOM vinculante con el sidebar legado — cada entrada lleva
+  // `data-destination-id` (era el único atributo que solo emitía la vista PHP; ahora también
+  // lo emite BarraLateral, ver tests/browser/project-selector-sidebar.spec.mjs).
+  expect(screen.getByRole('link', { name: 'Tus proyectos' })).toHaveAttribute('data-destination-id', 'projects');
+  expect(screen.getByRole('link', { name: 'Control Tower - Informes' })).toHaveAttribute('data-destination-id', 'bi');
 });
 
 // T7-6 (ronda de arreglo 1, hallazgo Important del revisor): "Cerrar sesión" en el bloque de
