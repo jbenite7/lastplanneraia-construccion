@@ -236,11 +236,22 @@ test.describe('selector de proyectos React — comportamiento', () => {
     await expect(disparador).toBeVisible();
 
     // Ronda de arreglo 2 (hallazgo del coordinador): `toBeVisible()` no detecta que el
-    // disparador flotante (`position: fixed`, V1 de la ronda 1) tape el `h1` — solo comprueba
-    // que el propio h1 esté en el DOM y no oculto, no que otro elemento fijo se dibuje encima.
-    // `elementFromPoint` sobre la esquina superior izquierda real del h1 sí lo distingue: sin la
-    // reserva de espacio de `.project-selector-react__header`, ese punto resuelve al botón, no
-    // al título.
+    // disparador tape el `h1` — solo comprueba que el propio h1 esté en el DOM y no oculto, no
+    // que otro elemento se dibuje encima. `elementFromPoint` sobre la esquina superior izquierda
+    // real del h1 sí lo distingue.
+    // Tarea 9b: la reserva de espacio dejó de ser un padding-left calculado a mano
+    // (`.project-selector-react__header`) — ahora `.shell-mobile-topbar` es una fila real en
+    // flujo normal (`position: sticky`) que empuja el `<main>` hacia abajo por construcción. La
+    // aserción sigue siendo la misma: el punto ya no resuelve al botón porque el botón ya no
+    // flota sobre el título.
+    // El `<aside>` cerrado transiciona a `translateX(-100%)` (`shell-sidebar.css`,
+    // `transition: transform var(--ds-motion-standard)`) — sin esperar a que asiente fuera de
+    // pantalla, `elementFromPoint` puede capturar un fotograma intermedio de la transición y
+    // resolver a un enlace del rail en vez de al `h1`. Se espera la condición real (el aside ya
+    // fuera del viewport), no un tiempo fijo.
+    const asideCerrado = page.locator('aside.aia-navigation--sidebar');
+    await expect.poll(async () => (await asideCerrado.boundingBox())?.x ?? 0).toBeLessThan(0);
+
     const h1 = page.getByRole('heading', { level: 1, name: 'Tus proyectos' });
     const cajaH1 = await h1.boundingBox();
     const elementoEnEsquina = await page.evaluate(
@@ -251,6 +262,19 @@ test.describe('selector de proyectos React — comportamiento', () => {
       [cajaH1.x + 2, cajaH1.y + 2],
     );
     expect(elementoEnEsquina).toBe(true);
+
+    // Tarea 9b, S04 (pedido de Felipe: «en celular y tablet, junto a Menú»). La fila superior
+    // lleva la marca con el ícono real cargado — `naturalWidth > 0` prueba que la imagen mordió
+    // (no solo que el nodo `<img>` exista con un `src` cualquiera). Alcance a `.shell-mobile-topbar`
+    // porque el `<aside>` del drawer cerrado también tiene su propio enlace "Last Planner AIA"
+    // (fuera de vista por `transform`, pero presente en el árbol de accesibilidad).
+    const filaMovil = page.locator('.shell-mobile-topbar');
+    await expect(filaMovil).toBeVisible();
+    const marcaMovil = filaMovil.getByRole('link', { name: 'Last Planner AIA' });
+    await expect(marcaMovil).toBeVisible();
+    await expect(marcaMovil).toHaveAttribute('href', '/proyectos');
+    const anchoNaturalMovil = await marcaMovil.locator('img').evaluate((img) => img.naturalWidth);
+    expect(anchoNaturalMovil).toBeGreaterThan(0);
 
     await disparador.click();
 
@@ -274,6 +298,15 @@ test.describe('selector de proyectos React — comportamiento', () => {
     await expect(page.getByRole('button', { name: 'Abrir menú de navegación' })).toHaveCount(0);
     const enlaceProyectos = page.getByRole('link', { name: 'Tus proyectos' });
     await expect(enlaceProyectos).toHaveAttribute('aria-current', 'page');
+
+    // Tarea 9b, S04: en escritorio la marca vive solo en la cabecera del rail (sin la fila
+    // móvil, que no se monta a este ancho).
+    await expect(page.locator('.shell-mobile-topbar')).toHaveCount(0);
+    const marcaEscritorio = page.locator('aside').getByRole('link', { name: 'Last Planner AIA' });
+    await expect(marcaEscritorio).toBeVisible();
+    await expect(marcaEscritorio).toHaveAttribute('href', '/proyectos');
+    const anchoNaturalEscritorio = await marcaEscritorio.locator('img').evaluate((img) => img.naturalWidth);
+    expect(anchoNaturalEscritorio).toBeGreaterThan(0);
   });
 
   test('sin overflow horizontal y sin errores de consola en el camino feliz', async ({ page }) => {
