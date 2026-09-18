@@ -64,6 +64,24 @@ test('a 390px (móvil) el drawer arranca cerrado con disparador visible y velo a
   expect(screen.getByRole('navigation').closest('aside')).not.toHaveAttribute('data-shell-drawer-open');
 });
 
+// Tarea 9b, S04 (pedido de Felipe: «en celular y tablet, junto a Menú»). Con el drawer cerrado
+// bajo 1180px, la fila `.shell-mobile-topbar` de `AppShell` lleva la marca junto al disparador —
+// misma composición que la pantalla standalone `/proyectos` (`BarraLateral.test.tsx`).
+test('a 390px la fila superior de AppShell lleva la marca junto al disparador «Menú»', () => {
+  establecerAncho(390);
+  renderizar();
+
+  const fila = document.querySelector('.shell-mobile-topbar');
+  expect(fila).not.toBeNull();
+  const disparador = screen.getByRole('button', { name: /abrir menú de navegación/i });
+  expect(fila).toContainElement(disparador);
+
+  const enlacesMarca = screen.getAllByRole('link', { name: 'Last Planner AIA' });
+  const enlaceEnFila = enlacesMarca.find((enlace) => fila?.contains(enlace));
+  expect(enlaceEnFila).toHaveAttribute('href', '/proyectos');
+  expect(enlaceEnFila?.querySelector('img')).toHaveAttribute('src', '/public/img/brand/icon.svg');
+});
+
 // Regresión ronda de arreglos 2 (hallazgo del coordinador, navegador real, resize genuino
 // 1440×900 → 390×844): un cambio anterior podía, en teoría, desincronizar la detección de modo
 // (drawer vs. rail persistente) del transform del estado abierto — son dos mecanismos distintos
