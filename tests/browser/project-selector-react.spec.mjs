@@ -157,12 +157,21 @@ test.describe('selector de proyectos React — comportamiento', () => {
     await page.goto('/app/proyectos');
     await esperarPantalla(page);
 
-    await page.getByRole('button', { name: /Ágora/ }).click();
+    const tarjetaAgora = page.getByRole('button', { name: /Ágora/ });
+    await tarjetaAgora.click();
     await expect(page.getByRole('button', { name: 'Actualizar sesión' })).toBeVisible();
     expect(seleccion.total).toBe(1);
 
     await page.getByRole('button', { name: 'Actualizar sesión' }).click();
     await expect(page.getByRole('button', { name: 'Actualizar sesión' })).toHaveCount(0);
+
+    // Corrección de revisión final S04 (T10, Important 2): antes del arreglo, `RutaProyectos`
+    // se desmontaba durante el hueco `cargando` de esta revalidación — el selector reaparecía
+    // desde cero y el foco se perdía (quedaba en el `<body>` o en el disparador del rail, nunca
+    // en la tarjeta elegida). El servidor devuelve la MISMA lista de proyectos en la segunda
+    // respuesta de `/api/session`/`/api/proyectos` (`simularProyectos` con un solo doble), así
+    // que la tarjeta de "Ágora" sigue siendo el destino correcto de foco (spec §402/§488/§492).
+    await expect(tarjetaAgora).toBeFocused();
 
     // La revalidación pasa por `/api/session`, nunca reenvía el POST de selección.
     expect(seleccion.total).toBe(1);
