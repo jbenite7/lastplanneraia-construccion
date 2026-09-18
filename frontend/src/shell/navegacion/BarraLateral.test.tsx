@@ -62,6 +62,22 @@ test('en escritorio, la marca de la cabecera enlaza a /proyectos con el ícono d
   expect(icono).toHaveAttribute('src', '/public/img/brand/icon.svg');
 });
 
+// Ronda 2 (T9b, hallazgo del coordinador): el botón "Colapsar/Expandir menú" quedaba sin nada
+// visible — solo traía `.aia-sidebar__toggle-label`, y el adaptador oculta esa etiqueta en
+// expandido. Sin este ícono el botón medía 44×44 con fondo y borde transparentes. Muerde: falla
+// si se quita el ícono o se rompe la paridad con `DesignSystemComponent::icon()`.
+test('el botón de colapsar/expandir menú trae el ícono decorativo de la barra canónica', () => {
+  fijarAncho(1440);
+  render(<BarraLateral activeId="projects" accountName="Ana" groups={GRUPOS} showChangeProject={false} />);
+
+  const boton = screen.getByRole('button', { name: 'Colapsar menú' });
+  const icono = boton.querySelector('.aia-sidebar__toggle-icon svg.aia-icon__glyph');
+  expect(icono).not.toBeNull();
+  expect(icono).toHaveAttribute('viewBox', '0 0 24 24');
+  expect(icono).toHaveAttribute('aria-hidden', 'true');
+  expect(icono).toHaveAttribute('focusable', 'false');
+});
+
 // Bajo 1180px (modo autónomo, `flotante`), la marca se repite en la fila superior junto al
 // disparador «Menú» — con el drawer cerrado, es la única marca visible en pantalla porque el
 // `<aside>` está fuera de vista (`translateX(-100%)`).

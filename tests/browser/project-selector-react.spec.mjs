@@ -307,6 +307,18 @@ test.describe('selector de proyectos React — comportamiento', () => {
     await expect(marcaEscritorio).toHaveAttribute('href', '/proyectos');
     const anchoNaturalEscritorio = await marcaEscritorio.locator('img').evaluate((img) => img.naturalWidth);
     expect(anchoNaturalEscritorio).toBeGreaterThan(0);
+
+    // Ronda 2 (T9b, hallazgo del coordinador): el botón "Colapsar menú" quedaba sin nada
+    // visible (solo la etiqueta, oculta en expandido). Confirma que el ícono decorativo pinta
+    // con tamaño real y color no transparente.
+    const iconoColapsar = page.locator('.aia-sidebar__toggle-icon svg.aia-icon__glyph');
+    await expect(iconoColapsar).toBeVisible();
+    const cajaIcono = await iconoColapsar.boundingBox();
+    expect(cajaIcono?.width).toBeGreaterThan(0);
+    expect(cajaIcono?.height).toBeGreaterThan(0);
+    const colorTrazo = await iconoColapsar.evaluate((svg) => getComputedStyle(svg).color);
+    expect(colorTrazo).not.toBe('rgba(0, 0, 0, 0)');
+    expect(colorTrazo).not.toBe('transparent');
   });
 
   test('sin overflow horizontal y sin errores de consola en el camino feliz', async ({ page }) => {

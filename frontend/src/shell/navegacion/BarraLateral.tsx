@@ -35,6 +35,24 @@ export type GrupoBarraLateral = {
 const SELECTOR_ENFOCABLES =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+/**
+ * Ícono decorativo del botón "Colapsar/Expandir menú" (ronda 2, T9b, hallazgo del coordinador):
+ * paridad exacta con `DesignSystemComponent::icon(['name' => 'collapse', 'decorative' => true])`
+ * (`src/View/Components/DesignSystemComponent.php:27,45-49`) — mismo trazo, mismos atributos de
+ * `<svg>`. Sin él el botón quedaba sin nada visible (solo el `<span>` de etiqueta, oculto en
+ * expandido por `navigation.css`). `navigation.css:322-329` ya cubre `.aia-sidebar__toggle-icon`
+ * (tamaño y rotación en colapsado); no se agrega CSS nuevo.
+ */
+function IconoColapsarMenu() {
+  return (
+    <span className="aia-icon aia-icon--collapse" data-aia-component="icon" aria-hidden="true">
+      <svg className="aia-icon__glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="m14 6-6 6 6 6" />
+      </svg>
+    </span>
+  );
+}
+
 type PropiedadesBarraLateral = {
   /** Id de la entrada activa (ya resuelta por quien arma `groups`, contra la URL vigente). */
   activeId: string;
@@ -296,6 +314,9 @@ export function BarraLateral({
               data-sidebar-toggle=""
               onClick={alAlternarEstado}
             >
+              <span className="aia-sidebar__toggle-icon">
+                <IconoColapsarMenu />
+              </span>
               <span className="aia-sidebar__toggle-label">
                 {estado === 'expanded' ? 'Colapsar menú' : 'Expandir menú'}
               </span>
