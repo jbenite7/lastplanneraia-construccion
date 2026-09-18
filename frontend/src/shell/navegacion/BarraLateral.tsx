@@ -320,22 +320,25 @@ export function BarraLateral({
           <ConmutadorTema />
           {children}
           {/*
-            Tarea 9, S04 (hallazgo Axe de la primera corrida en navegador — `color-contrast`
-            `serious`, 2.04:1 contra el mínimo 4.5:1): a diferencia de `MenuCuenta`, este bloque
-            no tiene disparador ni estado abierto/cerrado — está siempre visible en la pantalla
-            standalone `/proyectos`. Pero `.aia-sidebar__account-head` (navigation.css) da por
-            hecho que SIEMPRE vive dentro de `[data-aia-menu-panel]`: es ese wrapper el que pinta
-            el fondo opaco (`--ds-active-surface-raised`, primitives.css) contra el que su color
-            de texto (`--ds-active-text-primary`) sí cumple contraste. Reutilizar
-            `[data-aia-menu-panel]` aquí NO sirve: esa misma regla lo posiciona en
-            `position: absolute` (`.aia-sidebar__account [data-aia-menu-panel]`, pensado para
-            flotar sobre un disparador que aquí no existe) y habría sacado el bloque del flujo
-            del pie. `.aia-sidebar__account--estatico` (nueva, en `project-selector-react.css`)
-            copia solo el fondo/borde/color del panel, sin el posicionamiento del popover.
+            Tarea 9, S04 (hallazgo Axe original + ronda de arreglo 1, hallazgo visual V2). Este
+            bloque, a diferencia de `MenuCuenta`, no tiene disparador ni estado abierto/cerrado —
+            está siempre visible en la pantalla standalone `/proyectos`. Lleva el atributo REAL
+            `data-aia-menu-panel` (no una clase propia): es ese selector, en
+            `components/primitives.css`, el que da a la vez el fondo opaco
+            (`--ds-active-surface-raised`, contra el que `.aia-sidebar__account-head` cumple
+            contraste — Axe, 2.04:1 sin él) Y el reset de `<button>`/`<a>`
+            (`[data-aia-menu-panel] :is(button, a)`) que espera `.aia-sidebar__account-item`
+            (`buttons.css:37` lo excluye del reset genérico a propósito, confiando en que ese
+            selector de atributo lo cubra). Una clase propia que solo copiara fondo/borde
+            arreglaba el contraste pero dejaba "Cerrar sesión" como botón crudo del navegador
+            (V2). Lo único que hay que anular es el `position: absolute` que
+            `.aia-sidebar__account [data-aia-menu-panel]` trae para flotar sobre un disparador
+            que aquí no existe — lo hace `.aia-sidebar__account-panel--estatico`
+            (`project-selector-react.css`).
           */}
           {!children && cuentaPropia && (
             <div className="aia-menu aia-sidebar__account" data-aia-component="menu">
-              <div className="aia-sidebar__account--estatico">
+              <div className="aia-sidebar__account-panel--estatico" data-aia-menu-panel>
                 <span className="aia-sidebar__account-head" role="presentation">
                   {accountName}
                 </span>

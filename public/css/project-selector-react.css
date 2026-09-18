@@ -35,24 +35,52 @@
     overflow: hidden;
   }
 
-  /* Tarea 9, S04 (hallazgo Axe): el bloque de cuenta propio de `BarraLateral` (`cuentaPropia`)
-     está siempre visible, sin disparador ni popover, así que no puede reutilizar
-     `[data-aia-menu-panel]` — esa regla (`components/navigation.css`) lo pondría en
-     `position: absolute`, pensado para flotar sobre un disparador que aquí no existe. Esta clase
-     copia solo el fondo/borde/radio del panel de `MenuCuenta` (`--ds-active-surface-raised`,
-     `components/primitives.css`), que es lo que `.aia-sidebar__account-head` necesita detrás para
-     cumplir contraste (era 2.04:1 contra el `<aside>` directamente; el panel resuelve 4.5:1+).
-     Sin position/z-index: se queda en el flujo normal del pie, como el resto de esta hoja. */
-  .aia-sidebar__account--estatico {
-    padding: var(--ds-space-3);
-    border: var(--ds-border-width) solid var(--ds-active-border);
-    border-radius: var(--ds-radius-control);
-    background: var(--ds-active-surface-raised);
-    color: var(--ds-active-text-primary);
+  /* Tarea 9, S04 (hallazgo Axe original + ronda de arreglo 1, hallazgo visual V2).
+     El bloque de cuenta propio de `BarraLateral` (`cuentaPropia`) está siempre visible, sin
+     disparador ni popover. La primera versión de este fix lo envolvía en un `div` con una clase
+     nueva que solo copiaba fondo/borde — eso arregló el contraste de `.aia-sidebar__account-head`
+     (Axe) pero dejó "Cerrar sesión" como botón crudo del navegador (V2): el reset real de
+     `<button>`/`<a>` dentro de un panel de cuenta no vive en una clase propia, vive en
+     `[data-aia-menu-panel] :is(button, a)` (`components/primitives.css`) — el mismo selector de
+     atributo que también da el fondo opaco (`:where([data-aia-menu-panel], …)`, mismo archivo).
+     `buttons.css:37` excluye a propósito `.aia-sidebar__account-item` de su reset genérico
+     PORQUE espera que ese selector de atributo sea quien lo resetee; sin el atributo, el botón
+     cae al `buttonface` nativo.
+     La solución correcta es dar el atributo real (`data-aia-menu-panel`) para heredar TODO
+     (fondo, borde, reset de botón/enlace) del mismo sitio que usa `MenuCuenta`, y solo anular el
+     `position: absolute` que esa misma regla trae (`.aia-sidebar__account [data-aia-menu-panel]`,
+     pensada para flotar sobre un disparador que aquí no existe). La capa `module` (esta hoja) va
+     DESPUÉS de `components` en el orden declarado en `aia-design-system.css`, así que gana sin
+     necesitar `!important`. */
+  .aia-sidebar__account-panel--estatico {
+    position: static;
+    inset-inline-start: auto;
+    inset-block-end: auto;
+    margin-block-start: 0;
+    max-width: none;
+    min-width: 0;
+    inline-size: 100%;
   }
 
-  .aia-sidebar__account--estatico .aia-sidebar__account-head {
-    border-block-end-color: var(--ds-active-border);
+  /* Ronda de arreglo 1 (hallazgo visual V3): "Tus proyectos" (`aria-current="page"`) quedaba casi
+     invisible en oscuro y sin distinguirse del resto en claro. `.aia-sidebar__link[aria-current="page"]`
+     (`components/navigation.css`) SÍ pinta el fondo/color correctos
+     (`--ds-active-action-primary`/`--ds-active-action-text`) — confirmado con el estilo
+     computado del elemento real (`getComputedStyle`): `color` llegaba bien, `background-color`
+     salía `rgba(0,0,0,0)`. La causa es `body.aia-shell--sidebar .aia-sidebar__link { background:
+     transparent }` (`adapters/shell-sidebar.css`), que vive en la capa `legacy-overrides` — la
+     ÚLTIMA del orden declarado en `aia-design-system.css` — así que una regla normal ahí gana
+     SIEMPRE sobre cualquier regla normal de una capa anterior, sin importar especificidad. Ese
+     `transparent` es intencional para los ítems SIN `aria-current` (evita que un `<button>` del
+     rail herede el `buttonface` del navegador, arreglo de Felipe 2026-09-08) — no se toca, sería
+     un cambio fuera de S04 con blast radius en todo el shell. La única forma de ganarle a una
+     capa posterior sin tocarla es `!important`, y se scopea a esta pantalla
+     (`body:has(.project-selector-react)`) para no alterar ningún otro consumidor de
+     `BarraLateral`/`NavegacionLateral`. Nota para quien migre la próxima pantalla a React: este
+     mismo problema le espera ahí también — es un bug de la capa compartida, no de esta hoja. */
+  body:has(.project-selector-react) .aia-sidebar__link[aria-current="page"] {
+    background: var(--ds-active-action-primary) !important;
+    color: var(--ds-active-action-text) !important;
   }
 
   .project-selector-react {
@@ -77,6 +105,20 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: var(--ds-space-4);
+  }
+
+  /* Ronda de arreglo 1 (hallazgo visual V1): bajo 1180px `.shell-menu-trigger` (`BarraLateral`)
+     es `position: fixed` en la esquina superior izquierda — igual que en `AppShell` — y NO
+     participa del flujo de esta cabecera, así que sin reservar su espacio el `h1` se renderiza
+     DEBAJO del botón. Mismo arreglo que ya existe para el shell con proyecto
+     (`body.aia-shell--sidebar .context-bar`, `adapters/shell-sidebar.css`): mismos tokens,
+     mismo breakpoint (`max-width: 1179px`, el límite exacto de `esBarraLateralFlotante`), y el
+     mismo cálculo — no se inventa un valor nuevo. Selector propio porque esta pantalla no tiene
+     un `.context-bar`: su cabecera es `.project-selector-react__header`. */
+  @media (max-width: 1179px) {
+    .project-selector-react__header {
+      padding-inline-start: calc(var(--ds-space-18) + var(--ds-space-8));
+    }
   }
 
   /* `min-width: 0` es lo que impide que el título largo empuje el botón de Control Tower fuera
@@ -105,11 +147,15 @@
     margin: 0;
   }
 
+  /* T9-7 (ronda de arreglo 1, hallazgo visual V4): etiqueta SIEMPRE apilada encima del
+     campo, en los cuatro anchos — decisión del coordinador, mismo patrón que los campos
+     de login de S01 (`.aia-field`, `filter-form.css`: `display: grid`). Antes era
+     `display: flex` en fila, y en 768/1180/1440 la etiqueta quedaba a la izquierda del
+     input y desalineada respecto al resto del formulario. */
   .project-selector-react__search {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    display: grid;
     gap: var(--ds-space-2);
+    align-items: start;
   }
 
   .project-selector-react__search label {
@@ -119,8 +165,8 @@
   }
 
   .project-selector-react__search input[type="search"] {
-    flex: 1 1 16rem;
-    min-width: 0;
+    inline-size: 100%;
+    max-inline-size: 32rem;
     min-height: var(--ds-target-min);
     padding: var(--ds-control-padding-block) var(--ds-space-4);
     border: var(--ds-border-width) solid var(--ds-active-border);
