@@ -132,10 +132,19 @@ export function BarraLateral({
     : alAlternarEstadoExterno;
   const abierto = barraAutonoma ? abiertoPropio : Boolean(abiertoEnMovilExterno);
 
+  // Ronda de arreglo 1 (Tarea 8, hallazgo Important): al dejar de ser flotante hay que cerrar el
+  // drawer propio, igual que `AppShell.tsx:127-129` hace para el suyo. Sin este cierre,
+  // `abiertoPropio` sobrevive al cruce de breakpoint (abrir bajo 1180px y luego ensanchar la
+  // ventana) y el efecto de bloqueo de fondo de abajo —atado solo a `[barraAutonoma, abierto]`,
+  // sin gate de `flotante`— deja `body.aia-shell-drawer-open`/`overflow: hidden` pegado para
+  // siempre: en escritorio ya no hay disparador para cerrarlo y `Escape` está gateado por
+  // `flotante` en los efectos vecinos (foco de entrada, atrapa-tab).
   useEffect(() => {
     if (!barraAutonoma) return;
     function sincronizar() {
-      setFlotante(esBarraLateralFlotante(window.innerWidth));
+      const ahoraFlotante = esBarraLateralFlotante(window.innerWidth);
+      setFlotante(ahoraFlotante);
+      if (!ahoraFlotante) setAbiertoPropio(false);
     }
     sincronizar();
     window.addEventListener('resize', sincronizar);

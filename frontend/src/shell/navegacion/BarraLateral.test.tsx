@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, test, vi } from 'vitest';
 import { BarraLateral } from './BarraLateral';
@@ -200,6 +200,30 @@ test('drawer móvil autónomo: bloquea el fondo con una clase del body, nunca co
 
   await usuario.click(screen.getByRole('button', { name: /cerrar menú de navegación/i }));
 
+  expect(document.body.classList.contains('aia-shell-drawer-open')).toBe(false);
+  expect(document.body.style.overflow).toBe('');
+});
+
+// Ronda de arreglo 1 (hallazgo Important del revisor): `AppShell.tsx:127-129` suelta el drawer al
+// dejar de ser flotante (`if (!ahoraFlotante) setAbierto(false)`); el `sincronizar()` de
+// `BarraLateral` no lo hacía. Sin este cierre, alguien que abre el drawer bajo 1180px y luego
+// ensancha la ventana (acopla el portátil, gira la tablet) se queda con `abiertoPropio` en `true`
+// para siempre: en escritorio ya no hay botón «Menú» para cerrarlo, `Escape` está gateado por
+// `flotante` y el velo desaparece — y como el efecto de bloqueo de fondo (Tarea 8) solo mira
+// `[barraAutonoma, abierto]`, `body.aia-shell-drawer-open`/`overflow: hidden` queda pegado.
+test('al cruzar a escritorio con el drawer abierto, lo cierra y libera el fondo', () => {
+  fijarAncho(800);
+  render(<BarraLateral activeId="projects" accountName="Ana" groups={GRUPOS} showChangeProject={false} />);
+
+  fireEvent.click(screen.getByRole('button', { name: /abrir menú de navegación/i }));
+  expect(screen.getByRole('button', { name: /cerrar menú de navegación/i })).toHaveAttribute('aria-expanded', 'true');
+  expect(document.body.classList.contains('aia-shell-drawer-open')).toBe(true);
+
+  act(() => {
+    fijarAncho(1200);
+  });
+
+  expect(screen.queryByRole('button', { name: /menú de navegación/i })).not.toBeInTheDocument();
   expect(document.body.classList.contains('aia-shell-drawer-open')).toBe(false);
   expect(document.body.style.overflow).toBe('');
 });
