@@ -11,6 +11,7 @@
   "sources": [
     "views/core/project_selector.view.php",
     "public/css/project-selector.css",
+    "public/css/project-selector-react.css",
     "public/css/design-system/components/navigation.css",
     "public/js/modules/aia_ui/sidebar_navigation.js"
   ],
@@ -94,6 +95,134 @@
       "role": "authenticated-project-member",
       "golden": "tests/browser/__screenshots__/project-selector/project-selector-dark-1440x900.png",
       "sha256": "ee768a1332d64688e3690172843a6a32b6d436bfc2b292a54463194d4eb3e0e5"
+    },
+    {
+      "id": "project-selector-react-dark-390x844",
+      "family": "page-structure",
+      "route": "/proyectos",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "R",
+      "golden": "tests/browser/__screenshots__/project-selector-react.visual.mjs/project-selector-react-dark-390x844.png",
+      "sha256": "54c60a635886214d053f70dcbcbc5e79cc478822755023af24c0f8faf789b269"
+    },
+    {
+      "id": "project-selector-react-dark-768x1024",
+      "family": "page-structure",
+      "route": "/proyectos",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "R",
+      "golden": "tests/browser/__screenshots__/project-selector-react.visual.mjs/project-selector-react-dark-768x1024.png",
+      "sha256": "77fa69b1bccec15131de58b20b64a47b6993c708dd7d8a77dd55c28f24a9f33b"
+    },
+    {
+      "id": "project-selector-react-dark-1180x820",
+      "family": "page-structure",
+      "route": "/proyectos",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "R",
+      "golden": "tests/browser/__screenshots__/project-selector-react.visual.mjs/project-selector-react-dark-1180x820.png",
+      "sha256": "67dc31cc39254e6ce1537de8e537dee720b84106999096c6154f21c4136093c8"
+    },
+    {
+      "id": "project-selector-react-dark-1440x900",
+      "family": "page-structure",
+      "route": "/proyectos",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "normal",
+      "role": "R",
+      "golden": "tests/browser/__screenshots__/project-selector-react.visual.mjs/project-selector-react-dark-1440x900.png",
+      "sha256": "0478c0a14547e4baf1de588879483506e0dd0869fc60e8886135e088c9257717"
+    },
+    {
+      "id": "project-selector-react-light-390x844",
+      "family": "page-structure",
+      "route": "/proyectos",
+      "fixture": "authenticated-project-member",
+      "theme": "light",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "R",
+      "golden": "tests/browser/__screenshots__/project-selector-react.visual.mjs/project-selector-react-light-390x844.png",
+      "sha256": "5c1056c2fe53a7b7324957b7f20ec5c6c5d5fb4603d5fb0cc194a75afecca957"
+    },
+    {
+      "id": "project-selector-react-light-768x1024",
+      "family": "page-structure",
+      "route": "/proyectos",
+      "fixture": "authenticated-project-member",
+      "theme": "light",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "R",
+      "golden": "tests/browser/__screenshots__/project-selector-react.visual.mjs/project-selector-react-light-768x1024.png",
+      "sha256": "14d0929e4b2d969fb0c1347a82225aaec4a129f9cfb5bab9200aab249308af97"
+    },
+    {
+      "id": "project-selector-react-light-1180x820",
+      "family": "page-structure",
+      "route": "/proyectos",
+      "fixture": "authenticated-project-member",
+      "theme": "light",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "R",
+      "golden": "tests/browser/__screenshots__/project-selector-react.visual.mjs/project-selector-react-light-1180x820.png",
+      "sha256": "97a29ca21620b35371ccd72b69826c0fa26f073c1d8c157e9c5c9a94a72fba7f"
+    },
+    {
+      "id": "project-selector-react-light-1440x900",
+      "family": "page-structure",
+      "route": "/proyectos",
+      "fixture": "authenticated-project-member",
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "normal",
+      "role": "R",
+      "golden": "tests/browser/__screenshots__/project-selector-react.visual.mjs/project-selector-react-light-1440x900.png",
+      "sha256": "1a35629d5ec7ae4a53ceba6c55ae20ba69690ec1bc0b892e7dd80bbe7a7cd32c"
     }
   ]
 }
