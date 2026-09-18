@@ -56,6 +56,20 @@
   .shell-mobile-topbar__brand {
     color: var(--ds-active-text-primary);
   }
+  @media (max-width: 1179px) {
+    #root:has(> .project-selector-react) {
+      display: flex;
+      flex-direction: column;
+      min-block-size: 100dvh;
+    }
+    #root:has(> .project-selector-react) > .shell-mobile-topbar {
+      flex: 0 0 auto;
+    }
+    #root:has(> .project-selector-react) > .project-selector-react {
+      flex: 1 1 auto;
+      min-block-size: 0;
+    }
+  }
   .project-selector-react__header-text {
     min-width: 0;
   }
