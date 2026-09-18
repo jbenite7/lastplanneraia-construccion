@@ -1,5 +1,6 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import type { ListaProyectos } from '../lib/api/esquemas/proyectos';
 import type { ConfiguracionRuntime } from '../lib/runtime/configuracion';
 import { AppShell } from './AppShell';
 import { CambioClaveObligatorio } from './auth/CambioClaveObligatorio';
@@ -8,7 +9,9 @@ import { PantallaLogin } from './auth/PantallaLogin';
 import { PantallaRecuperarClave } from './auth/PantallaRecuperarClave';
 import { PantallaRestablecerClave } from './auth/PantallaRestablecerClave';
 import { leerTokenReset } from './auth/tokenReset';
-import { SelectorProyecto } from './SelectorProyecto';
+import { BarraLateral } from './navegacion/BarraLateral';
+import { navegacionSelectorProyectos } from './proyectos/NavegacionSelectorProyectos';
+import { SelectorProyectos } from './proyectos/SelectorProyectos';
 import { SesionProvider, useSesion } from './SesionProvider';
 
 const CONFIGURACION_APLICACION_POR_DEFECTO: ConfiguracionRuntime = { mode: 'application' };
@@ -49,6 +52,8 @@ export function Rutas({ configuracionRuntime = CONFIGURACION_APLICACION_POR_DEFE
           <Route element={<RutaRecuperacion />} path="/app/password/forgot" />
           <Route element={<RutaRestablecimiento />} path="/password/reset" />
           <Route element={<RutaRestablecimiento />} path="/app/password/reset" />
+          <Route element={<RutaProyectos />} path="/app/proyectos" />
+          <Route element={<RutaProyectos />} path="/proyectos" />
           <Route element={<RutasSegunSesion />} path="*" />
         </Routes>
       </SesionProvider>
@@ -227,6 +232,47 @@ function RutaMantenimiento({ configuracion }: { configuracion: ConfiguracionMant
 }
 
 /**
+ * Pantalla standalone `/app/proyectos` y `/proyectos` (Tarea 7, S04): rail genérico
+ * (`BarraLateral` + `navegacionSelectorProyectos`) como hermano de `SelectorProyectos`, fuera de
+ * `AppShell` — no hay un proyecto activo del que colgar el rail T01 completo.
+ *
+ * **T7-2 (decisión del coordinador):** el plan original solo pedía `estado==='listo'` o
+ * `'autenticado_sin_proyecto'`; con eso una sesión con cambio de clave pendiente vería el
+ * selector en vez del panel obligatorio. La guarda correcta es "autenticado, sin importar si ya
+ * tiene proyecto" — que es justo lo que NO cubren los otros cinco estados de `useSesion()` — así
+ * que delegar en `RutasSegunSesion` para cualquier otro estado reutiliza sus ramas de
+ * `cargando`/`error_recuperable`/`cambio_clave_requerido`/`anonimo`/`expirado` sin duplicarlas.
+ */
+function RutaProyectos() {
+  const { estado, autenticado, recargar } = useSesion();
+  const [navegacion, setNavegacion] = useState<ListaProyectos['navigation'] | null>(null);
+
+  if (estado !== 'autenticado_sin_proyecto' && estado !== 'listo') {
+    return <RutasSegunSesion />;
+  }
+
+  if (!autenticado) return null;
+
+  return (
+    <>
+      <BarraLateral
+        activeId="projects"
+        accountName={autenticado.user.displayName}
+        groups={navegacionSelectorProyectos(navegacion)}
+        showChangeProject={false}
+        cuentaPropia
+      />
+      <SelectorProyectos
+        session={{ csrfToken: autenticado.csrfToken, project: autenticado.project }}
+        onOpen={(route) => window.location.assign(route)}
+        onRevalidate={recargar}
+        onNavigation={setNavegacion}
+      />
+    </>
+  );
+}
+
+/**
  * Deriva su UI de las siete pantallas de arranque (spec T01 §7) que expone
  * `useSesion` desde el `SesionProvider` que la envuelve. No conserva ninguna
  * pantalla anterior mientras `recargar()` vuelve a resolver sesión o
@@ -348,8 +394,12 @@ function RutasSegunSesion() {
         />
       );
 
+    // Tarea 7, S04: la pantalla ya no se pinta aquí — vive en `RutaProyectos`
+    // (`/app/proyectos`/`/proyectos`), con su propio rail. Una sesión sin proyecto en
+    // cualquier otro path se redirige al alias piloto (`/app/proyectos` sirve por prefijo
+    // migrado de `SpaRouter`; `/proyectos` a secas no, hasta la Tarea 10).
     case 'autenticado_sin_proyecto':
-      return <SelectorProyecto alElegir={recargar} csrfToken={autenticado?.csrfToken ?? ''} />;
+      return <Navigate replace to="/app/proyectos" />;
 
     case 'listo':
       if (!autenticado || !autenticado.project) {

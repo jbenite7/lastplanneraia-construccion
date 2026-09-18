@@ -787,3 +787,111 @@ test('éxito del restablecimiento: reemplaza el historial hacia /login?reset=1 y
   expect(window.location.pathname).toBe('/login');
   expect(window.location.href).not.toContain(TOKEN_RESET);
 });
+
+// --- Tarea 7, S04: pantalla standalone /app/proyectos y /proyectos -----------------------
+
+const CAMBIO_CLAVE_REQUERIDO = {
+  state: 'password_change_required',
+  authenticated: false,
+  reason: null,
+  user: null,
+  project: null,
+  capabilities: {},
+  navigation: { bi: null, groups: [] },
+  week: null,
+  csrfToken,
+};
+
+for (const pathname of ['/app/proyectos', '/proyectos']) {
+  test(`${pathname}: con sesión y proyecto muestra el selector, con su propio rail`, async () => {
+    window.history.pushState({}, '', pathname);
+    responderSesion(AUTENTICADA_CON_PROYECTO);
+
+    render(<Rutas />);
+
+    expect(await screen.findByTestId('selector-proyectos')).toBeVisible();
+    expect(screen.getByRole('navigation', { name: /navegación del proyecto/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Tus proyectos' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  test(`${pathname}: sin proyecto también muestra el selector (no hay AppShell que lo tape)`, async () => {
+    window.history.pushState({}, '', pathname);
+    responderSesion(AUTENTICADA_SIN_PROYECTO);
+
+    render(<Rutas />);
+
+    expect(await screen.findByTestId('selector-proyectos')).toBeVisible();
+  });
+
+  test(`${pathname}: anónima nunca ve el selector, va al login`, async () => {
+    window.history.pushState({}, '', pathname);
+    responderSesion(ANONIMA_MISSING_SESSION);
+
+    render(<Rutas />);
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: /bienvenido a last planner aia/i })).toBeInTheDocument());
+    expect(screen.queryByTestId('selector-proyectos')).not.toBeInTheDocument();
+  });
+
+  // T7-2 (decisión del coordinador): el plan original solo exigía `state==='authenticated'`, lo
+  // que dejaría pasar un cambio de clave obligatorio pendiente. Esta prueba fija que NO pasa.
+  test(`${pathname}: con cambio de clave obligatorio pendiente, ve el panel de cambio de clave — nunca el selector`, async () => {
+    window.history.pushState({}, '', pathname);
+    responderSesion(CAMBIO_CLAVE_REQUERIDO);
+
+    render(<Rutas />);
+
+    expect(await screen.findByRole('button', { name: 'Actualizar y continuar' })).toBeInTheDocument();
+    expect(screen.queryByTestId('selector-proyectos')).not.toBeInTheDocument();
+  });
+}
+
+test('/app sin proyecto redirige al alias piloto /app/proyectos', async () => {
+  window.history.pushState({}, '', '/app');
+  responderSesion(AUTENTICADA_SIN_PROYECTO);
+
+  render(<Rutas />);
+
+  expect(await screen.findByTestId('selector-proyectos')).toBeVisible();
+  await waitFor(() => expect(window.location.pathname).toBe('/app/proyectos'));
+});
+
+test('/app/proyectos: un error de sesión (red) muestra la alerta global, no el selector', async () => {
+  window.history.pushState({}, '', '/app/proyectos');
+  vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('red no disponible')));
+
+  render(<Rutas />);
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(/no pudimos conectar/i);
+  expect(screen.queryByTestId('selector-proyectos')).not.toBeInTheDocument();
+});
+
+test('/app/proyectos: elegir un proyecto navega de documento completo a la ruta que devuelve el servidor', async () => {
+  window.history.pushState({}, '', '/app/proyectos');
+  const asignar = vi.fn();
+  vi.stubGlobal('location', { ...window.location, assign: asignar });
+  const fetchFalso = vi.fn((entrada: RequestInfo | URL) => {
+    const ruta = String(entrada);
+    if (ruta === '/api/session') {
+      return Promise.resolve(new Response(JSON.stringify(AUTENTICADA_SIN_PROYECTO), { status: 200 }));
+    }
+    if (ruta === '/api/proyectos') {
+      return Promise.resolve(new Response(JSON.stringify({
+        projects: [{ id: 1, name: 'Da Porto', area: 'Construccion', active: true, role: 'A', roleLabel: 'Administrador' }],
+        navigation: { bi: { visible: false, href: null } },
+      }), { status: 200 }));
+    }
+    if (ruta === '/api/proyectos/seleccionar') {
+      return Promise.resolve(new Response(JSON.stringify({ success: true, message: null, route: '/programacion-semanal' }), { status: 200 }));
+    }
+    return Promise.resolve(new Response(JSON.stringify({}), { status: 200 }));
+  });
+  vi.stubGlobal('fetch', fetchFalso);
+
+  const usuario = userEvent.setup();
+  render(<Rutas />);
+
+  await usuario.click(await screen.findByRole('button', { name: /da porto/i }));
+
+  await waitFor(() => expect(asignar).toHaveBeenCalledWith('/programacion-semanal'));
+});

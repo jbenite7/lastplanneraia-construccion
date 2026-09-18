@@ -232,12 +232,7 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
         alAlternarEstado={() => setColapsado((valor) => !valor)}
         abiertoEnMovil={flotante ? abierto : undefined}
       >
-        <MenuCuenta
-          nombre={sesion.user.displayName}
-          csrfToken={sesion.csrfToken}
-          alCambiarProyecto={recargar}
-          cerrarSesion={cerrarSesion}
-        />
+        <MenuCuenta nombre={sesion.user.displayName} cerrarSesion={cerrarSesion} />
       </NavegacionLateral>
 
       {/* Anuncios en vivo (spec T01 §14): un cambio de ruta actualiza `document.title` y esta

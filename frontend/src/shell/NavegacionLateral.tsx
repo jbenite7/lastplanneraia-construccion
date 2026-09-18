@@ -1,16 +1,19 @@
-import { useId, type ReactNode, type Ref } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type { Sesion } from '../lib/api/esquemas/sesion';
-import { ConmutadorTema } from './ConmutadorTema';
+import { BarraLateral } from './navegacion/BarraLateral';
 
 /**
- * Renderizador puro del manifiesto de navegación (spec T01 §8.2/§10.2). No hay tabla de
- * roles, catálogo de rutas ni construcción de URLs privilegiadas: `sesion.navigation.groups`
- * ya llega ordenado y filtrado por `ShellNavigationService` (PHP) — un ítem no autorizado no
- * viaja, así que este componente nunca decide a quién ocultarle qué. Lo único que calcula
- * localmente es qué entrada coincide con la URL actual, para el atributo `aria-current`.
+ * Encuentra la entrada del manifiesto cuyo `href` coincide EXACTAMENTE con la URL actual (spec
+ * T01 §8.2/§10.2). El servidor ya resolvió rol, membresía y visibilidad — ningún ítem no
+ * autorizado viaja — así que lo único que se calcula aquí es cuál id recibe `aria-current`.
  */
-function esEntradaActiva(href: string | null, pathname: string): boolean {
-  return href !== null && href === pathname;
+function idActivo(groups: Sesion['navigation']['groups'], pathname: string): string {
+  for (const grupo of groups) {
+    for (const item of grupo.items) {
+      if (item.href !== null && item.href === pathname) return item.id;
+    }
+  }
+  return '';
 }
 
 type PropiedadesNavegacionLateral = {
@@ -20,8 +23,8 @@ type PropiedadesNavegacionLateral = {
    *  hermano fuera de este árbol lo apunte. */
   id?: string;
   /** `AppShell` necesita el nodo real del `<aside>` para el respaldo inline del transform del
-   *  drawer — ver el comentario sobre `data-shell-drawer-open` más abajo. React 19 acepta `ref`
-   *  como prop normal, sin `forwardRef`. */
+   *  drawer — ver el comentario sobre `data-shell-drawer-open` en `BarraLateral`. React 19 acepta
+   *  `ref` como prop normal, sin `forwardRef`. */
   ref?: Ref<HTMLElement>;
   /** Selector semanal completo (Tarea 5, T01): número, rango y acciones server-issued.
    *  `AppShell` arma este nodo (`ContextoSemana`) — este componente solo le da su lugar en el
@@ -36,12 +39,22 @@ type PropiedadesNavegacionLateral = {
   children?: ReactNode;
 };
 
+/**
+ * Envoltura delgada (Tarea 7, S04) sobre `BarraLateral`: arma `groups`/`activeId`/`context`
+ * desde `Sesion` y delega todo el renderizado — marca, nav, rail/drawer, pie — en el rail
+ * genérico. No hay tabla de roles, catálogo de rutas ni construcción de URLs privilegiadas aquí:
+ * `sesion.navigation.groups` ya llega ordenado y filtrado por `ShellNavigationService` (PHP).
+ *
+ * `barraAutonoma={false}`: el disparador del drawer móvil y su velo viven en `AppShell`, fuera
+ * de este árbol, desde T01 — dejar que `BarraLateral` gobierne su propio drawer aquí duplicaría
+ * ese control.
+ */
 export function NavegacionLateral({
   sesion,
   id = 'app-shell-nav',
   ref,
   contextoSemana = null,
-  estado = 'expanded',
+  estado,
   alAlternarEstado,
   abiertoEnMovil,
   children,
@@ -49,85 +62,23 @@ export function NavegacionLateral({
   const projectName = sesion.project?.name ?? 'Proyecto';
   const displayName = sesion.user?.displayName ?? 'Usuario';
   const pathname = window.location.pathname;
-  const navId = useId();
 
   return (
-    <aside
-      ref={ref}
+    <BarraLateral
+      activeId={idActivo(sesion.navigation.groups, pathname)}
+      accountName={displayName}
+      context={{ primary: projectName, secondary: displayName }}
+      groups={sesion.navigation.groups}
+      showChangeProject={false}
+      barraAutonoma={false}
       id={id}
-      className="aia-navigation aia-navigation--sidebar"
-      aria-label="Aplicación"
-      data-shell-pattern="sidebar"
-      data-sidebar-state={estado}
-      data-shell-drawer-open={abiertoEnMovil ? 'true' : undefined}
+      ref={ref}
+      contextoSemana={contextoSemana}
+      estado={estado}
+      alAlternarEstado={alAlternarEstado}
+      abiertoEnMovil={abiertoEnMovil}
     >
-      <header className="aia-sidebar__header">
-        {/* `.aia-sidebar__brand` es la clase que `shell-sidebar.css`/`navigation.css`
-            fijan a `grid-column: 1` (contrato compartido con el shell PHP, que la
-            emite en un `<a>`). Sin este contenedor, `.aia-sidebar__brand-name`
-            quedaba huérfano de esa regla y auto-colocado por el grid — la causa
-            raíz del bug de encabezado medido 2026-08-30 (ver navigation.css). */}
-        <div className="aia-sidebar__brand">
-          <strong className="aia-sidebar__brand-name">Last Planner AIA</strong>
-        </div>
-        <div className="aia-sidebar__context">
-          <span>{projectName}</span>
-          <small>{displayName}</small>
-        </div>
-        {contextoSemana}
-        {alAlternarEstado && (
-          <button
-            type="button"
-            className="aia-btn aia-btn--secondary aia-sidebar__toggle"
-            aria-controls={navId}
-            aria-expanded={estado === 'expanded'}
-            aria-label={estado === 'expanded' ? 'Colapsar menú' : 'Expandir menú'}
-            onClick={alAlternarEstado}
-          >
-            <span className="aia-sidebar__toggle-label">
-              {estado === 'expanded' ? 'Colapsar menú' : 'Expandir menú'}
-            </span>
-          </button>
-        )}
-      </header>
-
-      <nav id={navId} className="aia-sidebar__nav" aria-label="Navegación del proyecto">
-        {sesion.navigation.groups.map((grupo) => (
-          <section className="aia-sidebar__group" aria-labelledby={`grupo-${grupo.id}`} key={grupo.id}>
-            <h3 id={`grupo-${grupo.id}`}>{grupo.label}</h3>
-            <ul>
-              {grupo.items.map((item) => (
-                <li key={item.id}>
-                  {item.href !== null ? (
-                    <a
-                      aria-current={esEntradaActiva(item.href, pathname) ? 'page' : undefined}
-                      className="aia-sidebar__link"
-                      href={item.href}
-                    >
-                      <span className="aia-sidebar__label">{item.label}</span>
-                    </a>
-                  ) : (
-                    <button
-                      aria-disabled={item.action}
-                      aria-label={item.label}
-                      className="aia-sidebar__link"
-                      disabled={item.action}
-                      type="button"
-                    >
-                      <span className="aia-sidebar__label">{item.label}</span>
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
-      </nav>
-
-      <footer className="aia-sidebar__footer">
-        <ConmutadorTema />
-        {children}
-      </footer>
-    </aside>
+      {children}
+    </BarraLateral>
   );
 }

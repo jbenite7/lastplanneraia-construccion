@@ -1,11 +1,7 @@
 import { useId, useState } from 'react';
-import { PanelCambiarProyecto } from './PanelCambiarProyecto';
 
 type PropiedadesMenuCuenta = {
   nombre: string;
-  csrfToken: string;
-  /** Se invoca tras un cambio de proyecto exitoso — recarga el bootstrap (spec T01 §6). */
-  alCambiarProyecto: () => Promise<void>;
   /**
    * Cierra sesión vía el único `ControlActividad` del shell (Tarea 6, T01) — nunca un fetch propio.
    * Es CSRF-idempotente y siempre invalida el estado local, así que este componente no necesita
@@ -17,33 +13,26 @@ type PropiedadesMenuCuenta = {
 };
 
 /**
- * Menú de cuenta del rail (Tarea 4): las tres acciones que el brief exige que salgan de datos
- * ya autorizados por el servidor. El tema vive en `ConmutadorTema` (footer del rail, sin
- * duplicarlo aquí). "Cambiar proyecto" muestra `PanelCambiarProyecto`, que comparte el fetch/POST/
- * CSRF de `useSelectorProyecto` con la pantalla completa `SelectorProyecto` sin duplicar esa
- * lógica ni heredar su envoltorio de página (ronda de arreglos 1: un `<h1>` y `.aia-card` de
- * pantalla completa no pertenecen a un panel de menú angosto). "Cerrar sesión" (Tarea 6) delega en
- * el `cerrarSesion` del `SesionProvider` — el único POST con CSRF contra `/api/auth/logout` de
- * todo el árbol, nunca el `GET /logout` legado: spec T01 §"no destructive GET".
+ * Menú de cuenta del rail (Tarea 4): las acciones que el brief exige que salgan de datos ya
+ * autorizados por el servidor. El tema vive en `ConmutadorTema` (footer del rail, sin
+ * duplicarlo aquí).
+ *
+ * **T7-1 (Tarea 7, S04):** "Cambiar proyecto" dejó de abrir `PanelCambiarProyecto` en sitio y
+ * pasó a un enlace de navegación completa a `/proyectos` — spec S04 §421 lo pide literal, y
+ * §474 exige descartar las cachés del proyecto anterior antes de cualquier render operativo,
+ * cosa que una recarga completa garantiza y un panel en sitio no. `PanelCambiarProyecto` y
+ * `useSelectorProyecto` se retiraron con este cambio (sin consumidores restantes). "Cerrar
+ * sesión" (Tarea 6) delega en el `cerrarSesion` del `SesionProvider` — el único POST con CSRF
+ * contra `/api/auth/logout` de todo el árbol, nunca el `GET /logout` legado: spec T01 §"no
+ * destructive GET".
  */
-export function MenuCuenta({ nombre, csrfToken, alCambiarProyecto, cerrarSesion }: PropiedadesMenuCuenta) {
+export function MenuCuenta({ nombre, cerrarSesion }: PropiedadesMenuCuenta) {
   const idPanel = useId();
   const [abierto, setAbierto] = useState(false);
-  const [vista, setVista] = useState<'menu' | 'proyectos'>('menu');
   const [cerrandoSesion, setCerrandoSesion] = useState(false);
 
   function alternar() {
     setAbierto((valor) => !valor);
-  }
-
-  function volverAlMenu() {
-    setVista('menu');
-  }
-
-  async function alElegirProyecto() {
-    setAbierto(false);
-    setVista('menu');
-    await alCambiarProyecto();
   }
 
   async function alCerrarSesion() {
@@ -69,37 +58,21 @@ export function MenuCuenta({ nombre, csrfToken, alCambiarProyecto, cerrarSesion 
       </button>
 
       <div id={idPanel} data-aia-menu-panel role="menu" hidden={!abierto}>
-        {vista === 'menu' ? (
-          <>
-            <span className="aia-sidebar__account-head" role="presentation">
-              {nombre}
-            </span>
-            <button
-              type="button"
-              role="menuitem"
-              className="aia-sidebar__account-item"
-              onClick={() => setVista('proyectos')}
-            >
-              Cambiar proyecto
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="aia-sidebar__account-item"
-              disabled={cerrandoSesion}
-              onClick={() => void alCerrarSesion()}
-            >
-              {cerrandoSesion ? 'Cerrando sesión…' : 'Cerrar sesión'}
-            </button>
-          </>
-        ) : (
-          <>
-            <button type="button" role="menuitem" className="aia-sidebar__account-item" onClick={volverAlMenu}>
-              ← Volver
-            </button>
-            <PanelCambiarProyecto csrfToken={csrfToken} alElegir={alElegirProyecto} />
-          </>
-        )}
+        <span className="aia-sidebar__account-head" role="presentation">
+          {nombre}
+        </span>
+        <a href="/proyectos" role="menuitem" className="aia-sidebar__account-item">
+          Cambiar proyecto
+        </a>
+        <button
+          type="button"
+          role="menuitem"
+          className="aia-sidebar__account-item"
+          disabled={cerrandoSesion}
+          onClick={() => void alCerrarSesion()}
+        >
+          {cerrandoSesion ? 'Cerrando sesión…' : 'Cerrar sesión'}
+        </button>
       </div>
     </div>
   );

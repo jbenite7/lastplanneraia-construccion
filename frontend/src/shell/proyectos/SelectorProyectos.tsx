@@ -17,6 +17,13 @@ type PropiedadesSelectorProyectos = {
   session: SesionSelectorProyectos;
   onOpen: (route: string) => void;
   onRevalidate: () => Promise<void>;
+  /**
+   * Tarea 7, S04: avisa a quien compone esta pantalla (`RutaProyectos`, en `rutas.tsx`) en cuanto
+   * el manifiesto de navegación llegó, para que el rail (`BarraLateral` +
+   * `navegacionSelectorProyectos`) sepa si debe agregar "Control Tower - Informes". No se levanta
+   * el fetch a un nivel más arriba para no duplicar el `AbortController`/candado de esta pantalla.
+   */
+  onNavigation?: (navigation: ListaProyectos['navigation']) => void;
 };
 
 const MENSAJE_ERROR_CARGA = 'No pudimos cargar tus proyectos. Intenta de nuevo.';
@@ -82,7 +89,7 @@ function esApiErrorHttp(causa: unknown, status: number): causa is ApiError {
  * hook no distingue 401 de 403 ni maneja foco. Unificarlos exigiría tocar `PanelCambiarProyecto`
  * y sus tests, fuera del alcance de esta tarea. Queda para la Tarea 7, que ya toca ese frente.
  */
-export function SelectorProyectos({ session, onOpen, onRevalidate }: PropiedadesSelectorProyectos) {
+export function SelectorProyectos({ session, onOpen, onRevalidate, onNavigation }: PropiedadesSelectorProyectos) {
   const [lista, setLista] = useState<ListaProyectos | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -110,6 +117,7 @@ export function SelectorProyectos({ session, onOpen, onRevalidate }: Propiedades
       try {
         const respuesta = await listarProyectos(controlador.signal);
         setLista(respuesta);
+        onNavigation?.(respuesta.navigation);
       } catch (causa) {
         if (causa instanceof ApiError && causa.tipo === 'abortado') return;
         setError(MENSAJE_ERROR_CARGA);
@@ -236,7 +244,13 @@ export function SelectorProyectos({ session, onOpen, onRevalidate }: Propiedades
   }
 
   return (
-    <main ref={pantallaRef} id="main-content" className="project-selector-react" tabIndex={-1}>
+    <main
+      ref={pantallaRef}
+      id="main-content"
+      className="project-selector-react"
+      data-testid="selector-proyectos"
+      tabIndex={-1}
+    >
       <header className="project-selector-react__header">
         <div>
           <h1>Tus proyectos</h1>

@@ -145,3 +145,18 @@ test('el código fuente no contiene ninguna matriz de autorización propia', asy
   expect(texto).not.toMatch(/role\s*===\s*['"]/);
   expect(texto).not.toMatch(/user\?\.role/);
 });
+
+// Tarea 7, S04: "Cambiar proyecto" deja de ser un panel en sitio (T7-1) y pasa a un enlace de
+// navegación completa a `/proyectos`. `NavegacionLateral` no construye ese enlace — lo hace
+// `MenuCuenta`, que llega por `children` y el footer del rail solo lo delega (ver `BarraLateral`).
+test('con proyecto activo, delega en los children el enlace "Cambiar proyecto" → /proyectos', () => {
+  render(
+    <NavegacionLateral sesion={sesionConGrupos([])}>
+      <a href="/proyectos" role="menuitem">
+        Cambiar proyecto
+      </a>
+    </NavegacionLateral>,
+  );
+
+  expect(screen.getByRole('menuitem', { name: /cambiar proyecto/i })).toHaveAttribute('href', '/proyectos');
+});
