@@ -19,7 +19,11 @@ export async function login(page, credentials = CREDENTIALS) {
       + '2026-07-30-dev-door-design.md).',
     );
   }
-  await expect(page.locator('.project-item').first()).toBeVisible({ timeout: 45000 });
+  // Tarea 10 (S04): '/proyectos' lo sirve ahora el shell React (SelectorProyectos.tsx), no la
+  // vista PHP legada — el marcado de tarjeta pasó de '.project-item' a
+  // '.project-selector-react__item' (TarjetaProyecto.tsx). El legado sigue en el repo pero ya
+  // no es la pantalla que responde a esta ruta.
+  await expect(page.locator('.project-selector-react__item').first()).toBeVisible({ timeout: 45000 });
 }
 
 export async function logout(page) {
@@ -28,16 +32,21 @@ export async function logout(page) {
 }
 
 export async function selectProject(page, project) {
-  const card = page.locator('.project-item').filter({
+  // Tarea 10 (S04): mismo cambio de marcado que login() — la tarjeta es
+  // '.project-selector-react__item' (TarjetaProyecto.tsx) y el botón de ingreso es
+  // <button type="button" class="aia-btn aia-btn--block">, con el nombre accesible
+  // "Ingresar al proyecto {nombre}" (nunca <button type="submit"> ni '.btn-enter': React no
+  // envía un <form>, dispara la selección por fetch).
+  const card = page.locator('.project-selector-react__item').filter({
     has: page.getByRole('heading', { name: project.name, exact: true }),
   });
   await expect(card, `Project card not found: ${project.name}`).toBeVisible({ timeout: 45000 });
-  await card.locator('button[type="submit"], .btn-enter').click();
+  await card.getByRole('button', { name: new RegExp(`Ingresar al proyecto ${project.name}`) }).click();
   await page.waitForURL((url) => !url.toString().includes('/proyectos'), { timeout: 45000 });
 }
 
 /**
- * Entra a la primera tarjeta de `.project-item`, sin filtrar por nombre.
+ * Entra a la primera tarjeta de `.project-selector-react__item`, sin filtrar por nombre.
  *
  * Existe para los tests a los que el proyecto concreto les da igual — solo necesitan
  * "cualquier proyecto, uno que sea". Nombrarles uno con `selectProject` los ataría a un
@@ -45,9 +54,9 @@ export async function selectProject(page, project) {
  * siéndolo mañana, y esa dependencia implícita quedaría escondida en el test.
  */
 export async function selectFirstProject(page) {
-  const card = page.locator('.project-item').first();
+  const card = page.locator('.project-selector-react__item').first();
   await expect(card, 'No project cards found').toBeVisible({ timeout: 45000 });
-  await card.locator('button[type="submit"], .btn-enter').click();
+  await card.getByRole('button', { name: /^Ingresar al proyecto /i }).click();
   await page.waitForURL((url) => !url.toString().includes('/proyectos'), { timeout: 45000 });
 }
 
