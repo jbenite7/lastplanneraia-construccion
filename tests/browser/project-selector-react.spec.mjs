@@ -287,6 +287,44 @@ test.describe('selector de proyectos React — comportamiento', () => {
     await expect(page.getByRole('button', { name: 'Abrir menú de navegación' })).toBeFocused();
   });
 
+  // Ronda 2 (T9b, hallazgo del coordinador): con el drawer abierto, `.shell-mobile-topbar`
+  // (sticky, z-index por encima del token base) tapaba la cabecera del `<aside>` — la marca
+  // quedaba enfocable (el atrapa-foco la alcanza) pero invisible, tapada por otro elemento.
+  // Rojo demostrado antes del arreglo: `elementFromPoint` sobre el centro de la marca resolvía
+  // a un nodo de `.shell-mobile-topbar`, no del `<aside>`.
+  test('drawer móvil en 390px: con el drawer abierto, la marca del aside queda visible, no tapada por la fila superior', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await simularSesion(page, [arranqueAutenticadoConProyecto()]);
+    await simularProyectos(page, [listaProyectos()]);
+
+    await page.goto('/app/proyectos');
+    await esperarPantalla(page);
+
+    await page.getByRole('button', { name: 'Abrir menú de navegación' }).click();
+    await expect(page.getByRole('button', { name: 'Cerrar menú de navegación' })).toBeVisible();
+
+    const marcaAside = page.locator('aside.aia-navigation--sidebar').getByRole('link', { name: 'Last Planner AIA' });
+    await expect(marcaAside).toBeVisible();
+    const cajaMarca = await marcaAside.boundingBox();
+    const dentroDelAside = await page.evaluate(
+      ([x, y]) => document.elementFromPoint(x, y)?.closest('aside.aia-navigation--sidebar') !== null,
+      [cajaMarca.x + cajaMarca.width / 2, cajaMarca.y + cajaMarca.height / 2],
+    );
+    expect(dentroDelAside).toBe(true);
+
+    // Sigue habiendo una forma visible de cerrar: clic en el velo y Escape. El punto de clic va
+    // fuera del ancho del `<aside>` (240px de rail en un viewport de 390px) y fuera de la fila
+    // `.shell-mobile-topbar` (sticky arriba, con su propio z-index), que si no también lo tapa.
+    await page.locator('.shell-menu-velo').click({ position: { x: 370, y: 400 } });
+    await expect(page.getByRole('button', { name: 'Abrir menú de navegación' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Abrir menú de navegación' }).click();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button', { name: 'Abrir menú de navegación' })).toBeVisible();
+  });
+
   test('escritorio 1180px: rail fijo con "Tus proyectos" marcado aria-current', async ({ page }) => {
     await page.setViewportSize({ width: 1180, height: 820 });
     await simularSesion(page, [arranqueAutenticadoConProyecto()]);
