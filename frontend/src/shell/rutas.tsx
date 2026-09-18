@@ -1,5 +1,6 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import type { ArranqueAutenticado } from '../lib/api/esquemas/arranque';
 import type { ListaProyectos } from '../lib/api/esquemas/proyectos';
 import type { ConfiguracionRuntime } from '../lib/runtime/configuracion';
 import { AppShell } from './AppShell';
@@ -246,25 +247,53 @@ function RutaMantenimiento({ configuracion }: { configuracion: ConfiguracionMant
 function RutaProyectos() {
   const { estado, autenticado, recargar, cerrarSesion } = useSesion();
   const [navegacion, setNavegacion] = useState<ListaProyectos['navigation'] | null>(null);
+  // Corrección de revisión final S04 (T10, Important 2): `recargar()` (el `onRevalidate` que
+  // usa `SelectorProyectos` tras un 401/403) pone `estado` en `cargando` y `autenticado` en
+  // `null` MIENTRAS pide un bootstrap nuevo — antes de este arreglo, ese hueco caía en
+  // `RutasSegunSesion` y desmontaba el selector entero (aviso, "Actualizando tu sesión…" y el
+  // retorno de foco a la tarjeta elegida, todos perdidos). Se recuerda el último `autenticado`
+  // vivo para poder seguir pintando el mismo árbol mientras `cargando` es transitorio; nunca se
+  // usa en el PRIMER arranque sin sesión conocida (`autenticadoRecordadoRef.current` sigue en
+  // `null` en ese caso, así que la guarda de abajo cae a `RutasSegunSesion` como antes).
+  const autenticadoRecordadoRef = useRef<ArranqueAutenticado | null>(null);
 
-  if (estado !== 'autenticado_sin_proyecto' && estado !== 'listo') {
+  if (autenticado) {
+    autenticadoRecordadoRef.current = autenticado;
+  }
+
+  // Al salir de un estado autenticado hacia login/cambio de clave, el recuerdo deja de ser
+  // válido: sin esto, un logout en la misma pestaña (que primero pasa por `RutasSegunSesion`,
+  // no por aquí) dejaría datos de la sesión anterior listos para reaparecer si el usuario
+  // vuelve a `/proyectos` durante el `cargando` de un login siguiente. MINOR: de paso limpia
+  // `navegacion`, que antes sobrevivía intacta a un cierre de sesión en la misma pestaña.
+  useEffect(() => {
+    if (estado === 'anonimo' || estado === 'expirado' || estado === 'cambio_clave_requerido') {
+      autenticadoRecordadoRef.current = null;
+      setNavegacion(null);
+    }
+  }, [estado]);
+
+  const mantenerDuranteCarga = estado === 'cargando' && autenticadoRecordadoRef.current !== null;
+
+  if (estado !== 'autenticado_sin_proyecto' && estado !== 'listo' && !mantenerDuranteCarga) {
     return <RutasSegunSesion />;
   }
 
-  if (!autenticado) return null;
+  const autenticadoEfectivo = autenticado ?? autenticadoRecordadoRef.current;
+  if (!autenticadoEfectivo) return null;
 
   return (
     <>
       <BarraLateral
         activeId="projects"
-        accountName={autenticado.user.displayName}
+        accountName={autenticadoEfectivo.user.displayName}
         groups={navegacionSelectorProyectos(navegacion)}
         showChangeProject={false}
         cuentaPropia
         cerrarSesion={cerrarSesion}
       />
       <SelectorProyectos
-        session={{ csrfToken: autenticado.csrfToken, project: autenticado.project }}
+        session={{ csrfToken: autenticadoEfectivo.csrfToken, project: autenticadoEfectivo.project }}
         onOpen={(route) => window.location.assign(route)}
         onRevalidate={recargar}
         onNavigation={setNavegacion}

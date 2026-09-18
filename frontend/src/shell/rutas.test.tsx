@@ -895,3 +895,64 @@ test('/app/proyectos: elegir un proyecto navega de documento completo a la ruta 
 
   await waitFor(() => expect(asignar).toHaveBeenCalledWith('/programacion-semanal'));
 });
+
+// Correcciones de revisión final S04 (T10, Important 2): `RutaProyectos` delegaba en
+// `RutasSegunSesion` en cualquier estado que no fuera `autenticado_sin_proyecto`/`listo`,
+// incluido `cargando` — y `recargar()` (el `onRevalidate` de `SelectorProyectos`) pasa por
+// `cargando` antes de resolver. Tras un 403 al elegir proyecto y pulsar "Actualizar sesión",
+// el selector se desmontaba y se perdía el aviso, el spinner propio y el retorno de foco.
+test('/proyectos: revalidar tras un 403 pasa por "cargando" sin desmontar el selector', async () => {
+  window.history.pushState({}, '', '/proyectos');
+  let llamadasSesion = 0;
+  let resolverSegundaSesion: (respuesta: Response) => void = () => {};
+
+  const fetchFalso = vi.fn((entrada: RequestInfo | URL, opciones?: RequestInit) => {
+    const ruta = typeof entrada === 'string' ? entrada : entrada.toString();
+    const metodo = opciones?.method ?? 'GET';
+
+    if (ruta === '/api/session') {
+      llamadasSesion += 1;
+      if (llamadasSesion === 1) {
+        return Promise.resolve(new Response(JSON.stringify(AUTENTICADA_CON_PROYECTO), { status: 200 }));
+      }
+      // Segunda llamada: la revalidación tras "Actualizar sesión". Controlable a propósito
+      // para poder observar el hueco `cargando` antes de que resuelva.
+      return new Promise<Response>((resolve) => {
+        resolverSegundaSesion = resolve;
+      });
+    }
+    if (ruta === '/api/proyectos') {
+      return Promise.resolve(new Response(JSON.stringify({
+        projects: [{ id: 1, name: 'Da Porto', area: 'Construccion', active: true, role: 'A', roleLabel: 'Administrador' }],
+        navigation: { bi: { visible: false, href: null } },
+      }), { status: 200 }));
+    }
+    if (ruta === '/api/proyectos/seleccionar' && metodo === 'POST') {
+      return Promise.resolve(new Response(
+        JSON.stringify({ error: { codigo: 'csrf_invalid', mensaje: 'Tu sesión de seguridad cambió.' } }),
+        { status: 403 },
+      ));
+    }
+    return Promise.resolve(new Response(JSON.stringify({}), { status: 200 }));
+  });
+  vi.stubGlobal('fetch', fetchFalso);
+
+  const usuario = userEvent.setup();
+  render(<Rutas />);
+
+  await usuario.click(await screen.findByRole('button', { name: /da porto/i }));
+
+  const actualizar = await screen.findByRole('button', { name: 'Actualizar sesión' });
+  fireEvent.click(actualizar);
+
+  // Con la revalidación ya en vuelo (estado `cargando`, segunda respuesta de `/api/session`
+  // aún sin resolver), el selector debe seguir montado — antes del arreglo, este mismo punto
+  // pintaba "Cargando…" y perdía la pantalla entera.
+  expect(screen.getByTestId('selector-proyectos')).toBeInTheDocument();
+  expect(screen.queryByText('Cargando…')).not.toBeInTheDocument();
+
+  resolverSegundaSesion(new Response(JSON.stringify(AUTENTICADA_CON_PROYECTO), { status: 200 }));
+
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Actualizar sesión' })).not.toBeInTheDocument());
+  expect(screen.getByTestId('selector-proyectos')).toBeInTheDocument();
+});
