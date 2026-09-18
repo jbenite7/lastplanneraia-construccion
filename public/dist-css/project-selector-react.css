@@ -1,4 +1,10 @@
 @layer module {
+  html {
+    overflow-y: auto;
+  }
+  body {
+    overflow: visible;
+  }
   body.aia-shell-drawer-open {
     overflow: hidden;
   }

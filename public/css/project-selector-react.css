@@ -38,6 +38,24 @@
      pendiente dejado por la Tarea 7). A propósito una CLASE, nunca `document.body.style`: así el
      valor de reposo queda declarado en una hoja legible en vez de calculado en JS, en vez de una
      prioridad forzada sobre `overflow` que compitiera en especificidad con otra regla. */
+  /* S04, Tarea 10 (destapado por project-selector-sidebar.spec.mjs al medir la barra React):
+     el agregador `aia-design-system.css` que enlaza `frontend/index.html` trae
+     `handsontable-module.css`, cuya regla `html, body { overflow: hidden }` (capa `vendor`)
+     sirve a las pantallas de grilla y aquí dejaba el documento sin scroll: con más proyectos de
+     los que caben en la ventana, los de abajo quedaban inalcanzables (medido: contenido de
+     2.324 px, `scrollY` en 0). El host React es un documento que se desplaza: lo desplaza `html`
+     (la ventana), y `body` —que tiene alto de 100 %— deja de ser un contenedor con scroll propio
+     (`visible`; con el `overflow-x: hidden` de `foundation.css` se volvía `auto` y era él quien
+     se desplazaba, no la ventana). `module` gana a `vendor` por orden de capa; el bloqueo del
+     drawer de abajo sigue ganando por especificidad. */
+  html {
+    overflow-y: auto;
+  }
+
+  body {
+    overflow: visible;
+  }
+
   body.aia-shell-drawer-open {
     overflow: hidden;
   }
