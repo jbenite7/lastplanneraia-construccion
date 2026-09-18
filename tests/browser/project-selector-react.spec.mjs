@@ -234,6 +234,24 @@ test.describe('selector de proyectos React — comportamiento', () => {
 
     const disparador = page.getByRole('button', { name: 'Abrir menú de navegación' });
     await expect(disparador).toBeVisible();
+
+    // Ronda de arreglo 2 (hallazgo del coordinador): `toBeVisible()` no detecta que el
+    // disparador flotante (`position: fixed`, V1 de la ronda 1) tape el `h1` — solo comprueba
+    // que el propio h1 esté en el DOM y no oculto, no que otro elemento fijo se dibuje encima.
+    // `elementFromPoint` sobre la esquina superior izquierda real del h1 sí lo distingue: sin la
+    // reserva de espacio de `.project-selector-react__header`, ese punto resuelve al botón, no
+    // al título.
+    const h1 = page.getByRole('heading', { level: 1, name: 'Tus proyectos' });
+    const cajaH1 = await h1.boundingBox();
+    const elementoEnEsquina = await page.evaluate(
+      ([x, y]) => {
+        const el = document.elementFromPoint(x, y);
+        return el?.closest('h1') !== null;
+      },
+      [cajaH1.x + 2, cajaH1.y + 2],
+    );
+    expect(elementoEnEsquina).toBe(true);
+
     await disparador.click();
 
     await expect(page.getByRole('button', { name: 'Cerrar menú de navegación' })).toBeVisible();

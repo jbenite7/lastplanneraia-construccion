@@ -62,41 +62,31 @@
     inline-size: 100%;
   }
 
-  /* Ronda de arreglo 1 (hallazgo visual V3): "Tus proyectos" (`aria-current="page"`) quedaba casi
-     invisible en oscuro y sin distinguirse del resto en claro. `.aia-sidebar__link[aria-current="page"]`
-     (`components/navigation.css`) SÍ pinta el fondo/color correctos
-     (`--ds-active-action-primary`/`--ds-active-action-text`) — confirmado con el estilo
-     computado del elemento real (`getComputedStyle`): `color` llegaba bien, `background-color`
-     salía `rgba(0,0,0,0)`. La causa es `body.aia-shell--sidebar .aia-sidebar__link { background:
-     transparent }` (`adapters/shell-sidebar.css`), que vive en la capa `legacy-overrides` — la
-     ÚLTIMA del orden declarado en `aia-design-system.css` — así que una regla normal ahí gana
-     SIEMPRE sobre cualquier regla normal de una capa anterior, sin importar especificidad. Ese
-     `transparent` es intencional para los ítems SIN `aria-current` (evita que un `<button>` del
-     rail herede el `buttonface` del navegador, arreglo de Felipe 2026-09-08) — no se toca, sería
-     un cambio fuera de S04 con blast radius en todo el shell. La única forma de ganarle a una
-     capa posterior sin tocarla es `!important`, y se scopea a esta pantalla
-     (`body:has(.project-selector-react)`) para no alterar ningún otro consumidor de
-     `BarraLateral`/`NavegacionLateral`. Nota para quien migre la próxima pantalla a React: este
-     mismo problema le espera ahí también — es un bug de la capa compartida, no de esta hoja.
+  /* "Tus proyectos" (`aria-current="page"`) no se distinguía del resto: `.aia-sidebar__link
+     { background: transparent }` (`adapters/shell-sidebar.css`) es un valor LITERAL en la capa
+     `legacy-overrides` (la última del orden en `aia-design-system.css`), así que gana siempre
+     sobre el `background` de `.aia-sidebar__link[aria-current="page"]` sin que haya ningún token
+     que sobreescribir desde un ancestro — y no se toca ese adaptador porque también lo consume
+     la vista PHP. Además, en claro el relleno propuesto no serviría igual: `--ds-active-action-
+     primary` resuelve al mismo hex que el rail fijo (`#1a5633` en ambos). Se marca el activo solo
+     con el anillo que el propio sistema ya usa para este caso en colapsado
+     (`.aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link[aria-current=
+     "page"]`, `adapters/shell-sidebar.css`): `--aia-green-light` no sigue el tema de página, así
+     que contrasta contra el rail fijo en los dos temas sin `!important` (nadie más declara
+     `box-shadow` en `.aia-sidebar__link`) y sin inventar ningún token. Es también lo que aprobó
+     el golden canónico en claro (recuadro, no relleno).
 
-     Ronda de arreglo 2 (defecto reportado tras la ronda 1): el fix de arriba deja el activo
-     legible en oscuro pero SIGUE indistinguible en claro. Causa medida en tokens.css:
-     `--ds-active-action-primary` en claro resuelve a `--ds-color-action-primary-bg-light`
-     (`#1a5633`) y el rail (`--ds-active-nav-bg` → `--ds-nav-bg-light`) es **el mismo hex,
-     `#1a5633`** — el relleno del activo es idéntico al fondo que lo contiene, así que no hay
-     ningún color de relleno posible que lo resuelva sin inventar un tono nuevo. El propio
-     sistema ya resolvió este caso: en colapsado, `.aia-navigation--sidebar[data-sidebar-state=
-     "collapsed"] .aia-sidebar__link[aria-current="page"]` (`adapters/shell-sidebar.css`) no
-     confía en el relleno — añade un anillo con `--aia-green-light`, un token que NO seguí el
-     tema de página (mismo valor en claro y oscuro) y por eso sí contrasta contra el rail fijo
-     en los dos temas. Se copia esa misma declaración, verbatim, para el estado expandido de
-     esta pantalla: sigue sin `!important` propio (no compite con ninguna capa posterior, nadie
-     más declara `box-shadow` en `.aia-sidebar__link`) y no toca ningún token nuevo. En oscuro es
-     un añadido inocuo sobre la píldora ya visible (el relleno sage sigue siendo el contraste
-     principal); en claro es el único contraste. */
+     `color`: la base (`components/navigation.css`) pone `--ds-active-action-text` ahí, un color
+     pensado para leerse SOBRE el relleno que ya no ponemos — en oscuro esa variable resuelve a
+     texto oscuro (`#141c18`) que, sin relleno, cae casi invisible sobre el rail oscuro fijo
+     (medido con `getComputedStyle`: legible en claro, ilegible en oscuro). Se cancela esa
+     variable con `--ds-active-nav-text`, el mismo color que ya llevan los ítems inactivos y que
+     es legible contra el rail fijo en los dos temas — el anillo + el peso semibold (heredado de
+     la base) son lo que distingue al activo, no el color de texto. La capa `module` gana sobre
+     `components` sin `!important` por orden de capas (ver nota de arriba en este archivo sobre
+     `.aia-sidebar__account-panel--estatico`). */
   body:has(.project-selector-react) .aia-sidebar__link[aria-current="page"] {
-    background: var(--ds-active-action-primary) !important;
-    color: var(--ds-active-action-text) !important;
+    color: var(--ds-active-nav-text);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--aia-green-light) 35%, transparent);
   }
 
@@ -173,6 +163,14 @@
     display: grid;
     gap: var(--ds-space-2);
     align-items: start;
+    /* Ronda de arreglo 2 (hallazgo del coordinador, no cubierto por ningún candidato porque
+       ninguno tenía texto en el campo): sin esto, `justify-items` cae en su default `stretch` y
+       el botón «Limpiar búsqueda» —que solo nace cuando hay texto y resultados— se estira a todo
+       el ancho de la grilla. Confirmado con `boundingBox()` (876px de ancho, igual al del
+       contenedor) antes de este cambio. `align-items: start` de arriba ya lo pedía la etiqueta
+       apilada de V4; con `justify-items: start` la fila del botón también se comporta como el
+       resto (ancho intrínseco). */
+    justify-items: start;
   }
 
   .project-selector-react__search label {
