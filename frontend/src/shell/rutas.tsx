@@ -244,7 +244,7 @@ function RutaMantenimiento({ configuracion }: { configuracion: ConfiguracionMant
  * `cargando`/`error_recuperable`/`cambio_clave_requerido`/`anonimo`/`expirado` sin duplicarlas.
  */
 function RutaProyectos() {
-  const { estado, autenticado, recargar } = useSesion();
+  const { estado, autenticado, recargar, cerrarSesion } = useSesion();
   const [navegacion, setNavegacion] = useState<ListaProyectos['navigation'] | null>(null);
 
   if (estado !== 'autenticado_sin_proyecto' && estado !== 'listo') {
@@ -261,6 +261,7 @@ function RutaProyectos() {
         groups={navegacionSelectorProyectos(navegacion)}
         showChangeProject={false}
         cuentaPropia
+        cerrarSesion={cerrarSesion}
       />
       <SelectorProyectos
         session={{ csrfToken: autenticado.csrfToken, project: autenticado.project }}

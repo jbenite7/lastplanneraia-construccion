@@ -71,6 +71,16 @@ type PropiedadesBarraLateral = {
    * su propio encabezado (`context.secondary`) cuando no recibió `children`.
    */
   cuentaPropia?: boolean;
+  /**
+   * T7-6 (ronda de arreglo 1, hallazgo Important del revisor): el bloque de cuenta propio NO
+   * puede cerrar sesión con `<a href="/logout">` — ese GET destruye la sesión sin CSRF ni
+   * comprobación de método (`LoginController::show()`, registrado como `$router->get` en
+   * `public/index.php`), justo lo que `MenuCuenta` prohíbe citando la spec T01 §"no destructive
+   * GET". Requerido cuando `cuentaPropia` es `true`: es el mismo `cerrarSesion` que expone
+   * `SesionProvider` y que ya usa `MenuCuenta` — el único POST con CSRF contra
+   * `/api/auth/logout` de todo el árbol.
+   */
+  cerrarSesion?: () => Promise<unknown>;
 };
 
 function fusionarRefs(a: Ref<HTMLElement> | undefined, b: (nodo: HTMLElement | null) => void) {
@@ -103,10 +113,12 @@ export function BarraLateral({
   abiertoEnMovil: abiertoEnMovilExterno,
   children,
   cuentaPropia = false,
+  cerrarSesion,
 }: PropiedadesBarraLateral) {
   const navId = useId();
   const [colapsadoPropio, setColapsadoPropio] = useState(false);
   const [abiertoPropio, setAbiertoPropio] = useState(false);
+  const [cerrandoSesion, setCerrandoSesion] = useState(false);
   const [flotante, setFlotante] = useState(() =>
     esBarraLateralFlotante(typeof window === 'undefined' ? Infinity : window.innerWidth),
   );
@@ -157,6 +169,15 @@ export function BarraLateral({
     document.addEventListener('keydown', alTeclado);
     return () => document.removeEventListener('keydown', alTeclado);
   }, [barraAutonoma, flotante, abierto, cerrarDrawer]);
+
+  // T7-6: mismo patrón que `MenuCuenta.alCerrarSesion` — sin `finally`, porque si `cerrarSesion()`
+  // resuelve, la sesión ya se invalidó y el árbol se desmonta al recargar; no queda un
+  // `setCerrandoSesion(false)` que pisar.
+  async function alCerrarSesion() {
+    if (!cerrarSesion) return;
+    setCerrandoSesion(true);
+    await cerrarSesion();
+  }
 
   return (
     <>
@@ -272,9 +293,14 @@ export function BarraLateral({
                   Cambiar proyecto
                 </a>
               )}
-              <a className="aia-sidebar__account-item" href="/logout">
-                Cerrar sesión
-              </a>
+              <button
+                type="button"
+                className="aia-sidebar__account-item"
+                disabled={cerrandoSesion}
+                onClick={() => void alCerrarSesion()}
+              >
+                {cerrandoSesion ? 'Cerrando sesión…' : 'Cerrar sesión'}
+              </button>
             </div>
           )}
         </footer>

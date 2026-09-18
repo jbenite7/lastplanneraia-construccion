@@ -32,14 +32,44 @@ test('marca un único aria-current en la entrada activa, sin "Cambiar proyecto" 
       groups={GRUPOS}
       showChangeProject={false}
       cuentaPropia={true}
+      cerrarSesion={vi.fn().mockResolvedValue(undefined)}
     />,
   );
 
   expect(screen.getByRole('link', { name: 'Tus proyectos' })).toHaveAttribute('aria-current', 'page');
   expect(screen.getAllByRole('link', { current: 'page' })).toHaveLength(1);
   expect(screen.queryByRole('link', { name: 'Cambiar proyecto' })).not.toBeInTheDocument();
-  expect(screen.getByRole('link', { name: 'Cerrar sesión' })).toHaveAttribute('href', '/logout');
   expect(screen.getByRole('button', { name: /tema/i })).toBeVisible();
+});
+
+// T7-6 (ronda de arreglo 1, hallazgo Important del revisor): "Cerrar sesión" en el bloque de
+// cuenta propio NUNCA puede ser un `<a href="/logout">` — ese GET destruye la sesión sin CSRF ni
+// comprobación de método (`LoginController::show()`, `$router->get` en `public/index.php`).
+// Esta prueba muerde: falla si alguien reintroduce ese enlace destructivo, y confirma que el
+// botón dispara el mismo `cerrarSesion` (CSRF, POST) que usa `MenuCuenta`.
+test('cerrar sesión dispara cerrarSesion (POST con CSRF), nunca un enlace GET a /logout', async () => {
+  const cerrarSesion = vi.fn().mockResolvedValue(undefined);
+  const usuario = userEvent.setup();
+  render(
+    <BarraLateral
+      activeId="projects"
+      accountName="Ana"
+      groups={GRUPOS}
+      showChangeProject={false}
+      cuentaPropia={true}
+      cerrarSesion={cerrarSesion}
+    />,
+  );
+
+  expect(screen.queryByRole('link', { name: /cerrar sesión/i })).not.toBeInTheDocument();
+  expect(document.querySelector('a[href="/logout"]')).not.toBeInTheDocument();
+
+  const boton = screen.getByRole('button', { name: /cerrar sesión/i });
+  expect(boton).not.toHaveAttribute('href');
+
+  await usuario.click(boton);
+
+  expect(cerrarSesion).toHaveBeenCalledOnce();
 });
 
 test('muestra "Cambiar proyecto" cuando showChangeProject es true', () => {
@@ -50,6 +80,7 @@ test('muestra "Cambiar proyecto" cuando showChangeProject es true', () => {
       groups={GRUPOS}
       showChangeProject={true}
       cuentaPropia={true}
+      cerrarSesion={vi.fn().mockResolvedValue(undefined)}
     />,
   );
 
