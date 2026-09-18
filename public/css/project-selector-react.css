@@ -164,6 +164,45 @@
     color: var(--ds-active-text-primary);
   }
 
+  /* Scroll fantasma (Tarea 9b, corrección tras la aprobación de los candidatos): bajo 1180px
+     `.shell-mobile-topbar` (sticky, en flujo normal) y `.project-selector-react` (que fija su
+     propio `min-block-size: 100dvh` arriba) son hermanos dentro de `#root` — React los monta ahí
+     como fragmentos hermanos (`BarraLateral` + `SelectorProyectos` en `RutaProyectos`,
+     `rutas.tsx`), y `#root` no tenía ninguna regla propia. El resultado eran dos alturas que se
+     SUMABAN en vez de compartirse: el documento medía la fila (~69px) más un 100dvh completo
+     debajo, 69px de scroll hacia fondo puro sin contenido (medido: 390x844 → 913px de alto real;
+     768x1024 → 1093px; la diferencia en los dos es exactamente la altura de la fila, y a
+     1180/1440 —sin fila móvil— el alto ya coincidía exacto, lo que confirmó que la fila era la
+     causa). El arreglo: bajo el mismo umbral que decide `flotante` en React
+     (`esBarraLateralFlotante`, `modoBarraLateral.ts`, 1180px), `#root` pasa a columna con
+     `min-block-size: 100dvh` y la fila fija su alto intrínseco (`flex: 0 0 auto`); el contenido
+     dejó de declarar su propio `min-block-size` y en su lugar CRECE (`flex: 1 1 auto`) para
+     repartirse la altura restante de la ventana — la fila y el contenido pasan a compartir una
+     sola altura de 100dvh en vez de sumar dos. El `<aside>` del drawer no participa: es
+     `position: fixed` en todo el rango (`shell-sidebar.css`), fuera del flujo normal, así que no
+     lo toca esta regla. Alcance con `:has()` a `.project-selector-react` (mismo patrón que
+     `body:has(.project-selector-react) .aia-sidebar__link[…]` más arriba en esta hoja) para no
+     tocar el `#root` de `AppShell` (pantallas con proyecto activo), que arma su propio layout con
+     `.lps-layout-cajon` y no comparte esta fila. En 1180px+ no hay fila móvil que compartir
+     altura, así que fuera de este `@media` `.project-selector-react` conserva su
+     `min-block-size: 100dvh` de la regla de arriba sin cambios. */
+  @media (max-width: 1179px) {
+    #root:has(> .project-selector-react) {
+      display: flex;
+      flex-direction: column;
+      min-block-size: 100dvh;
+    }
+
+    #root:has(> .project-selector-react) > .shell-mobile-topbar {
+      flex: 0 0 auto;
+    }
+
+    #root:has(> .project-selector-react) > .project-selector-react {
+      flex: 1 1 auto;
+      min-block-size: 0;
+    }
+  }
+
   /* `min-width: 0` es lo que impide que el título largo empuje el botón de Control Tower fuera
      del viewport a 390px — sin él, un flex item hereda `min-width: auto` y nunca se encoge. */
   .project-selector-react__header-text {

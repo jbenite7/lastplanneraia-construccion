@@ -378,6 +378,30 @@ test.describe('selector de proyectos React — comportamiento', () => {
     expect(erroresConsola).toEqual([]);
   });
 
+  // Corrección del coordinador (S04 T9b, tras la aprobación de los candidatos visuales): a
+  // 390x844 y 768x1024 el documento medía 913 y 1093px de alto, 69px de más en ambos — la
+  // altura exacta de `.shell-mobile-topbar`. Scroll fantasma: `.project-selector-react` fija
+  // `min-block-size: 100dvh` mientras `.shell-mobile-topbar` (sticky, en flujo normal) se suma
+  // arriba, así que el documento termina midiendo topbar + 100dvh en vez de compartir la altura
+  // de la ventana. Con los fixtures de los candidatos (dos proyectos, caben en una pantalla) no
+  // debería haber scroll vertical alguno.
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+  ]) {
+    test(`sin scroll fantasma bajo el pliegue a ${viewport.width}x${viewport.height}`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await simularSesion(page, [arranqueAutenticadoConProyecto()]);
+      await simularProyectos(page, [listaProyectos()]);
+
+      await page.goto('/app/proyectos');
+      await esperarPantalla(page);
+
+      const alturaDocumento = await page.evaluate(() => document.documentElement.scrollHeight);
+      expect(alturaDocumento).toBeLessThanOrEqual(viewport.height);
+    });
+  }
+
   test('Axe: sin impactos serious/critical', async ({ page }) => {
     await simularSesion(page, [arranqueAutenticadoConProyecto()]);
     await simularProyectos(page, [listaProyectos()]);
