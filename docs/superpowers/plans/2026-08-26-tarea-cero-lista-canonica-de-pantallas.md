@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-26
 areas: [design-system, proceso]
 fuente: docs/superpowers/plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas.md
@@ -9,6 +9,14 @@ resumen: "Tarea cero de la v0: que los dos inventarios de pantallas coincidan y 
 ---
 
 # Tarea cero — una sola lista canónica de pantallas · Plan de implementación
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** el `## Cierre — 2026-08-26` da por cerradas las cinco tareas con su medida (tres paradas); el gate nuevo `tests/design-system/censo-fichas-coherencia.test.mjs` existe en `origin/main` y corre dentro de `test:design-system:static`. La deuda de `/dashboard` y `/reportes/{tipo}` quedó anotada en `TASKS.md` como fuera de esta tarea, no como tarea pendiente de ella.
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **Para trabajadores agénticos:** SUB-SKILL REQUERIDA: usa `superpowers:subagent-driven-development`
 > (recomendado) o `superpowers:executing-plans` para ejecutar tarea por tarea. Los pasos usan

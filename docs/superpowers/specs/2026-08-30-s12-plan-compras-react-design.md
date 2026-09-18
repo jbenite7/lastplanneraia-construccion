@@ -4,6 +4,7 @@ tipo: spec
 estado: vigente
 id: S12
 fecha: 2026-08-31
+version: 1.1
 superficie: plan-compras
 rutas:
   - "/plan-compras"
@@ -1312,3 +1313,10 @@ Es una constatacion tecnica ya auditada, no una decision de producto.
 Invocar `superpowers:writing-plans` para convertir esta spec en un plan TDD por entregas verticales.
 No implementar hasta que el plan quede escrito, autorrevisado, trazado 48/48 y el programa
 documental de 27 superficies cierre.
+
+## Adoptado de planes derogados (2026-09-17)
+
+Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
+
+- De `2026-08-03-usabilidad-altas-y-medias`: **no reproducir H-07** (cabeceras del PDC ilegibles o indistinguibles) ni **H-17/H-20** (el tour del plan de compras se tapa a sí mismo). Cada uno con su comprobación en la suite de la spec.
+- De `2026-08-04-biblia-t3-pdc` (Tasks 2–6): los escenarios de presupuesto y maestro de insumos, paquetes de contratación, plan con fechas y seguimiento, y las deudas de datos conocidas de `docs/pdc-v2.md` son **escenarios de aceptación** de esta spec, con prueba ejecutable para los críticos. `docs/flujos/compras-v2.md` sigue siendo el consolidado.

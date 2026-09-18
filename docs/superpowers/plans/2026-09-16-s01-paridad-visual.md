@@ -1,13 +1,21 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-09-16
 areas: [design-system, arquitectura, qa]
 resumen: "Reabre S01 por paridad visual: el login React conserva su base y trae de legacy la marca dentro de la tarjeta, los íconos de campo y botón, y el pie corporativo"
 ---
 
 # S01 · Paridad visual del login React — Implementation Plan
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill. El `## Cierre` de abajo se escribió antes de publicar y dice «pendiente de PR»; esta sección lo supera, no lo corrige.
+
+**Evidencia:** PR #42 mergeado en `main` (`1858f008`, 2026-09-16), con los goldens aprobados por Felipe (`7baca3b5`) y `TASKS.md:870-871` registrando que el criterio de paridad de S01 se cumple con este frente en `main`. Lo que S01 deja abierto a propósito —retirar el login PHP— es del plan `2026-08-30-s01-login-react`, que sigue `vigente`.
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

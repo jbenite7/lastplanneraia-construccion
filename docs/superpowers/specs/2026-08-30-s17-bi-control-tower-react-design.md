@@ -4,6 +4,7 @@ tipo: spec
 estado: vigente
 id: S17
 fecha: 2026-08-31
+version: 1.1
 superficie: bi-control-tower
 rutas:
   - "/bi/control-tower"
@@ -1165,3 +1166,9 @@ afectado, aportar evidencia y enmendar esta spec. No se infiere un contrato nuev
 Invocar superpowers:writing-plans para
 docs/superpowers/plans/2026-08-30-s17-bi-control-tower-react.md, autorrevisarlo, actualizar el atlas
 y continuar S18. No implementar S17 en esta sesion.
+
+## Adoptado de planes derogados (2026-09-17)
+
+Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
+
+- De `2026-08-03-usabilidad-altas-y-medias` (Task 8): **no reproducir H-05** — la tarjeta «Resumen Ejecutivo» nunca muestra «--»; sin dato, muestra el estado vacío del marco BI (T03).

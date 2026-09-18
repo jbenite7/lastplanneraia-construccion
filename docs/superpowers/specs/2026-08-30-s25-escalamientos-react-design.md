@@ -4,6 +4,7 @@ tipo: spec
 estado: vigente
 id: S25
 fecha: 2026-08-31
+version: 1.1
 superficie: escalamientos
 rutas:
   - "/dashboard/escalamientos"
@@ -1122,3 +1123,9 @@ y no bloquean esta entrega porque el spec conserva el comportamiento seguro y ob
 - Sidebar, claro/oscuro y frontera RLS incluidos.
 - 150 criterios numerados, únicos y trazables.
 - Sin implementación, datos, RLS, /admin/, commit ni publicación.
+
+## Adoptado de planes derogados (2026-09-17)
+
+Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
+
+- De `2026-08-03-usabilidad-altas-y-medias` (Task 11): **no reproducir H-26** — ningún error de JS de escalamientos falla en silencio; todo error llega a la interfaz con el vocabulario de errores de T01.

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-30
 areas: [arquitectura, rbac, design-system]
 fuente: docs/superpowers/plans/2026-08-30-s03-restablecer-clave-react.md
@@ -9,6 +9,14 @@ resumen: "migrar /password/reset a React con validación privada del bearer toke
 ---
 
 # S03 Password Reset React Implementation Plan
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill. El `## Cierre` de abajo se escribió antes de publicar y dice «pendiente de PR»; esta sección lo supera, no lo corrige.
+
+**Evidencia:** PR #48 mergeado en `main` (`701506ff`, 2026-09-17), con las Tareas 1–8 en commits `fb8696fc..d638b721` y el corte de `/password/reset` a React (`ff50fe68`). `views/auth/password-reset.view.php` ya no existe en `origin/main` (retiro autorizado por Felipe el 2026-09-17, citado en el `## Cierre`).
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

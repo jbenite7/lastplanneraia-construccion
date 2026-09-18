@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-25
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-25-bitacora-avance-manual.md
@@ -9,6 +9,14 @@ resumen: Que WeeklyRealProgressCarryoverService deje de adivinar si un avance lo
 ---
 
 # Bitácora del avance editado a mano — Implementation Plan
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** `CHANGELOG.md:609` («Añadido: bitácora de ediciones manuales del avance en Programa General», 2026-08-26); `database/migrations/20260826_pg_avance_edicion_manual.sql:12` crea la tabla y `src/Services/PgAvanceEdicionManualService.php:92` escribe en ella. El spec `2026-08-25-bitacora-ediciones-manuales-carryover-design.md` ya estaba `cerrado`; el plan se había quedado atrás.
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

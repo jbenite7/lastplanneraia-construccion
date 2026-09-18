@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-26
 areas: [bi, design-system, rbac, datos]
 fuente: docs/superpowers/plans/2026-08-26-ola1-torre-etapa-piloto.md
@@ -9,6 +9,14 @@ resumen: "Plan de la Ola 1, etapa piloto: del cimiento del catálogo ejecutable 
 ---
 
 # Ola 1 — La Torre escribe · Etapa piloto · Plan de implementación
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** el propio `## Cierre` (2026-08-27) cita la condición de hecho cumplida punto por punto y el PR #12 mergeado en `main` (`2a324a00`) con CI en verde sobre el commit verificado; `ct-app/` existe en `origin/main` y `tests/test_bi_paridad_metricas.php` es el gate citado (27/27). El frontmatter se había quedado en `vigente` por olvido, no por decisión.
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **Para trabajadores agénticos:** SUB-SKILL REQUERIDA: usa `superpowers:subagent-driven-development`
 > (recomendado) o `superpowers:executing-plans`, tarea por tarea. Las casillas (`- [ ]`) son

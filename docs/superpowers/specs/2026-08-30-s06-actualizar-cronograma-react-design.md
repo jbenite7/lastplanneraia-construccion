@@ -4,6 +4,7 @@ tipo: spec
 estado: vigente
 id: S06
 fecha: 2026-08-30
+version: 1.1
 superficie: actualizar-cronograma
 rutas: ["/programa-general-actualizar"]
 depende_de: [T01, S04, S05]
@@ -1214,3 +1215,9 @@ Invocar `superpowers:writing-plans` para producir
 `docs/superpowers/plans/2026-08-30-s06-actualizar-cronograma-react.md`, con TDD, archivos exactos,
 contratos sin DML, checkpoints verticales, gate visual explícito, corte reversible y retiro por
 búsqueda de consumidores. No implementar antes de cerrar y autorrevisar ese plan.
+
+## Adoptado de planes derogados (2026-09-17)
+
+Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
+
+- De `2026-07-31-cierre-de-diseno-impeccable` (Task 2): la versión React de Actualizar Cronograma **no reproduce ningún hex fuera de tokens** de `public/js/modules/programa_actualizar/hot_actualizar.js`; el gate estático del design system lo comprueba sobre los archivos nuevos.

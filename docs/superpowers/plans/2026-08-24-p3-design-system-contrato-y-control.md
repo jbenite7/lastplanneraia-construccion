@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: derogada
 fecha: 2026-08-24
 areas: [design-system]
 fuente: docs/superpowers/plans/2026-08-24-p3-design-system-contrato-y-control.md
@@ -141,10 +141,13 @@ viejos retirados y los nuevos en verde sobre `main`.
 
 ---
 
-## Estado verificado — sigue vigente
+## Estado verificado — derogada
 
-Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+Verificado contra el código el 2026-09-17, por decisión de Felipe del mismo día. La decisión que contiene **dejó de ser cierta**; el documento se conserva con su lápida.
 
-**Qué falta:** DS-F1, DS-F2 y DS-F3 sin ejecutar y sin decision que las cancele; p1 lo lista como cola de trabajo pendiente
+**Qué dejó de ser cierto:** DS-F2 reimplementaba por adaptadores PHP (Handsontable, DataTables, legacyCards) las tablas que **S05–S08** reemplazan en React, y DS-F1/DS-F3 redefinían el contrato del sistema sobre esas mismas superficies. Ejecutarlo sería mantener dos sistemas visuales en paralelo.
+
+**Qué lo sustituye:** **S26** (design system React) para el contrato y las primitivas; cada tabla, el spec S de su módulo. Anotado en [[docs/superpowers/specs/2026-08-30-s26-design-system-react-design]].
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
+

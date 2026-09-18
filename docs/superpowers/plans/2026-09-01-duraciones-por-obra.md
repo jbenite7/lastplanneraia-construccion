@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-09-01
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-09-01-duraciones-por-obra.md
@@ -9,6 +9,14 @@ resumen: que una obra pueda corregir la duración de un paso de contratación de
 ---
 
 # Duraciones de contratación por obra — plan de implementación
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** `CHANGELOG.md:423` («Duraciones de contratación por obra», 2026-09-01) con la tabla `pdc_proyecto_duraciones` y los dos verbos; los seis archivos que el plan manda crear existen en `origin/main` (`database/migrations/20260901_pdc_v2_duraciones_por_obra.php`, `src/Services/Pdc/DuracionesObraService.php`, `tests/test_pdc_v2_duraciones_obra_contrato.php`, `pdc-app/src/lib/duracionesObra.ts`, `tests/browser/pdc-v2-duraciones-obra.spec.mjs`). El despliegue a producción no es parte del plan, como su propio `## Cierre del frente` deja escrito.
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **Para trabajadores agénticos:** SUB-SKILL REQUERIDA: usar `superpowers:subagent-driven-development` (recomendado) o `superpowers:executing-plans` para ejecutar este plan tarea por tarea. Los pasos usan casillas (`- [ ]`) para seguimiento.
 
