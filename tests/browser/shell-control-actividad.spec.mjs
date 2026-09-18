@@ -151,12 +151,14 @@ test.describe('ControlActividad — red completamente interceptada', () => {
   // T7-1 (Tarea 7, S04): "Cambiar proyecto" dejó de abrir una lista en sitio dentro del menú de
   // cuenta y pasó a un enlace de navegación completa a `/proyectos` (spec S04 §421, descarta las
   // cachés del proyecto anterior antes de cualquier render operativo). Ese `href` literal es el
-  // contrato que se comprueba abajo — pero seguirlo de verdad en este spec, con la red 100%
-  // interceptada (sin backend PHP real detrás), aterriza en el `/login` legado: `SpaRouter` (T7-3)
-  // NO migra `/proyectos` a secas todavía, solo el prefijo `/app`, así que un navegador real
-  // sirve ese path desde PHP, que no reconoce esta sesión simulada. Por eso el resto del test
-  // continúa por el alias SPA-nativo `/app/proyectos` — la misma pantalla React, alcanzable sin
-  // depender del legado — en vez de seguir el enlace literalmente.
+  // contrato que se comprueba abajo.
+  //
+  // Hasta la Tarea 10 este test seguía por el alias SPA-nativo `/app/proyectos`: con la red 100%
+  // interceptada (sin backend PHP real detrás), `/proyectos` a secas aterrizaba en el `/login`
+  // legado porque `SpaRouter` todavía no migraba esa ruta exacta, solo el prefijo `/app`. Desde
+  // la Tarea 10 (S04 «Corte, conservando el PHP», Felipe 2026-09-18) `SpaRouter` sirve GET
+  // `/proyectos` directo — es HTML estático del shell (`SpaHostRenderer`), no toca el backend
+  // mockeado —, así que el test ya sigue el `href` real en vez de un alias.
   test('cambiar de proyecto conserva el mismo ControlActividad — un logout posterior sigue funcionando en un solo POST', async ({ page }) => {
     const { requests } = await interceptarRed(page);
 
@@ -166,7 +168,7 @@ test.describe('ControlActividad — red completamente interceptada', () => {
     const cambiarProyecto = page.getByRole('menuitem', { name: /cambiar proyecto/i });
     await expect(cambiarProyecto).toHaveAttribute('href', '/proyectos');
 
-    await page.goto('/app/proyectos');
+    await page.goto('/proyectos');
     await page.getByRole('button', { name: /ingresar al proyecto otro proyecto/i }).click();
 
     // La selección real navega de documento completo a la `route` que devolvió el servidor

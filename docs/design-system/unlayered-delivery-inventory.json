@@ -128,13 +128,7 @@
     },
     "/proyectos": {
       "authenticated": true,
-      "unlayered": [
-        {
-          "sheet": "/css/project-selector.css",
-          "via": "link",
-          "unlayeredRules": 21
-        }
-      ]
+      "unlayered": []
     },
     "/control-cambios": {
       "authenticated": true,

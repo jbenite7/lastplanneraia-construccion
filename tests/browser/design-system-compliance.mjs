@@ -255,6 +255,12 @@ test.describe('Design system foundation', () => {
     }
   });
 
+  // Tarea 10 (S04): GET /proyectos ya no sirve views/core/project_selector.view.php — sirve el
+  // shell React (frontend/index.html, montado por SpaHostRenderer). El host React enlaza el
+  // AGREGADOR (aia-design-system.css), no el entrypoint segmentado del PHP legado (ver
+  // frontend/index.html); las clases/ids de la vista PHP (.project-card, .btn-enter,
+  // #projectSearch, body.project-selector-page) no existen — se leen los reales de
+  // SelectorProyectos.tsx / TarjetaProyecto.tsx / BarraLateral.tsx.
   test('project selector follows migrated design system contract in the default light theme', async ({ page }) => {
     await login(page);
 
@@ -267,21 +273,19 @@ test.describe('Design system foundation', () => {
 
       const state = await page.evaluate(() => {
         const html = document.documentElement;
-        const firstCard = document.querySelector('.project-card');
-        const firstButton = document.querySelector('.btn-enter');
-        const search = document.querySelector('#projectSearch');
+        const firstCard = document.querySelector('.project-selector-react__item');
+        const firstButton = document.querySelector('.project-selector-react__item .aia-btn--block');
+        const search = document.querySelector('#project-search');
         const buttonStyle = firstButton ? getComputedStyle(firstButton) : null;
         const searchStyle = search ? getComputedStyle(search) : null;
 
         return {
           hasTokens: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/tokens.css'))),
-          // /proyectos consume renderForModule('project-selector'): entrypoint
-          // SEGMENTADO, no el agregador. Ver la nota del test de /login.
-          hasDesignSystem: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/design-system/entrypoints/core.css'))),
+          hasDesignSystem: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/aia-design-system.css'))),
           resolvedCanvas: getComputedStyle(html).getPropertyValue('--ds-active-bg-canvas').trim(),
-          hasProjectCss: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/project-selector.css'))),
-          hasShellClass: document.body.classList.contains('aia-shell'),
-          hasProjectPageClass: document.body.classList.contains('project-selector-page'),
+          hasProjectCss: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/project-selector-react.css'))),
+          hasLegacyProjectCss: Boolean([...document.styleSheets].some((sheet) => sheet.href && /\/css\/project-selector\.css$/.test(sheet.href))),
+          hasSidebarShellClass: document.body.classList.contains('aia-shell--sidebar'),
           hasCard: Boolean(firstCard),
           // F0/Task 8 retiro setTheme; dark se aplica sin conmutacion.
           appliedTheme: html.getAttribute('data-aia-theme'),
@@ -297,8 +301,8 @@ test.describe('Design system foundation', () => {
       expect(state.hasDesignSystem).toBe(true);
       expect(state.resolvedCanvas).not.toBe('');
       expect(state.hasProjectCss).toBe(true);
-      expect(state.hasShellClass).toBe(true);
-      expect(state.hasProjectPageClass).toBe(true);
+      expect(state.hasLegacyProjectCss, 'el host React no debe cargar el CSS legacy del selector').toBe(false);
+      expect(state.hasSidebarShellClass).toBe(true);
       expect(state.hasCard).toBe(true);
       expect(state.appliedTheme).toBe('light'); // D12
       expect(state.horizontalOverflow).toBeLessThanOrEqual(1);

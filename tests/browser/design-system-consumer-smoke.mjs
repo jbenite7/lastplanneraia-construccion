@@ -47,12 +47,30 @@ test('the 15 shared-head consumers load the canonical entrypoint', async ({ page
   }
 });
 
-test('project selector loads the segmented core without grid vendors', async ({ page }) => {
+// Tarea 10 (S04, «Corte, conservando el PHP», Felipe 2026-09-18): GET /proyectos ya no sirve
+// views/core/project_selector.view.php (entrypoint segmentado) — sirve el shell React desde
+// `App\Core\SpaHostRenderer`, con el head fijo de `public/app/index.html`. Ya NO queda ninguna
+// ruta GET que ejercite el entrypoint segmentado con `project-selector`: este test cambia de
+// "carga el core segmentado sin vendors de grilla" a "carga el head del shell React con su
+// propia hoja", mismo patrón que `expectReactShellHead` más abajo para /login. El legado PHP no
+// se retiró (decisión de Felipe): sigue sirviendo el entrypoint segmentado si `/proyectos` se
+// quitara del mapa de `SpaRouter` (rollback), pero eso ya no es lo que esta prueba mide.
+test('project selector loads the React shell head, not the segmented core', async ({ page }) => {
   test.skip(!project, 'Construction project required');
   await loginAndSelectProject(page, project, CI_ADMIN);
   try {
     await page.goto('/proyectos', { waitUntil: 'domcontentloaded' });
-    await expectSegmentedHead(page, { attachments: [] });
+    for (const href of ['/css/tokens.css', '/css/aia-design-system.css', '/css/project-selector-react.css']) {
+      await expect(page.locator(`link[href^="${href}"]`), href).toHaveCount(1);
+    }
+    await expect(page.locator('link[href^="/css/project-selector.css"]'), 'legacy CSS').toHaveCount(0);
+    await expect(page.locator(CORE)).toHaveCount(0);
+    await expect(page.locator(AGGREGATOR)).toHaveCount(0);
+    for (const vendor of ['jquery-ui', 'anychart', 'select2', 'sweetalert2', 'handsontable']) {
+      const locator = page.locator(`link[href^="/runtime/css/design-system/entrypoints/attach-${vendor}.css"]`);
+      await expect(locator, `attach-${vendor}`).toHaveCount(0);
+    }
+    await expect(page.locator('link[href*="handsontable-module.css"]')).toHaveCount(0);
   } finally {
     await logout(page).catch(() => {});
   }
@@ -62,7 +80,8 @@ test('project selector loads the segmented core without grid vendors', async ({ 
 // sirve una vista PHP: las sirve el shell React desde `App\Core\SpaHostRenderer`, con el head
 // fijo de `public/app/index.html`. No queda ninguna ruta GET de acceso en PHP — `views/auth/
 // login.view.php` solo atiende el POST legado —, así que este spec no conserva un caso PHP de
-// acceso; el head segmentado sigue cubierto por el test de `/proyectos`.
+// acceso; el head segmentado del shell React lo cubre el test de `/proyectos` de arriba
+// (Tarea 10, S04), que era el último GET que aún lo ejercitaba en PHP.
 const AUTH_REACT_ROUTES = ['/login', '/password/forgot', '/password/reset'];
 
 async function expectReactShellHead(page) {
