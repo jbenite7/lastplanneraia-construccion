@@ -10,6 +10,19 @@ const VIEWPORTS = [
 for (const viewport of VIEWPORTS) {
   test(`project selector sidebar is operable at ${viewport.width}x${viewport.height}`, async ({ page }) => {
     await page.setViewportSize(viewport);
+    // T7-5 (rojo preexistente medido por el coordinador en dfe86d2f, no una regresión de S04):
+    // PR #37 (frente `bloqueo-tema-claro`, 2026-09-07) cambió el default de `theme-bootstrap.js`
+    // a "light" para toda la app. Este spec mide específicamente el rail en oscuro, así que ahora
+    // materializa el tema que va a medir en vez de heredarlo — mismo patrón que ese frente aplicó
+    // en los specs que el CI sí corre (ver `tests/browser/shell-sidebar-rollout.mjs`). El CI no
+    // corre este archivo (corrección 9 de S04), por eso quedó sin arreglar hasta ahora.
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem('aia-theme', 'dark');
+      } catch {
+        /* modo privado */
+      }
+    });
     await login(page, CREDENTIALS);
 
     const sidebar = page.locator('[data-shell-pattern="sidebar"]');
