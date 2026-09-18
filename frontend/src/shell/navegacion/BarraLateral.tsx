@@ -140,12 +140,19 @@ export function BarraLateral({
   // sin gate de `flotante`— deja `body.aia-shell-drawer-open`/`overflow: hidden` pegado para
   // siempre: en escritorio ya no hay disparador para cerrarlo y `Escape` está gateado por
   // `flotante` en los efectos vecinos (foco de entrada, atrapa-tab).
+  //
+  // Ronda de arreglo 1, Tarea 9b (hallazgo del asesor): `setFlotante` corre SIEMPRE, sin
+  // importar `barraAutonoma` — es lo que decide el `inert` del `<aside>` de abajo, y en modo no
+  // autónomo (`NavegacionLateral`/`AppShell`) antes se congelaba en el valor que tenía al montar.
+  // Montar a 800px (`flotante=true`) y luego ensanchar a 1440px dejaría el rail de escritorio
+  // marcado `inert` para siempre, porque nadie volvía a poner `flotante` en `false`. Solo el
+  // cierre del drawer PROPIO (`setAbiertoPropio`) sigue gateado por `barraAutonoma`: en modo no
+  // autónomo ese drawer no es de este componente, lo gobierna `AppShell`.
   useEffect(() => {
-    if (!barraAutonoma) return;
     function sincronizar() {
       const ahoraFlotante = esBarraLateralFlotante(window.innerWidth);
       setFlotante(ahoraFlotante);
-      if (!ahoraFlotante) setAbiertoPropio(false);
+      if (!ahoraFlotante && barraAutonoma) setAbiertoPropio(false);
     }
     sincronizar();
     window.addEventListener('resize', sincronizar);
@@ -258,6 +265,13 @@ export function BarraLateral({
         data-shell-pattern="sidebar"
         data-sidebar-state={estado}
         data-shell-drawer-open={abierto ? 'true' : undefined}
+        // Ronda de arreglo 1 (Tarea 9b, hallazgo Important del revisor): bajo 1180px, cerrado,
+        // el `<aside>` solo se saca de la vista con `transform` (`shell-sidebar.css`) — sin
+        // `inert` sigue en el orden de tabulación y en el árbol de accesibilidad, y con la marca
+        // de esta tarea eso duplica un enlace "Last Planner AIA" enfocable pero invisible. En
+        // escritorio (`!flotante`) nunca es `inert`, esté abierto o no ese concepto aquí no
+        // aplica.
+        inert={flotante && !abierto}
       >
         <header className="aia-sidebar__header">
           {/* `.aia-sidebar__brand` fija `grid-column: 1` (contrato compartido con el shell PHP) —

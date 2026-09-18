@@ -83,6 +83,65 @@ test('bajo 1180px, la fila superior lleva la marca junto al disparador «Menú»
   expect(enlaceEnFila?.querySelector('img')).toHaveAttribute('src', '/public/img/brand/icon.svg');
 });
 
+// Ronda de arreglo 1 (hallazgo Important del revisor): bajo 1180px, con el drawer cerrado, el
+// `<aside>` solo se saca de la vista con `transform` (`shell-sidebar.css`) — sin `inert` ni
+// `aria-hidden` sigue en el orden de tabulación y en el árbol de accesibilidad. Con la marca de
+// la Tarea 9b, quien navega con Tab encuentra un enlace "Last Planner AIA" visible en la fila
+// móvil y otro idéntico invisible dentro del aside. Este test muerde: falla si el `<aside>`
+// flotante y cerrado no lleva `inert`, y confirma que al abrir lo recupera.
+test('bajo 1180px, con el drawer cerrado el <aside> queda inert; al abrir deja de estarlo', () => {
+  fijarAncho(800);
+  const { container } = render(
+    <BarraLateral activeId="projects" accountName="Ana" groups={GRUPOS} showChangeProject={false} />,
+  );
+
+  const aside = container.querySelector('aside');
+  expect(aside).toHaveAttribute('inert');
+
+  // Ni la marca ni los enlaces de navegación del aside cerrado son enfocables: ambos viven
+  // dentro de un ancestro `[inert]`.
+  const enlacesMarca = screen.getAllByRole('link', { name: 'Last Planner AIA' });
+  const enlaceEnAside = enlacesMarca.find((enlace) => aside?.contains(enlace));
+  expect(enlaceEnAside?.closest('[inert]')).not.toBeNull();
+  const enlaceNav = screen.getByRole('link', { name: 'Tus proyectos' });
+  expect(enlaceNav.closest('[inert]')).not.toBeNull();
+
+  fireEvent.click(screen.getByRole('button', { name: /abrir menú de navegación/i }));
+
+  expect(aside).not.toHaveAttribute('inert');
+  expect(enlaceNav.closest('[inert]')).toBeNull();
+});
+
+// Ronda de arreglo 1 (hallazgo del asesor durante la implementación): `flotante` en modo NO
+// autónomo (`NavegacionLateral`/`AppShell`) se congelaba en el valor que tenía al montar — el
+// `resize` que lo recalcula empezaba con `if (!barraAutonoma) return`. Si `inert` dependiera de
+// ese `flotante` congelado, montar a 800px (`flotante=true`) y luego ensanchar a 1440px con el
+// drawer ya cerrado por `AppShell` dejaría el rail de escritorio marcado `inert` para siempre —
+// una regresión peor que el defecto que este arreglo corrige. Este test cubre justo ese cruce en
+// modo no autónomo.
+test('modo no autónomo: al cruzar a escritorio, el <aside> deja de ser inert aunque el drawer ya estaba cerrado', () => {
+  fijarAncho(800);
+  const { container } = render(
+    <BarraLateral
+      activeId="projects"
+      accountName="Ana"
+      groups={GRUPOS}
+      showChangeProject={false}
+      barraAutonoma={false}
+      abiertoEnMovil={false}
+    />,
+  );
+
+  const aside = container.querySelector('aside');
+  expect(aside).toHaveAttribute('inert');
+
+  act(() => {
+    fijarAncho(1440);
+  });
+
+  expect(aside).not.toHaveAttribute('inert');
+});
+
 test('cerrar sesión dispara cerrarSesion (POST con CSRF), nunca un enlace GET a /logout', async () => {
   const cerrarSesion = vi.fn().mockResolvedValue(undefined);
   const usuario = userEvent.setup();
