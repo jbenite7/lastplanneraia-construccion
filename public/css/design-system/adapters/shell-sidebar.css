@@ -318,9 +318,17 @@
       box-shadow: none;
     }
 
+    /* Ronda 2 (T9b, hallazgo del coordinador): en el piloto React la fila `.shell-mobile-topbar`
+       (`public/css/project-selector-react.css`) es `position: sticky` con
+       `z-index: calc(var(--ds-z-shell-overlay) + 1)` — por encima de este `<aside>` cuando
+       compartían el mismo `--ds-z-shell-overlay`, así que el drawer abierto quedaba con su
+       cabecera (marca, toggle) tapada por esa fila. El patrón estándar es que el drawer cubra la
+       barra superior: se sube dos capas sobre el token base para superar también a la fila
+       (+1) y no solo empatar. En el shell PHP no hay `.shell-mobile-topbar`, así que subir esto
+       no le cambia nada. */
     body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-drawer-open="true"] {
       transform: translateX(0);
-      z-index: var(--ds-z-shell-overlay);
+      z-index: calc(var(--ds-z-shell-overlay) + 2);
     }
 
     .shell-menu-velo {
