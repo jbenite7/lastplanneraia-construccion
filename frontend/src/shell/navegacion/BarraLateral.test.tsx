@@ -47,6 +47,42 @@ test('marca un único aria-current en la entrada activa, sin "Cambiar proyecto" 
 // comprobación de método (`LoginController::show()`, `$router->get` en `public/index.php`).
 // Esta prueba muerde: falla si alguien reintroduce ese enlace destructivo, y confirma que el
 // botón dispara el mismo `cerrarSesion` (CSRF, POST) que usa `MenuCuenta`.
+// Tarea 9b, S04 (pedido de Felipe: «en todas las vistas de la app quiero ver el logo»). En
+// escritorio (sin `flotante`) la marca vive solo en la cabecera del `<aside>`, con el mismo
+// enlace e ícono que la barra canónica PHP.
+test('en escritorio, la marca de la cabecera enlaza a /proyectos con el ícono de la barra canónica', () => {
+  fijarAncho(1440);
+  render(<BarraLateral activeId="projects" accountName="Ana" groups={GRUPOS} showChangeProject={false} />);
+
+  const enlaces = screen.getAllByRole('link', { name: 'Last Planner AIA' });
+  expect(enlaces).toHaveLength(1);
+  expect(enlaces[0]).toHaveAttribute('href', '/proyectos');
+  expect(enlaces[0]).toHaveClass('aia-sidebar__brand', 'aia-brand-lockup');
+  const icono = enlaces[0].querySelector('img');
+  expect(icono).toHaveAttribute('src', '/public/img/brand/icon.svg');
+});
+
+// Bajo 1180px (modo autónomo, `flotante`), la marca se repite en la fila superior junto al
+// disparador «Menú» — con el drawer cerrado, es la única marca visible en pantalla porque el
+// `<aside>` está fuera de vista (`translateX(-100%)`).
+test('bajo 1180px, la fila superior lleva la marca junto al disparador «Menú»', () => {
+  fijarAncho(800);
+  render(<BarraLateral activeId="projects" accountName="Ana" groups={GRUPOS} showChangeProject={false} />);
+
+  const fila = document.querySelector('.shell-mobile-topbar');
+  expect(fila).not.toBeNull();
+  const disparador = screen.getByRole('button', { name: /abrir menú de navegación/i });
+  expect(fila).toContainElement(disparador);
+
+  const enlacesMarca = screen.getAllByRole('link', { name: 'Last Planner AIA' });
+  // Dos coincidencias a propósito: la fila (visible) y la cabecera del `<aside>` (fuera de
+  // vista por `transform`, pero presente en el DOM/árbol de accesibilidad de jsdom).
+  expect(enlacesMarca).toHaveLength(2);
+  const enlaceEnFila = enlacesMarca.find((enlace) => fila?.contains(enlace));
+  expect(enlaceEnFila).toHaveAttribute('href', '/proyectos');
+  expect(enlaceEnFila?.querySelector('img')).toHaveAttribute('src', '/public/img/brand/icon.svg');
+});
+
 test('cerrar sesión dispara cerrarSesion (POST con CSRF), nunca un enlace GET a /logout', async () => {
   const cerrarSesion = vi.fn().mockResolvedValue(undefined);
   const usuario = userEvent.setup();

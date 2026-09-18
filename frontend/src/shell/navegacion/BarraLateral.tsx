@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { ConmutadorTema } from '../ConmutadorTema';
 import { esBarraLateralFlotante } from '../modoBarraLateral';
+import { MarcaLockup } from './MarcaLockup';
 
 /**
  * Modelos de presentación del rail (Tarea 7, S04) — no de dominio: quien construye `groups`
@@ -217,18 +218,30 @@ export function BarraLateral({
 
   return (
     <>
+      {/* Tarea 9b, S04: fila superior fija con la marca junto al disparador — sustituye al
+          botón `position: fixed` en solitario de la ronda anterior (`shell-menu-trigger`,
+          `@layer legacy-overrides`, compartido con el shell PHP). En vez de pelear la cascada
+          de capas contra ese archivo (`module` va antes que `legacy-overrides` en
+          `aia-design-system.css`, así que ninguna regla de `module` puede ganarle), el botón
+          deja de llevar esa clase: ahora es un hijo en flujo normal de `.shell-mobile-topbar`
+          (`project-selector-react.css`), que reserva su propia fila fija arriba — la misma
+          reserva de espacio que antes hacía el padding-left de V1, ahora real en vez de
+          simulada. */}
       {barraAutonoma && flotante && (
-        <button
-          ref={disparadorRef}
-          type="button"
-          className="aia-btn aia-btn--secondary shell-menu-trigger"
-          aria-controls={id}
-          aria-expanded={abierto}
-          aria-label={abierto ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'}
-          onClick={() => setAbiertoPropio((valor) => !valor)}
-        >
-          Menú
-        </button>
+        <div className="shell-mobile-topbar">
+          <button
+            ref={disparadorRef}
+            type="button"
+            className="aia-btn aia-btn--secondary shell-mobile-topbar__trigger"
+            aria-controls={id}
+            aria-expanded={abierto}
+            aria-label={abierto ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'}
+            onClick={() => setAbiertoPropio((valor) => !valor)}
+          >
+            Menú
+          </button>
+          <MarcaLockup className="shell-mobile-topbar__brand" />
+        </div>
       )}
 
       {barraAutonoma && flotante && abierto && (
@@ -248,10 +261,10 @@ export function BarraLateral({
       >
         <header className="aia-sidebar__header">
           {/* `.aia-sidebar__brand` fija `grid-column: 1` (contrato compartido con el shell PHP) —
-              ver el comentario histórico en `NavegacionLateral` antes de este refactor. */}
-          <div className="aia-sidebar__brand">
-            <strong className="aia-sidebar__brand-name">Last Planner AIA</strong>
-          </div>
+              ver el comentario histórico en `NavegacionLateral` antes de este refactor. Tarea 9b:
+              paridad completa con la barra canónica PHP vía `MarcaLockup` (enlace + ícono +
+              nombre), en vez del `<div>` sin enlace ni ícono que dejaba T7. */}
+          <MarcaLockup />
           {context && (
             <div className="aia-sidebar__context">
               <span>{context.primary}</span>

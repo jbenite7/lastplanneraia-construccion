@@ -16,6 +16,13 @@
  * `body.project-selector-page` / `#projectGrid` / `.project-item`, nombres distintos a los de
  * aquí. `project-selector-sidebar.spec.mjs` mide esa página legado, no ésta.
  *
+ * Excepción de ámbito (Tarea 9b, S04): `.shell-mobile-topbar` NO es del selector — es la fila
+ * bajo 1180px compartida por las dos pantallas React (`BarraLateral` autónoma aquí, y
+ * `AppShell.tsx` para el shell con proyecto). Vive en este archivo porque es el único CSS del
+ * módulo que `frontend/index.html` enlaza en las dos rutas (`<link rel="stylesheet"
+ * href="/css/project-selector-react.css">`, sin condicionar por ruta); crear una hoja nueva solo
+ * para esta fila la habría dejado sin enlazar en `AppShell`.
+ *
  * Cuatro composiciones de grilla, mismos cortes que el resto del sistema (DESIGN.md, `auth-react.css`):
  *   - móvil   (< 48rem / 768px):  una columna, drawer con velo.
  *   - tablet  (>= 48rem / 768px): dos columnas, sigue en drawer bajo 1180px.
@@ -114,18 +121,36 @@
     gap: var(--ds-space-4);
   }
 
-  /* Ronda de arreglo 1 (hallazgo visual V1): bajo 1180px `.shell-menu-trigger` (`BarraLateral`)
-     es `position: fixed` en la esquina superior izquierda — igual que en `AppShell` — y NO
-     participa del flujo de esta cabecera, así que sin reservar su espacio el `h1` se renderiza
-     DEBAJO del botón. Mismo arreglo que ya existe para el shell con proyecto
-     (`body.aia-shell--sidebar .context-bar`, `adapters/shell-sidebar.css`): mismos tokens,
-     mismo breakpoint (`max-width: 1179px`, el límite exacto de `esBarraLateralFlotante`), y el
-     mismo cálculo — no se inventa un valor nuevo. Selector propio porque esta pantalla no tiene
-     un `.context-bar`: su cabecera es `.project-selector-react__header`. */
-  @media (max-width: 1179px) {
-    .project-selector-react__header {
-      padding-inline-start: calc(var(--ds-space-18) + var(--ds-space-8));
-    }
+  /* Tarea 9b, S04 (reemplaza la reserva de espacio de la ronda de arreglo 1, hallazgo visual V1):
+     antes el disparador era `position: fixed` en solitario y flotaba sobre el `h1`, así que había
+     que reservarle un padding-left calculado a mano. Ahora `.shell-mobile-topbar` es una fila REAL
+     en flujo normal, `position: sticky` (no `fixed`: no necesita salir del flujo, solo quedarse
+     visible al hacer scroll) — el contenido queda debajo por construcción, sin padding que
+     mantener sincronizado con el ancho del botón. `top: 0` porque esta fila es lo primero que
+     pinta `BarraLateral`/`AppShell`, antes de cualquier posible barra del navegador o composición
+     ajena; `z-index` por encima del velo (`--ds-z-shell-overlay - 1` en `shell-sidebar.css`) para
+     que el disparador y la marca sigan alcanzables con el drawer abierto. Mismo breakpoint que
+     gobierna `flotante` en React (`esBarraLateralFlotante`, `modoBarraLateral.ts`) — aquí solo
+     hace falta el ancho de columna única del wide/tablet superior, porque React ya decide con JS
+     cuándo montar la fila; esta regla únicamente da forma a lo que React ya montó. */
+  .shell-mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-3);
+    position: sticky;
+    top: 0;
+    z-index: calc(var(--ds-z-shell-overlay) + 1);
+    padding: var(--ds-space-3) var(--ds-space-4);
+    background: var(--ds-active-bg-page);
+    border-block-end: var(--ds-border-width) solid var(--ds-active-border);
+  }
+
+  .shell-mobile-topbar__trigger {
+    flex: 0 0 auto;
+  }
+
+  .shell-mobile-topbar__brand {
+    min-width: 0;
   }
 
   /* `min-width: 0` es lo que impide que el título largo empuje el botón de Control Tower fuera

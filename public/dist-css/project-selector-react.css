@@ -36,10 +36,22 @@
     justify-content: space-between;
     gap: var(--ds-space-4);
   }
-  @media (max-width: 1179px) {
-    .project-selector-react__header {
-      padding-inline-start: calc(var(--ds-space-18) + var(--ds-space-8));
-    }
+  .shell-mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-3);
+    position: sticky;
+    top: 0;
+    z-index: calc(var(--ds-z-shell-overlay) + 1);
+    padding: var(--ds-space-3) var(--ds-space-4);
+    background: var(--ds-active-bg-page);
+    border-block-end: var(--ds-border-width) solid var(--ds-active-border);
+  }
+  .shell-mobile-topbar__trigger {
+    flex: 0 0 auto;
+  }
+  .shell-mobile-topbar__brand {
+    min-width: 0;
   }
   .project-selector-react__header-text {
     min-width: 0;
