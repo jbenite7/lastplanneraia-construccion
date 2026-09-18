@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-29
 areas: [datos, rbac]
 fuente: docs/superpowers/plans/2026-08-29-rls-runtime-boundary.md
@@ -9,6 +9,14 @@ resumen: "hacer que la cuenta MySQL runtime DML-only sea la frontera autoritativ
 ---
 
 # RLS Runtime Boundary Implementation Plan
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** los tres artefactos nuevos existen en `origin/main` (`scripts/lib/php-test-lane-manifest.php`, `docs/security/rls-runtime-boundary.md`, `tests/test_runtime_boundary_ci_contract.php`) y `.github/workflows/ci.yml:285-291` corre la lane `admin-db` aislada con `LPS_ADMIN_DB_LANE=1`. Gates corridos en esta sesión, cada RC en su línea: `tests/test_php_test_lane_manifest.php` → `RC=0`, «PASA: manifiesto de lanes, 7 comprobaciones»; `tests/test_runtime_boundary_ci_contract.php` → `RC=0`, «PASA: frontera runtime en el CI, 65 comprobaciones». No tiene entrada en `CHANGELOG.md`.
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

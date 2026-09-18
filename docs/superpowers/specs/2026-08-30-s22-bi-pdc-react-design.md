@@ -4,6 +4,7 @@ tipo: spec
 estado: vigente
 id: S22
 fecha: 2026-08-31
+version: 1.1
 superficie: bi-pdc
 rutas:
   - "/bi/pdc"
@@ -1443,3 +1444,9 @@ La autorrevisión comprobó:
 El siguiente artefacto obligatorio es
 `docs/superpowers/plans/2026-08-30-s22-bi-pdc-react.md` mediante
 `superpowers:writing-plans`. No se implementa en esta sesión.
+
+## Adoptado de planes derogados (2026-09-17)
+
+Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
+
+- De `2026-08-04-biblia-t3-pdc` (Task 4): los escenarios de plan con fechas y seguimiento, en su lectura de BI, son escenarios de aceptación de esta spec.

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: derogada
 fecha: 2026-08-28
 areas: [arquitectura, datos, rbac, design-system]
 fuente: docs/superpowers/plans/2026-08-28-paridad-shell-react.md
@@ -9,6 +9,16 @@ resumen: "convertir /app en el shell de uso real con, como mínimo, todas las ca
 ---
 
 # Paridad funcional del shell React Implementation Plan
+
+## Estado verificado — derogada
+
+Verificado contra el código el 2026-09-17, por decisión de Felipe del mismo día. La decisión que contiene **dejó de ser cierta**; el documento se conserva con su lápida.
+
+**Qué dejó de ser cierto:** este plan era la versión previa del programa de migración, escrita dos días antes de las specs T01–T03 y S01–S27 (2026-08-30), que lo desglosan superficie por superficie. Lo que ejecutó (Tasks 3, 4 y 7, parcial) quedó en el código y lo heredó T01; la Task 9 la hizo S01.
+
+**Qué lo sustituye:** Task 1 y 12 → **T01**; Task 6 → **T02**; Task 2 → **S04**; Task 5 → **S08**; Task 8 → **S26**. Anotado en las specs de S04, S08 y S26 (sección «Adoptado de planes derogados»).
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development
 > (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use

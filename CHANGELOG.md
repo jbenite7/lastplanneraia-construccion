@@ -28,6 +28,34 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Derogado: cinco planes anteriores al programa React, cuyos pendientes pasan a las specs S/T (2026-09-17)
+
+Mismo frente `docs/cierre-planes-hechos`, decisión de Felipe. `cierre-de-diseno-impeccable`,
+`paridad-shell-react`, `biblia-t3-pdc`, P3 `design-system-contrato-y-control` y P4
+`movil-y-tema-claro` describían trabajo sobre pantallas PHP que la serie S01–S27 reescribe en
+React, o versiones previas de T01–T03. Cada uno lleva su lápida con qué dejó de ser cierto y qué lo
+sustituye. Sus pendientes reales entran como «Adoptado de planes derogados» (ronda 1.1) en las specs
+S04, S06, S07, S08, S12, S17, S22, S25, S26, T01 y T03: los «no reproducir H-xx» de usabilidad, los
+escenarios del PDC como aceptación, y las tareas de paridad del shell repartidas en T01/T02/S04/
+S08/S26. Lo que no tiene superficie S/T (migraciones de datos, hosting, gate RLS, deploy) sigue
+`vigente` donde estaba.
+
+### Cerrado: doce planes y tres specs que ya estaban hechos y seguían `vigente` (2026-09-17)
+
+Frente `docs/cierre-planes-hechos`, por orden de Felipe al ver el tablero de avance de specs.
+Doce planes tenían su trabajo en `main` —seis con `## Cierre` escrito y PR mergeado, otros con
+entrada en este registro y sus archivos en el árbol— y el frontmatter seguía en `vigente` (uno en
+`abierto`, que no es valor de la taxonomía). Cada uno recibe `estado: cerrado` y una sección
+«Estado verificado — cerrado» con la evidencia citada, según el criterio del 2026-08-25:
+`s01-paridad-visual` (PR #42), `s02-recuperar-clave-react` (PR #43), `s03-restablecer-clave-react`
+(PR #48), `errores-api-auth-contrato` (PR #44), `errores-api-lps-contrato` (PR #45),
+`ola1-torre-etapa-piloto` (PR #12), `tarea-cero-lista-canonica-de-pantallas`,
+`bitacora-avance-manual`, `shell-minimo-react`, `rls-runtime-boundary` (sus dos gates puros
+corridos hoy, `RC=0` cada uno), `duraciones-por-obra` y `bloqueo-tema-claro` (PR #37). Cierran
+con ellos los specs de S02, S03 y duraciones por obra. `s01-login-react` **no** cierra: su segunda
+mitad (retirar el login PHP) sigue abierta a propósito. `TASKS.md` deja de decir que S03 está
+pendiente de PR.
+
 ### Arreglado: el tema claro llega a las pantallas PHP y al laboratorio (2026-09-07)
 
 Frente `bloqueo-tema-claro`. El claro es el tema de entrada desde D12, pero no llegaba a

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 id: S02
 fecha: 2026-08-30
 superficie: recuperacion-clave
@@ -14,6 +14,14 @@ resumen: "Migracion de la solicitud de recuperacion de contraseña a la SPA Reac
 ---
 
 # S02 — Recuperar contraseña en React
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** su plan `2026-08-30-s02-recuperar-clave-react` está en `main` desde el PR #43 (`ccab071a`) con `MIGRATION_COMPLETE`: `/password/forgot` la sirve React y la vista PHP se retiró por autorización de Felipe (2026-09-16).
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **Estado:** diseño técnico autorrevisado. Felipe eligió conservar el formulario después del
 > mensaje genérico de éxito. La ejecución corrida S01–S27 autoriza cerrar decisiones técnicas sin

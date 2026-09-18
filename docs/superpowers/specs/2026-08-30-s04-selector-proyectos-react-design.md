@@ -4,6 +4,7 @@ tipo: spec
 estado: vigente
 id: S04
 fecha: 2026-08-30
+version: 1.1
 superficie: selector-proyectos
 rutas: ["/proyectos"]
 depende_de: [S01, S02, S03, T01]
@@ -638,3 +639,9 @@ una decisión de dominio separada.
 Invocar `superpowers:writing-plans` para producir el plan S04. El plan debe ser vertical, empezar por
 contrato/gateway y adaptador PHP puro, evitar toda selección real que escriba auditoría, cerrar el
 piloto antes del canónico y no implementar ninguna superficie S05+.
+
+## Adoptado de planes derogados (2026-09-17)
+
+Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
+
+- De `2026-08-28-paridad-shell-react` (Task 2): selección de proyecto por ID y errores JSON estables. Ya lo cubren las Tareas 2–3 del plan de esta spec; se anota para que el plan derogado no parezca dejar deuda.

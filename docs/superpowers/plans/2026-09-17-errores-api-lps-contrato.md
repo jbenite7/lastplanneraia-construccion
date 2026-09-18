@@ -1,13 +1,21 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-09-17
 areas: [arquitectura, lps, qa]
 resumen: "LpsApiController emite error.fields vacío como lista y el cliente descarta el error entero; el cajón LPS pinta su cuerpo normal sobre una actividad inexistente en vez de «no disponible». Se corrige en el servidor y se extiende el contrato PHP↔Zod"
 ---
 
 # Errores de `/api/lps/*` alineados con el esquema del cliente
+
+## Estado verificado — cerrado
+
+Verificado contra el código y el remoto el 2026-09-17. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill. El `## Cierre` de abajo se escribió antes de publicar y dice «pendiente de PR»; esta sección lo supera, no lo corrige.
+
+**Evidencia:** PR #45 mergeado en `main` (`a8155a06`, 2026-09-17): arreglo `1339a124`, contrato `2176d40f`, navegador `386a4ef6`. `tests/test_lps_api_contract.php` y `tests/browser/lps-errores-contrato.spec.mjs` existen en `origin/main`.
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 **Goal:** que el cajón contextual LPS reconozca `LPS_TARGET_NOT_FOUND` y `LPS_TARGET_STALE` y muestre «no disponible», y que un test falle si la forma real de los errores LPS vuelve a divergir del esquema.
 

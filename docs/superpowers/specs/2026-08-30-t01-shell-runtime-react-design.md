@@ -4,6 +4,7 @@ tipo: spec
 estado: vigente
 id: T01
 fecha: 2026-08-31
+version: 1.1
 superficie: shell-runtime-react
 rutas:
   - "/app"
@@ -478,3 +479,10 @@ Escribir y autorrevisar `docs/superpowers/plans/2026-08-30-t01-shell-runtime-rea
 trazabilidad exacta de los catorce criterios. El plan debe reconocer el shell mínimo ya implementado,
 cerrar sólo sus brechas medidas por incrementos y diferir el retiro de VIEW-26/29/30 hasta su censo
 cero. No se implementa en esta sesión documental.
+
+## Adoptado de planes derogados (2026-09-17)
+
+Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
+
+- De `2026-08-03-usabilidad-altas-y-medias` (Tasks 13 y 23): **no reproducir H-19** (superficies sin encabezado de página: el shell lo pone siempre) ni **H-36/H-25** («Quitar filtro» sin objetivo claro y sin contador de filtros activos: la barra de filtros del shell los trae de serie).
+- De `2026-08-28-paridad-shell-react` (Tasks 1 y 12): la matriz de paridad ejecutable y la política de promoción con rollback quedan aquí, no en aquel plan.
