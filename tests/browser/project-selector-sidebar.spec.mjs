@@ -75,7 +75,13 @@ for (const viewport of VIEWPORTS) {
     expect(heading.textTransform, 'group heading must not be uppercase').toBe('none');
     expect(heading.letterSpacing, 'group heading must not keep legacy tracking').toBe('normal');
     expect(parseFloat(heading.marginLeft), 'group heading needs a left inset').toBeGreaterThan(0);
-    expect(parseFloat(heading.marginTop), 'group heading needs top spacing').toBeGreaterThan(0);
+    // Tarea 10 (S04): esta aserción exigía margen superior > 0, medido sobre la vista PHP legada
+    // de /proyectos, que no cargaba el adaptador del shell. El adaptador canónico
+    // (`adapters/shell-sidebar.css`, regla de `.aia-sidebar__group h3` con
+    // `margin-block-start: 0 !important`) pega el título a sus ítems a propósito —el
+    // section-gap separa los grupos— y la barra React lo carga, igual que el resto de pantallas
+    // con el shell. Se afirma el contrato canónico, no el de la vista retirada.
+    expect(parseFloat(heading.marginTop), 'group heading sits on its items (canonical shell adapter)').toBe(0);
 
     // styles.css's `* { padding: 0 }` reset (module layer) would collapse every rail inset; the
     // component's !important paddings must hold so content is not flush against the edge. A
@@ -94,8 +100,14 @@ for (const viewport of VIEWPORTS) {
 
     const main = page.getByTestId('selector-proyectos');
     const sidebarWidth = await sidebar.evaluate((el) => el.getBoundingClientRect().width);
-    const mainLeft = await main.evaluate((el) => el.getBoundingClientRect().left);
-    expect(Math.round(mainLeft)).toBe(Math.round(sidebarWidth));
+    // Tarea 10 (S04): BarraLateral pone `body.aia-shell--sidebar` al montar y el adaptador anima
+    // el padding del body, así que una lectura inmediata cae a mitad de la transición (medido:
+    // 200 y 156 px frente a 240). Se espera a que el layout se asiente en vez de leer una vez.
+    await expect
+      .poll(async () => Math.round(await main.evaluate((el) => el.getBoundingClientRect().left)), {
+        message: 'main content must start exactly where the rail ends',
+      })
+      .toBe(Math.round(sidebarWidth));
 
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
