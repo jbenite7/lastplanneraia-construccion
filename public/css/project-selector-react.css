@@ -128,18 +128,22 @@
      visible al hacer scroll) — el contenido queda debajo por construcción, sin padding que
      mantener sincronizado con el ancho del botón. `top: 0` porque esta fila es lo primero que
      pinta `BarraLateral`/`AppShell`, antes de cualquier posible barra del navegador o composición
-     ajena; `z-index` por encima del velo (`--ds-z-shell-overlay - 1` en `shell-sidebar.css`) para
-     que el disparador y la marca sigan alcanzables con el drawer abierto. Mismo breakpoint que
-     gobierna `flotante` en React (`esBarraLateralFlotante`, `modoBarraLateral.ts`) — aquí solo
-     hace falta el ancho de columna única del wide/tablet superior, porque React ya decide con JS
-     cuándo montar la fila; esta regla únicamente da forma a lo que React ya montó. */
+     ajena. Ruling T9b-10: el drawer abierto (`<aside>`, `z-index: var(--ds-z-shell-overlay)` en
+     `shell-sidebar.css`) debe quedar por encima de esta fila, no al revés — subir el `<aside>`
+     (773797eb) tapaba en el shell PHP a `.shell-menu-trigger` (overlay+1,
+     `views/partials/shell_sidebar.php:152`), que cierra el drawer PHP con un segundo clic
+     (`shell-drawer.js:73-76`); ese commit revirtió. En su lugar esta fila baja por DEBAJO del
+     velo (`--ds-z-shell-overlay - 1` en `shell-sidebar.css`): con el drawer abierto el velo la
+     cubre y la oscurece (fuera del ancho del `<aside>`), y el `<aside>` (overlay) queda encima de
+     ambos. Con el drawer cerrado esta fila sigue por encima del contenido de la página (`sticky`,
+     mayor que cualquier z-index del contenido normal), que es lo único que necesita en reposo. */
   .shell-mobile-topbar {
     display: flex;
     align-items: center;
     gap: var(--ds-space-3);
     position: sticky;
     top: 0;
-    z-index: calc(var(--ds-z-shell-overlay) + 1);
+    z-index: calc(var(--ds-z-shell-overlay) - 2);
     padding: var(--ds-space-3) var(--ds-space-4);
     background: var(--ds-active-bg-page);
     border-block-end: var(--ds-border-width) solid var(--ds-active-border);

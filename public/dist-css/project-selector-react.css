@@ -42,7 +42,7 @@
     gap: var(--ds-space-3);
     position: sticky;
     top: 0;
-    z-index: calc(var(--ds-z-shell-overlay) + 1);
+    z-index: calc(var(--ds-z-shell-overlay) - 2);
     padding: var(--ds-space-3) var(--ds-space-4);
     background: var(--ds-active-bg-page);
     border-block-end: var(--ds-border-width) solid var(--ds-active-border);

@@ -325,6 +325,36 @@ test.describe('selector de proyectos React — comportamiento', () => {
     await expect(page.getByRole('button', { name: 'Abrir menú de navegación' })).toBeVisible();
   });
 
+  // Ruling T9b-10: con el drawer abierto, el `<aside>` queda por encima de `.shell-mobile-topbar`
+  // (que baja por debajo del velo), así que el velo cubre toda la fila fuera del ancho del
+  // `<aside>` (240px de rail en un viewport de 390px) y la oscurece. Rojo demostrado antes del
+  // arreglo (773797eb subía el aside a overlay+2, por encima también del velo en overlay-1, pero
+  // la fila seguía en overlay+1 — por encima del velo): `elementFromPoint(350, 30)` resolvía a un
+  // nodo de `.shell-mobile-topbar`, no al velo.
+  test('drawer móvil en 390px: con el drawer abierto, el velo cubre la fila superior fuera del aside', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await simularSesion(page, [arranqueAutenticadoConProyecto()]);
+    await simularProyectos(page, [listaProyectos()]);
+
+    await page.goto('/app/proyectos');
+    await esperarPantalla(page);
+
+    await page.getByRole('button', { name: 'Abrir menú de navegación' }).click();
+    await expect(page.getByRole('button', { name: 'Cerrar menú de navegación' })).toBeVisible();
+
+    const puntoEnVelo = await page.evaluate(() => {
+      const el = document.elementFromPoint(350, 30);
+      return {
+        enVelo: el?.closest('.shell-menu-velo') !== null,
+        enFilaMovil: el?.closest('.shell-mobile-topbar') !== null,
+      };
+    });
+    expect(puntoEnVelo.enVelo).toBe(true);
+    expect(puntoEnVelo.enFilaMovil).toBe(false);
+  });
+
   test('escritorio 1180px: rail fijo con "Tus proyectos" marcado aria-current', async ({ page }) => {
     await page.setViewportSize({ width: 1180, height: 820 });
     await simularSesion(page, [arranqueAutenticadoConProyecto()]);
