@@ -307,7 +307,7 @@ test.describe('selector de proyectos React — logout de la barra', () => {
     await page.goto('/app/proyectos');
     await esperarPantalla(page);
 
-    expect(page.locator('a[href="/logout"]')).toHaveCount(0);
+    await expect(page.locator('a[href="/logout"]')).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Cerrar sesión' }).click();
     await expect.poll(() => logout.total).toBe(1);
@@ -330,26 +330,37 @@ test.describe('selector de proyectos React — logout de la barra', () => {
  * flujo de negocio nunca llega a ejecutarse (el controlador corta en la validación de CSRF antes
  * de leer el body: `ProjectApiController::select()`, sesión → CSRF → payload).
  *
- * **Hallazgo de la primera corrida (documentado, no ocultado):** la corrección #10 esperaba que
- * `GET /api/proyectos` sin sesión devolviera el 401 JSON de
- * `ProjectApiController::respondSessionInvalid()`. En la corrida real contra `:8102` eso no
- * ocurre: `public/index.php` aplica `SessionMiddleware::beginRequest($routeRequiresAuthentication)`
- * ANTES de que el router llegue al controlador, y `/api/proyectos` no está en `$publicRoutes` —
- * así que una petición sin sesión nunca alcanza el `sessionUser() === null` del controlador: sale
- * redirigida con **302 a `/login`**, confirmado con `curl -i` (sin seguir redirecciones) y
- * reproducido aquí con `maxRedirects: 0`. El 401 JSON del controlador es código vivo pero
- * inalcanzable por esta vía — protege un camino distinto (sesión existente pero sin `usuario` en
- * `$_SESSION`, no "sin sesión en absoluto"). El test de abajo verifica el comportamiento real y
- * observado, no el de la corrección; el coordinador decide si eso es una corrección al documento
- * o una brecha a cerrar en `SessionMiddleware`/`$publicRoutes`.
+ * **Hallazgo de la primera corrida, revisado (documentado, no ocultado):** una primera lectura
+ * (sin la cabecera `Accept`) sugería que `GET /api/proyectos` sin sesión siempre respondía 302 a
+ * `/login`, nunca el 401 que pide la corrección #10 — pero eso resultó ser el camino de
+ * navegación de página, no el que toma el cliente real. `pedir()` (`cliente.ts`) manda siempre
+ * `Accept: application/json`, y `SessionMiddleware::finishUnauthorized()` decide 302-vs-401 por
+ * esa misma cabecera (`expectsJsonResponse()`, `src/Core/SessionMiddleware.php`): con
+ * `Accept: application/json` sí devuelve **401**, confirmado con `curl -i -H 'Accept:
+ * application/json'`. El único dato que sigue siendo distinto de lo que pedía la corrección #10
+ * es el CUERPO: no es el de `ProjectApiController::respondSessionInvalid()`
+ * (`{success:false,code:'session_invalid',...}, error:{codigo:...}`) — ese sigue siendo
+ * inalcanzable desde "sin sesión en absoluto", porque `SessionMiddleware::beginRequest()` corta
+ * antes de que el router llegue al controlador. El cuerpo real es el de
+ * `finishUnauthorized()`: `{success:false, sessionExpired:true, reason, redirect}`, que es
+ * justo la forma que `cliente.ts` ya sabe leer (`detalle.redirect`/`detalle.reason` en
+ * `EsquemaCuerpoErrorApi`). El test de abajo verifica esa forma real.
  */
 test.describe('selector de proyectos React — servidor real (sin interceptar)', () => {
-  test('GET /api/proyectos sin sesión: 302 a /login (SessionMiddleware, antes del controlador)', async ({
+  test('GET /api/proyectos sin sesión responde 401 (vía SessionMiddleware, con Accept: application/json)', async ({
     request,
   }) => {
-    const respuesta = await request.get('/api/proyectos', { maxRedirects: 0 });
-    expect(respuesta.status()).toBe(302);
-    expect(respuesta.headers()['location']).toBe('/login');
+    const respuesta = await request.get('/api/proyectos', {
+      headers: { Accept: 'application/json' },
+    });
+    expect(respuesta.status()).toBe(401);
+    const cuerpo = await respuesta.json();
+    expect(cuerpo).toMatchObject({
+      success: false,
+      sessionExpired: true,
+      reason: 'missing_session',
+      redirect: '/login',
+    });
   });
 
   test('POST /api/proyectos/seleccionar sin CSRF válido es rechazado con 403, con sesión real', async ({
