@@ -1,0 +1,165 @@
+@layer module {
+  body.aia-shell-drawer-open {
+    overflow: hidden;
+  }
+  .project-selector-react {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-6);
+    min-block-size: 100dvh;
+    box-sizing: border-box;
+    padding: var(--ds-space-6);
+    background: var(--ds-active-bg-page);
+    color: var(--ds-active-text-primary);
+  }
+  .project-selector-react :focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+  }
+  .project-selector-react__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--ds-space-4);
+  }
+  .project-selector-react__header-text {
+    min-width: 0;
+  }
+  .project-selector-react__header h1 {
+    margin: 0;
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-xl);
+    font-weight: 700;
+    line-height: var(--ds-type-line-compact);
+    letter-spacing: 0;
+  }
+  .project-selector-react__header p {
+    margin: var(--ds-space-1) 0 0;
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-sm);
+  }
+  .project-selector-react__loading,
+  .project-selector-react__selection-alert {
+    margin: 0;
+  }
+  .project-selector-react__search {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ds-space-2);
+  }
+  .project-selector-react__search label {
+    font-family: var(--ds-font-body);
+    font-weight: 500;
+    color: var(--ds-active-text-secondary);
+  }
+  .project-selector-react__search input[type="search"] {
+    flex: 1 1 16rem;
+    min-width: 0;
+    min-height: var(--ds-target-min);
+    padding: var(--ds-control-padding-block) var(--ds-space-4);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-search);
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+    font-family: var(--ds-font-body);
+  }
+  .project-selector-react__search button {
+    min-height: var(--ds-target-min);
+  }
+  .project-selector-react__empty {
+    margin: 0;
+  }
+  .project-selector-react__list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ds-space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .project-selector-react__item {
+    min-width: 0;
+  }
+  .project-selector-react__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-3);
+    min-width: 0;
+    height: 100%;
+    box-sizing: border-box;
+    padding: var(--ds-card-padding);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-card);
+    background: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-xs);
+    color: var(--ds-active-text-primary);
+    transition: border-color var(--ds-motion-fast);
+  }
+  .project-selector-react__card:hover {
+    border-color: var(--ds-color-border-strong);
+  }
+  .project-selector-react__card-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--ds-space-2);
+  }
+  .project-selector-react__card-title {
+    min-width: 0;
+    margin: 0;
+    flex: 1 1 auto;
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-lg);
+    font-weight: 700;
+    line-height: var(--ds-type-line-compact);
+    letter-spacing: 0;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+  .project-selector-react__card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ds-space-2);
+  }
+  .project-selector-react__card-role {
+    margin: 0;
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-sm);
+  }
+  .project-selector-react__card-current {
+    margin: 0;
+    color: var(--ds-active-action-primary);
+    font-weight: 600;
+    font-size: var(--ds-type-size-sm);
+  }
+  .project-selector-react .aia-btn--block {
+    inline-size: 100%;
+    margin-block-start: auto;
+  }
+  @media (min-width: 48rem) {
+    .project-selector-react__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 73.75rem) {
+    .project-selector-react {
+      padding: var(--ds-space-8);
+    }
+    .project-selector-react__list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 90rem) {
+    .project-selector-react {
+      padding: var(--ds-space-8) var(--ds-space-12);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .project-selector-react__card {
+      transition: none;
+    }
+  }
+}

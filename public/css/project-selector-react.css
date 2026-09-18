@@ -1,0 +1,231 @@
+/*
+ * Composición responsive del selector de proyectos React (S04, Tarea 8).
+ *
+ * Ámbito: `.project-selector-react` es el `<main>` que monta `SelectorProyectos.tsx`
+ * (`frontend/src/shell/proyectos/SelectorProyectos.tsx`), hermano —no envoltorio— del
+ * `<aside data-shell-pattern="sidebar">` que monta `BarraLateral.tsx` en modo autónomo
+ * (`RutaProyectos`, `frontend/src/shell/rutas.tsx`). Esta hoja NO reimplementa el rail: en modo
+ * autónomo `BarraLateral` añade `body.aia-shell--sidebar` al montar (mismo patrón que
+ * `AppShell.tsx` usa para sí mismo), y esa clase ya trae de `shell-sidebar.css` el rail fijo, el
+ * padding del contenido y el drawer bajo 1180px — reescribirlo aquí sería duplicar la primitiva.
+ * Lo único nuevo de verdad es la composición interna del selector (cabecera, buscador, grilla de
+ * tarjetas) y el bloqueo del fondo mientras el drawer propio está abierto.
+ *
+ * No colisiona con la vista PHP legado (`views/core/project_selector.view.php`,
+ * `public/css/project-selector.css`, VIEW-11 pendiente de retiro): esa vista usa
+ * `body.project-selector-page` / `#projectGrid` / `.project-item`, nombres distintos a los de
+ * aquí. `project-selector-sidebar.spec.mjs` mide esa página legado, no ésta.
+ *
+ * Cuatro composiciones de grilla, mismos cortes que el resto del sistema (DESIGN.md, `auth-react.css`):
+ *   - móvil   (< 48rem / 768px):  una columna, drawer con velo.
+ *   - tablet  (>= 48rem / 768px): dos columnas, sigue en drawer bajo 1180px.
+ *   - desktop (>= 73.75rem / 1180px): tres columnas, rail persistente.
+ *   - wide    (>= 90rem / 1440px): tres columnas, con más aire.
+ * 1180px (no 1200px de `--ds-breakpoint-desktop`) porque es el único corte de todo el shell entre
+ * rail persistente y drawer flotante (`modoBarraLateral.ts`, `shell-drawer.js`) — un breakpoint
+ * distinto aquí desincronizaría la grilla del propio rail que la contiene.
+ */
+
+@layer module {
+  /* Bloqueo del fondo mientras el drawer autónomo de `BarraLateral` está abierto (Tarea 8,
+     pendiente dejado por la Tarea 7). A propósito una CLASE, nunca `document.body.style`: así el
+     valor de reposo queda declarado en una hoja legible en vez de calculado en JS, en vez de una
+     prioridad forzada sobre `overflow` que compitiera en especificidad con otra regla. */
+  body.aia-shell-drawer-open {
+    overflow: hidden;
+  }
+
+  .project-selector-react {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-6);
+    min-block-size: 100dvh;
+    box-sizing: border-box;
+    padding: var(--ds-space-6);
+    background: var(--ds-active-bg-page);
+    color: var(--ds-active-text-primary);
+  }
+
+  .project-selector-react :focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+  }
+
+  .project-selector-react__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--ds-space-4);
+  }
+
+  /* `min-width: 0` es lo que impide que el título largo empuje el botón de Control Tower fuera
+     del viewport a 390px — sin él, un flex item hereda `min-width: auto` y nunca se encoge. */
+  .project-selector-react__header-text {
+    min-width: 0;
+  }
+
+  .project-selector-react__header h1 {
+    margin: 0;
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-xl);
+    font-weight: 700;
+    line-height: var(--ds-type-line-compact);
+    letter-spacing: 0;
+  }
+
+  .project-selector-react__header p {
+    margin: var(--ds-space-1) 0 0;
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-sm);
+  }
+
+  .project-selector-react__loading,
+  .project-selector-react__selection-alert {
+    margin: 0;
+  }
+
+  .project-selector-react__search {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ds-space-2);
+  }
+
+  .project-selector-react__search label {
+    font-family: var(--ds-font-body);
+    font-weight: 500;
+    color: var(--ds-active-text-secondary);
+  }
+
+  .project-selector-react__search input[type="search"] {
+    flex: 1 1 16rem;
+    min-width: 0;
+    min-height: var(--ds-target-min);
+    padding: var(--ds-control-padding-block) var(--ds-space-4);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-search);
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+    font-family: var(--ds-font-body);
+  }
+
+  .project-selector-react__search button {
+    min-height: var(--ds-target-min);
+  }
+
+  .project-selector-react__empty {
+    margin: 0;
+  }
+
+  /* Una columna por defecto (móvil, brief: "390/768 usan drawer/una o dos columnas"). */
+  .project-selector-react__list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ds-space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .project-selector-react__item {
+    min-width: 0;
+  }
+
+  .project-selector-react__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-3);
+    min-width: 0;
+    height: 100%;
+    box-sizing: border-box;
+    padding: var(--ds-card-padding);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-card);
+    background: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-xs);
+    color: var(--ds-active-text-primary);
+    transition: border-color var(--ds-motion-fast);
+  }
+
+  .project-selector-react__card:hover {
+    border-color: var(--ds-color-border-strong);
+  }
+
+  .project-selector-react__card-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--ds-space-2);
+  }
+
+  .project-selector-react__card-title {
+    min-width: 0;
+    margin: 0;
+    flex: 1 1 auto;
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-lg);
+    font-weight: 700;
+    line-height: var(--ds-type-line-compact);
+    letter-spacing: 0;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .project-selector-react__card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ds-space-2);
+  }
+
+  .project-selector-react__card-role {
+    margin: 0;
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-sm);
+  }
+
+  .project-selector-react__card-current {
+    margin: 0;
+    color: var(--ds-active-action-primary);
+    font-weight: 600;
+    font-size: var(--ds-type-size-sm);
+  }
+
+  .project-selector-react .aia-btn--block {
+    inline-size: 100%;
+    margin-block-start: auto;
+  }
+
+  /* Tablet (brief: "390/768 usan drawer/una o dos columnas"): dos columnas, todavía en drawer. */
+  @media (min-width: 48rem) {
+    .project-selector-react__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  /* Desktop (brief: "1180/1440 rail persistente y tres columnas"). El rail en sí ya pasó a
+     persistente en este mismo corte vía `shell-sidebar.css` (`body.aia-shell--sidebar`); aquí solo
+     sube la grilla a tres columnas. */
+  @media (min-width: 73.75rem) {
+    .project-selector-react {
+      padding: var(--ds-space-8);
+    }
+
+    .project-selector-react__list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 90rem) {
+    .project-selector-react {
+      padding: var(--ds-space-8) var(--ds-space-12);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-selector-react__card {
+      transition: none;
+    }
+  }
+}

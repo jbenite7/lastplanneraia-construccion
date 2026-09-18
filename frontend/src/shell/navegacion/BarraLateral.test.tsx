@@ -151,6 +151,59 @@ test('drawer móvil: el disparador anuncia estado, abre, Escape cierra y devuelv
   expect(disparadorCerrado).toHaveFocus();
 });
 
+// Tarea 8, S04: pendiente dejado a propósito por la Tarea 7 (ver BarraLateral.tsx). En modo
+// autónomo (la pantalla standalone `/proyectos`, sin `AppShell` alrededor) es este componente
+// quien es dueño del `<body>`, así que reutiliza la misma clase que ya consume `shell-sidebar.css`
+// (rail fijo + padding + drawer bajo 1180px) en vez de escribir una hoja nueva — mismo patrón que
+// `AppShell.tsx` aplica para sí mismo.
+test('modo autónomo: añade aia-shell--sidebar al body al montar y lo retira al desmontar', () => {
+  const { unmount } = render(
+    <BarraLateral activeId="projects" accountName="Ana" groups={GRUPOS} showChangeProject={false} />,
+  );
+
+  expect(document.body.classList.contains('aia-shell--sidebar')).toBe(true);
+
+  unmount();
+
+  expect(document.body.classList.contains('aia-shell--sidebar')).toBe(false);
+});
+
+test('modo no autónomo: no toca la clase aia-shell--sidebar del body (la gobierna AppShell)', () => {
+  render(
+    <BarraLateral
+      activeId="projects"
+      accountName="Ana"
+      groups={GRUPOS}
+      showChangeProject={false}
+      barraAutonoma={false}
+    />,
+  );
+
+  expect(document.body.classList.contains('aia-shell--sidebar')).toBe(false);
+});
+
+// Bloquea SOLO el fondo (clase CSS, `body.aia-shell-drawer-open { overflow: hidden }` en
+// `project-selector-react.css`), nunca `document.body.style` — a diferencia del bloqueo que
+// `AppShell.tsx` aplica para su propio drawer (T01), que sí usa `style.overflow` y queda fuera del
+// alcance de esta tarea.
+test('drawer móvil autónomo: bloquea el fondo con una clase del body, nunca con document.body.style', async () => {
+  fijarAncho(800);
+  const usuario = userEvent.setup();
+  render(<BarraLateral activeId="projects" accountName="Ana" groups={GRUPOS} showChangeProject={false} />);
+
+  expect(document.body.classList.contains('aia-shell-drawer-open')).toBe(false);
+
+  await usuario.click(screen.getByRole('button', { name: /abrir menú de navegación/i }));
+
+  expect(document.body.classList.contains('aia-shell-drawer-open')).toBe(true);
+  expect(document.body.style.overflow).toBe('');
+
+  await usuario.click(screen.getByRole('button', { name: /cerrar menú de navegación/i }));
+
+  expect(document.body.classList.contains('aia-shell-drawer-open')).toBe(false);
+  expect(document.body.style.overflow).toBe('');
+});
+
 test('drawer móvil: un clic en el velo cierra el drawer', async () => {
   fijarAncho(800);
   const usuario = userEvent.setup();

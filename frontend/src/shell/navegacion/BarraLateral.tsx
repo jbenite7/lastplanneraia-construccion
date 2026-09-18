@@ -142,6 +142,33 @@ export function BarraLateral({
     return () => window.removeEventListener('resize', sincronizar);
   }, [barraAutonoma]);
 
+  // Layout del rail canónico (Tarea 8, S04 — pendiente dejado a propósito por la Tarea 7): en modo
+  // autónomo esta pantalla (la standalone `/proyectos`) es dueña de todo el `<body>`, igual que
+  // `AppShell` lo es del suyo (T01). Activar la misma clase que consume `shell-sidebar.css`
+  // reutiliza su CSS ya existente (rail fijo, padding del contenido, drawer bajo 1180px) sin
+  // escribir una hoja nueva para eso. En modo no autónomo (`NavegacionLateral`, dentro de
+  // `AppShell`) la clase ya la gobierna `AppShell` y tocarla aquí la duplicaría.
+  useEffect(() => {
+    if (!barraAutonoma) return;
+    document.body.classList.add('aia-shell--sidebar');
+    return () => {
+      document.body.classList.remove('aia-shell--sidebar');
+    };
+  }, [barraAutonoma]);
+
+  // Bloqueo del fondo mientras el drawer propio está abierto (Tarea 8, S04). A propósito con una
+  // CLASE (`aia-shell-drawer-open`, `project-selector-react.css`) y no con `document.body.style`:
+  // `AppShell` sí usa `style.overflow` para su propio drawer (T01), pero eso queda fuera del
+  // alcance de esta tarea y no se toca. En modo no autónomo el bloqueo también lo gobierna
+  // `AppShell`, así que esta clase no debe aplicarse ahí.
+  useEffect(() => {
+    if (!barraAutonoma || !abierto) return;
+    document.body.classList.add('aia-shell-drawer-open');
+    return () => {
+      document.body.classList.remove('aia-shell-drawer-open');
+    };
+  }, [barraAutonoma, abierto]);
+
   const cerrarDrawer = useCallback(() => {
     if (!barraAutonoma) return;
     setAbiertoPropio(false);

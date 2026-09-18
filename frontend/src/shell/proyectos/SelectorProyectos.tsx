@@ -252,7 +252,7 @@ export function SelectorProyectos({ session, onOpen, onRevalidate, onNavigation 
       tabIndex={-1}
     >
       <header className="project-selector-react__header">
-        <div>
+        <div className="project-selector-react__header-text">
           <h1>Tus proyectos</h1>
           <p>Selecciona el proyecto en el que quieres trabajar.</p>
         </div>
