@@ -41,7 +41,7 @@ export async function selectProject(page, project) {
     has: page.getByRole('heading', { name: project.name, exact: true }),
   });
   await expect(card, `Project card not found: ${project.name}`).toBeVisible({ timeout: 45000 });
-  await card.getByRole('button', { name: new RegExp(`Ingresar al proyecto ${project.name}`) }).click();
+  await card.getByRole('button', { name: `Ingresar al proyecto ${project.name}`, exact: true }).click();
   await page.waitForURL((url) => !url.toString().includes('/proyectos'), { timeout: 45000 });
 }
 
