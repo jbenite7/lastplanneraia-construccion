@@ -24,3 +24,12 @@
    arrastra nada detrás: se queda bajo `maxDiffPixels: 100`. Con una sola resolución en rojo se
    habría dado por demostrado algo que en la otra no lo estaba. La válida se hizo sobre una
    etiqueta de la leyenda, que arrastra su fila en ambos anchos: **2 failed**, 4031 px.
+
+---
+
+## Respuesta del usuario, relatada por la coordinadora — 2026-08-18
+
+**Conforme con el cierre** (verificado: `4aaeaea0` ya está en `main`). Alcance nuevo derivado:
+**aplicar el mismo patrón de semana fija a todos los módulos con cortes semanales**, con PI como
+referencia ya hecha. Va a frente propio; inventariar primero qué tests visuales dependen del
+número de semana.

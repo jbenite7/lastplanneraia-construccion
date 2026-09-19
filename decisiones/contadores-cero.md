@@ -160,3 +160,16 @@ cuándo se corra— y sería indistinguible de rehacer una firma para tapar un r
 
 Nota de alcance: este golden vive en el gate `runtime`, no en `static`. La condición de hecho del
 frente (`static` sin regresión) se cumple igual: **7/8, `audit` verde en 170/175**.
+
+---
+
+## Respuesta del usuario, relatada por la coordinadora — 2026-08-18
+
+**Visto concedido** al cierre del frente tal como está (ocultar contadores en cero en PI).
+Publicar según el gate. Además el usuario amplía el alcance en dos encargos que **no** frenan este
+cierre y van a frentes nuevos:
+
+1. **Extender el patrón a todos los módulos** con leyendas/contadores, no solo PI.
+2. **Revisar el coloreado en cascada de la tabla:** el usuario espera un orden de severidad de
+   «Crítico» a «Sin problema» y cree que **no está pasando**. Tratarlo como posible bug de la
+   escala de tintes de estado (diagnóstico primero, `systematic-debugging`), no como preferencia.
