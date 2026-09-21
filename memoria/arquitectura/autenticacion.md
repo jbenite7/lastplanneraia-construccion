@@ -17,17 +17,22 @@ cierra en producción.
 
 **Dónde encaja.** Fuera de los dos flujos de negocio: es infraestructura de la aplicación.
 
-**Quién pinta cada pantalla (verificado el 2026-09-17).** La tabla generada de abajo lista lo que
-registra el router, y para tres rutas **no es lo que se sirve**: los `GET`/`HEAD` de `/`, `/login` y
-`/password/forgot` los intercepta antes `SpaRouter::sirveLaSpa()` (`RUTAS_EXACTAS_MIGRADAS`,
-`src/Core/SpaRouter.php:18`) y los pinta el shell React con `SpaHostRenderer::render()`
-(`public/index.php:403-406`), sin llegar a `LoginController::index`. `/login` se cortó el
-2026-09-01 (`36b7df22`, S01) y `/password/forgot` el 2026-09-16 (S02, PR #43), que además retiró
-`views/auth/password-forgot.view.php` y el `POST /password/forgot` legado: la recuperación va por
-`POST /api/auth/password/forgot` → `PasswordRecoveryApiController::request`. Solo cruzan lectura:
-`POST /login` sigue en `LoginController::login`, que ante un error vuelve a pintar
-`views/auth/login.view.php`. `/password/reset` sigue siendo PHP (S03 no ha arrancado). Por decisión de
-Felipe del 2026-09-16 (`TASKS.md`), el login legado **no** necesita poder reactivarse como respaldo.
+**Quién pinta cada pantalla (verificado el 2026-09-17, actualizado el 2026-09-21).** La tabla
+generada de abajo lista lo que registra el router, y para varias rutas **no es lo que se sirve**:
+los `GET`/`HEAD` de `/`, `/login`, `/password/forgot` y `/password/reset` los intercepta antes
+`SpaRouter::sirveLaSpa()` (`RUTAS_EXACTAS_MIGRADAS`, `src/Core/SpaRouter.php:18`) y los pinta el
+shell React con `SpaHostRenderer::render()` (`public/index.php:403-406`), sin llegar a
+`LoginController::index`. `/login` se cortó el 2026-09-01 (`36b7df22`, S01), `/password/forgot` el
+2026-09-16 (S02, PR #43) —que además retiró `views/auth/password-forgot.view.php` y el
+`POST /password/forgot` legado: la recuperación va por `POST /api/auth/password/forgot` →
+`PasswordRecoveryApiController::request`— y `/password/reset` después, en S03 (Tarea 10,
+`ff50fe68`): se retiró de la lista de rutas del router (`public/index.php:107-112`) pero
+**permanece** en `$publicRoutes` porque el restablecimiento real vive en
+`POST /api/auth/password/reset/validate` y `POST /api/auth/password/reset` →
+`PasswordResetApiController`. `views/auth/password-reset.view.php` sigue en el repo sin ruta que la
+alcance. Solo cruzan lectura: `POST /login` sigue en `LoginController::login`, que ante un error
+vuelve a pintar `views/auth/login.view.php`. Por decisión de Felipe del 2026-09-16 (`TASKS.md`), el
+login legado **no** necesita poder reactivarse como respaldo.
 
 Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]] (login y recuperación de
 contraseña), pero ese catálogo va atrás: aún describe `auth/password-forgot.view.php`, que ya no existe.
