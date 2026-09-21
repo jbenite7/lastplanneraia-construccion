@@ -1152,3 +1152,9 @@ T02-R, y va al revés: **depende de** esos cuatro, no los destraba.
 25/25 en verde, RC 0: siguen los **cuatro** consumidores legados (Programa General, Intermedia,
 Semanal y escalamientos/S25) de `views/partials/drawer_unificado.php` y
 `public/js/modules/lps_drawer.js`.
+
+**Decisión de Felipe (2026-09-21, en el chat):** el paso 3 del programa («terminar T01 y T02») no
+se abre como frente propio y **se absorbe en S05**. Los dos specs de Playwright que faltan de T02 y
+el primer consumidor real del proveedor (y de `PanelError` de T01) se hacen dentro de S05, que es
+su primer consumidor. La bandeja de notificaciones queda aparcada en `wip-cableado-bandeja` hasta
+que Felipe decida cómo cabe en el shell.
