@@ -10,6 +10,13 @@ resumen: "deliver one typed React contextual LPS drawer and one shell notificati
 
 # T02 Contexto LPS React Implementation Plan
 
+## Estado verificado — vigente (2026-09-21)
+
+**`estado: vigente` es deliberado.** T02-A (Tareas 1–11) está hecho y en `main` desde el PR #20
+(`ec57dd46`, 2026-09-06). Sigue vivo por tres huecos de T02-A que no tienen consumidor todavía y
+por T02-R (Tarea 12), que el plan difiere hasta que S05, S07, S08 y S25 estén publicados. Detalle
+con fecha en «Estado al 2026-09-21», dentro del `## Cierre`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` only in an
 > explicitly authorized implementation session. Use `superpowers:test-driven-development` before
 > each production change and `superpowers:verification-before-completion` before a green/complete
@@ -1117,3 +1124,31 @@ es un blocker de T02-A ni de sus consumidores. Al ejecutar, registrar:
 - S26 caller census:
 - rollback:
 - PR/CI/publicación:
+
+### Estado al 2026-09-21
+
+Escrito el 2026-09-21 contra `origin/main` (`2873213b`). Supera, no corrige, lo de arriba.
+
+**Hecho:** T02-A, publicado. Los commits de la tabla (`94139be0` … `2e59e1f3`, más `344a6199`) son
+ancestros de `origin/main`; entraron con el PR #20 (`ec57dd46`, 2026-09-06), no con un cierre de
+«Entrega 0» aparte como decía T02-A.
+
+**Qué de T02 destraba a quién — corrige la lectura del programa del 2026-09-21.** S05, S07, S08 y
+S25 dependen de T02-A, que ya está en `main`: no esperan nada más de T02. Lo que está pendiente es
+T02-R, y va al revés: **depende de** esos cuatro, no los destraba.
+
+**Falta de T02-A (salvedades de arriba, re-medidas):**
+
+1. Salvedad 2 — **la bandeja de notificaciones sigue sin cablear al shell.** El cableado vive en la
+   rama `wip-cableado-bandeja` (`72d20b31`, «en espera de decisión de producto»), que no es
+   ancestro de `origin/main`. Es una decisión de producto de Felipe, no técnica: montada, dejaba 2
+   de 10 entradas de menú visibles a 1180×820.
+2. Salvedad 3 — `tests/browser/t02-lps-drawer-react.spec.mjs` y
+   `tests/browser/t02-lps-notifications-react.spec.mjs` siguen sin existir. Necesitan un disparador
+   de producto; el primero posible llega con S05.
+3. Salvedades 1 y 4 — ningún adaptador real consume el proveedor todavía; el primero será S05.
+
+**T02-R, diferido por diseño:** `node --test tests/test_t02_lps_caller_census.mjs` el 2026-09-21,
+25/25 en verde, RC 0: siguen los **cuatro** consumidores legados (Programa General, Intermedia,
+Semanal y escalamientos/S25) de `views/partials/drawer_unificado.php` y
+`public/js/modules/lps_drawer.js`.

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-30
 areas: [arquitectura, rbac, design-system]
 fuente: docs/superpowers/plans/2026-08-30-s04-selector-proyectos-react.md
@@ -9,6 +9,19 @@ resumen: "migrar /proyectos a React con paridad completa de listado, búsqueda, 
 ---
 
 # S04 Project Selector React Implementation Plan
+
+## Estado verificado — cerrado como corte, sin retiro de VIEW-11
+
+Verificado contra el código y el remoto el 2026-09-21. **`estado: cerrado` es decisión de Felipe
+del 2026-09-21** (orden del programa S/T, paso 2). La Tarea 10 se ejecutó en versión reducida por
+otra decisión suya, anterior al PR («Corte, conservando el PHP»): `GET`/`HEAD /proyectos` ya lo
+sirve React, pero el retiro de VIEW-11 no se hizo y queda en `TASKS.md`. Detalle en el `## Cierre`
+del final, que este plan no tenía y se escribió el 2026-09-21 desde el PR #50.
+
+**Evidencia:** PR #50 mergeado en `main` (`5aa9c73a`, 2026-09-18), 63 commits;
+`SpaRouter::RUTAS_EXACTAS_MIGRADAS` incluye `/proyectos`.
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development
 > (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use
@@ -1346,3 +1359,45 @@ git commit -m "feat(projects): cortar selector React canonico"
 - No cerrar T01 completo dentro de S04: la barra genérica es solo el incremento requerido por esta
   superficie; navegación de módulos/semana continúa en sus entregas.
 - No tocar `/admin/`, RLS, datos, deploy ni publicación.
+
+## Cierre
+
+**S04 cerrado como corte el 2026-09-21, por decisión de Felipe.** Tareas 1–9 ejecutadas y la
+Tarea 10 en versión reducida, todo en la rama `s04-selector-proyectos-react`, publicado por el
+PR #50 (`5aa9c73a`, mergeado el 2026-09-18). Este `## Cierre` se escribió el 2026-09-21 leyendo el
+cuerpo y los commits del PR; la sesión que ejecutó el plan no lo dejó escrito aquí.
+
+### Commits por tarea (del PR #50)
+
+| Tarea | Commits representativos |
+|---|---|
+| 1 | `a0a8c435` |
+| 2–3 | `f0eb4241` · `5c8dc631` · `2039758b` |
+| 4–5 | `a7d7e886` · `55d4df50` · `b536a4d5` |
+| 6 | `e0fbb46e` · `858410fa` |
+| 7 | `6201c018` · `6602199d` (cerrar sesión por POST con CSRF) |
+| 8 | `7e84c0cb` · `6c3b39b0` |
+| 9 | `e80ee907` · `4d6764f1` · `262e2aea` · `b4f57973` · `ed269ecf` |
+| Goldens | `1a7f5f6a` — 8 goldens (2 temas × 390, 768, 1180 y 1440) aprobados por Felipe, con `sha256` en `docs/design-system/manifests/project-selector.json` |
+| 10 (reducida) | `6dbff280` (matriz roja antes del corte) · `62742a30` (el corte) · `4e675bbe` · `27b3756a` |
+
+### Evidencia (según el cuerpo del PR #50; no re-corrida el 2026-09-21)
+
+PHP `test_spa_frontera.php`, `test_spa_frontera_http.php` y
+`test_selector_proyectos_criterio_unico.php` en RC 0; `run-php-tests.php --nivel=puro` RC 0;
+vitest 820/820; `tsc`, `css:minify:check` y biome en RC 0; `test:design-system:static` 646/646;
+Playwright `project-selector-react` 20/20 y `project-selector-sidebar` 2/2, más los specs del
+acceso; goldens de S04 y S01 sin regenerar. CI del PR con la condición `G_*` declarada antes de
+correr.
+
+### Lo que el corte NO hizo (verificado en `origin/main` el 2026-09-21)
+
+1. **VIEW-11 sigue en el repo sin uso:** `views/core/project_selector.view.php`,
+   `src/Controllers/Core/ProjectSelectorController.php`, `public/css/project-selector.css` y
+   `POST /proyecto/seleccionar`. Rollback del corte: quitar `/proyectos` de
+   `SpaRouter::RUTAS_EXACTAS_MIGRADAS`. El retiro va aparte y se pregunta a Felipe, como en S02
+   y S03 (entrada en `TASKS.md`).
+2. En móvil el bloqueo del fondo con el drawer abierto nunca funcionó:
+   `handsontable-module.css` trae `html, body { overflow: auto !important }` en `vendor`.
+3. `ProjectApiController::respondSessionInvalid()` no se alcanza en producción y su test fija una
+   forma que nunca se envía.
