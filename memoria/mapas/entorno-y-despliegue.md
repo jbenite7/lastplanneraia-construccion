@@ -26,6 +26,9 @@ Docker Compose es la única fuente de verdad. Nunca MAMP, XAMPP ni un PHP del ho
 (8082). `docker-compose.override.yml` monta el código local, así que no hace falta reconstruir por
 rutina.
 
+El repo de GitHub es público a propósito, para tener CI ilimitado; todo lo que se sube queda a la
+vista: [[repo-publico-por-ci]].
+
 Para abrir sesión: [[dev-door-acceso-local]]. Nunca se teclean credenciales ni se le pide el login
 a una persona.
 
