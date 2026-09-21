@@ -7,13 +7,16 @@ areas: [arquitectura, deploy, design-system]
 resumen: bajo mantenimiento los CSS servidos por PHP (/runtime/css/*) devolvían el HTML del cartel con 503 donde el navegador esperaba CSS, mientras los estáticos (/css/*) cargaban; la pantalla de entrada salía a medio estilizar y parecía un despliegue roto sin serlo. Desde el 2026-09-01 esa pantalla es el shell React y su exención es el prefijo /app/assets/
 fuente: sesion-ejecucion
 ---
-> **Nota del 2026-09-17.** La pantalla de la ruta oculta que describe esta página ya no es la vista
-> PHP: desde el 2026-09-01 (`4b3c891c`, S01) la sirve `MaintenanceLoginController` con el shell React.
-> Su HTML (`public/app/index.html:17-22`) enlaza cuatro hojas estáticas `/css/*` y el CSS del bundle
-> en `/app/assets/`, ninguna por `/runtime/css/`, y `MaintenanceMode::isExemptRoute()` añadió para
-> ello la exención del prefijo `/app/assets/` (`src/Core/MaintenanceMode.php:29-31`). Las «cinco hojas,
-> tres y dos» de abajo son el estado medido el 2026-08-12; el criterio —pedir las rutas exentas y
-> mirar el `content-type`, no el 503— sigue valiendo igual, ahora también para `/app/assets/*`.
+> **Nota del 2026-09-17, precisada el 2026-09-21.** La pantalla de la ruta oculta que describe esta
+> página ya no es la vista PHP: desde el 2026-09-01 (`4b3c891c`, S01) la sirve
+> `MaintenanceLoginController` con el shell React. Su HTML (`public/app/index.html:17-23`) enlaza
+> **cinco** hojas estáticas `/css/*` —subió de cuatro con `project-selector-react.css` en S04
+> (`bc1013ac`)— y el CSS del bundle en `/app/assets/`, ninguna por `/runtime/css/`, y
+> `MaintenanceMode::isExemptRoute()` añadió para ello la exención del prefijo `/app/assets/`
+> (`src/Core/MaintenanceMode.php:29-31`). Las «cinco hojas, tres y dos» de abajo son el estado medido
+> el 2026-08-12, sobre la vista PHP retirada — coincide en número con las estáticas de hoy por
+> casualidad, no por ser la misma lista. El criterio —pedir las rutas exentas y mirar el
+> `content-type`, no el 503— sigue valiendo igual, ahora también para `/app/assets/*`.
 
 **El modo mantenimiento tapaba sus propios estilos, y el síntoma parece un despliegue roto.**
 Medido en producción el 2026-08-12, con el sitio cerrado tras el release de 1.763 commits.

@@ -352,6 +352,16 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   el escenario `auth-login-dark-1180x820`, que es el golden del login PHP y ya no representa lo que
   sirve `/login`; y quitar `login.view.php` de `auth.json.sources` sin tocar las de S02/S03. Pasos 6–7
   de §12 y tabla de §13 de la spec.
+  **Al día el 2026-09-21:** el PR #20 ya está en `main` (`ec57dd46`, 2026-09-06), y el 2026-09-16
+  Felipe decidió que el login legado no necesita poder activarse como respaldo (entrada del criterio
+  de deploy, más abajo). El plan S01 quedó `cerrado` como `CODE_COMPLETE` por su decisión del
+  2026-09-21; este retiro sigue sin ejecutar y es lo que falta para `MIGRATION_COMPLETE`.
+- [ ] **S04 — retirar VIEW-11, el selector PHP.** El PR #50 (`5aa9c73a`, 2026-09-18) cortó
+  `GET/HEAD /proyectos` a React conservando el PHP, por decisión de Felipe («Corte, conservando el
+  PHP»). Quedan sin uso en `main`: `views/core/project_selector.view.php`,
+  `src/Controllers/Core/ProjectSelectorController.php`, `public/css/project-selector.css` (y su
+  espejo en `public/dist-css/`) y `POST /proyecto/seleccionar`. Retirarlo se le pregunta a Felipe
+  aparte, como se hizo con S02 y S03. Plan: `docs/superpowers/plans/2026-08-30-s04-selector-proyectos-react.md` › `## Cierre`.
 - [x] **Resuelto el 2026-09-03: el acceso abre en claro.** Decisión de Felipe, siguiendo la
   recomendación: `AGENTS.md` («claro es la cara del producto y el tema de entrada», spec de temas
   2026-08-28) y `docs/design-system/manifests/auth.json` («claro por defecto sin flash») ceden la

@@ -51,12 +51,13 @@ biblia, qué debe hacer.
 
 ## Estado
 
-**Corregido el 2026-08-10:** `/contratos`, `/listado-actividades` y `/pdc` — las **tres**, no solo
-las dos primeras — se eliminaron del repo el 2026-08-04 con el PDC v1
-([[compras-migrado-shell-sidebar]], ya derogada, lo documenta bien). `grep -nE
-"pdc|contratos|listado" public/index.php` hoy solo devuelve `/api/bi/report/pdc` y `/bi/pdc`, que
-son del módulo BI y no tienen relación. Ver [[estado|Estado de los goals]] para el resto del
-recorrido A1–A4 y B1 del PDC v2, que sí está vivo.
+**Corregido el 2026-08-10, recuento actualizado el 2026-09-21:** `/contratos`,
+`/listado-actividades` y `/pdc` — las **tres**, no solo las dos primeras — se eliminaron del repo
+el 2026-08-04 con el PDC v1 ([[compras-migrado-shell-sidebar]], ya derogada, lo documenta bien).
+`grep -nE "pdc|contratos|listado" public/index.php` hoy devuelve `/api/bi/report/pdc`,
+`/api/bi/report/pdc/detail` (sumada después, para el drill-down de compras, `5f43f480`) y `/bi/pdc`
+— las tres del módulo BI, sin relación con el PDC v1 eliminado. Ver [[estado|Estado de los goals]]
+para el resto del recorrido A1–A4 y B1 del PDC v2, que sí está vivo.
 
 ## Goals que trabajaron esta área
 
