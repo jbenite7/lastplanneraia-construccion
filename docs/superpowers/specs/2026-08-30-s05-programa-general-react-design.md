@@ -7,6 +7,7 @@ fecha: 2026-08-30
 superficie: programa-general
 rutas: ["/programa-general"]
 depende_de: [T01, T02, S04]
+version: 1.1
 views: [VIEW-34]
 areas: [lps, design-system]
 fuente: "auditoría de public/index.php, ProgramaGeneralController, GeneralApiController, ReportController, LpsApiController, hot.js, VIEW-34, contratos, RBAC, T01 y frontend actual en shell-minimo-react, 2026-08-30"
@@ -19,6 +20,36 @@ resumen: "Migración vertical S05 de Programa General a React con paridad funcio
 > pendientes. Esta spec no autoriza implementación, commits, DDL/DML, cambios RLS, cambios de
 > permisos, deploy, publicación ni trabajo en `/admin/`. Su plan se escribe inmediatamente después
 > con `superpowers:writing-plans`, conforme al programa aprobado de 27 specs y 27 planes.
+
+## Enmienda del 2026-09-21 (ronda 1.1) — manda sobre el resto
+
+Se verificó contra `origin/main` (`519ef3b7`) el 2026-09-21. Esta spec es anterior a que T01, T02 y
+S01–S04 llegaran a `main`. Donde esta sección y el resto choquen, gana esta sección.
+
+1. **Decisión de Felipe (2026-09-21, en el chat): el paso 3 del programa S/T se absorbe en S05.**
+   S05 es el primer consumidor real del proveedor LPS de T02 (`frontend/src/shared/lps/`) y del
+   `PanelError` de T01, y escribe los dos specs de navegador que T02 dejó pendientes
+   (`tests/browser/t02-lps-drawer-react.spec.mjs` y `tests/browser/t02-lps-notifications-react.spec.mjs`).
+   La bandeja de notificaciones no se cablea al shell: sigue aparcada hasta que Felipe decida.
+2. **Decisión técnica de la enmienda (anotada, no de producto): «Drawer contextual» se construye
+   consumiendo T02.** Cajón, hilo, comentarios, menciones, SOS, simulación, digest y cierre de
+   crisis vienen de `CajonContextualLps`, `LpsDrawerProvider`, `useLpsDrawer`, `useHiloLps` y el
+   dominio y las pasarelas de `shared/lps`. En el servidor, el alcance lo resuelven
+   `LpsApiController` y `LpsTargetResolver` con `LpsLegacyGeneralActivityAdapter` (`modulo=PG`), ya
+   cubiertos por `tests/test_lps_api_contract.php`. S05 aporta el adaptador de fila de Programa
+   General y el disparador. La paridad observable con el cajón del legado sigue siendo el criterio;
+   lo que cambia es de dónde sale el código.
+3. **Tema de entrada:** donde esta spec dice «oscuro por defecto/fallback» (Sistema visual,
+   S05-UX-25), vale **claro por defecto, oscuro completo** — decisión de Felipe del 2026-09-03
+   (`frontend/src/shell/tema.ts`, `AGENTS.md`). La capacidad exigida en ambos temas no cambia.
+4. **Semana ausente:** la pantalla nunca responde 500 por falta de semana. En el único caso legítimo
+   (proyecto nuevo sin cronograma) guía a cargar el primero. Por qué una sesión pierde su semana se
+   investiga fuera de S05 (`TASKS.md`).
+5. **Retiro de VIEW-34:** fuera del cierre de S05. Se le pregunta a Felipe aparte después del corte,
+   como en S02, S03 y S04.
+
+Plan enmendado: `docs/superpowers/plans/2026-08-30-s05-programa-general-react.md` › «Enmienda del
+2026-09-21».
 
 ## Relación con el frente vigente
 
