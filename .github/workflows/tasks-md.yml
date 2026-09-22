@@ -1,0 +1,33 @@
+# Revisa en CI que TASKS.md esté al día (tablero-specs, S-001 D20). Tercera capa, después del hook del
+# harness y del pre-commit. Apagado hasta que Felipe defina TABLERO_CI=1 y el secreto TABLERO_MOTOR_TOKEN
+# (token de solo lectura sobre jbenite7/tablero-specs).
+name: tasks-md
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    if: ${{ vars.TABLERO_CI == '1' }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          repository: jbenite7/tablero-specs
+          token: ${{ secrets.TABLERO_MOTOR_TOKEN }}
+          path: .tablero-motor
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Refs remotas completas
+        run: git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune
+      - name: TASKS.md al día
+        run: node .tablero-motor/scripts/tasks-md.mjs --repo . --modo indice --revisar

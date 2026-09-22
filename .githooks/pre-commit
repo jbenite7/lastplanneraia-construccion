@@ -1,0 +1,8 @@
+#!/bin/sh
+# Freno de TASKS.md (S-001 D24). Lo instala tablero-specs/scripts/inscribir.mjs; no se edita a mano.
+MOTOR='/Volumes/Crucial X6/Developer/tablero-specs'
+if [ ! -f "$MOTOR/scripts/frenos/git.mjs" ]; then
+  echo "tablero: no encuentro el motor en $MOTOR; el freno de TASKS.md no corrió." >&2
+  exit 0
+fi
+exec node "$MOTOR/scripts/frenos/git.mjs"

@@ -29,6 +29,29 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Volumes/Crucial X6/Developer/tablero-specs/scripts/frenos/claude.mjs\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Volumes/Crucial X6/Developer/tablero-specs/scripts/frenos/aviso-pendiente.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   },
   "env": {
