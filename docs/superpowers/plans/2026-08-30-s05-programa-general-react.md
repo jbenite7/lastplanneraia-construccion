@@ -18,17 +18,26 @@ Este plan se escribió el 2026-08-30, antes de que T01, T02 y S01–S04 llegaran
 el cuerpo choquen, gana esta sección.** El cuerpo no se reescribe para que su historia siga siendo
 legible; las correcciones puntuales llevan la marca «enmendado 2026-09-21».
 
-### Quién ejecuta y cómo (decisión de Felipe, 2026-09-21, en el chat)
+### Quién ejecuta y cómo (decisiones de Felipe del 2026-09-21, en el chat)
 
-- **Claude planea y verifica; Codex ejecuta.** Claude le entrega a Codex un encargo por
-  checkpoint (V1…V5, abajo). Codex ejecuta y devuelve el reporte; Claude lo verifica contra el
-  código y los comandos; Codex corrige. **Solo cuando la spec S05 esté cerrada** se planea la
-  siguiente (S06).
-- Codex se rige por `AGENTS.md`. Las sub-skills de Superpowers que nombra la cabecera de abajo no
-  aplican a Codex: el ciclo es TDD por tarea (prueba roja vista antes del código), commit atómico
-  por tarea, reporte con el código de retorno de cada comando leído en su propia línea, y parada
-  obligatoria al final de cada checkpoint.
-- Si el mismo motivo falla dos veces en la verificación de Claude, se para y se escala a Felipe.
+- **Claude planea y verifica; Codex ejecuta.** Claude le entrega a Codex el encargo; Codex ejecuta
+  y devuelve el reporte; Claude lo verifica contra el código y los comandos; Codex corrige. **Solo
+  con la spec S05 cerrada** se planea la siguiente (S06).
+- **Corrección del mismo día: Codex trabaja de corrido, con Superpowers.** La primera versión de
+  esta enmienda ponía una parada al final de cada checkpoint y decía que las sub-skills de
+  Superpowers no aplican a Codex. Codex se detuvo dos veces por roces menores, y Felipe lo corrigió:
+  el flujo maestro ejecuta mediante Superpowers. Vale esto: `subagent-driven-development` (o
+  `executing-plans`), TDD por tarea, revisión propia, `verification-before-completion` y commit
+  atómico. Los checkpoints V1…V5 son gates de calidad que Codex cruza solo, no paradas. **Las
+  decisiones de código las toma quien ejecuta y las anota**; a Felipe suben solo las de producto,
+  alcance o riesgo (skill `flujo-maestro`).
+- **Codex para solo en tres casos:** (1) los goldens de la Tarea 11, que aprueba Felipe; (2) algo
+  irreversible o prohibido; (3) una decisión de producto que la spec no resuelve, o el mismo fallo
+  tres veces seguidas.
+- **Ya autorizado por Felipe el 2026-09-21:** la fila de auditoría que la puerta dev escribe sola al
+  seleccionar proyecto (`general_auditoria_acciones`), que no se borra; y arrancar o reiniciar
+  Docker Desktop y los servicios existentes, sin borrar volúmenes ni datos. Los rojos que también
+  están en `origin/main` se anotan como heredados y no detienen el trabajo.
 
 ### Qué significa «S05 cerrada»
 
@@ -117,11 +126,11 @@ los entrega. Los aprueba Felipe; Codex nunca los aprueba ni regenera baselines.
 (VIEW-29 y VIEW-30 cuentan `programa_general.view.php`) y `tests/test_t02_lps_caller_census.mjs`
 (Programa General es uno de sus cuatro consumidores legados).
 
-### Checkpoints como unidad de encargo
+### Checkpoints: gates, no paradas
 
-El encargo a Codex va por checkpoint (tabla «Vertical Checkpoints»): V1 (Tareas 1–5), V2 (6–7),
-V3 (8–9), V4 (10), V5 (11) y el corte de la Tarea 12. Cada encargo termina en parada y
-verificación de Claude. V5 además termina en la aprobación de goldens por Felipe.
+La tabla «Vertical Checkpoints» sigue mandando como gate de calidad: no se empieza un checkpoint
+con el anterior en rojo. Codex los cruza de corrido hasta los goldens de la Tarea 11; la Tarea 12
+(el corte) arranca con la aprobación de Felipe.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development`
 > (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use
