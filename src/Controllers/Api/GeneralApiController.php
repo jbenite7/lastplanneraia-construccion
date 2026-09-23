@@ -166,7 +166,7 @@ class GeneralApiController extends BaseController
                 return;
             }
 
-            $checkStmt = $this->db->queryWithProject("SELECT Titulo FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ?", [$projectId, $id, $semana], $projectId);
+            $checkStmt = $this->db->queryWithProject("SELECT Titulo, Responsable_AIA, Sub_Contratista FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ?", [$projectId, $id, $semana], $projectId);
             $existingRow = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$existingRow) {
@@ -237,6 +237,13 @@ class GeneralApiController extends BaseController
             $auditStartTime = microtime(true);
             error_log("[PGAudit] INICIO | usuario={$auditUser} | db={$dbPrefix} | semana={$semana} | id={$id} | Titulo={$auditBefore['Titulo']} | Ejecutado_antes={$auditBefore['Ejecutado']} | EjecSigSem_antes={$auditBefore['Ejecutado_Siguiente_Semana']} | Estado_antes={$auditBefore['Estado']} | unidad={$auditBefore['unidad']} | cantidad_ppto={$auditBefore['cantidad_ppto']} | POST_Ejecutado={$rawInput} | POST_EjecutadoRatio=" . ($_POST["EjecutadoRatio"] ?? 'null') . " | POST_unidad={$unidadRaw} | POST_cantidad_ppto=" . ($_POST["cantidad_ppto"] ?? 'null') . " | ejecutado_calculado={$ejecutado}");
 
+            $responsableAia = array_key_exists('Responsable_AIA', $_POST)
+                ? (trim((string) $_POST['Responsable_AIA']) !== '' ? trim((string) $_POST['Responsable_AIA']) : null)
+                : ($existingRow['Responsable_AIA'] ?? null);
+            $subContratista = array_key_exists('Sub_Contratista', $_POST)
+                ? (trim((string) $_POST['Sub_Contratista']) !== '' ? trim((string) $_POST['Sub_Contratista']) : null)
+                : ($existingRow['Sub_Contratista'] ?? null);
+
             // 4. Update Principal (Incluyendo Mapeo)
             $sql = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET
                     Activa = 1,
@@ -248,10 +255,27 @@ class GeneralApiController extends BaseController
                     Ejecutado_Siguiente_Semana = ?,
                     Fecha_Inicio = ?,
                     Fecha_Fin = ?,
-                    programaAnteriorAsociar = ?
+                    programaAnteriorAsociar = ?,
+                    Responsable_AIA = ?,
+                    Sub_Contratista = ?
                     WHERE project_id = ? AND unique_id = ? AND Semana = ?";
 
-            $updateStmt = $this->db->queryWithProject($sql, [ $ejecutado, $medirProductividad, $unidad, $cantidadPpto, $codigoActividad, $ejecutado, $fechaInicio, $fechaFin, $actividadAsociar, $projectId, $id, $semana, ], $projectId);
+            $updateStmt = $this->db->queryWithProject($sql, [
+                $ejecutado,
+                $medirProductividad,
+                $unidad,
+                $cantidadPpto,
+                $codigoActividad,
+                $ejecutado,
+                $fechaInicio,
+                $fechaFin,
+                $actividadAsociar,
+                $responsableAia,
+                $subContratista,
+                $projectId,
+                $id,
+                $semana,
+            ], $projectId);
 
             $verifyStmt = $this->db->queryWithProject("SELECT unidad, cantidad_ppto, Ejecutado FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ? LIMIT 1", [$projectId, $id, $semana], $projectId);
             $updatedRow = $verifyStmt->fetch(PDO::FETCH_ASSOC);

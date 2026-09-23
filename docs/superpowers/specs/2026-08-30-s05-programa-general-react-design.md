@@ -777,57 +777,70 @@ React; permanecen únicamente para rollback legacy.
 
 ### Desktop — 1180 px o más
 
-La tabla muestra las trece columnas contractuales:
+La tabla presenta por defecto las **ocho columnas primarias esenciales**, optimizadas tras auditoría heurística
+(Krug #1, Nielsen #8 y WCAG 2.2) para eliminar fricción cognitiva y garantizar lectura aireada sin scroll horizontal
+a 1180×820:
 
 ```text
-Id, Código, Actividad, Sem. inicio, Fecha inicio, Fecha fin, Crítica,
-Unidad, Cantidad PPTO, Ejecución teórica, Ejecución real, Estado, Lib. restricciones
+Id, Código, Actividad (con badge [RC]), Fecha inicio, Fecha fin, Cantidad PPTO (con unidad integrada), Avance (Real / Teór con Δ), Estado
 ```
 
-El header es sticky dentro del scroll vertical del contenido. No se fija la primera columna si eso
-crea una segunda superficie de scroll. La página no tiene overflow horizontal; la tabla distribuye
-anchos con Actividad como columna flexible.
+La racionalización de las trece columnas contractuales originales opera así:
+
+1. **`Crítica`:** Absorbida como badge sobrio `[RC]` junto al nombre de la actividad. Ahorra 42 px y evita una columna booleana.
+2. **`Unidad`:** Integrada directamente junto a `Cantidad PPTO` (ej. `450.0 m³`). Agrupa contexto semántico en una sola celda.
+3. **`Avance (Real / Teórico)`:** Fusiona en una sola celda inteligente el avance real reportado y la meta teórica contractual acumulada a la fecha, acompañados por el indicador de desviación física ($\Delta$, ej: `25.0% / 50.0% (-25%)`), brindando termómetro de control inmediato sin recurrir a dos columnas separadas.
+4. **`Sem. inicio`:** Al ser un dato 100% derivado de `Fecha inicio`, se visualiza en el Drawer Contextual y como tooltip contextual relativo en la fecha.
+5. **`Lib. restricciones`:** El porcentaje aislado se traslada al Drawer Contextual, donde se desglosa el estado real de los 7 recursos Lean.
+
+**Configurador de columnas:** La cabecera ofrece un control accesible para alternar entre la vista racionalizada (8 columnas) y la vista extendida contractual (13 columnas completas). El archivo CSV de exportación conserva siempre las trece columnas completas.
+
+El header es sticky dentro del scroll vertical del contenido. No se fija la primera columna si eso crea una segunda superficie de scroll. La página no tiene overflow horizontal; la tabla distribuye anchos con Actividad como columna flexible prioritaria (mínimo 320 px de ancho disponible).
 
 ### Tablet — 768 a 1179 px
 
-Sigue siendo tabla. Muestra inicialmente:
-
-```text
-Código, Actividad, Fecha inicio, Fecha fin, Unidad,
-Cantidad PPTO, Ejecución real, Estado
-```
-
-Cada fila tiene un control accesible de detalles que revela Id, semanas para inicio, ruta crítica,
-ejecución teórica y liberación de restricciones. Esos detalles forman parte de la misma fila y no
-abren un modal. No hay scroll horizontal de página.
+Sigue siendo tabla con las ocho columnas primarias. La selección de la actividad abre el Drawer Contextual lateral sin desplazar la tabla. No hay scroll horizontal de página.
 
 ### Móvil — menos de 768 px
 
-Cada actividad es una tarjeta editable con:
+Cada actividad es una tarjeta con resumen esencial (código, actividad, estado, fechas, avance). Al tocarla, el Drawer Contextual se abre como sheet modal a pantalla completa, permitiendo edición completa de campos, revisión de restricciones y bitácora sin exigir cambio a desktop.
 
-- actividad, código, estado y alerta;
-- Id, semanas para inicio, ruta crítica y liberación de restricciones;
-- fechas, unidad, cantidad y avance real;
-- feedback de guardado y acciones contextuales.
+Los capítulos se muestran como separadores no editables; no se omiten. Un conjunto compuesto sólo por capítulos explica por qué no hay actividades operativas. Tabla y tarjetas no se renderizan simultáneamente.
 
-Los capítulos se muestran como separadores no editables; no se omiten. Un conjunto compuesto sólo
-por capítulos explica por qué no hay actividades operativas.
+## Edición individual mediante Drawer Contextual LPS
 
-Tabla y tarjetas no se renderizan simultáneamente. El breakpoint se resuelve con CSS y un hook de
-media query testeable; no se construye Handsontable oculto detrás de las tarjetas.
+La edición de actividades abandona la edición in-cell estilo Excel (Handsontable) y las sub-filas de acordeón (para evitar atrapamiento de foco y *layout shifts* en la grilla). Se unifica en el **Drawer Contextual de Actividad** (`DrawerEditorActividad`, compartiendo arquitectura con S07 y T02).
 
-## Edición individual
+### Composición del Drawer
 
-### Campos
+Al hacer clic en una actividad o presionar Enter/Espacio sobre su fila, se despliega desde el lateral derecho un panel accesible de 440 px con:
+
+1. **Cabecera contextual:** Código ERP, título completo de la actividad, badge de estado semántico y distintivo `[RC]` si aplica. Identificador único y capítulo padre.
+2. **Plazos y cronograma:** Selectores de fecha ISO (`Fecha_Inicio` y `Fecha_Fin`), duración contractual calculada en días hábiles y semana de inicio relativa.
+3. **Responsables & Asignaciones (Opcional en Macro):**
+   - **`Profesional AIA`:** Selector desplegable de integrantes del equipo del proyecto (`project_members`), con opción `(Sin asignar)`.
+   - **`Subcontratista`:** Selector con autocompletado conectado al catálogo de contratistas del proyecto, con opción `(Sin asignar)`.
+   - **Herencia aguas abajo (Cascada a Lookahead):** Estos campos son opcionales en el plan macro de Programa General; si el usuario los asigna aquí, viajan **prellenados automáticamente a Programación Intermedia (S07)** cuando la actividad entra en la ventana de 6 semanas, donde la asignación de responsable pasa a ser obligatoria para comprometer la actividad.
+4. **Presupuesto y avance físico:**
+   - Selector de unidad del catálogo.
+   - Cantidad presupuestada (`cantidad_ppto`, un decimal, deshabilitado si la unidad es `%`).
+   - Avance real (`EjecutadoDisplay`, porcentaje o magnitud física según unidad).
+   - Indicador visual de avance teórico vs. real con cálculo automático de desviación ($\Delta$).
+5. **Matriz de restricciones LPS (7 recursos Lean):** Visualización del estado de liberación de los 7 recursos (Mano de obra, Materiales, Equipos, Seguridad, Diseño, Espacio, Prerrequisitos), con señalización de bloqueos activos.
+6. **Bitácora de campo y alerta SOS:** Registro de observaciones de obra y botón de escalamiento SOS a la dirección.
+7. **Navegación secuencial:** Controles `← Anterior` y `Siguiente →` (con atajos de teclado `[` y `]`) que permiten recorrer y editar actividades consecutivas preservando el foco y sin cerrar el panel.
+
+### Campos editables en v0
 
 - `codigo_actividad`: selector a partir del catálogo; string vacío permitido.
 - `Fecha_Inicio` y `Fecha_Fin`: inputs de fecha ISO.
+- `profesional_aia_id`: selector opcional de miembros del proyecto.
+- `subcontratista_id`: selector opcional de contratistas del catálogo.
 - `unidad`: selector del catálogo legacy.
 - `cantidad_ppto`: número con un decimal; deshabilitado para `%`.
 - `EjecutadoDisplay`: porcentaje o cantidad física según contexto.
 
-`Actividad`, Id, estado, avance teórico, semana de inicio, ruta crítica y restricciones son de solo
-lectura en v0.
+`Actividad`, Id, estado, avance teórico, semana de inicio, ruta crítica y restricciones son de solo lectura directa en v0.
 
 ### Validación
 
@@ -843,25 +856,20 @@ Antes de pedir guardado, cliente y servidor aplican el mismo contrato:
 8. con unidad física y cantidad positiva, avance visible `0..cantidad_ppto`;
 9. el ratio canónico se redondea a seis decimales y queda entre `0..1`.
 
-Cambiar una unidad física con cantidad a `%` abre una confirmación que explica que la cantidad se
-eliminará y el ratio de avance se preservará. Cancelar restaura unidad y cantidad sin petición.
+Cambiar una unidad física con cantidad a `%` abre una confirmación accesible que explica que la cantidad se eliminará y el ratio de avance se preservará. Cancelar restaura unidad y cantidad sin petición.
 
-Una fila sin fechas no permite editar avance real hasta tener ambas fechas válidas. Esto corrige la
-interacción legacy que presenta avance editable pero luego no puede construir un payload válido.
+Una fila sin fechas no permite editar avance real hasta tener ambas fechas válidas. Esto corrige la interacción legacy que presenta avance editable pero luego no puede construir un payload válido.
 
 ### Commit y feedback
 
-Un campo se confirma por Enter, selección explícita o blur. El adaptador deduplica el mismo valor y
-mantiene una sola mutación activa por fila. Mientras guarda:
+El guardado se activa explícitamente mediante el botón `Guardar Cambios`, el atajo `Ctrl+S` / `Cmd+S` o al navegar con `Anterior`/`Siguiente` cuando hay cambios pendientes (confirmación automática no destructiva). La tecla `Escape` cierra el panel; si existen cambios sin guardar, solicita confirmación de descarte.
 
-- la fila muestra `Guardando…` en una región `aria-live`;
-- el campo en vuelo no vuelve a emitir otra petición;
-- otras filas pueden editarse;
-- cambiar de semana o proyecto solicita confirmación si hay una edición sin enviar.
-
-Éxito sustituye la fila con los valores confirmados por servidor y anuncia `Guardado`. Error de
-validación conserva el valor editable, muestra mensaje junto al campo y no pierde foco. Error de
-red conserva el borrador y ofrece `Reintentar` o `Descartar`.
+Mientras guarda:
+- el panel y la fila correspondiente muestran estado `Guardando…` en una región `aria-live`;
+- las mutaciones concurrentes sobre la misma fila quedan bloqueadas;
+- éxito actualiza la fila en la tabla de fondo y anuncia `Guardado`;
+- error de validación destaca el campo afectado con su mensaje de error asociado por `aria-describedby` y retiene el foco;
+- error de red conserva el borrador en el Drawer y ofrece `Reintentar` o `Descartar`.
 
 No hay actualización optimista de `Estado`. Mientras la petición está pendiente se conserva el
 estado anterior acompañado por el feedback de guardado.
@@ -1099,35 +1107,21 @@ probes de sesión innecesarios.
   selección simple o múltiple por ratón y teclado.
 - S05-UX-08: La leyenda explica estados, alertas, niveles, restricciones y acciones con copy acorde
   a Construcción o Preconstrucción.
-- S05-UX-09: Desktop muestra tabla semántica de trece columnas con cabecera sticky y sin overflow de
-  página.
-- S05-UX-10: Tablet conserva tabla, ocho columnas primarias y detalles expandibles dentro de la fila.
-- S05-UX-11: Móvil usa tarjetas editables, muestra capítulos como separadores y conserva todos los
-  datos/acciones mediante resumen y detalles.
-- S05-UX-12: Lectores, capítulos, semanas bloqueadas y campos bloqueados se distinguen con texto o
-  ayuda contextual; nunca dependen sólo de color o de un control que falla al guardar.
-- S05-UX-13: Editar código, fechas, unidad, cantidad o avance produce el mismo borrador y payload
-  desde tabla y tarjetas.
-- S05-UX-14: Fechas inválidas/invertidas, cantidades negativas y avances fuera del rango muestran
-  error junto al campo, conservan foco y no emiten petición.
-- S05-UX-15: Cambiar una unidad física a `%` explica la pérdida de cantidad, conserva el ratio y
-  permite cancelar sin mutar.
-- S05-UX-16: Cada fila comunica `Guardando…`, `Guardado` o error recuperable; un fallo conserva el
-  borrador con `Reintentar` y `Descartar`.
-- S05-UX-17: `Actualizar ejecución` confirma borradores, bloquea sólo mutaciones, informa filas y
-  carryovers actualizados y recarga desde servidor.
-- S05-UX-18: Regresar al mismo proyecto/semana dispara como máximo un lote autorizado; primera
-  entrada, reload o perfil lector no lo disparan.
-- S05-UX-19: Exportar CSV descarga exactamente el conjunto visible con capítulos, trece cabeceras y
-  caracteres compatibles con Excel.
-- S05-UX-20: Descargar corte muestra progreso, valida la respuesta antes de navegar y deja la tabla
-  intacta si falla.
-- S05-UX-21: Recargar conserva filtros y datos previos mientras pide una versión nueva; un error los
-  marca como desactualizados y ofrece retry.
-- S05-UX-22: Seleccionar una actividad abre el drawer con diagnóstico, comentarios, respuestas,
-  menciones, SOS y crisis sólo según acciones efectivas.
-- S05-UX-23: El drawer distingue carga, vacío, error y selección filtrada; cambiar dataset limpia la
-  selección y capítulos no ofrecen acciones de actividad.
+- S05-UX-09: Desktop muestra tabla semántica de ocho columnas primarias por defecto (con control para alternar a trece columnas contractuales) con cabecera sticky y sin overflow de página.
+- S05-UX-10: Tablet conserva tabla con ocho columnas primarias y abre el Drawer Contextual para detalles y edición sin desplazar la grilla.
+- S05-UX-11: Móvil usa tarjetas con resumen esencial y abre el Drawer Contextual en modalidad sheet modal a pantalla completa.
+- S05-UX-12: Lectores, capítulos, semanas bloqueadas y campos bloqueados se distinguen con texto o ayuda contextual; nunca dependen sólo de color o de un control que falla al guardar.
+- S05-UX-13: Editar código, fechas, unidad, cantidad o avance produce el mismo borrador y payload validado desde el Drawer Contextual tanto en desktop/tablet como en móvil.
+- S05-UX-14: Fechas inválidas/invertidas, cantidades negativas y avances fuera del rango muestran error junto al campo, conservan foco y no emiten petición.
+- S05-UX-15: Cambiar una unidad física a `%` explica la pérdida de cantidad, conserva el ratio y permite cancelar sin mutar.
+- S05-UX-16: Cada guardado en el Drawer comunica `Guardando…`, `Guardado` o error recuperable; un fallo conserva el borrador con `Reintentar` y `Descartar`.
+- S05-UX-17: `Actualizar ejecución` confirma borradores, bloquea sólo mutaciones, informa filas y carryovers actualizados y recarga desde servidor.
+- S05-UX-18: Regresar al mismo proyecto/semana dispara como máximo un lote autorizado; primera entrada, reload o perfil lector no lo disparan.
+- S05-UX-19: Exportar CSV descarga exactamente el conjunto visible con capítulos, trece cabeceras y caracteres compatibles con Excel.
+- S05-UX-20: Descargar corte muestra progreso, valida la respuesta antes de navegar y deja la tabla intacta si falla.
+- S05-UX-21: Recargar conserva filtros y datos previos mientras pide una versión nueva; un error los marca como desactualizados y ofrece retry.
+- S05-UX-22: Seleccionar una actividad abre el Drawer Contextual unificado (`DrawerEditorActividad`) integrando formulario de edición, matriz de los 7 recursos Lean, bitácora de notas, SOS y navegación secuencial (`[` y `]`).
+- S05-UX-23: El drawer distingue carga, vacío, error y selección filtrada; cambiar dataset limpia la selección y capítulos no ofrecen acciones de actividad.
 - S05-UX-24: Sin semanas, sin filas, sólo capítulos, filtros sin resultados, 401, 403, 404, 422 y 5xx
   tienen salidas distintas y accionables.
 - S05-UX-25: Oscuro por defecto y claro completo conservan contenido, contraste, estados, edición,

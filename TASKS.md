@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-19
+fuente: TASKS.md
+areas: [proceso]
+resumen: "Consolidado de tareas, specs y planes de implementación del proyecto."
+---
+
 # TASKS
 
 <!-- tablero:inicio · lo arma tablero-specs (scripts/tasks-md.mjs); no se edita a mano -->
@@ -7,9 +17,9 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 495 |
-| en progreso | 16 |
-| pendiente | 160 |
+| hecha | 497 |
+| en progreso | 17 |
+| pendiente | 165 |
 | sin señal | 161 |
 | descartada | 41 |
 
@@ -467,6 +477,15 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - hecha · 11 · Prove the pilot with intercepted browser, accessibility and design-system gates
   - hecha · 12 · Promote canonical GET/HEAD with a reversible method-aware cut
   - en progreso · 13 · Retire VIEW-34 exclusively and run the complete no-DML closure
+- **S05 — Programa General en React** (sin estado): 2 de 8 hechas · `2026-09-23-s05-programa-general-react.md`
+  - hecha · 1 · Backend PHP — Context Endpoint y Asignaciones en Update
+  - en progreso · 2 · Frontend — Esquemas Zod y Cliente API Tipado
+  - pendiente · 3 · Frontend — Dominio Puro, Cálculos de Avance con $\Delta$, Validaciones y Filtros
+  - pendiente · 4 · Frontend — Barra de Herramientas, Señales y Filtros Facetados
+  - pendiente · 5 · Frontend — Grilla Principal Racionalizada (8 Columnas Esenciales) y Tarjetas Móviles
+  - pendiente · 6 · Frontend — Drawer Contextual LPS (440px) y Edición de Actividad
+  - hecha · 7 · Frontend — Página Orquestadora, Integración de Shell y Rutas
+  - pendiente · 8 · Verificación Visual Playwright y Cierre E2E
 
 ### S06 — Actualizar Cronograma en React (vigente)
 
@@ -853,6 +872,14 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 - **Duraciones de contratación por obra** (cerrado): 6 de 6 hechas · `2026-09-01-duraciones-por-obra.md`
 
+### ROADMAP-01 · Especificación Maestra: Gobernanza y Priorización del Roadmap LPS AIA (vigente)
+
+- Sin plan todavía.
+
+### MO-01 · Especificación Técnica: Parte Diario de Mano de Obra en Tajo & Control de Cuadrillas (Universal AIA) (vigente)
+
+- Sin plan todavía.
+
 ### Sin spec
 
 - **Sidebar canónico del laboratorio** (cerrado): 0 de 0 hechas · `2026-07-20-sidebar-canonico-laboratorio.md`
@@ -903,6 +930,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - cerrado_sin_archivos · `plans/2026-08-04-biblia-t4-soporte.md`: dice «plan cerrado»; git dice «5 de 7 archivos que mandaba crear no existieron nunca en ninguna rama: docs/flujos/soporte-contratos-y-actividades.md, docs/flujos/soporte-subcontratistas.md, docs/flujos/soporte-profesionales.md…»
 - cerrado_sin_archivos · `plans/2026-08-04-biblia-t5-lectura.md`: dice «plan cerrado»; git dice «2 de 4 archivos que mandaba crear no existieron nunca en ninguna rama: docs/flujos/lectura-indicadores.md, docs/flujos/lectura-torre-de-control.md»
 - cerrado_sin_archivos · `plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas.md`: dice «plan cerrado»; git dice «1 de 2 archivos que mandaba crear no existieron nunca en ninguna rama: docs/design-system/manifests/dashboard.json»
+- sin_estado · `plans/2026-09-23-s05-programa-general-react.md`: dice «sin `estado:` en el frontmatter»; git dice «no hay de dónde leer si está vivo o cerrado»
 - spec_cerrado_plan_vivo · `specs/2026-07-23-a16-comparativo-versiones-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-07-22-roadmap-pdc-v2.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-03-reparto-trabajo-pendiente-design.md`: dice «spec derogada»; git dice «1 plan suyo sigue vivo: 2026-08-03-usabilidad-altas-y-medias.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-11-plan-cierre-hasta-produccion-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-11-cierre-hasta-produccion.md»

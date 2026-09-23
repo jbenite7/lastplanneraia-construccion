@@ -147,6 +147,7 @@ $router->post('/programacion-intermedia/shared-constraints/preview', [\App\Contr
 $router->post('/programacion-intermedia/shared-constraints/apply', [\App\Controllers\Programacion\ProgramacionIntermediaController::class, 'applySharedConstraints']);
 $router->get('/api/pi/list', [\App\Controllers\Programacion\ProgramacionIntermediaController::class, 'list']);
 $router->post('/api/pi/save', [\App\Controllers\Programacion\ProgramacionIntermediaController::class, 'save']);
+$router->get('/api/programa-general/context', [\App\Controllers\Api\ProgramaGeneralContextApiController::class, 'show']);
 $router->get('/api/general/list', [\App\Controllers\Api\GeneralApiController::class, 'list']);
 $router->post('/api/general/list', [\App\Controllers\Api\GeneralApiController::class, 'list']);
 $router->get('/api/general/restriction-config', [\App\Controllers\Api\GeneralApiController::class, 'restrictionConfig']);
