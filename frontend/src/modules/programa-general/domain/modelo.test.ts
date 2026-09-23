@@ -26,6 +26,7 @@ describe('Dominio S05: modelo y normalizacion de actividades', () => {
       Fecha_Fin: '2026-08-10', // Vencida respecto a 2026-08-23
       Ruta_Critica: 1,
       Ejecutado: 0.25,
+      Ejecutado_Teorico: 0.5,
       Estado: 'Atrasada',
       cantidad_ppto: 450,
       unidad: 'm³',
@@ -72,12 +73,23 @@ describe('Dominio S05: modelo y normalizacion de actividades', () => {
 
   it('calcula avanceRealPct, avanceTeoricoPct y delta correctamente', () => {
     const normalizadas = normalizarActividades(mockFilas, 33, '2026-08-23');
+    const capitulo = normalizadas[0];
     const tarea2 = normalizadas[1];
+    const tareaFutura = normalizadas[3];
+
+    expect(capitulo.avanceRealPct).toBe(0);
+    expect(capitulo.avanceTeoricoPct).toBe(0);
+    expect(capitulo.deltaPct).toBe(0);
+    expect(capitulo.deltaTexto).toBe('-');
 
     expect(tarea2.avanceRealPct).toBe(25.0);
     expect(tarea2.avanceTeoricoPct).toBe(50.0);
     expect(tarea2.deltaPct).toBe(-25.0);
     expect(tarea2.deltaTexto).toBe('-25%');
+
+    // Tarea futura con fecha inicio posterior a fechaReferencia calcula ratio teorico 0%
+    expect(tareaFutura.avanceTeoricoPct).toBe(0);
+    expect(tareaFutura.deltaPct).toBe(0);
   });
 
   it('identifica ruta critica segun Ruta_Critica === 1', () => {

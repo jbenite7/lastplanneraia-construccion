@@ -10,6 +10,7 @@ export const esquemaFilaActividadPg = z.object({
   Fecha_Fin: z.string().nullable().optional(),
   Ruta_Critica: z.coerce.number().optional(),
   Ejecutado: z.coerce.number().nullable().optional(),
+  Ejecutado_Teorico: z.coerce.number().nullable().optional(),
   Estado: z.string().nullable().optional(),
   Semanas_Inicio: z.coerce.number().nullable().optional(),
   Estado_Restricciones: z.string().nullable().optional(),

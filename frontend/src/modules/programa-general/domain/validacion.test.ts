@@ -105,4 +105,21 @@ describe('Dominio S05: validacion y calculos de avance', () => {
     });
     expect(res).toBeNull();
   });
+
+  it('rechaza avance porcentual mayor a 100%', () => {
+    const error = validarBorradorActividad({
+      unidad: '%',
+      ejecutadoVisible: 105,
+    });
+    expect(error).toContain('El avance porcentual no puede ser superior al 100%');
+  });
+
+  it('rechaza avance fisico que supera cantidad presupuestada', () => {
+    const error = validarBorradorActividad({
+      unidad: 'm³',
+      cantidad_ppto: 100,
+      ejecutadoVisible: 120,
+    });
+    expect(error).toContain('El avance no puede ser superior a la cantidad presupuestada');
+  });
 });

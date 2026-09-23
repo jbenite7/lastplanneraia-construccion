@@ -56,8 +56,20 @@ export function validarBorradorActividad(datos: DatosBorradorActividad): string 
     return 'La cantidad de presupuesto no puede ser negativa.';
   }
 
-  if (datos.ejecutadoVisible !== null && datos.ejecutadoVisible !== undefined && datos.ejecutadoVisible < 0) {
-    return 'El avance no puede ser un valor negativo.';
+  if (datos.ejecutadoVisible !== null && datos.ejecutadoVisible !== undefined) {
+    if (datos.ejecutadoVisible < 0) {
+      return 'El avance no puede ser un valor negativo.';
+    }
+    const esPorcentaje = !datos.unidad || datos.unidad === '%' || datos.cantidad_ppto === null || datos.cantidad_ppto === undefined || datos.cantidad_ppto <= 0;
+    if (esPorcentaje) {
+      if (datos.ejecutadoVisible > 100) {
+        return 'El avance porcentual no puede ser superior al 100%.';
+      }
+    } else {
+      if (datos.ejecutadoVisible > (datos.cantidad_ppto ?? 0)) {
+        return `El avance no puede ser superior a la cantidad presupuestada (${datos.cantidad_ppto} ${datos.unidad}).`;
+      }
+    }
   }
 
   return null;
