@@ -141,12 +141,12 @@ class ProgramaGeneralContextService
 
         $subStmt = method_exists($this->db, 'queryWithProject')
             ? $this->db->queryWithProject(
-                "SELECT Id as id, Nombre as nombre, Especialidad as especialidad FROM subcontratistas WHERE project_id = ? AND Activo = 1 ORDER BY Nombre ASC",
+                "SELECT Id as id, subcontratista as nombre, alcance as especialidad FROM subcontratistas WHERE project_id = ? AND activo = 1 ORDER BY subcontratista ASC",
                 [$projectId],
                 $projectId
             )
             : $this->db->query(
-                "SELECT Id as id, Nombre as nombre, Especialidad as especialidad FROM subcontratistas WHERE project_id = ? AND Activo = 1 ORDER BY Nombre ASC",
+                "SELECT Id as id, subcontratista as nombre, alcance as especialidad FROM subcontratistas WHERE project_id = ? AND activo = 1 ORDER BY subcontratista ASC",
                 [$projectId]
             );
         $subcontratistas = ($subStmt && method_exists($subStmt, 'fetchAll'))
