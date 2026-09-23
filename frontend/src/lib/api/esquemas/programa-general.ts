@@ -8,7 +8,7 @@ export const esquemaFilaActividadPg = z.object({
   Titulo: z.coerce.number(),
   Fecha_Inicio: z.string().nullable().optional(),
   Fecha_Fin: z.string().nullable().optional(),
-  Ruta_Critica: z.coerce.number().optional().default(0),
+  Ruta_Critica: z.coerce.number().optional(),
   Ejecutado: z.coerce.number().nullable().optional(),
   Estado: z.string().nullable().optional(),
   Semanas_Inicio: z.coerce.number().nullable().optional(),
@@ -19,7 +19,7 @@ export const esquemaFilaActividadPg = z.object({
   Responsable_AIA: z.string().nullable().optional(),
   Sub_Contratista: z.string().nullable().optional(),
   Observaciones: z.string().nullable().optional(),
-  alerta_crisis: z.coerce.number().optional().default(0),
+  alerta_crisis: z.coerce.number().optional(),
 });
 
 export type FilaActividadPg = z.infer<typeof esquemaFilaActividadPg>;
