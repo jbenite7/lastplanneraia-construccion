@@ -1,8 +1,12 @@
 import {
   FilaActividadPg,
   ContextoPg,
+  RespuestaUpdatePg,
+  RespuestaCortePg,
   esquemaContextoPg,
   esquemaFilaActividadPg,
+  esquemaRespuestaUpdatePg,
+  esquemaRespuestaCortePg,
 } from '../../../lib/api/esquemas/programa-general';
 import { pedir } from '../../../lib/api/cliente';
 import { z } from 'zod';
@@ -24,21 +28,29 @@ export interface GuardarActividadPayload {
 
 export interface ClienteHttpPg {
   get: <T>(url: string, schema: z.ZodType<T, any, any>) => Promise<T>;
-  postForm: (url: string, data: Record<string, unknown>) => Promise<{ success: boolean; data?: unknown }>;
+  postForm: <T>(url: string, data: Record<string, unknown>, schema?: z.ZodType<T, any, any>, headers?: Record<string, string>) => Promise<T>;
 }
 
 const defaultCliente: ClienteHttpPg = {
   get: <T>(url: string, schema: z.ZodType<T, any, any>) => pedir(url, schema),
-  postForm: async (url: string, data: Record<string, unknown>) => {
+  postForm: async <T>(
+    url: string,
+    data: Record<string, unknown>,
+    schema?: z.ZodType<T, any, any>,
+    headers?: Record<string, string>
+  ): Promise<T> => {
     const formData = new FormData();
     Object.entries(data).forEach(([k, v]) => {
       if (v !== undefined && v !== null) {
         formData.append(k, String(v));
       }
     });
-    return pedir(url, z.object({ success: z.boolean(), data: z.unknown().optional() }), {
+
+    const targetSchema = (schema ?? z.unknown()) as z.ZodType<T, any, any>;
+    return pedir(url, targetSchema, {
       method: 'POST',
       body: formData,
+      headers,
     });
   },
 };
@@ -64,25 +76,36 @@ export function programaGeneralApi(cliente: ClienteHttpPg = defaultCliente) {
       return response.data;
     },
 
-    async guardarActividad(payload: GuardarActividadPayload): Promise<{ success: boolean; data?: unknown }> {
-      return cliente.postForm(`/api/general/update?semana_objetivo=${payload.semana}`, {
-        unique_id: payload.unique_id,
-        Fecha_Inicio: payload.Fecha_Inicio,
-        Fecha_Fin: payload.Fecha_Fin,
-        unidad: payload.unidad,
-        cantidad_ppto: payload.cantidad_ppto,
-        Ejecutado: payload.Ejecutado,
-        EjecutadoRatio: payload.EjecutadoRatio,
-        codigo_actividad: payload.codigo_actividad,
-        Responsable_AIA: payload.Responsable_AIA ?? '',
-        Sub_Contratista: payload.Sub_Contratista ?? '',
-        csrf_token: payload.csrf_token,
-      });
+    async guardarActividad(payload: GuardarActividadPayload): Promise<RespuestaUpdatePg> {
+      return cliente.postForm<RespuestaUpdatePg>(
+        `/api/general/update?semana_objetivo=${payload.semana}`,
+        {
+          unique_id: payload.unique_id,
+          Fecha_Inicio: payload.Fecha_Inicio,
+          Fecha_Fin: payload.Fecha_Fin,
+          unidad: payload.unidad,
+          cantidad_ppto: payload.cantidad_ppto,
+          Ejecutado: payload.Ejecutado,
+          EjecutadoRatio: payload.EjecutadoRatio,
+          codigo_actividad: payload.codigo_actividad,
+          Responsable_AIA: payload.Responsable_AIA ?? '',
+          Sub_Contratista: payload.Sub_Contratista ?? '',
+          _csrf_token: payload.csrf_token,
+          csrf_token: payload.csrf_token,
+        },
+        esquemaRespuestaUpdatePg,
+        {
+          'X-CSRF-Token': payload.csrf_token,
+        }
+      );
     },
 
-    async generarCorteXlsx(semana: number): Promise<{ url: string }> {
-      const res = await cliente.postForm('/reportes/corte-programacion', { semana });
-      return (res.data ? res.data : res) as { url: string };
+    async generarCorteXlsx(semana: number): Promise<RespuestaCortePg> {
+      return cliente.postForm<RespuestaCortePg>(
+        '/reportes/corte-programacion',
+        { semana },
+        esquemaRespuestaCortePg
+      );
     },
   };
 }

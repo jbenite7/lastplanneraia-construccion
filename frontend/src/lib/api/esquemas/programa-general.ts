@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 export const esquemaFilaActividadPg = z.object({
   unique_id: z.coerce.number(),
-  Consecutivo_en_Programa: z.string().nullable().optional(),
-  Id: z.coerce.number().optional(),
+  Consecutivo_en_Programa: z.union([z.string(), z.number()]).transform(String).nullable().optional(),
+  Id: z.union([z.string(), z.number()]).transform(String).optional(),
   Actividad: z.string(),
   Titulo: z.coerce.number(),
   Fecha_Inicio: z.string().nullable().optional(),
@@ -91,11 +91,11 @@ export const esquemaContextoPg = z.preprocess((val: unknown) => {
       },
       permisos: {
         puedeVer: true,
-        puedeEditar: Boolean(act.editPlanFields ?? true),
-        puedeCorteXlsx: Boolean(act.downloadCut ?? true),
-        puedeLote: Boolean(act.runBatch ?? true),
-        readDrawer: Boolean(act.readDrawer ?? true),
-        writeDrawer: Boolean(act.writeDrawer ?? true),
+        puedeEditar: Boolean(act.editPlanFields ?? false),
+        puedeCorteXlsx: Boolean(act.downloadCut ?? false),
+        puedeLote: Boolean(act.runBatch ?? false),
+        readDrawer: Boolean(act.readDrawer ?? false),
+        writeDrawer: Boolean(act.writeDrawer ?? false),
       },
       catalogos: {
         unidades: Array.isArray(cat.unidades) ? cat.unidades : ['m³', 'm²', 'ml', 'kg', 'ton', 'und', 'gl', 'mes', '%'],
@@ -110,3 +110,23 @@ export const esquemaContextoPg = z.preprocess((val: unknown) => {
 }, esquemaContextoPgBase);
 
 export type ContextoPg = z.infer<typeof esquemaContextoPgBase>;
+
+export const esquemaRespuestaUpdatePg = z.preprocess((val: unknown) => {
+  if (val && typeof val === 'object' && 'respuesta' in val && (val as any).respuesta === 'BIEN') {
+    return { success: true, ...(val as any) };
+  }
+  return val;
+}, z.object({
+  success: z.boolean().default(true),
+  respuesta: z.string().optional(),
+  estado: z.string().optional(),
+  Semana_Inicio: z.coerce.number().optional(),
+}));
+
+export type RespuestaUpdatePg = z.infer<typeof esquemaRespuestaUpdatePg>;
+
+export const esquemaRespuestaCortePg = z.object({
+  url: z.string().regex(/\.xlsx($|\?)/, 'Debe ser una URL de archivo Excel válido'),
+});
+
+export type RespuestaCortePg = z.infer<typeof esquemaRespuestaCortePg>;
