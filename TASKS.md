@@ -17,9 +17,9 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 499 |
+| hecha | 500 |
 | en progreso | 16 |
-| pendiente | 164 |
+| pendiente | 163 |
 | sin señal | 161 |
 | descartada | 41 |
 
@@ -477,11 +477,11 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - hecha · 11 · Prove the pilot with intercepted browser, accessibility and design-system gates
   - hecha · 12 · Promote canonical GET/HEAD with a reversible method-aware cut
   - en progreso · 13 · Retire VIEW-34 exclusively and run the complete no-DML closure
-- **S05 — Programa General en React** (sin estado): 4 de 8 hechas · `2026-09-23-s05-programa-general-react.md`
+- **S05 — Programa General en React** (sin estado): 5 de 8 hechas · `2026-09-23-s05-programa-general-react.md`
   - hecha · 1 · Backend PHP — Context Endpoint y Asignaciones en Update
   - hecha · 2 · Frontend — Esquemas Zod y Cliente API Tipado
   - hecha · 3 · Frontend — Dominio Puro, Cálculos de Avance con $\Delta$, Validaciones y Filtros
-  - pendiente · 4 · Frontend — Barra de Herramientas, Señales y Filtros Facetados
+  - hecha · 4 · Frontend — Barra de Herramientas, Señales y Filtros Facetados
   - pendiente · 5 · Frontend — Grilla Principal Racionalizada (8 Columnas Esenciales) y Tarjetas Móviles
   - pendiente · 6 · Frontend — Drawer Contextual LPS (440px) y Edición de Actividad
   - hecha · 7 · Frontend — Página Orquestadora, Integración de Shell y Rutas
