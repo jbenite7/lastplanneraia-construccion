@@ -17,10 +17,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 500 |
+| hecha | 493 |
 | en progreso | 16 |
-| pendiente | 163 |
-| sin señal | 161 |
+| pendiente | 162 |
+| sin señal | 169 |
 | descartada | 41 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -145,14 +145,14 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### Reparto del trabajo pendiente tras el saneamiento del goal de tablas (derogada)
 
-- **Usabilidad: altas y medias** (vigente): 13 de 27 hechas · `2026-08-03-usabilidad-altas-y-medias.md`
-  - hecha · 1 · Tildes en los chips de estado del PDC (H-28)
+- **Usabilidad: altas y medias** (vigente): 7 de 27 hechas · `2026-08-03-usabilidad-altas-y-medias.md`
+  - sin señal · 1 · Tildes en los chips de estado del PDC (H-28)
   - hecha · 2 · Retirar la unidad cruda «count» de los KPI de BI (H-29)
-  - hecha · 3 · Desambiguar las columnas homónimas de control de cambios (H-30)
-  - hecha · 4 · Estado vacío de control de cambios (H-02)
+  - sin señal · 3 · Desambiguar las columnas homónimas de control de cambios (H-30)
+  - sin señal · 4 · Estado vacío de control de cambios (H-02)
   - hecha · 5 · Componente compartido de estado vacío para Handsontable
   - hecha · 6 · Estado vacío de la malla semanal (H-01)
-  - hecha · 7 · Estado vacío del PDC (H-04)
+  - sin señal · 7 · Estado vacío del PDC (H-04)
   - pendiente · 8 · La tarjeta «Resumen Ejecutivo» deja de mostrar «--» (H-05)
   - hecha · 9 · Labels y `autocomplete` en el acceso de admin (H-33)
   - hecha · 10 · Label del correo en la recuperación de admin (H-35)
@@ -161,7 +161,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - en progreso · 13 · Objetivo de «Quitar filtro» y contador de filtros (H-36, H-25)
   - sin señal · 14 · Verificación de fase F3
   - en progreso · 15 · Cabeceras del PDC legibles y distinguibles (H-07)
-  - hecha · 16 · Filtros legibles en control de cambios (H-08)
+  - sin señal · 16 · Filtros legibles en control de cambios (H-08)
   - sin señal · 17 · Botones de la barra semanal sin truncar (H-09)
   - sin señal · 18 · Cabeceras del programa general (H-10)
   - sin señal · 19 · El rail «CONCURRENCIA LPS» deja de tapar controles (H-12, H-13)
@@ -171,7 +171,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - en progreso · 23 · Encabezado de página en las seis superficies que no lo tienen (H-19)
   - hecha · 24 · Los dos proyectos dejan de ser indistinguibles (H-21)
   - hecha · 25 · Devolver el shell a escalamientos (H-18) — CON FRENO
-  - hecha · 26 · Dar salida a control de cambios (H-38)
+  - sin señal · 26 · Dar salida a control de cambios (H-38)
   - sin señal · 27 · Verificación de fase F5 y cierre del goal
 
 ### Saneamiento de las deudas abiertas del goal de usabilidad (cerrado)
@@ -285,10 +285,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### Espacio de la cuenta de SiteGround: dejar de guardar lo que git ya guarda (cerrado)
 
-- **Espacio de la cuenta de SiteGround** (vigente): 2 de 5 hechas · `2026-08-18-espacio-cuenta-siteground.md`
+- **Espacio de la cuenta de SiteGround** (vigente): 1 de 5 hechas · `2026-08-18-espacio-cuenta-siteground.md`
   - pendiente · 1 · Frente D: basura suelta en producción
   - en progreso · 2 · Frente A: archivar los binarios de QA fuera de git
-  - hecha · 3 · Frente B: el tar de pre-deploy guarda lo irremplazable
+  - sin señal · 3 · Frente B: el tar de pre-deploy guarda lo irremplazable
   - en progreso · 4 · Frente C: clon shallow en pruebas
   - hecha · 5 · Cierre: verificar, publicar y anotar
 
@@ -449,13 +449,13 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### S04 — Selector de proyectos en React (vigente)
 
-- **S04 Project Selector React** (vigente): 9 de 10 hechas · `2026-08-30-s04-selector-proyectos-react.md`
+- **S04 Project Selector React** (vigente): 8 de 10 hechas · `2026-08-30-s04-selector-proyectos-react.md`
   - hecha · 1 · Definir contratos Zod y gateway S04
   - hecha · 2 · Adaptar `ProjectApiController` con un contrato puro
   - hecha · 3 · Hacer seguro y no mutante el contrato HTTP existente
   - hecha · 4 · Implementar búsqueda y conteos como dominio puro
   - hecha · 5 · Construir tarjetas y estados de lectura S04
-  - hecha · 6 · Completar selección, errores y landing server-authoritative
+  - sin señal · 6 · Completar selección, errores y landing server-authoritative
   - hecha · 7 · Integrar sidebar T01, ruta piloto y cambio de proyecto
   - hecha · 8 · Entregar responsive, ambos temas y build piloto
   - hecha · 9 · Verificar el piloto en navegador sin tocar datos
@@ -477,12 +477,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - hecha · 11 · Prove the pilot with intercepted browser, accessibility and design-system gates
   - hecha · 12 · Promote canonical GET/HEAD with a reversible method-aware cut
   - en progreso · 13 · Retire VIEW-34 exclusively and run the complete no-DML closure
-- **S05 — Programa General en React** (sin estado): 5 de 8 hechas · `2026-09-23-s05-programa-general-react.md`
+- **S05 — Programa General en React** (sin estado): 6 de 8 hechas · `2026-09-23-s05-programa-general-react.md`
   - hecha · 1 · Backend PHP — Context Endpoint y Asignaciones en Update
   - hecha · 2 · Frontend — Esquemas Zod y Cliente API Tipado
   - hecha · 3 · Frontend — Dominio Puro, Cálculos de Avance con $\Delta$, Validaciones y Filtros
   - hecha · 4 · Frontend — Barra de Herramientas, Señales y Filtros Facetados
-  - pendiente · 5 · Frontend — Grilla Principal Racionalizada (8 Columnas Esenciales) y Tarjetas Móviles
+  - hecha · 5 · Frontend — Grilla Principal Racionalizada (8 Columnas Esenciales) y Tarjetas Móviles
   - pendiente · 6 · Frontend — Drawer Contextual LPS (440px) y Edición de Actividad
   - hecha · 7 · Frontend — Página Orquestadora, Integración de Shell y Rutas
   - pendiente · 8 · Verificación Visual Playwright y Cierre E2E
