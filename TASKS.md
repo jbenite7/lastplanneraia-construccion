@@ -17,10 +17,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 493 |
-| en progreso | 16 |
-| pendiente | 162 |
-| sin señal | 169 |
+| hecha | 494 |
+| en progreso | 11 |
+| pendiente | 161 |
+| sin señal | 174 |
 | descartada | 41 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -158,15 +158,15 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - hecha · 10 · Label del correo en la recuperación de admin (H-35)
   - en progreso · 11 · El error de JS de escalamientos deja de fallar en silencio (H-26)
   - en progreso · 12 · Contraste del chip de BI (H-34)
-  - en progreso · 13 · Objetivo de «Quitar filtro» y contador de filtros (H-36, H-25)
+  - sin señal · 13 · Objetivo de «Quitar filtro» y contador de filtros (H-36, H-25)
   - sin señal · 14 · Verificación de fase F3
-  - en progreso · 15 · Cabeceras del PDC legibles y distinguibles (H-07)
+  - sin señal · 15 · Cabeceras del PDC legibles y distinguibles (H-07)
   - sin señal · 16 · Filtros legibles en control de cambios (H-08)
   - sin señal · 17 · Botones de la barra semanal sin truncar (H-09)
   - sin señal · 18 · Cabeceras del programa general (H-10)
   - sin señal · 19 · El rail «CONCURRENCIA LPS» deja de tapar controles (H-12, H-13)
   - sin señal · 20 · Verificación de fase F4
-  - en progreso · 21 · Las pestañas de BI dejan de ocultar módulos (H-16)
+  - sin señal · 21 · Las pestañas de BI dejan de ocultar módulos (H-16)
   - pendiente · 22 · El tour de plan de compras deja de taparse a sí mismo (H-17, H-20)
   - en progreso · 23 · Encabezado de página en las seis superficies que no lo tienen (H-19)
   - hecha · 24 · Los dos proyectos dejan de ser indistinguibles (H-21)
@@ -289,7 +289,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 1 · Frente D: basura suelta en producción
   - en progreso · 2 · Frente A: archivar los binarios de QA fuera de git
   - sin señal · 3 · Frente B: el tar de pre-deploy guarda lo irremplazable
-  - en progreso · 4 · Frente C: clon shallow en pruebas
+  - sin señal · 4 · Frente C: clon shallow en pruebas
   - hecha · 5 · Cierre: verificar, publicar y anotar
 
 ### Wiki v2 — visual, etiquetada, misma metodología (cerrado)
@@ -407,7 +407,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 ### Temas claro y oscuro end to end — spec en construcción (vigente)
 
 - **Fase cero de temas y forma** (vigente): 9 de 11 hechas · `2026-08-28-fase-cero-temas-y-forma.md`
-  - en progreso · 1 · La paleta clara de estado, con su guard
+  - sin señal · 1 · La paleta clara de estado, con su guard
   - hecha · 2 · El tema claro completo — theme-claro.css re-vincula el estado
   - hecha · 3 · La bandera de gravedad — componente aia-flag en ambos temas
   - hecha · 4 · Forma — radios de dato, pozo, botón hundido, pisos, foco doble, scroll
@@ -477,13 +477,13 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - hecha · 11 · Prove the pilot with intercepted browser, accessibility and design-system gates
   - hecha · 12 · Promote canonical GET/HEAD with a reversible method-aware cut
   - en progreso · 13 · Retire VIEW-34 exclusively and run the complete no-DML closure
-- **S05 — Programa General en React** (sin estado): 6 de 8 hechas · `2026-09-23-s05-programa-general-react.md`
+- **S05 — Programa General en React** (sin estado): 7 de 8 hechas · `2026-09-23-s05-programa-general-react.md`
   - hecha · 1 · Backend PHP — Context Endpoint y Asignaciones en Update
   - hecha · 2 · Frontend — Esquemas Zod y Cliente API Tipado
   - hecha · 3 · Frontend — Dominio Puro, Cálculos de Avance con $\Delta$, Validaciones y Filtros
   - hecha · 4 · Frontend — Barra de Herramientas, Señales y Filtros Facetados
   - hecha · 5 · Frontend — Grilla Principal Racionalizada (8 Columnas Esenciales) y Tarjetas Móviles
-  - pendiente · 6 · Frontend — Drawer Contextual LPS (440px) y Edición de Actividad
+  - hecha · 6 · Frontend — Drawer Contextual LPS (440px) y Edición de Actividad
   - hecha · 7 · Frontend — Página Orquestadora, Integración de Shell y Rutas
   - pendiente · 8 · Verificación Visual Playwright y Cierre E2E
 
