@@ -17,7 +17,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 501 |
+| hecha | 505 |
 | en progreso | 7 |
 | pendiente | 166 |
 | sin señal | 173 |
@@ -855,6 +855,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 ### MO-01 · Especificación Técnica: Parte Diario de Mano de Obra en Tajo & Control de Cuadrillas (Universal AIA) (vigente)
 
 - Sin plan todavía.
+
+### Calificación y registro de Trabajo No Planificado (TNP) en semanas confirmadas (cerrado)
+
+- **Calificación y Registro de TNP en Semanas Confirmadas** (cerrado): 4 de 4 hechas · `2026-09-24-calificacion-tnp-semana-confirmada.md`
 
 ### S05-PARIDAD-VISUAL — Elevación Estética y Paridad 1:1 de Programa General en React (vigente)
 
