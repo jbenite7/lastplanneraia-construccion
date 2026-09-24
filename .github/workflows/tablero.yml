@@ -1,0 +1,34 @@
+# Dispara la rutina del tablero de este repo en cada push (tablero-specs, S-001 D7).
+# Los PR los cubre el disparador nativo pull_request de la propia rutina.
+# Apagado hasta que Felipe cree la rutina y defina la variable TABLERO_ACTIVO=1.
+name: tablero
+
+on:
+  push:
+    branches: ['**']
+
+permissions: {}
+
+concurrency:
+  group: tablero-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  disparar:
+    runs-on: ubuntu-latest
+    if: ${{ vars.TABLERO_ACTIVO == '1' }}
+    timeout-minutes: 2
+    steps:
+      - name: Llamar al disparador por API de la rutina
+        env:
+          URL: ${{ secrets.TABLERO_RUTINA_URL }}
+          TOKEN: ${{ secrets.TABLERO_RUTINA_TOKEN }}
+          RAMA: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+        run: |
+          curl --fail-with-body -sS -X POST "$URL" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H 'anthropic-beta: experimental-cc-routine-2026-04-01' \
+            -H 'anthropic-version: 2023-06-01' \
+            -H 'Content-Type: application/json' \
+            -d "{\"text\": \"push en ${RAMA} (${SHA})\"}"

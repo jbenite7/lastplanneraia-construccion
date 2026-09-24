@@ -13,9 +13,10 @@ resumen: "Programa General: la línea base del cronograma maestro; editar el pas
 **Qué resuelve.** Es el cronograma maestro del proyecto — la línea base contra la que se mide todo
 lo demás en el flujo LPS. Solo Admin y Director pueden editar filas de semanas ya pasadas
 (`canEditPastGeneralProgram`); el resto del equipo puede ver y editar el presente/futuro. Para
-traer una versión nueva desde Excel, ver [[cronograma]].
+traer una versión nueva desde Excel / MS Project o cargar reprogramaciones, ver [[cronograma]]
+y [[programa-general-actualizar-es-otra-herramienta]].
 
-**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]] y el catálogo completo en [[mapa-de-modulos-y-submodulos]].
 
 Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
@@ -40,6 +41,7 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 | POST | `/api/general/update` | `App\Controllers\Api\GeneralApiController::update` |
 | POST | `/api/pg/breadcrumb-estandarizar` | `App\Controllers\Api\PgBreadcrumbController::standardize` |
 | POST | `/api/pg/breadcrumb-preview` | `App\Controllers\Api\PgBreadcrumbController::preview` |
+| GET | `/api/programa-general/context` | `App\Controllers\Api\ProgramaGeneralContextApiController::show` |
 | POST | `/programa-general/filtros` | `App\Controllers\Programacion\ProgramaGeneralController::getFilters` |
 | GET | `/programa-general/set-filtro` | `App\Controllers\Programacion\ProgramaGeneralController::setFilter` |
 | GET | `/programa-general` | `App\Controllers\Programacion\ProgramaGeneralController::index` |
@@ -47,6 +49,7 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 ### Controladores
 - `App\Controllers\Api\GeneralApiController`
 - `App\Controllers\Api\PgBreadcrumbController`
+- `App\Controllers\Api\ProgramaGeneralContextApiController`
 - `App\Controllers\Programacion\ProgramaGeneralController`
 
 ### Servicios
@@ -56,6 +59,7 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 - `ModuleRequestContext`
 - `PgAvanceEdicionManualService`
 - `ProgramaConsolidadoNormalizationService`
+- `ProgramaGeneralContextService`
 - `ProjectLandingService`
 - `WeeklyRealProgressCarryoverService`
 
@@ -65,9 +69,12 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 - `general_proyectos_procesos`
 - `general_usuarios`
 - `pg_avance_edicion_manual`
+- `profesionales`
 - `program_unique_id_sequences`
 - `programa`
 - `programa_consolidado`
+- `semanas_activas`
+- `subcontratistas`
 
 ### Quién puede
 | Capacidad | Roles que la tienen |

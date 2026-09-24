@@ -28,6 +28,8 @@
     ".gemini/",
     ".codex/",
     ".omo/",
-    ".opencode/"
+    ".opencode/",
+    ".ua/",
+    ".understand-anything/"
   ]
 }

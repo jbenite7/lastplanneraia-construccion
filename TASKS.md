@@ -1,5 +1,928 @@
 ---
 capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-19
+fuente: TASKS.md
+areas: [proceso]
+resumen: "Consolidado de tareas, specs y planes de implementación del proyecto."
+---
+
+# TASKS
+
+<!-- tablero:inicio · lo arma tablero-specs (scripts/tasks-md.mjs); no se edita a mano -->
+## Estado según git
+
+Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cuentan. Lo que escribas fuera de este bloque se conserva.
+
+| Estado | Tareas |
+|---|---|
+| hecha | 501 |
+| en progreso | 7 |
+| pendiente | 159 |
+| sin señal | 173 |
+| descartada | 41 |
+
+### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
+
+- Sin plan todavía.
+
+### Colapsado del sidebar como primitiva canónica adoptada en el laboratorio (cerrado)
+
+- **Colapsado del sidebar como primitiva canónica** (cerrado): 4 de 4 hechas · `2026-07-22-lab-colapsado-primitiva.md`
+
+### Diseño: Fase A1.6 — Comparativo de versiones del presupuesto (cerrado)
+
+- **Roadmap PDC v2 — producto en 2 submódulos y fases de desarrollo** (vigente): 0 de 0 hechas · `2026-07-22-roadmap-pdc-v2.md`
+
+### Diseño: Fase A1.7 — Versionamiento inteligente del importador (cerrado)
+
+- Sin plan todavía.
+
+### Diseño: Fase A2.5 — Importador del maestro SINCO (cerrado)
+
+- Sin plan todavía.
+
+### Diseño: Fase A3 — Paquetes de contratación + asistente de empaquetamiento (cerrado)
+
+- Sin plan todavía.
+
+### Responsable de paquete: de texto libre a usuario del proyecto (cerrado)
+
+- Sin plan todavía.
+
+### PDC v2 — Los cuatro diferidos de A4.1 (configuración de pasos) (cerrado)
+
+- Sin plan todavía.
+
+### PDC v2 — Ayuda dentro de la aplicación (cerrado)
+
+- Sin plan todavía.
+
+### PDC v2 · Fase B2 (primera mitad) — Semáforos y look-ahead de contratación (cerrado)
+
+- Sin plan todavía.
+
+### PDC v2 · Fase B3 — El plan de compras en la Torre de Control (cerrado)
+
+- Sin plan todavía.
+
+### PDC · Fase C1 — Retirar el PDC viejo, y qué hacer con su dark a medias (cerrado)
+
+- **C1 — Retiro del PDC viejo ·** (derogada): 0 de 9 hechas · `2026-08-04-c1-retiro-pdc-viejo.md`
+
+### PDC v2 — Cierre pre-lanzamiento: los pendientes que bloquean decir «verificado» (cerrado)
+
+- Sin plan todavía.
+
+### PDC v2 — Despliegue a producción (vigente)
+
+- Sin plan todavía.
+
+### PDC v2 — Equipo alquilado vs equipo comprado (cerrado)
+
+- **Equipo alquilado vs equipo comprado** (cerrado): 9 de 9 hechas · `2026-07-29-equipo-alquilado-comprado.md`
+
+### PDC v2 — Flujo de caja: curva de desembolsos por mes (cerrado)
+
+- Sin plan todavía.
+
+### PDC v2 — Informe de impacto al recargar el presupuesto (cerrado)
+
+- Sin plan todavía.
+
+### PDC v2 · Fase B1 — Seguimiento al Plan de Compras (cerrado)
+
+- Sin plan todavía.
+
+### PDC v2 · Fase B2 (segunda mitad) — Re-matching al reprogramar (cerrado)
+
+- Sin plan todavía.
+
+### PDC v2 — Subpaquetes: del paquete de preconstrucción al contrato real de la obra (cerrado)
+
+- Sin plan todavía.
+
+### PDC v2 — El presupuesto se explica solo: tamiz y cifras honestas (cerrado)
+
+- Sin plan todavía.
+
+### Unificar `plan-de-compras` dentro de `lastplanneraia-construccion` (cerrado)
+
+- Sin plan todavía.
+
+### Puerta de servicio de desarrollo (`DevDoor`) (cerrado)
+
+- Sin plan todavía.
+
+### Diseñó — Unificación de Shell, Layout y Design System (cerrado)
+
+- Sin plan todavía.
+
+### Auditoría Visual Canónica y Plan de Reparación End-to-End (`DESIGN.md` + *Refactoring UI*) (derogada)
+
+- Sin plan todavía.
+
+### Impeccable Audit & Refactor Design: Core LPS & Ops (derogada)
+
+- Sin plan todavía.
+
+### Puerta de servicio de desarrollo para `admin/` (cerrado)
+
+- Sin plan todavía.
+
+### Arquitectura del proyecto en la wiki, generada desde el código (cerrado)
+
+- Sin plan todavía.
+
+### Cierre de dark mode — diseño validado (derogada)
+
+- **Cierre de dark mode — Plan de implementación, fases 0–3** (cerrado): 26 de 26 hechas · `2026-08-03-cierre-dark-mode-fases-0-3.md`
+
+### Pasada de lint sobre la wiki `memoria/` (cerrado)
+
+- Sin plan todavía.
+
+### Reparto del trabajo pendiente tras el saneamiento del goal de tablas (derogada)
+
+- **Usabilidad: altas y medias** (vigente): 7 de 27 hechas · `2026-08-03-usabilidad-altas-y-medias.md`
+  - sin señal · 1 · Tildes en los chips de estado del PDC (H-28)
+  - hecha · 2 · Retirar la unidad cruda «count» de los KPI de BI (H-29)
+  - sin señal · 3 · Desambiguar las columnas homónimas de control de cambios (H-30)
+  - sin señal · 4 · Estado vacío de control de cambios (H-02)
+  - hecha · 5 · Componente compartido de estado vacío para Handsontable
+  - hecha · 6 · Estado vacío de la malla semanal (H-01)
+  - sin señal · 7 · Estado vacío del PDC (H-04)
+  - pendiente · 8 · La tarjeta «Resumen Ejecutivo» deja de mostrar «--» (H-05)
+  - hecha · 9 · Labels y `autocomplete` en el acceso de admin (H-33)
+  - hecha · 10 · Label del correo en la recuperación de admin (H-35)
+  - en progreso · 11 · El error de JS de escalamientos deja de fallar en silencio (H-26)
+  - en progreso · 12 · Contraste del chip de BI (H-34)
+  - sin señal · 13 · Objetivo de «Quitar filtro» y contador de filtros (H-36, H-25)
+  - sin señal · 14 · Verificación de fase F3
+  - sin señal · 15 · Cabeceras del PDC legibles y distinguibles (H-07)
+  - sin señal · 16 · Filtros legibles en control de cambios (H-08)
+  - sin señal · 17 · Botones de la barra semanal sin truncar (H-09)
+  - sin señal · 18 · Cabeceras del programa general (H-10)
+  - sin señal · 19 · El rail «CONCURRENCIA LPS» deja de tapar controles (H-12, H-13)
+  - sin señal · 20 · Verificación de fase F4
+  - sin señal · 21 · Las pestañas de BI dejan de ocultar módulos (H-16)
+  - pendiente · 22 · El tour de plan de compras deja de taparse a sí mismo (H-17, H-20)
+  - en progreso · 23 · Encabezado de página en las seis superficies que no lo tienen (H-19)
+  - hecha · 24 · Los dos proyectos dejan de ser indistinguibles (H-21)
+  - hecha · 25 · Devolver el shell a escalamientos (H-18) — CON FRENO
+  - sin señal · 26 · Dar salida a control de cambios (H-38)
+  - sin señal · 27 · Verificación de fase F5 y cierre del goal
+
+### Saneamiento de las deudas abiertas del goal de usabilidad (cerrado)
+
+- **Saneamiento de las deudas abiertas del goal de usabilidad** (cerrado): 4 de 4 hechas · `2026-08-03-saneamiento-deudas-usabilidad.md`
+
+### La biblia de flujos: describir, verificar y auditar el comportamiento de la app (cerrado)
+
+- **Biblia de flujos · Tanda T1 (transversal)** (cerrado): 6 de 6 hechas · `2026-08-04-biblia-t1-transversal.md`
+- **Biblia de flujos · Tanda T3 (PDC — Plan de Compras v2)** (derogada): 0 de 8 hechas · `2026-08-04-biblia-t3-pdc.md`
+- **Biblia de flujos · Tanda T4 (soporte)** (cerrado): 7 de 7 hechas · `2026-08-04-biblia-t4-soporte.md`
+- **Biblia de flujos · Tanda T5 (lectura)** (cerrado): 4 de 4 hechas · `2026-08-04-biblia-t5-lectura.md`
+
+### Spec — Campaña de cierre de dark mode: las 54 decisiones convertidas en trabajo (cerrado)
+
+- **Campaña de cierre de dark mode** (cerrado): 38 de 38 hechas · `2026-08-04-cierre-dark-mode-campana-decisiones.md`
+
+### Cierre de la versión 1.1.0 del design system (cerrado)
+
+- **Cierre de la versión 1.1.0 del design system** (cerrado): 7 de 7 hechas · `2026-08-04-cierre-version-1-1-0-design-system.md`
+
+### Adopción del logo «Last Planner · línea Construcción» (cerrado)
+
+- **Adopción del logo «Last Planner · línea Construcción»** (cerrado): 6 de 6 hechas · `2026-08-06-adopcion-logo-construccion.md`
+
+### Cierre de los hallazgos de seguridad de la biblia de flujos (cerrado)
+
+- **Cierre de los hallazgos de seguridad de la biblia** (cerrado): 6 de 6 hechas · `2026-08-06-cierre-hallazgos-seguridad-biblia.md`
+
+### Plan de Compras: filtros de columna, buscadores rápidos y selects buscables (cerrado)
+
+- **Plan de Compras: filtros de columna, buscadores y selects buscables** (cerrado): 10 de 10 hechas · `2026-08-06-pdc-filtros-y-buscadores.md`
+
+### F2a — Precondiciones y piloto móvil (Programación Intermedia y Semanal) (derogada)
+
+- **F2a-1 — Precondiciones de la evidencia móvil:** (cerrado): 4 de 4 hechas · `2026-08-07-f2a-1-precondiciones-evidencia-movil.md`
+- **F2a-2b-1 — Red de pruebas sobre las reglas de habilitación:** (cerrado): 4 de 4 hechas · `2026-08-08-f2a-2b-1-red-de-pruebas-habilitacion.md`
+- **F2a-2b-2 — Extracción de reglas, umbral único y montaje condicional:** (cerrado): 5 de 5 hechas · `2026-08-13-f2a-2b-2-extraccion-umbral-y-montaje.md`
+- **Tarjeta móvil E2-bis:** (cerrado): 7 de 7 hechas · `2026-08-14-tarjeta-movil-e2bis.md`
+
+### Reapertura de móvil/tablet y tema claro (derogada)
+
+- **F1 — Destrabar el viewport móvil:** (cerrado): 4 de 4 hechas · `2026-08-07-f1-destrabar-viewport-movil.md`
+
+### Programa de cierre de pendientes (derogada)
+
+- **Frente 0 — Higiene y decisiones:** (cerrado): 10 de 10 hechas · `2026-08-10-frente-0-higiene-y-decisiones.md`
+- **Frente 1 · Tanda 1A — Seguridad y permisos:** (cerrado): 8 de 8 hechas · `2026-08-10-frente-1a-seguridad-y-permisos.md`
+- **Frente 1 · Tanda 1B — La cascada LPS:** (cerrado): 9 de 9 hechas · `2026-08-10-frente-1b-cascada-lps.md`
+- **Frente 1 · Tanda 1C — Pulido visual, accesibilidad y texto:** (cerrado): 11 de 11 hechas · `2026-08-11-frente-1c-pulido-a11y-y-texto.md`
+
+### Runner para los tests PHP y su conexión al CI (cerrado)
+
+- Sin plan todavía.
+
+### Los `!important` de `.pdc-legend-item` en `buttons.css` — spec (cerrado)
+
+- **Plan — los `!important` de `.pdc-legend-item`** (cerrado): 0 de 0 hechas · `2026-08-11-buttons-important-leyenda.md`
+
+### Ocultar las etiquetas contadoras que marcan cero (cerrado)
+
+- **Plan — ocultar las etiquetas contadoras que marcan cero** (cerrado): 0 de 0 hechas · `2026-08-11-contadores-cero.md`
+
+### Retirar del contrato de estados el módulo fantasma `programa-general-actualizar` — spec (cerrado)
+
+- **Retirar el módulo fantasma del contrato de estados — plan** (cerrado): 0 de 0 hechas · `2026-08-11-contrato-estados-modulo-fantasma.md`
+
+### Plan de cierre hasta producción (cerrado)
+
+- **Plan de cierre hasta producción** (vigente): 0 de 16 hechas · `2026-08-11-cierre-hasta-produccion.md`
+  - sin señal · 1 · Cambiar la aserción, y verla rechazar lo que debe
+  - sin señal · 2 · Comprobar que el static pasa entero, no solo esta prueba
+  - sin señal · 2b · El segundo rojo — la regex de los chips quedó vieja (`D-GAC-2`)
+  - sin señal · 2c · El tercer y último rojo — `!important` como forma, no como resultado (`D-GAC-3`)
+  - sin señal · 3 · Verlo verde en CI de verdad, y entregar
+  - sin señal · 1 · Comprobar que el workflow corre verde hoy, antes de tocarlo
+  - sin señal · 2 · Enchufar `full-app-flow` al job de runtime
+  - sin señal · 3 · Enchufar `runtime-budgets` al mismo job
+  - sin señal · 4 · Ver los dos gates fallar, y solo después verlos pasar
+  - sin señal · 5 · Actualizar los recibos y entregar
+  - sin señal · 1 · Censar los diez vivos y verificar los dos fantasmas
+  - sin señal · 2 · Añadir el campo al esquema, y verlo rechazar
+  - sin señal · 3 · Rellenar la superficie de los doce y hacerla cumplir en el gate
+  - sin señal · 4 · Cerrar `D-CEF-1` y entregar
+  - sin señal · 1 · Preparar y respaldar
+  - sin señal · 2 · Publicar
+
+### Fijar la semana en la prueba visual de Programación Intermedia (cerrado)
+
+- **Plan — fijar la semana en la prueba visual de PI** (cerrado): 0 de 0 hechas · `2026-08-11-semana-fija-visual.md`
+
+### Unificar los vocabularios de estado de la cascada — spec (cerrado)
+
+- **Plan — unificar los vocabularios de estado de la cascada** (cerrado): 0 de 0 hechas · `2026-08-11-vocabulario-estados-cascada.md`
+
+### Espejo de producción → local → pruebas (2026-08-12) (cerrado)
+
+- Sin plan todavía.
+
+### Ocultar Control Tower de la navegación, dejándolo accesible a Admin (cerrado)
+
+- **Ocultar Control Tower de la navegación** (cerrado): 6 de 6 hechas · `2026-08-13-ocultar-control-tower.md`
+
+### Diseño: el fixture aislado alcanza para `programacion-semanal-roles-phases` (cerrado)
+
+- **Plan: el fixture aislado alcanza para `programacion-semanal-roles-phases`** (cerrado): 7 de 7 hechas · `2026-08-14-fixture-ci-semanal-roles.md`
+
+### Menú flotante del shell por debajo de 1180 px (cerrado)
+
+- **Menú flotante del shell bajo 1180 px:** (cerrado): 5 de 5 hechas · `2026-08-14-shell-menu-flotante-responsive.md`
+
+### Espacio de la cuenta de SiteGround: dejar de guardar lo que git ya guarda (cerrado)
+
+- **Espacio de la cuenta de SiteGround** (vigente): 1 de 5 hechas · `2026-08-18-espacio-cuenta-siteground.md`
+  - pendiente · 1 · Frente D: basura suelta en producción
+  - en progreso · 2 · Frente A: archivar los binarios de QA fuera de git
+  - sin señal · 3 · Frente B: el tar de pre-deploy guarda lo irremplazable
+  - sin señal · 4 · Frente C: clon shallow en pruebas
+  - hecha · 5 · Cierre: verificar, publicar y anotar
+
+### Wiki v2 — visual, etiquetada, misma metodología (cerrado)
+
+- **Plan — Wiki v2 visual y etiquetada** (cerrado): 0 de 0 hechas · `2026-08-18-wiki-v2-visual.md`
+
+### El coloreado en cascada por severidad — diseño del diagnóstico (cerrado)
+
+- **Plan — Diagnóstico del coloreado por severidad** (cerrado): 0 de 0 hechas · `2026-08-19-bug-coloreado-severidad.md`
+
+### DS-F0 · Auditoría total del design system (cerrado)
+
+- **Plan — DS-F0 · Auditoría total** (cerrado): 0 de 0 hechas · `2026-08-19-ds-f0-auditoria-total.md`
+
+### DS-F1a · La escala de estado: vocabulario y lectura (cerrado)
+
+- **DS-F1a · La escala de estado** (cerrado): 3 de 3 hechas · `2026-08-19-ds-f1a-estado.md`
+
+### Estados, severidad y color — el contrato (derogada)
+
+- **Estados, severidad y color** (cerrado): 8 de 8 hechas · `2026-08-19-estados-severidad-contrato.md`
+- **Programación Semanal: el fondo pasa a matiz** (cerrado): 4 de 4 hechas · `2026-08-19-semanal-fondo-por-matiz.md`
+
+### La línea base contractual deja de deducirse (cerrado)
+
+- **Línea base contractual** (vigente): 4 de 7 hechas · `2026-08-19-linea-base-contractual.md`
+  - hecha · 1 · el servicio que lee y siembra la línea base
+  - hecha · 2 · el cronograma lee la línea base declarada
+  - pendiente · 3 · el gráfico dice de quién es la fecha
+  - hecha · 4 · sembrar al consolidar la primera semana
+  - pendiente · 5 · migración de una vez para lo ya cargado
+  - hecha · 6 · auditoría del PDC, con evidencia
+  - sin señal · 7 · cerrar contra el CI, que es la condición de hecho
+
+### Organizar la casa — el repo y sus sesiones (cerrado)
+
+- Sin plan todavía.
+
+### `publicar.sh`: el invariante es el montaje, no el nombre del proyecto (cerrado)
+
+- Sin plan todavía.
+
+### runtime-budgets al CI, recortado a andamio (cerrado)
+
+- **Plan — runtime-budgets al CI (andamio)** (vigente): 0 de 0 hechas · `2026-08-19-runtime-budgets-al-ci.md`
+
+### Deuda del CI — diseño de eliminación (cerrado)
+
+- **Deuda del CI · Frente 1 (G1+G3+G5)** (cerrado): 7 de 7 hechas · `2026-08-20-deuda-ci-frente-1.md`
+- **Deuda del CI · Frente 2 (G2 mínimo, cache de capa base)** (cerrado): 5 de 5 hechas · `2026-08-20-deuda-ci-frente-2.md`
+
+### Habilitación en una columna — spec v2 (cerrado)
+
+- **Habilitación en una columna** (cerrado): 11 de 11 hechas · `2026-08-21-habilitacion-en-una-columna.md`
+
+### Interruptor del Control Tower desde /admin (cerrado)
+
+- **Interruptor del Control Tower desde /admin** (cerrado): 4 de 4 hechas · `2026-08-20-interruptor-control-tower-admin.md`
+
+### Replanteo de la Control Tower (derogada)
+
+- **Control Tower · Fase 0 — Higiene de datos** (cerrado): 6 de 6 hechas · `2026-08-20-control-tower-f0-higiene-datos.md`
+
+### Estado consolidado del repositorio — la spec única (cerrado)
+
+- Sin plan todavía.
+
+### Pendientes del frente de tablas (cerrado)
+
+- **Pendientes del frente de tablas** (cerrado): 5 de 5 hechas · `2026-08-24-pendientes-frente-tablas.md`
+
+### Reparto de lienzos de la Torre de Control por rol (cerrado)
+
+- **Reparto de lienzos de la Torre por rol** (cerrado): 4 de 4 hechas · `2026-08-24-reparto-lienzos-por-rol.md`
+
+### Bitácora del avance editado a mano en Programa General (cerrado)
+
+- **Bitácora del avance editado a mano** (cerrado): 6 de 6 hechas · `2026-08-25-bitacora-avance-manual.md`
+
+### El estado real de los 127 planes y specs (cerrado)
+
+- **Verificar el estado real de los 127 planes y specs** (cerrado): 5 de 5 hechas · `2026-08-25-estado-real-de-planes-y-specs.md`
+
+### El mapa único del trabajo vivo (vigente)
+
+- Sin plan todavía.
+
+### La v0 del producto — Design · **spec v1** (vigente)
+
+- **Ola 1 — La Torre escribe · Etapa piloto ·** (cerrado): 9 de 9 hechas · `2026-08-26-ola1-torre-etapa-piloto.md`
+- **Tarea cero — una sola lista canónica de pantallas ·** (cerrado): 5 de 5 hechas · `2026-08-26-tarea-cero-lista-canonica-de-pantallas.md`
+
+### Forma, bordes, radios y relieves — spec en construcción (vigente)
+
+- Sin plan todavía.
+
+### Migración integral a React + TypeScript — diseño v0.1 (vigente)
+
+- **Shell mínimo React** (cerrado): 12 de 12 hechas · `2026-08-28-shell-minimo-react.md`
+
+### Paridad del shell React y RLS (vigente)
+
+- **Paridad funcional del shell React** (derogada): 0 de 12 hechas · `2026-08-28-paridad-shell-react.md`
+- **RLS fail-closed en la aplicación** (vigente): 7 de 8 hechas · `2026-08-28-rls-aplicacion-fail-closed.md`
+  - hecha · 1 · Catálogo de tablas derivado del schema
+  - hecha · 2 · Alcances inmutables y lifecycle explícito
+  - hecha · 3 · Resolver alcance desde membresía, no desde el request
+  - hecha · 4 · Gate SQL fail-closed en Database
+  - hecha · 5 · Eliminar bypasses y consultas de identidad mal clasificadas
+  - hecha · 6 · Alcance BI multiproyecto explícito
+  - hecha · 7 · Convergencia de schema y cuenta MySQL de runtime
+  - pendiente · 8 · Gate HTTP A→B, observabilidad y cierre de RLS
+- **RLS Runtime Boundary** (cerrado): 6 de 6 hechas · `2026-08-29-rls-runtime-boundary.md`
+
+### Temas claro y oscuro end to end — spec en construcción (vigente)
+
+- **Fase cero de temas y forma** (vigente): 9 de 11 hechas · `2026-08-28-fase-cero-temas-y-forma.md`
+  - sin señal · 1 · La paleta clara de estado, con su guard
+  - hecha · 2 · El tema claro completo — theme-claro.css re-vincula el estado
+  - hecha · 3 · La bandera de gravedad — componente aia-flag en ambos temas
+  - hecha · 4 · Forma — radios de dato, pozo, botón hundido, pisos, foco doble, scroll
+  - hecha · 5 · La escala de tabla nueva — 12/11/13, tabulares, perímetro, densidades
+  - hecha · 6 · El conmutador de tema — claro de entrada, botón visible, por aparato
+  - hecha · 7 · El Excel habla la paleta clara
+  - hecha · 8 · El guard de forma en el catálogo de componentes
+  - hecha · 9 · CI doble — el carril visual corre ambos temas
+  - en progreso · 10 · El contrato invertido — AGENTS.md, README del DS, DESIGN.md, state-semantics
+  - hecha · 11 · Cierre de fase — verificación integral y PR
+- **Bloqueo del tema claro** (cerrado): 5 de 5 hechas · `2026-09-06-bloqueo-tema-claro.md`
+
+### S01 — Login React (vigente)
+
+- **S01 Login React** (cerrado): 14 de 14 hechas · `2026-08-30-s01-login-react.md`
+- **S01 · Paridad visual del login React** (cerrado): 8 de 8 hechas · `2026-09-16-s01-paridad-visual.md`
+
+### S02 — Recuperar contraseña en React (cerrado)
+
+- **S02 Password Recovery React** (cerrado): 10 de 10 hechas · `2026-08-30-s02-recuperar-clave-react.md`
+
+### S03 — Restablecer contraseña en React (cerrado)
+
+- **S03 Password Reset React** (cerrado): 10 de 10 hechas · `2026-08-30-s03-restablecer-clave-react.md`
+
+### S04 — Selector de proyectos en React (vigente)
+
+- **S04 Project Selector React** (cerrado): 10 de 10 hechas · `2026-08-30-s04-selector-proyectos-react.md`
+
+### S05 — Programa General en React (vigente)
+
+- **S05 Programa General React** (vigente): 11 de 13 hechas · `2026-08-30-s05-programa-general-react.md`
+  - hecha · 1 · Add the scoped context, shared restriction catalog and action policy
+  - hecha · 2 · Freeze S05 HTTP contracts and upgrade the shared client
+  - hecha · 3 · Normalize legacy rows and present server states/restriction alerts
+  - hecha · 4 · Implement search, structured filters, facet counts and URL state
+  - hecha · 5 · Deliver the read-only React nucleus across desktop, tablet and mobile
+  - hecha · 6 · Harden the PHP save preflight without executing a write
+  - hecha · 7 · Add identical individual editing to table and mobile cards
+  - hecha · 8 · Add batch, return-once and resilient reload orchestration
+  - hecha · 9 · Add visible-set CSV and scoped cut download
+  - pendiente · 10 · Migrate the contextual drawer and all PG actions
+  - hecha · 11 · Prove the pilot with intercepted browser, accessibility and design-system gates
+  - hecha · 12 · Promote canonical GET/HEAD with a reversible method-aware cut
+  - en progreso · 13 · Retire VIEW-34 exclusively and run the complete no-DML closure
+- **S05 — Programa General en React** (vigente): 8 de 8 hechas · `2026-09-23-s05-programa-general-react.md`
+  - hecha · 1 · Backend PHP — Context Endpoint y Asignaciones en Update
+  - hecha · 2 · Frontend — Esquemas Zod y Cliente API Tipado
+  - hecha · 3 · Frontend — Dominio Puro, Cálculos de Avance con $\Delta$, Validaciones y Filtros
+  - hecha · 4 · Frontend — Barra de Herramientas, Señales y Filtros Facetados
+  - hecha · 5 · Frontend — Grilla Principal Racionalizada (8 Columnas Esenciales) y Tarjetas Móviles
+  - hecha · 6 · Frontend — Drawer Contextual LPS (440px) y Edición de Actividad
+  - hecha · 7 · Frontend — Página Orquestadora, Integración de Shell y Rutas
+  - hecha · 8 · Verificación Visual Playwright y Cierre E2E
+
+### S06 — Actualizar Cronograma en React (vigente)
+
+- **S06 Actualizar Cronograma React** (vigente): 0 de 14 hechas · `2026-08-30-s06-actualizar-cronograma-react.md`
+  - pendiente · 1 · Context resolver, action policy and endpoint
+  - pendiente · 2 · Strict Zod contracts and S06 HTTP gateway
+  - pendiente · 3 · Domain normalization, filters and validation
+  - pendiente · 4 · Read-only vertical slice and responsive renderers
+  - pendiente · 5 · Pure XLSX parser, upload guard and preview contract
+  - pendiente · 6 · Confirm import service behind a non-DML test seam
+  - pendiente · 7 · React import state machine and dialogs
+  - pendiente · 8 · Dedicated row save and inheritance service
+  - pendiente · 9 · Editable table/cards and per-row recovery
+  - pendiente · 10 · Autoassociation service with effective thresholds and server audit
+  - pendiente · 11 · Atomic review batch and accessible review UI
+  - pendiente · 12 · Draft-only delete and complete recovery states
+  - pendiente · 13 · Intercepted pilot QA, RBAC, accessibility and visual candidates
+  - pendiente · 14 · Approved visual baseline, canonical cut and legacy retirement
+
+### S07 — Programación Intermedia en React (vigente)
+
+- **S07 Programación Intermedia React** (vigente): 0 de 14 hechas · `2026-08-30-s07-programacion-intermedia-react.md`
+  - pendiente · 1 · Characterize restrictions, states and effective actions
+  - pendiente · 2 · Project-scoped context and activities contracts
+  - pendiente · 3 · Strict Zod schemas, gateway and normalized domain
+  - pendiente · 4 · Read-only vertical slice with responsive table and cards
+  - pendiente · 5 · Filters, counts, severity, legend, selection and CSV
+  - pendiente · 6 · Narrow individual mutation and server-side guards
+  - pendiente · 7 · Editable table/cards and save recovery
+  - pendiente · 8 · CSRF viewAll and explicit catalog refresh
+  - pendiente · 9 · Shared batch preview contract and dialog
+  - pendiente · 10 · Atomic shared apply, tracking, audit and notifications
+  - pendiente · 11 · Scoped XLSX report download
+  - pendiente · 12 · Integrate the shared T02 drawer with PI context
+  - pendiente · 13 · Intercepted RBAC, responsive, a11y and visual approval gate
+  - pendiente · 14 · Canonical SPA cut, manifests and exclusive legacy retirement
+
+### S08 — Programación Semanal en React (vigente)
+
+- **S08 Programación Semanal React** (vigente): 0 de 16 hechas · `2026-08-30-s08-programacion-semanal-react.md`
+  - pendiente · 1 · Characterize states, projections, quantities and effective actions
+  - pendiente · 2 · Add project-scoped context and activities contracts
+  - pendiente · 3 · Add strict Zod schemas, gateway and normalized domain
+  - pendiente · 4 · Build the read-only responsive vertical slice
+  - pendiente · 5 · Add filters, counts, legend, selection and CSV
+  - pendiente · 6 · Implement narrow activity mutation and editable table/cards
+  - pendiente · 7 · Add manual activity, duplicate and deprogram/CNP flows
+  - pendiente · 8 · Make TNP functional in qualification
+  - pendiente · 9 · Build a pure reconciliation preview
+  - pendiente · 10 · Apply reconciliation atomically and expose a pure log
+  - pendiente · 11 · Preview and close the week with CIC atomically
+  - pendiente · 12 · Reopen the week through the existing policy
+  - pendiente · 13 · Generate a scoped XLSX report from canonical states
+  - pendiente · 14 · Integrate T02 drawer and harden recovery states
+  - pendiente · 15 · Prove RBAC, responsive, accessibility and dark/light behavior
+  - pendiente · 16 · Cut the canonical route and retire only exclusive legacy pieces
+
+### S09 — Causas de No Programación en React (vigente)
+
+- **S09 Causas de No Programación React** (vigente): 0 de 10 hechas · `2026-08-30-s09-cnp-react.md`
+  - pendiente · 1 · Characterize priorities, catalogs, versions and effective actions
+  - pendiente · 2 · Add the scoped context contract
+  - pendiente · 3 · Add the normalized activities contract
+  - pendiente · 4 · Add strict Zod contracts, gateway and normalized frontend domain
+  - pendiente · 5 · Build the read-only responsive vertical slice
+  - sin señal · 6 · Add week/navigation, filters, counts and legend
+  - pendiente · 7 · Implement narrow classification mutation and editable table/cards
+  - pendiente · 8 · Implement transactional reprogramming
+  - pendiente · 9 · Prove RBAC, recovery, responsive, accessibility and dark/light behavior
+  - sin señal · 10 · Cut the canonical route and retire only exclusive legacy pieces
+
+### S10 — Causas de No Cumplimiento en React (vigente)
+
+- **S10 Causas de No Cumplimiento React** (vigente): 0 de 9 hechas · `2026-08-30-s10-cnc-react.md`
+  - pendiente · 1 · Characterize population, quantities, priority, diagnosis, catalog, version and actions
+  - pendiente · 2 · Add the scoped context contract
+  - pendiente · 3 · Add the normalized activities contract
+  - pendiente · 4 · Add strict Zod contracts, gateway and normalized frontend domain
+  - pendiente · 5 · Build the read-only responsive vertical slice
+  - sin señal · 6 · Add week/navigation, filters, counts, reload and CNC-specific legend
+  - pendiente · 7 · Implement narrow classification mutation and editable table/cards
+  - sin señal · 8 · Prove RBAC, isolation, recovery, responsive, accessibility and dark/light behavior
+  - sin señal · 9 · Cut the canonical route and retire only exclusive legacy pieces
+
+### S11 — Calificacion Integral de Contratistas en React (vigente)
+
+- **S11 Calificación Integral de Contratistas React** (vigente): 0 de 10 hechas · `2026-08-30-s11-cic-react.md`
+  - pendiente · 1 · Characterize catalog, answers, scoring, integral, cadence and actions
+  - pendiente · 2 · Add the pure scoped context contract
+  - pendiente · 3 · Add the pure providers/projection contract
+  - pendiente · 4 · Add strict Zod contracts, gateway and frontend domain
+  - sin señal · 5 · Build the read-only responsive vertical slice
+  - sin señal · 6 · Add filters, counts, week navigation, legend and tutorial
+  - pendiente · 7 · Implement transactional evaluation and projection materialization
+  - sin señal · 8 · Build the questionnaire editor and save recovery
+  - sin señal · 9 · Prove RBAC, T01 cadence, isolation, responsive, accessibility and themes
+  - pendiente · 10 · Cut the canonical route and retire exclusive legacy pieces
+
+### S12 — Plan de Compras v2 en la SPA React principal (vigente)
+
+- **S12 Plan de Compras v2 React** (vigente): 0 de 13 hechas · `2026-08-30-s12-plan-compras-react.md`
+  - pendiente · 1 · Freeze the route, catalog and source invariants
+  - pendiente · 2 · Add the server-effective context contract
+  - pendiente · 3 · Build the common client, schemas, routes and shared primitives
+  - pendiente · 4 · Port budget import and version history
+  - pendiente · 5 · Port the global supplies master
+  - pendiente · 6 · Port budget viewer and comparison
+  - pendiente · 7 · Port packages and the step-by-step assistant
+  - pendiente · 8 · Port subpackages with accessible confirmations
+  - pendiente · 9 · Port the purchase plan and reprogramming
+  - pendiente · 10 · Port configurable contract steps and durations
+  - pendiente · 11 · Port tracking, expirations and cash flow
+  - pendiente · 12 · Integrate all routes, responsive parity, themes, help and RBAC
+  - pendiente · 13 · Cut canonical routes and retire the separate island
+
+### S13 — Profesionales en React (vigente)
+
+- **S13 Profesionales React** (vigente): 0 de 10 hechas · `2026-08-30-s13-profesionales-react.md`
+  - sin señal · 1 · Characterize catalog, normalization, locks, dependencies and action policy
+  - sin señal · 2 · Add pure scoped context and list contracts
+  - sin señal · 3 · Add strict Zod schemas, gateway, domain helpers and CSV primitive
+  - sin señal · 4 · Build the read-only responsive vertical slice
+  - sin señal · 5 · Implement strict create and accessible draft recovery
+  - sin señal · 6 · Implement per-row autosave, validation and recovery
+  - sin señal · 7 · Make rename and deletion dependency-safe and atomic
+  - sin señal · 8 · Add explicit synchronization without changing admin consumers
+  - sin señal · 9 · Complete CSV, BI, RBAC, responsive, accessibility and theme evidence
+  - sin señal · 10 · Cut the canonical route and retire exclusive legacy pieces
+
+### S14 — Subcontratistas e Interesados Externos en React (vigente)
+
+- **S14 Subcontratistas React** (vigente): 0 de 10 hechas · `2026-08-30-s14-subcontratistas-react.md`
+  - sin señal · 1 · Characterize dual mode, normalization, token lists, dependencies and policy
+  - sin señal · 2 · Add pure scoped context and list contracts
+  - sin señal · 3 · Add strict Zod schemas, gateway, validation, queue and CSV reuse
+  - sin señal · 4 · Build the read-only responsive vertical slice
+  - sin señal · 5 · Implement strict create and accessible draft recovery
+  - sin señal · 6 · Implement per-row autosave, validation and recovery
+  - sin señal · 7 · Make rename atomic across CIC, PI and PS
+  - sin señal · 8 · Add dependency-safe delete and active operational projections
+  - sin señal · 9 · Complete CSV, BI, RBAC, accessibility, themes and viewport evidence
+  - sin señal · 10 · Cut the canonical route and retire exclusive legacy pieces
+
+### S15 — Control de Cambios en React (vigente)
+
+- **S15 Control de Cambios React** (vigente): 0 de 10 hechas · `2026-08-30-s15-control-cambios-react.md`
+  - sin señal · 1 · Freeze catalogs, persisted codecs and validation rules
+  - sin señal · 2 · Add server-authoritative context and pure scoped list
+  - sin señal · 3 · Build strict frontend schemas, domain helpers and gateway
+  - sin señal · 4 · Deliver readonly pilot with filters, table and mobile cards
+  - sin señal · 5 · Build the complete create/edit/read form and support editor
+  - sin señal · 6 · Add pure individual PDF generation
+  - sin señal · 7 · Implement atomic create, update and delete
+  - sin señal · 8 · Adapt Consolidado ODC behind a fakeable exporter
+  - sin señal · 9 · Prove responsive, RBAC, documents, themes and accessibility without DML
+  - sin señal · 10 · Cut the canonical route, retire exclusive legacy and rehearse rollback
+
+### S16 — Indicadores LPS en React (vigente)
+
+- **S16 Indicadores React** (vigente): 0 de 8 hechas · `2026-08-30-s16-indicadores-react.md`
+  - sin señal · 1 · Unify permission and publish a validated context
+  - sin señal · 2 · Characterize and implement the pure generation service
+  - sin señal · 3 · Adapt generation transport to strict JSON, CSRF and session scope
+  - sin señal · 4 · Add strict frontend contracts and iframe state machine
+  - sin señal · 5 · Build the responsive external-report wrapper
+  - sin señal · 6 · Prove host states, themes, accessibility and five viewports
+  - sin señal · 7 · Migrate and classify generation consumers without using them as S16 evidence
+  - sin señal · 8 · Cut canonical route, retire VIEW-27 and rehearse rollback
+
+### S17 — Resumen Ejecutivo de Control Tower en React (vigente)
+
+- **S17 BI Control Tower React** (vigente): 0 de 10 hechas · `2026-08-30-s17-bi-control-tower-react.md`
+  - sin señal · 1 · Freeze the measured legacy and approved S17 contract
+  - sin señal · 2 · Build the first reusable T03 access, scope and query slice
+  - sin señal · 3 · Build the project snapshot, priority and headline domain
+  - sin señal · 4 · Stabilize GET /api/bi/control-tower and its PHP/Zod contract
+  - sin señal · 5 · Add the typed gateway and coherent loading state machine
+  - sin señal · 6 · Render headline, portfolio and complete actions
+  - sin señal · 7 · Expose scorecard, drivers, risks and lineage as secondary evidence
+  - sin señal · 8 · Finish the T03 frame, responsive layout, themes and accessibility
+  - sin señal · 9 · Prove the safe browser matrix and cut the canonical route
+  - sin señal · 10 · Prove compatibility, rollback and the deferred retirement gate
+
+### S18 — Hoja BI Programa General en React (vigente)
+
+- **S18 BI Programa General React** (vigente): 0 de 11 hechas · `2026-08-30-s18-bi-programa-general-react.md`
+  - pendiente · 1 · Lock S18 access, project scope and canonical query
+  - pendiente · 2 · Characterize and freeze the seven current HTTP contracts
+  - pendiente · 3 · Extract forecast, progress and execution-series domain seams
+  - pendiente · 4 · Add combined risk and read-only schedule value
+  - pendiente · 5 · Stabilize PHP envelopes, Zod contracts, gateway and lineage
+  - pendiente · 6 · Assemble the coherent main sheet and activity snapshot
+  - pendiente · 7 · Correct and render the accessible radar
+  - pendiente · 8 · Implement all six paginated detail experiences
+  - pendiente · 9 · Preserve causal evidence and prepare the S21 transition
+  - pendiente · 10 · Cut the SPA route and verify responsive, themes and accessibility
+  - pendiente · 11 · Prove rollback and defer shared legacy retirement
+
+### S19 — Hoja BI Curva S en React (vigente)
+
+- **S19 BI Curva S React** (vigente): 0 de 10 hechas · `2026-08-30-s19-bi-curva-s-react.md`
+  - pendiente · 1 · Lock access, project scope and terminal-period semantics
+  - pendiente · 2 · Characterize the existing GET and freeze compatibility
+  - pendiente · 3 · Build the inclusive weighted base curve
+  - pendiente · 4 · Project probable finish, uncertainty and key dates
+  - pendiente · 5 · Evaluate N6 and author the server decision
+  - pendiente · 6 · Serve the canonical envelope, Zod schema and gateway
+  - pendiente · 7 · Render the decision sheet and accessible curve
+  - pendiente · 8 · Add responsive point history and cutoff detail drawer
+  - pendiente · 9 · Complete states, concurrency, route cut and browser evidence
+  - pendiente · 10 · Prove coexistence, rollback and deferred legacy retirement
+
+### S20 — Hoja BI Intermedia en React (vigente)
+
+- **S20 BI Intermedia React** (vigente): 0 de 11 hechas · `2026-08-30-s20-bi-intermedia-react.md`
+  - pendiente · 1 · Lock access, project scope and one-cutoff query semantics
+  - pendiente · 2 · Characterize legacy/pilot payloads and build one canonical read envelope
+  - pendiente · 3 · Project the actionable restriction list, orphan rule and N4 order
+  - pendiente · 4 · Author the weekly meeting model on the server
+  - pendiente · 5 · Stabilize Zod contracts, the single gateway and request state
+  - pendiente · 6 · Refactor the existing management POST behind a pure contract
+  - pendiente · 7 · Render alarm, actionable list, meeting signals and contextual detail
+  - pendiente · 8 · Add the single management form and save-refresh reconciliation
+  - pendiente · 9 · Complete states, responsive craft, dark/light and accessibility
+  - pendiente · 10 · Cut the page route and prove behavior with fully intercepted browser scenarios
+  - pendiente · 11 · Retire the pilot safely, prove rollback and close the vertical
+
+### S21 — Hoja BI Programacion Semanal en React (vigente)
+
+- **S21 BI Programacion Semanal React** (vigente): 0 de 12 hechas · `2026-08-30-s21-bi-semanal-react.md`
+  - sin señal · 1 · Lock access, scope and real project-week semantics
+  - sin señal · 2 · Characterize existing GETs and freeze compatibility
+  - sin señal · 3 · Build truthful PAC, comparison and history
+  - sin señal · 4 · Extract the weighted policy and assemble leak-free risk features
+  - sin señal · 5 · Author risk decisions, headline and safe actions
+  - sin señal · 6 · Reuse canonical causes and expose TNP/crisis capture
+  - sin señal · 7 · Parse transport and implement isolated abortable state
+  - sin señal · 8 · Render PAC/risk and exclusive responsive commitment list
+  - sin señal · 9 · Add responsive causal drilldowns in the shared drawer
+  - sin señal · 10 · Complete theme, accessibility, lineage and safe errors
+  - sin señal · 11 · Cut the SPA route and prove the surface without mutation
+  - sin señal · 12 · Prove coexistence, code-only rollback and untouched boundaries
+
+### S22 — Hoja BI Plan de Compras en React (vigente)
+
+- **S22 BI Plan de Compras React** (vigente): 0 de 12 hechas · `2026-08-30-s22-bi-pdc-react.md`
+  - sin señal · 1 · Lock sheet access, project scope and cutoff authority
+  - sin señal · 2 · Define schedule, progress evidence and stable ordering
+  - sin señal · 3 · Build scoped coverage, responsibility, duration and planning gaps
+  - sin señal · 4 · Assemble the canonical read model, headline, contract, signal and lineage
+  - sin señal · 5 · Stabilize detail search, filters, pagination and shared row schema
+  - sin señal · 6 · Add the scoped database adapter and wire existing routes with compatibility
+  - sin señal · 7 · Define Zod contracts, API gateway, query codec and remote-state controller
+  - sin señal · 8 · Ship the first visible decision slice
+  - sin señal · 9 · Add filters, table/cards, accessible breakdowns and contextual drawer
+  - sin señal · 10 · Integrate route/sidebar, tokens, responsive themes and accessibility
+  - sin señal · 11 · Cut the page behind the existing route and verify behavior in browser
+  - sin señal · 12 · Run focused-to-broad verification and prepare closure evidence
+
+### S23 — Hoja BI Proveedores en React (vigente)
+
+- **S23 BI Proveedores React** (vigente): 0 de 12 hechas · `2026-08-30-s23-bi-contratistas-react.md`
+  - sin señal · 1 · Lock shared sheet admission, project scope and real periods
+  - sin señal · 2 · Make component, completeness, integral and decision policies executable
+  - sin señal · 3 · Adapt the S11 population, stable identity and prior evaluation
+  - sin señal · 4 · Assemble comparison, summary, headline, contract and S17 delegation
+  - sin señal · 5 · Add validated filters, ordering and bounded pagination to the same GET
+  - sin señal · 6 · Wire the existing endpoint and compatibility without SQL-view authority
+  - sin señal · 7 · Define strict Zod, gateway, query codec and remote state
+  - sin señal · 8 · Render the first useful provider decision slice
+  - sin señal · 9 · Add filters, comparison, breakdowns, table/cards and contextual drawer
+  - sin señal · 10 · Integrate shared sidebar/route, responsive themes and accessibility
+  - sin señal · 11 · Cut the existing page route and verify in browser
+  - sin señal · 12 · Run focused-to-broad verification and prepare closure evidence
+
+### S24 — Hoja BI Responsables en React (vigente)
+
+- **S24 BI Responsables React** (vigente): 0 de 12 hechas · `2026-08-30-s24-bi-responsables-react.md`
+  - pendiente · 1 · Lock sheet admission, viewer scope and project period
+  - pendiente · 2 · Adapt S13 identity and S21 population without cip authority
+  - pendiente · 3 · Make fulfillment completeness and support signal executable
+  - pendiente · 4 · Add load, restrictions, causal counterweight and self-comparison
+  - pendiente · 5 · Assemble the canonical read service, filters, ordering and pagination
+  - sin señal · 6 · Wire the existing GET, compatibility, lineage and S17 boundary
+  - sin señal · 7 · Define strict Zod, gateway, query codec and remote state
+  - sin señal · 8 · Render the first useful private-support slice
+  - sin señal · 9 · Add filters, table/cards, context and contextual drawer
+  - pendiente · 10 · Integrate route/sidebar, themes and accessibility
+  - sin señal · 11 · Pass D61 reconciliation, cut the page route and verify real behavior
+  - sin señal · 12 · Run focused-to-broad verification and prepare closure evidence
+
+### S25 — Escalamientos en React (vigente)
+
+- **S25 Escalamientos React** (vigente): 0 de 12 hechas · `2026-08-30-s25-escalamientos-react.md`
+  - pendiente · 1 · Lock access, scope, global-week semantics and navigation declaration
+  - pendiente · 2 · Build the scoped active-alert read model and hierarchy
+  - pendiente · 3 · Expose GET /api/lps/escalamientos with a typed contract
+  - pendiente · 4 · Resolve drawer threads by alert instead of shell week
+  - en progreso · 5 · Make actor eligibility and server actions explicit
+  - pendiente · 6 · Harden comment, copy/SOS and close semantics
+  - pendiente · 7 · Add strict Zod, gateway and remote state
+  - sin señal · 8 · Render the board, responsive compositions, states and legend
+  - pendiente · 9 · Integrate the shared T02 drawer, deep links and focus lifecycle
+  - pendiente · 10 · Integrate route/sidebar, preserve notification ownership and cut VIEW-12
+  - sin señal · 11 · Run focused-to-broad contracts and integrity audits
+  - sin señal · 12 · Verify intercepted browser behavior and prepare closure
+
+### S26 — Design System en React (vigente)
+
+- **S26 Design System React** (vigente): 0 de 12 hechas · `2026-08-30-s26-design-system-react.md`
+  - pendiente · 1 · Lock the environment, capability and page-frontier contract
+  - sin señal · 2 · Add fail-closed source contracts and a SHA-bound adapter census
+  - pendiente · 3 · Compose the canonical catalog without collapsing approvals
+  - pendiente · 4 · Expose the protected read-only catalog endpoint
+  - pendiente · 5 · Add strict Zod, gateway and the authenticated global outlet
+  - pendiente · 6 · Build the internal shell, closed registry and URL/history behavior
+  - pendiente · 7 · Port shared specimens, UI index and Foundations first
+  - sin señal · 8 · Port the remaining nine family renderers
+  - sin señal · 9 · Port ten local fixtures and the adapter ledger, excluding Admin
+  - pendiente · 10 · Close theme, responsive, accessibility, performance and evidence contracts
+  - pendiente · 11 · Cut the protected page to React, promote 1.2.0 and retire exclusive legacy sources
+  - sin señal · 12 · Run the intercepted browser matrix and prepare repository closure
+
+### S27 — Landing redirect de `/dashboard` (vigente)
+
+- **S27 Dashboard Landing Redirect** (vigente): 0 de 8 hechas · `2026-08-30-s27-dashboard-landing-redirect.md`
+  - pendiente · 1 · Freeze the route and non-rendering boundary
+  - pendiente · 2 · Extract the pure landing decision
+  - pendiente · 3 · Wire canonical roles and preserve the service contract
+  - pendiente · 4 · Add the guarded dashboard landing action
+  - pendiente · 5 · Adapt the controller to a bodyless no-store 302
+  - pendiente · 6 · Classify the route as non-rendering coverage
+  - sin señal · 7 · Run scoped-read and compatibility regressions
+  - pendiente · 8 · Cut over, document closure and prepare the repository gate
+
+### T01 — Shell y runtime React (vigente)
+
+- **T01 Shell and React Runtime** (vigente): 0 de 11 hechas · `2026-08-30-t01-shell-runtime-react.md`
+  - sin señal · 1 · Freeze baseline, route ownership and real callers
+  - sin señal · 2 · Complete the sole client and canonical bootstrap
+  - sin señal · 3 · Make navigation server-authoritative and preserve exclusions
+  - sin señal · 4 · Complete AppShell, account, project, sidebar and module outlet
+  - sin señal · 5 · Complete week context and create/delete adapters with fakes
+  - sin señal · 6 · Own timeout, touch, logout and project-generation invalidation
+  - sin señal · 7 · Make dark initial and light fully equivalent without flash
+  - sin señal · 8 · Complete typed errors, responsive behavior and accessibility
+  - sin señal · 9 · Prove coexistence, deep links and route-map rollback
+  - sin señal · 10 · Close T01-A and publish the platform contract
+  - sin señal · 11 · Retire VIEW-26, VIEW-29 and VIEW-30 only at T01-R
+
+### T02 — Contexto LPS, drawer y notificaciones compartidas (vigente)
+
+- **T02 Contexto LPS React** (vigente): 1 de 12 hechas · `2026-08-30-t02-contexto-lps-react.md`
+  - hecha · 1 · Freeze ownership, routes and callers
+  - pendiente · 2 · Extend the common transport only where T01 left a proven gap
+  - pendiente · 3 · Port restrictions, ITR, severity, diagnosis and digest as pure TypeScript
+  - sin señal · 4 · Build the scoped target and action boundary
+  - sin señal · 5 · Normalize thread, comments, replies and mentions
+  - sin señal · 6 · Harden crisis actions, simulation contract and digest
+  - pendiente · 7 · Add strict Zod gateways for every shared endpoint
+  - sin señal · 8 · Build the provider, drawer and responsive accessible UI
+  - sin señal · 9 · Migrate the single notification inbox
+  - pendiente · 10 · Prove the four-consumer seam without DML
+  - sin señal · 11 · Close and publish T02-A
+  - sin señal · 12 · Execute T02-R after the last consumer
+
+### T03 — Marco compartido de Control Tower BI en React (vigente)
+
+- **T03 Marco BI React** (vigente): 0 de 12 hechas · `2026-08-30-t03-marco-bi-react.md`
+  - pendiente · 1 · Freeze ownership, measured behavior and caller census
+  - pendiente · 2 · Extend the common transport only for a proven T01 gap
+  - pendiente · 3 · Implement the sheet manifest, canvases and access policy
+  - pendiente · 4 · Add the minimal typed BI context endpoint
+  - pendiente · 5 · Implement the canonical query, scope and URL codec
+  - pendiente · 6 · Stabilize the common endpoint contracts
+  - pendiente · 7 · Build generation-based remote state
+  - pendiente · 8 · Build the single BI frame, navigation, filters and states
+  - pendiente · 9 · Build evidence, drawer, figure and visual accessibility primitives
+  - pendiente · 10 · Prove safety and the eight-leaf consumer seam
+  - sin señal · 11 · Verify, close and publish T03-A
+  - sin señal · 12 · Execute T03-R after all eight sheets close
+
+### Duraciones de contratación por obra — diseño v1.0 (cerrado)
+
+- **Duraciones de contratación por obra** (cerrado): 6 de 6 hechas · `2026-09-01-duraciones-por-obra.md`
+
+### ROADMAP-01 · Especificación Maestra: Gobernanza y Priorización del Roadmap LPS AIA (vigente)
+
+- Sin plan todavía.
+
+### MO-01 · Especificación Técnica: Parte Diario de Mano de Obra en Tajo & Control de Cuadrillas (Universal AIA) (vigente)
+
+- Sin plan todavía.
+
+### Sin spec
+
+- **Sidebar canónico del laboratorio** (cerrado): 0 de 0 hechas · `2026-07-20-sidebar-canonico-laboratorio.md`
+- **Control Tower en el shell dark** (cerrado): 5 de 5 hechas · `2026-07-24-control-tower-shell-dark.md`
+- **Adoptar los tonos de PDC y el punto de nivel en todos los chips** (derogada): 0 de 7 hechas · `2026-07-28-chips-tonos-pdc-y-punto-de-nivel.md`
+- **Invertir la paleta de estado del design system a oscuro** (cerrado): 7 de 7 hechas · `2026-07-28-paleta-estado-oscura.md`
+- **Impacto al recargar el presupuesto + tamiz y cifras honestas** (cerrado): 7 de 7 hechas · `2026-07-29-impacto-reimport-y-tamiz-presupuesto.md`
+- **Plan de Cierre de Diseño e Integración Impeccable** (derogada): 0 de 5 hechas · `2026-07-31-cierre-de-diseno-impeccable.md`
+- **LPS Core & Ops UI Refactor** (cerrado): 4 de 4 hechas · `2026-08-01-ui-audit-core-lps-ops-plan.md`
+- **Chip de estado de Programa General** (cerrado): 5 de 5 hechas · `2026-08-03-pg-chip-de-estado.md`
+- **Biblia de flujos · Tanda T2 (cascada LPS)** (cerrado): 7 de 7 hechas · `2026-08-04-biblia-t2-cascada-lps.md`
+- **La semana en sesión solo la escribe una navegación** (cerrado): 4 de 4 hechas · `2026-08-04-semana-en-sesion-solo-por-navegacion.md`
+- **F2a-2a — Deudas de arranque:** (cerrado): 3 de 3 hechas · `2026-08-07-f2a-2a-deudas-de-arranque.md`
+- **Apply del recálculo de estados — plan de ejecución** (cerrado): 6 de 6 hechas · `2026-08-19-apply-recalculo-estados.md`
+- **«Fuera de Ventana» en los dos calculadores** (cerrado): 6 de 6 hechas · `2026-08-19-estados-fuera-de-ventana.md`
+- **Migración de la columna `Estado`** (cerrado): 5 de 5 hechas · `2026-08-19-migracion-estados.md`
+- **Replanteo de coloreado de estados (dirección B)** (cerrado): 7 de 7 hechas · `2026-08-20-replanteo-coloreado-estados.md`
+- **P1 · Desagüe y consolidación de ramas** (cerrado): 7 de 7 hechas · `2026-08-24-p1-desague-y-consolidacion.md`
+- **P2 · El CI en verde y los presupuestos** (cerrado): 8 de 8 hechas · `2026-08-24-p2-ci-en-verde-y-presupuestos.md`
+- **P3 · Programa Design System · DS-F1 → DS-F3** (derogada): 0 de 0 hechas · `2026-08-24-p3-design-system-contrato-y-control.md`
+- **P4 · Móvil y tema claro · MO-F2b → MO-F3** (derogada): 0 de 0 hechas · `2026-08-24-p4-movil-y-tema-claro.md`
+- **P5 · Cierre hasta producción · CP-F-C → CP-F-E** (vigente): 0 de 3 hechas · `2026-08-24-p5-cierre-hasta-produccion.md`
+  - sin señal · 1 · CP-F-C · La superficie de estados
+  - sin señal · 2 · Preparar el despliegue, sin desplegarlo
+  - sin señal · 3 · CP-F-E · Despliegue · NO EJECUTAR
+- **P6 · Higiene documental y de coordinación** (vigente): 0 de 8 hechas · `2026-08-24-p6-higiene-documental-y-coordinacion.md`
+  - sin señal · 1 · Ordenar `CHANGELOG.md`
+  - sin señal · 2 · Escribir los cierres que faltan
+  - sin señal · 3 · Versionar el estado de coordinación
+  - sin señal · 4 · Registrar las dos reglas nuevas de coordinación
+  - sin señal · 5 · Fusionar `AGENTS.md` / `GEMINI.md` / `CLAUDE.md`
+  - sin señal · 6 · Rediseñar el proxy de la alarma de veracidad
+  - sin señal · 7 · Los sueltos
+  - sin señal · 8 · Dos propuestas para Felipe, que no se aplican
+- **Errores de `/api/auth/*` alineados con el esquema del cliente** (cerrado): 1 de 1 hechas · `2026-09-17-errores-api-auth-contrato.md`
+- **Errores de `/api/lps/*` alineados con el esquema del cliente** (cerrado): 1 de 1 hechas · `2026-09-17-errores-api-lps-contrato.md`
+- goal abierto · Goal — BI Control Tower / Programa General (Radar y Cronograma) · `goals/bi-control-tower-gemini/goal.md`
+- goal abierto · Núcleo y gobernanza del Design System AIA · `goals/design-system-nucleo-gobernanza/goal.md`
+- goal abierto · organizar-la-casa · `goals/organizar-la-casa/goal.md`
+- goal abierto · Goal — Paridad del shell React y RLS · `goals/paridad-shell-react-rls/goal.md`
+- goal abierto · Goal: Reapertura de móvil/tablet y tema claro · `goals/reapertura-movil-y-tema-claro/goal.md`
+- goal abierto · Frente: vocabulario-estados-cascada · `goals/vocabulario-estados-cascada/goal.md`
+
+### Inconsistencias
+
+- cerrado_sin_archivos · `plans/2026-07-29-equipo-alquilado-comprado.md`: dice «plan cerrado»; git dice «1 de 7 archivos que mandaba crear no existieron nunca en ninguna rama: goals/pdc-preparar-b1/validation-log.md»
+- cerrado_sin_archivos · `plans/2026-08-03-cierre-dark-mode-fases-0-3.md`: dice «plan cerrado»; git dice «1 de 5 archivos que mandaba crear no existieron nunca en ninguna rama: admin/src/Core/DevDoor.php»
+- cerrado_sin_archivos · `plans/2026-08-04-biblia-t4-soporte.md`: dice «plan cerrado»; git dice «5 de 7 archivos que mandaba crear no existieron nunca en ninguna rama: docs/flujos/soporte-contratos-y-actividades.md, docs/flujos/soporte-subcontratistas.md, docs/flujos/soporte-profesionales.md…»
+- cerrado_sin_archivos · `plans/2026-08-04-biblia-t5-lectura.md`: dice «plan cerrado»; git dice «2 de 4 archivos que mandaba crear no existieron nunca en ninguna rama: docs/flujos/lectura-indicadores.md, docs/flujos/lectura-torre-de-control.md»
+- cerrado_sin_archivos · `plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas.md`: dice «plan cerrado»; git dice «1 de 2 archivos que mandaba crear no existieron nunca en ninguna rama: docs/design-system/manifests/dashboard.json»
+- cerrado_sin_archivos · `plans/2026-08-30-s01-login-react.md`: dice «plan cerrado»; git dice «3 de 26 archivos que mandaba crear no existieron nunca en ninguna rama: frontend/src/lib/api/frontera.test.ts, frontend/src/lib/api/esquemas/sesion.test.ts, src/Controllers/Core/SpaHostController.php»
+- parece_cerrado · `plans/2026-09-23-s05-programa-general-react.md`: dice «plan vigente»; git dice «las 8 tareas con señal están hechas según git»
+- spec_cerrado_plan_vivo · `specs/2026-07-23-a16-comparativo-versiones-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-07-22-roadmap-pdc-v2.md»
+- spec_cerrado_plan_vivo · `specs/2026-08-03-reparto-trabajo-pendiente-design.md`: dice «spec derogada»; git dice «1 plan suyo sigue vivo: 2026-08-03-usabilidad-altas-y-medias.md»
+- spec_cerrado_plan_vivo · `specs/2026-08-11-plan-cierre-hasta-produccion-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-11-cierre-hasta-produccion.md»
+- spec_cerrado_plan_vivo · `specs/2026-08-18-espacio-cuenta-siteground-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-18-espacio-cuenta-siteground.md»
+- spec_cerrado_plan_vivo · `specs/2026-08-19-linea-base-contractual-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-19-linea-base-contractual.md»
+- spec_cerrado_plan_vivo · `specs/2026-08-19-runtime-budgets-al-ci-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-19-runtime-budgets-al-ci.md»
+- spec_vivo_planes_cerrados · `specs/2026-08-26-v0-del-producto-design.md`: dice «spec vigente»; git dice «sus 2 planes están cerrados o derogados»
+- spec_vivo_planes_cerrados · `specs/2026-08-28-migracion-react-typescript-design.md`: dice «spec vigente»; git dice «sus 1 planes están cerrados o derogados»
+- spec_vivo_planes_cerrados · `specs/2026-08-30-s01-login-react-design.md`: dice «spec vigente»; git dice «sus 2 planes están cerrados o derogados»
+- spec_vivo_planes_cerrados · `specs/2026-08-30-s04-selector-proyectos-react-design.md`: dice «spec vigente»; git dice «sus 1 planes están cerrados o derogados»
+
+<!-- tablero:fin -->
+
+---
+capa: fuente
 tipo: goal
 estado: vigente
 fecha: 2026-08-18

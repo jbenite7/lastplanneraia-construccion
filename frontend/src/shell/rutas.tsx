@@ -14,6 +14,7 @@ import { BarraLateral } from './navegacion/BarraLateral';
 import { navegacionSelectorProyectos } from './proyectos/NavegacionSelectorProyectos';
 import { SelectorProyectos } from './proyectos/SelectorProyectos';
 import { SesionProvider, useSesion } from './SesionProvider';
+import { ProgramaGeneralPage } from '../modules/programa-general/ProgramaGeneralPage';
 
 const CONFIGURACION_APLICACION_POR_DEFECTO: ConfiguracionRuntime = { mode: 'application' };
 
@@ -439,16 +440,16 @@ function RutasSegunSesion() {
       }
 
       // `AppShell` es la única raíz de rutas cliente: los módulos de S01-S27 cuelgan de su
-      // `Outlet` como rutas hijas (Tarea 4, checkpoint T01 "un solo contrato de shell/outlet,
-      // ninguna superficie migrada todavía" — de ahí que hoy no haya ninguna `<Route>` hija).
-      // El router es el único `BrowserRouter` que monta `Rutas` (S02, Tarea 4): aquí solo se
-      // declaran rutas descendientes bajo el `path="*"` de arriba, nunca un segundo router.
+      // `Outlet` como rutas hijas.
       return (
         <Routes>
           <Route
             element={<AppShell cerrarSesion={cerrarSesion} generacionSesion={generacion} recargar={recargar} sesion={autenticado} />}
             path="*"
-          />
+          >
+            <Route path="programa-general" element={<ProgramaGeneralPage />} />
+            <Route path="app/programa-general" element={<ProgramaGeneralPage />} />
+          </Route>
         </Routes>
       );
   }

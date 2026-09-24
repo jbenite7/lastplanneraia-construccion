@@ -56,7 +56,7 @@ y comportamiento observable del módulo PHP/JS actual:
 6. permite buscar y filtrar por actividad, estado, semanas, habilitación, asignaciones y restricción
    pendiente;
 7. permite agrupar por gravedad sin alterar la identidad ni el orden estable de actividades iguales;
-8. edita subcontratista, Responsable AIA, observaciones y restricciones cuando corresponda;
+8. hereda automáticamente Profesional AIA y Subcontratista definidos opcionalmente en Programa General (S05), permitiendo editarlos o asignarlos en este punto donde la asignación del Responsable AIA es obligatoria para comprometer restricciones y plan semanal;
 9. impide restricciones sin Responsable AIA y explica cómo desbloquear la actividad;
 10. valida porcentajes, cantidades discretas, valores `N/A`, semana y contexto antes de guardar;
 11. guarda una actividad y devuelve su estado completo recalculado por el servidor;
@@ -760,16 +760,19 @@ de tabla. Usa UTF-8 con BOM, RFC 4180, CRLF, encabezados/etiquetas visibles y es
 y separadores. Incluye Id, actividad, fechas, semanas, ejecutado, habilitación, estado, asignaciones,
 observaciones y una columna por restricción configurada. No incluye scope ni campos internos.
 
-### Edición
+### Edición mediante Drawer Contextual
 
-Tabla y tarjeta comparten `EditorActividadIntermedia`; no duplican validación. El editor:
+La edición abandona el editor in-cell con overlays flotantes (Handsontable + TomSelect) que provocaban pérdida de foco y desanclaje en scroll. Se aloja en el **Drawer Contextual Lateral** (`DrawerEditorActividad`), compartido arquitectónicamente con S05 y S08.
 
+Tabla y tarjeta comparten `EditorActividadIntermedia`; no duplican validación ni alteran la posición de la grilla. El editor:
+
+- se despliega como panel lateral de 440 px en desktop/tablet y sheet modal en móvil;
 - indica qué campos son editables y por qué un campo está bloqueado;
 - permite asignar Responsable antes de restricciones dentro del mismo borrador;
 - presenta todas las restricciones del área con valor, umbral, tipo y `N/A`;
-- ofrece anterior/siguiente sobre la lista visible conservando foco;
+- ofrece navegación secuencial anterior/siguiente sobre la lista visible (con atajos `[` y `]`) conservando foco;
 - valida antes de enviar y muestra errores junto al campo;
-- bloquea doble envío y anuncia guardando/guardado/error;
+- bloquea doble envío y anuncia guardando/guardado/error en región `aria-live`;
 - restaura snapshot confirmado ante error y conserva el borrador para reintento.
 
 El editor móvil incluye asignaciones, observaciones y restricciones; no exige cambiar a desktop.

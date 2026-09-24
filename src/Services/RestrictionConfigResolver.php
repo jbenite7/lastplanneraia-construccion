@@ -66,6 +66,103 @@ class RestrictionConfigResolver
     }
 
     /**
+     * Presentation configuration for Programa General (S05).
+     *
+     * @param string $area
+     * @param array<string, string> $pcLabels Custom labels for PC restrictions
+     * @return array{
+     *     area: string,
+     *     restrictions: array<int, array{key: string, label: string, hard: bool, thresholdPercent: int, options: string[]}>,
+     *     hardRestrictions: string[],
+     *     softRestrictions: string[]
+     * }
+     */
+    public static function presentationConfig(string $area, array $pcLabels = []): array
+    {
+        $area = self::normalizeArea($area);
+        $thresholds = self::getThresholds($area);
+
+        if ($area === self::AREA_PRECONSTRUCCION) {
+            $restrictions = [];
+            $softRestrictions = [];
+            $hardRestrictions = ['restriccion_pc_1'];
+
+            // restriccion_pc_1 is always present (hard)
+            $label1 = !empty($pcLabels['restriccion_pc_1']) ? trim($pcLabels['restriccion_pc_1']) : 'Predecesora';
+            $threshold1 = (int) round(($thresholds['restriccion_pc_1'] ?? 0.5) * 100);
+            $restrictions[] = [
+                'key' => 'restriccion_pc_1',
+                'label' => $label1,
+                'hard' => true,
+                'thresholdPercent' => $threshold1,
+                'options' => ['0%', '50%', '100%', 'N/A'],
+            ];
+
+            // Soft restrictions 2, 3, 4: only included if custom label is non-empty
+            foreach (['restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4'] as $pcKey) {
+                if (!empty($pcLabels[$pcKey]) && trim($pcLabels[$pcKey]) !== '') {
+                    $label = trim($pcLabels[$pcKey]);
+                    $threshold = (int) round(($thresholds[$pcKey] ?? 1.0) * 100);
+                    $restrictions[] = [
+                        'key' => $pcKey,
+                        'label' => $label,
+                        'hard' => false,
+                        'thresholdPercent' => $threshold,
+                        'options' => ['0%', '100%', 'N/A'],
+                    ];
+                    $softRestrictions[] = $pcKey;
+                }
+            }
+
+            return [
+                'area' => $area,
+                'restrictions' => $restrictions,
+                'hardRestrictions' => $hardRestrictions,
+                'softRestrictions' => $softRestrictions,
+            ];
+        }
+
+        // Construccion
+        $labels = [
+            'D_y_E' => 'D y E',
+            'Materiales' => 'Materiales',
+            'MdeO' => 'M de O',
+            'Equipos' => 'Equipos',
+            'Predecesora' => 'Predecesora',
+            'Pdto_Cons' => 'Pdto Cons',
+            'Modelo' => 'Modelo',
+        ];
+
+        $hardRestrictions = self::getHardRestrictionColumns($area);
+        $softRestrictions = self::getSoftRestrictionColumns($area);
+        $all = self::getAllRestrictionColumns($area);
+        $restrictions = [];
+
+        foreach ($all as $key) {
+            $isHard = in_array($key, $hardRestrictions, true);
+            $threshold = (int) round(($thresholds[$key] ?? 1.0) * 100);
+            $options = $key === 'Predecesora'
+                ? ['0%', '50%', '100%', 'N/A']
+                : ['0%', '100%', 'N/A'];
+
+            $restrictions[] = [
+                'key' => $key,
+                'label' => $labels[$key] ?? $key,
+                'hard' => $isHard,
+                'thresholdPercent' => $threshold,
+                'options' => $options,
+            ];
+        }
+
+        return [
+            'area' => $area,
+            'restrictions' => $restrictions,
+            'hardRestrictions' => $hardRestrictions,
+            'softRestrictions' => $softRestrictions,
+        ];
+    }
+
+    /**
      * Hard restriction column names for the given area.
      */
     public static function getHardRestrictionColumns(string $area): array
