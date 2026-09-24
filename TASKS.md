@@ -17,9 +17,9 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 503 |
+| hecha | 504 |
 | en progreso | 7 |
-| pendiente | 160 |
+| pendiente | 159 |
 | sin señal | 174 |
 | descartada | 41 |
 
@@ -892,10 +892,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 8 · Dos propuestas para Felipe, que no se aplican
 - **Errores de `/api/auth/*` alineados con el esquema del cliente** (cerrado): 1 de 1 hechas · `2026-09-17-errores-api-auth-contrato.md`
 - **Errores de `/api/lps/*` alineados con el esquema del cliente** (cerrado): 1 de 1 hechas · `2026-09-17-errores-api-lps-contrato.md`
-- **Calificación y Registro de TNP en Semanas Confirmadas** (sin estado): 2 de 4 hechas · `2026-09-24-calificacion-tnp-semana-confirmada.md`
+- **Calificación y Registro de TNP en Semanas Confirmadas** (sin estado): 3 de 4 hechas · `2026-09-24-calificacion-tnp-semana-confirmada.md`
   - hecha · 1 · Test enfocado (Rojo) para calificación y registro de TNP en semana confirmada
   - hecha · 2 · Backend: Corregir `SemanalApiController.php`
-  - pendiente · 3 · Frontend: Corregir `hot.js` (`afterChange` y feedback de error)
+  - hecha · 3 · Frontend: Corregir `hot.js` (`afterChange` y feedback de error)
   - sin señal · 4 · Verificación estática y suites de regresión
 - goal abierto · Goal — BI Control Tower / Programa General (Radar y Cronograma) · `goals/bi-control-tower-gemini/goal.md`
 - goal abierto · Núcleo y gobernanza del Design System AIA · `goals/design-system-nucleo-gobernanza/goal.md`
@@ -913,6 +913,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - cerrado_sin_archivos · `plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas.md`: dice «plan cerrado»; git dice «1 de 2 archivos que mandaba crear no existieron nunca en ninguna rama: docs/design-system/manifests/dashboard.json»
 - cerrado_sin_archivos · `plans/2026-08-30-s01-login-react.md`: dice «plan cerrado»; git dice «3 de 26 archivos que mandaba crear no existieron nunca en ninguna rama: frontend/src/lib/api/frontera.test.ts, frontend/src/lib/api/esquemas/sesion.test.ts, src/Controllers/Core/SpaHostController.php»
 - parece_cerrado · `plans/2026-09-23-s05-programa-general-react.md`: dice «plan vigente»; git dice «las 8 tareas con señal están hechas según git»
+- parece_cerrado · `plans/2026-09-24-calificacion-tnp-semana-confirmada.md`: dice «plan sin estado»; git dice «las 3 tareas con señal están hechas según git; 1 sin señal»
 - sin_estado · `plans/2026-09-24-calificacion-tnp-semana-confirmada.md`: dice «sin `estado:` en el frontmatter»; git dice «no hay de dónde leer si está vivo o cerrado»
 - spec_cerrado_plan_vivo · `specs/2026-07-23-a16-comparativo-versiones-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-07-22-roadmap-pdc-v2.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-03-reparto-trabajo-pendiente-design.md`: dice «spec derogada»; git dice «1 plan suyo sigue vivo: 2026-08-03-usabilidad-altas-y-medias.md»
