@@ -76,11 +76,13 @@ de esa sesión.
 
 ### Decisiones abiertas (cada una con recomendación)
 
-1. **Punto de partida:** ¿se toman los 16 commits de `feature/s05-paridad-visual` o se parte de
-   `main`? *Pendiente.*
+1. ~~Punto de partida~~ → **decidido por Felipe el 2026-09-24:** se parte de los commits de
+   `feature/s05-paridad-visual` (`8ad3ca3f`), **auditados**. Los archivos sin commit de esa sesión
+   se descartan. Antes de construir encima se revisan el cambio a `DevDoorController.php`
+   (`security-reviewer`) y los assets compilados que se commitearon en `public/app/`.
 2. **Referencia visual:** ¿`public/mockups/s05-production-mockup.html` (commit `30550c35`, que se
-   presenta como «maqueta aprobada») es el contrato visual? *Pendiente: no hay registro del visto
-   de Felipe.*
+   presenta como «maqueta aprobada») es el contrato visual? **Felipe lo revisa antes de decidir
+   (2026-09-24).** Mientras no lo apruebe, solo mandan R1.2-1 a R1.2-4.
 3. **Alcance de R1.2-1:** solo el modo de 8 columnas, o también el de 13. *Pendiente.*
 4. **Alcance de R1.2-4** en la barra lateral. *Pendiente.*
 5. **Condición de hecho:** los gates de runtime en verde en ambos temas (`G_PILOT_LAB_GATES`,
