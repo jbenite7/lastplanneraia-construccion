@@ -17,9 +17,9 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 502 |
+| hecha | 503 |
 | en progreso | 7 |
-| pendiente | 161 |
+| pendiente | 160 |
 | sin señal | 174 |
 | descartada | 41 |
 
@@ -892,9 +892,9 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 8 · Dos propuestas para Felipe, que no se aplican
 - **Errores de `/api/auth/*` alineados con el esquema del cliente** (cerrado): 1 de 1 hechas · `2026-09-17-errores-api-auth-contrato.md`
 - **Errores de `/api/lps/*` alineados con el esquema del cliente** (cerrado): 1 de 1 hechas · `2026-09-17-errores-api-lps-contrato.md`
-- **Calificación y Registro de TNP en Semanas Confirmadas** (sin estado): 1 de 4 hechas · `2026-09-24-calificacion-tnp-semana-confirmada.md`
+- **Calificación y Registro de TNP en Semanas Confirmadas** (sin estado): 2 de 4 hechas · `2026-09-24-calificacion-tnp-semana-confirmada.md`
   - hecha · 1 · Test enfocado (Rojo) para calificación y registro de TNP en semana confirmada
-  - pendiente · 2 · Backend: Corregir `SemanalApiController.php`
+  - hecha · 2 · Backend: Corregir `SemanalApiController.php`
   - pendiente · 3 · Frontend: Corregir `hot.js` (`afterChange` y feedback de error)
   - sin señal · 4 · Verificación estática y suites de regresión
 - goal abierto · Goal — BI Control Tower / Programa General (Radar y Cronograma) · `goals/bi-control-tower-gemini/goal.md`
