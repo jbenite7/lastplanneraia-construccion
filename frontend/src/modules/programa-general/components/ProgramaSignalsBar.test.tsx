@@ -91,7 +91,7 @@ describe('ProgramaSignalsBar', () => {
     );
     expect(screen.getByText('Fuera de Ventana')).toBeInTheDocument();
     expect(screen.getByText('Sin Datos')).toBeInTheDocument();
-    expect(screen.getAllByText('0')).toHaveLength(4);
+    expect(screen.getAllByText('0')).toHaveLength(5);
   });
 
   it('refleja el estado activo con aria-pressed', () => {
