@@ -21,10 +21,12 @@ resumen: "Migración vertical S05 de Programa General a React con paridad funcio
 > permisos, deploy, publicación ni trabajo en `/admin/`. Su plan se escribe inmediatamente después
 > con `superpowers:writing-plans`, conforme al programa aprobado de 27 specs y 27 planes.
 
-## Enmienda del 2026-09-24 (ronda 1.2) — `status: propuesto`, en grilleo
+## Enmienda del 2026-09-24 (ronda 1.2) — aprobada por Felipe en el chat, sin sello
 
-> Paso 01 cerrado con lectura simple limpia (Felipe, 2026-09-24): sin decisiones abiertas. Siguen
-> el paso 02 (preguntas de abajo) y el `/aprobar` de Felipe. **No está aprobada** y no autoriza nada. Donde choque
+> **Aprobada por Felipe en el chat el 2026-09-24** («/aprobar S05»). **Sin sello:** el comando
+> `/aprobar` no está instalado en la sesión donde se escribió y no generó sello ni huella. Felipe
+> eligió registrar el visto y seguir; si una compuerta exige el sello, se genera con `/aprobar S05`
+> en una sesión que tenga el comando. Pasos 01 y 02 cerrados; sigue el plan (paso 03). Donde choque
 > con la ronda 1.1 o con el resto, manda esta sección una vez que Felipe la apruebe con `/aprobar`.
 
 ### Por qué hay ronda nueva
