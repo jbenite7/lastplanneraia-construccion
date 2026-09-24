@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockup S05 — Programa General: Realidad 13 Columnas & Modos de Edición</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/aia-design-system.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --ds-surface-bg: #090d0b;
+      --ds-surface-well: #101613;
+      --ds-surface-card: #151d18;
+      --ds-surface-elevated: #1a241f;
+      --ds-border-subtle: rgba(255, 255, 255, 0.08);
+      --ds-border-strong: rgba(255, 255, 255, 0.16);
+      --ds-text-primary: #f7faf8;
+      --ds-text-secondary: #9aa8a0;
+      --ds-text-muted: #67756d;
+      --aia-green-primary: #1a5633;
+      --aia-green-hover: #144528;
+      --aia-green-surface: rgba(26, 86, 51, 0.2);
+      --ds-danger-text: #ef4444;
+      --ds-danger-bg: rgba(239, 68, 68, 0.15);
+      --ds-danger-border: #ef4444;
+      --ds-warning-text: #f59e0b;
+      --ds-warning-bg: rgba(245, 158, 11, 0.15);
+      --ds-info-text: #3b82f6;
+      --ds-info-bg: rgba(59, 130, 246, 0.15);
+      --ds-success-text: #10b981;
+      --ds-success-bg: rgba(16, 185, 129, 0.15);
+    }
+
+    [data-theme="light"] {
+      --ds-surface-bg: #f8faf9;
+      --ds-surface-well: #ffffff;
+      --ds-surface-card: #ffffff;
+      --ds-surface-elevated: #f1f5f3;
+      --ds-border-subtle: rgba(0, 0, 0, 0.08);
+      --ds-border-strong: rgba(0, 0, 0, 0.16);
+      --ds-text-primary: #18221c;
+      --ds-text-secondary: #526359;
+      --ds-text-muted: #829288;
+      --aia-green-primary: #1a5633;
+      --aia-green-surface: rgba(26, 86, 51, 0.08);
+      --ds-danger-bg: #fee2e2;
+      --ds-danger-text: #b91c1c;
+      --ds-warning-bg: #fef3c7;
+      --ds-warning-text: #b45309;
+      --ds-info-bg: #dbeafe;
+      --ds-info-text: #1d4ed8;
+      --ds-success-bg: #d1fae5;
+      --ds-success-text: #047857;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--ds-surface-bg);
+      color: var(--ds-text-primary);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+    }
+
+    /* Layout Shell */
+    .app-sidebar {
+      width: 210px;
+      min-width: 210px;
+      background-color: var(--ds-surface-well);
+      border-right: 1px solid var(--ds-border-subtle);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .brand-area {
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--ds-border-subtle);
+    }
+    .brand-icon {
+      width: 24px;
+      height: 24px;
+      background: var(--aia-green-primary);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 13px;
+    }
+    .brand-name {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+
+    .project-card-mini {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--ds-border-subtle);
+    }
+    .project-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ds-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .project-meta {
+      font-size: 10px;
+      color: var(--ds-text-muted);
+      margin-top: 2px;
+    }
+
+    .week-selector-box {
+      margin-top: 6px;
+    }
+    .week-select {
+      width: 100%;
+      height: 24px;
+      font-size: 11px;
+      background: var(--ds-surface-elevated);
+      color: var(--ds-text-primary);
+      border: 1px solid var(--ds-border-subtle);
+      border-radius: 4px;
+      padding: 0 6px;
+    }
+
+    .nav-list {
+      flex: 1;
+      padding: 8px 6px;
+      overflow-y: auto;
+    }
+    .nav-section-title {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--ds-text-muted);
+      padding: 4px 6px;
+      letter-spacing: 0.5px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 5px;
+      font-size: 11px;
+      color: var(--ds-text-secondary);
+      text-decoration: none;
+      margin-bottom: 2px;
+      transition: all 0.15s;
+    }
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--ds-text-primary);
+    }
+    .nav-item.active {
+      background: var(--aia-green-surface);
+      color: #34d399;
+      font-weight: 600;
+      border-left: 3px solid #10b981;
+    }
+
+    .sidebar-footer {
+      padding: 10px 14px;
+      border-top: 1px solid var(--ds-border-subtle);
+      font-size: 10px;
+      color: var(--ds-text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Main Content Area */
+    .app-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Header Compact Band (< 64px) */
+    .header-band {
+      height: 56px;
+      min-height: 56px;
+      background: var(--ds-surface-well);
+      border-bottom: 1px solid var(--ds-border-subtle);
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .title-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .page-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .badge-vigente {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Switchers for Mockup Exploration */
+    .mockup-toggle-group {
+      display: inline-flex;
+      background: var(--ds-surface-elevated);
+      border: 1px solid var(--ds-border-strong);
+      border-radius: 5px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .mockup-toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--ds-text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .mockup-toggle-btn:hover {
+      color: var(--ds-text-primary);
+    }
+    .mockup-toggle-btn.active {
+      background: var(--aia-green-primary);
+      color: #ffffff;
+    }
+
+    .btn-compact {
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px solid var(--ds-border-subtle);
+      background: var(--ds-surface-elevated);
+      color: var(--ds-text-primary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+    .btn-compact:hover {
+      border-color: var(--ds-border-strong);
+    }
+
+    /* Signals & Filters Bar (< 60px, 2 rows) */
+    .signals-bar {
+      background: var(--ds-surface-bg);
+      border-bottom: 1px solid var(--ds-border-subtle);
+      padding: 6px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .signals-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 24px;
+    }
+    .search-box-mini {
+      display: flex;
+      align-items: center;
+      background: var(--ds-surface-well);
+      border: 1px solid var(--ds-border-subtle);
+      border-radius: 4px;
+      padding: 0 8px;
+      height: 24px;
+      width: 240px;
+    }
+    .search-input-mini {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--ds-text-primary);
+      font-size: 11px;
+      width: 100%;
+      margin-left: 6px;
+    }
+    .search-kbd {
+      font-size: 9px;
+      padding: 1px 4px;
+      background: var(--ds-surface-elevated);
+      color: var(--ds-text-muted);
+      border-radius: 3px;
+      border: 1px solid var(--ds-border-subtle);
+    }
+
+    .signals-chips-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      height: 24px;
+    }
+    .signals-chips-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* 8 Chips by State (from EsquemaChipPrograma) */
+    .state-chip {
+      height: 20px;
+      padding: 0 7px;
+      border-radius: 10px;
+      font-size: 10.5px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .state-chip:hover {
+      filter: brightness(1.2);
+    }
+    .state-chip .chip-counter {
+      padding: 0 4px;
+      border-radius: 7px;
+      font-size: 9px;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    /* 8 Chips Hues in Dark Mode */
+    .chip-con-alerta { background: rgba(255, 202, 40, 0.16); border-color: rgba(255, 202, 40, 0.45); color: #ffdf70; }
+    .chip-debe-iniciar { background: rgba(232, 119, 34, 0.16); border-color: rgba(232, 119, 34, 0.45); color: #ffa256; }
+    .chip-actividad-futura { background: rgba(87, 176, 131, 0.16); border-color: rgba(87, 176, 131, 0.45); color: #7cd4a6; }
+    .chip-en-curso { background: rgba(95, 159, 221, 0.16); border-color: rgba(95, 159, 221, 0.45); color: #90c3f7; }
+    .chip-atrasada { background: rgba(225, 90, 82, 0.22); border-color: rgba(225, 90, 82, 0.55); color: #ff857d; }
+    .chip-terminada { background: rgba(154, 168, 160, 0.14); border-color: rgba(154, 168, 160, 0.35); color: #cbd5ce; }
+    .chip-fuera-de-ventana { background: rgba(94, 201, 189, 0.16); border-color: rgba(94, 201, 189, 0.45); color: #86e2d7; }
+    .chip-sin-datos { background: rgba(148, 133, 214, 0.16); border-color: rgba(148, 133, 214, 0.45); color: #b9aef0; }
+
+    /* 8 Chips Hues in Light Mode */
+    [data-theme="light"] .state-chip .chip-counter { background: rgba(0, 0, 0, 0.08); }
+    [data-theme="light"] .chip-con-alerta { background: #fef3c7; border-color: #fde68a; color: #b45309; }
+    [data-theme="light"] .chip-debe-iniciar { background: #ffedd5; border-color: #fed7aa; color: #c2410c; }
+    [data-theme="light"] .chip-actividad-futura { background: #dcfce7; border-color: #bbf7d0; color: #15803d; }
+    [data-theme="light"] .chip-en-curso { background: #dbeafe; border-color: #bfdbfe; color: #1d4ed8; }
+    [data-theme="light"] .chip-atrasada { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
+    [data-theme="light"] .chip-terminada { background: #f4f4f5; border-color: #e4e4e7; color: #52525b; }
+    [data-theme="light"] .chip-fuera-de-ventana { background: #ccfbf1; border-color: #99f6e4; color: #0f766e; }
+    [data-theme="light"] .chip-sin-datos { background: #ede9fe; border-color: #ddd6fe; color: #6d28d9; }
+
+    /* High Density Table Container */
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+    }
+    .dense-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+      font-size: 10.5px;
+      line-height: 1.15;
+      text-align: left;
+    }
+
+    /* Sticky Table Header */
+    .dense-table thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--ds-surface-well);
+      box-shadow: 0 1px 0 var(--ds-border-strong);
+    }
+    .dense-table th {
+      padding: 4px 4px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--ds-text-muted);
+      border-bottom: 1px solid var(--ds-border-strong);
+      white-space: nowrap;
+      user-select: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dense-table th.col-filter {
+      cursor: pointer;
+    }
+    .dense-table th.col-filter:hover {
+      color: var(--ds-text-primary);
+    }
+    .text-center { text-align: center !important; }
+    .numeric-cell { text-align: right !important; font-variant-numeric: tabular-nums; }
+
+    /* Table Rows & Density */
+    .dense-table tbody tr {
+      height: 25px;
+      border-bottom: 1px solid var(--ds-border-subtle);
+      transition: background-color 0.1s;
+    }
+    .dense-table td {
+      padding: 2px 4px;
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Chapter (Capítulo) Row */
+    .row-chapter {
+      background: #111a14 !important;
+      font-weight: 700;
+      font-size: 11px;
+      color: var(--ds-text-primary);
+      letter-spacing: 0.2px;
+      border-top: 1px solid var(--ds-border-strong);
+    }
+    [data-theme="light"] .row-chapter {
+      background: #eef3f0 !important;
+      color: #111a14;
+    }
+    .row-chapter td {
+      padding: 4px 8px;
+    }
+
+    /* Table Rows Coloreadas según su Estado (Contrato tokens.css) */
+    tr.row-atrasada { background-color: #3a1f1c !important; }
+    tr.row-debe-iniciar { background-color: #3a2915 !important; }
+    tr.row-con-alerta { background-color: #383314 !important; }
+    tr.row-en-curso { background-color: #1e2c40 !important; }
+    tr.row-actividad-futura { background-color: #20362a !important; }
+    tr.row-terminada { background-color: #262b28 !important; }
+    tr.row-fuera-de-ventana { background-color: #1c342f !important; }
+    tr.row-sin-datos { background-color: #302741 !important; }
+
+    tr.row-atrasada:hover { background-color: #482723 !important; }
+    tr.row-debe-iniciar:hover { background-color: #49341b !important; }
+    tr.row-con-alerta:hover { background-color: #47411a !important; }
+    tr.row-en-curso:hover { background-color: #263852 !important; }
+    tr.row-actividad-futura:hover { background-color: #294536 !important; }
+    tr.row-terminada:hover { background-color: #303733 !important; }
+    tr.row-fuera-de-ventana:hover { background-color: #24423c !important; }
+    tr.row-sin-datos:hover { background-color: #3d3253 !important; }
+
+    /* Modo Claro */
+    [data-theme="light"] tr.row-atrasada { background-color: #fee2e2 !important; }
+    [data-theme="light"] tr.row-debe-iniciar { background-color: #ffedd5 !important; }
+    [data-theme="light"] tr.row-con-alerta { background-color: #fef3c7 !important; }
+    [data-theme="light"] tr.row-en-curso { background-color: #eff6ff !important; }
+    [data-theme="light"] tr.row-actividad-futura { background-color: #f0fdf4 !important; }
+    [data-theme="light"] tr.row-terminada { background-color: #f4f4f5 !important; }
+    [data-theme="light"] tr.row-fuera-de-ventana { background-color: #f0fdfa !important; }
+    [data-theme="light"] tr.row-sin-datos { background-color: #faf5ff !important; }
+
+    [data-theme="light"] tr.row-atrasada:hover { background-color: #fecaca !important; }
+    [data-theme="light"] tr.row-debe-iniciar:hover { background-color: #fed7aa !important; }
+    [data-theme="light"] tr.row-con-alerta:hover { background-color: #fde68a !important; }
+    [data-theme="light"] tr.row-en-curso:hover { background-color: #dbeafe !important; }
+    [data-theme="light"] tr.row-actividad-futura:hover { background-color: #dcfce7 !important; }
+    [data-theme="light"] tr.row-terminada:hover { background-color: #e4e4e7 !important; }
+    [data-theme="light"] tr.row-fuera-de-ventana:hover { background-color: #ccfbf1 !important; }
+    [data-theme="light"] tr.row-sin-datos:hover { background-color: #f3e8ff !important; }
+
+    /* Badges & Icons */
+    .status-badge {
+      display: inline-block;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.1px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .status-atrasada { background: #e15a52; color: #3c0a06; }
+    .status-debe-iniciar { background: #e87722; color: #3a2004; }
+    .status-con-alerta { background: #ffca28; color: #3a2c04; }
+    .status-en-curso { background: #5f9fdd; color: #07223c; }
+    .status-actividad-futura { background: #57b083; color: #06281a; }
+    .status-terminada { background: #9aa8a0; color: #1c2420; }
+    .status-fuera-de-ventana { background: #5ec9bd; color: #062f29; }
+    .status-sin-datos { background: #9485d6; color: #26113f; }
+
+    .badge-rc {
+      font-size: 9px;
+      font-weight: 800;
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+    .date-overdue {
+      color: #ef4444;
+      font-weight: 700;
+    }
+    .btn-drawer-icon {
+      background: transparent;
+      border: none;
+      color: var(--ds-text-muted);
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 11px;
+      vertical-align: middle;
+      margin-left: 4px;
+      transition: all 0.15s;
+    }
+    .btn-drawer-icon:hover {
+      color: var(--ds-text-primary);
+      background: var(--ds-surface-elevated);
+    }
+    .btn-drawer-icon.has-comments {
+      color: #3b82f6;
+    }
+
+    /* INLINE EDITOR ROW (Pattern S05 React EditorActividad.tsx) */
+    .pg-react__editor-row {
+      background: var(--ds-surface-elevated) !important;
+      border-bottom: 2px solid var(--aia-green-primary) !important;
+      height: auto !important;
+    }
+    .pg-react__editor-row td {
+      padding: 10px 14px !important;
+      white-space: normal !important;
+    }
+    .pg-react__editor {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .pg-react__editor-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--ds-border-subtle);
+      padding-bottom: 6px;
+    }
+    .pg-react__editor-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pg-react__editor-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+    }
+    .pg-editor-field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .pg-editor-field label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--ds-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .pg-editor-field input,
+    .pg-editor-field select {
+      height: 26px;
+      background: var(--ds-surface-well);
+      border: 1px solid var(--ds-border-strong);
+      border-radius: 4px;
+      color: var(--ds-text-primary);
+      font-size: 11px;
+      padding: 0 6px;
+      outline: none;
+    }
+    .pg-editor-field input:focus,
+    .pg-editor-field select:focus {
+      border-color: #10b981;
+      box-shadow: 0 0 0 1px #10b981;
+    }
+    .pg-editor-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .btn-save-inline {
+      height: 26px;
+      padding: 0 12px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--aia-green-primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-discard-inline {
+      height: 26px;
+      padding: 0 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      background: transparent;
+      color: var(--ds-text-muted);
+      border: 1px solid var(--ds-border-subtle);
+      cursor: pointer;
+    }
+
+    /* CONTEXTUAL SIDE DRAWER (Pattern LPS Drawer / S07 Alternative) */
+    .drawer-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(2px);
+      z-index: 100;
+      display: none;
+    }
+    .drawer-backdrop.active {
+      display: block;
+    }
+    .drawer-panel {
+      position: fixed;
+      top: 0;
+      right: -460px;
+      width: 440px;
+      height: 100vh;
+      background: var(--ds-surface-well);
+      border-left: 1px solid var(--ds-border-strong);
+      box-shadow: -8px 0 24px rgba(0, 0, 0, 0.4);
+      z-index: 101;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .drawer-panel.active {
+      right: 0;
+    }
+    .drawer-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--ds-border-subtle);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      background: var(--ds-surface-elevated);
+    }
+    .drawer-header-content h3 {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .drawer-header-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--ds-text-muted);
+    }
+    .drawer-close-btn {
+      background: none;
+      border: none;
+      color: var(--ds-text-muted);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    .drawer-close-btn:hover {
+      color: var(--ds-text-primary);
+      background: var(--ds-surface-card);
+    }
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .drawer-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .drawer-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--ds-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .drawer-field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .drawer-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--ds-border-subtle);
+      background: var(--ds-surface-elevated);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-actividades-btn {
+      display: flex;
+      gap: 4px;
+    }
+
+    /* RATIONALIZED COLUMNS VIEW (Mode 8 Essential Columns - Adopted) */
+    body.mode-rationalized .dense-table {
+      table-layout: auto;
+    }
+    body.mode-rationalized .dense-table th:nth-child(3) {
+      width: auto !important;
+    }
+    body.mode-rationalized .col-sem-inicio,
+    body.mode-rationalized .col-critica,
+    body.mode-rationalized .col-unidad,
+    body.mode-rationalized .col-ej-teorico,
+    body.mode-rationalized .col-lib-restr {
+      display: none !important;
+    }
+    body.mode-rationalized .col-ppto {
+      width: 90px !important;
+    }
+    body.mode-rationalized .col-avance {
+      width: 145px !important;
+      text-align: right;
+    }
+    .unit-rational {
+      display: none;
+      font-size: 10px;
+      color: var(--ds-text-muted);
+      margin-left: 2px;
+    }
+    body.mode-rationalized .unit-rational {
+      display: inline;
+    }
+    .avance-teorico-rational {
+      display: none;
+      font-size: 10px;
+      color: var(--ds-text-muted);
+      font-weight: normal;
+    }
+    body.mode-rationalized .avance-teorico-rational {
+      display: inline;
+    }
+    .delta-neg { color: #ef4444; font-weight: 600; }
+    .delta-ok { color: #10b981; font-weight: 600; }
+
+    /* Badge & Help Text para Drawer LPS */
+    .badge-optional {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: rgba(148, 163, 184, 0.15);
+      color: var(--ds-text-secondary);
+      border: 1px solid var(--ds-border-subtle);
+      text-transform: none;
+      letter-spacing: 0.2px;
+      margin-left: auto;
+    }
+    .drawer-help-text {
+      font-size: 11px;
+      color: var(--ds-text-secondary);
+      line-height: 1.4;
+      background: var(--ds-surface-elevated);
+      padding: 8px 10px;
+      border-radius: 5px;
+      border-left: 3px solid #3b82f6;
+      margin: 2px 0 6px 0;
+    }
+    .drawer-help-text i {
+      color: #3b82f6;
+      margin-right: 4px;
+    }
+    .toast-notification {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #10b981;
+      color: #06281a;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 10px 18px;
+      border-radius: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+      z-index: 250;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body class="mode-reality">
+
+  <!-- Sidebar Lateral Compacto -->
+  <aside class="app-sidebar">
+    <div class="brand-area">
+      <div class="brand-icon">A</div>
+      <div class="brand-name">AIA Last Planner</div>
+    </div>
+
+    <div class="project-card-mini">
+      <div class="project-title" title="Optimización Aeropuerto JMC">Optimización Aeropuerto JMC</div>
+      <div class="project-meta">Contrato: #OP-JMC-2026</div>
+      <div class="week-selector-box">
+        <select class="week-select" aria-label="Semana del proyecto">
+          <option value="33" selected>Semana 33 (18 ago – 24 ago)</option>
+          <option value="34">Semana 34 (25 ago – 31 ago)</option>
+          <option value="35">Semana 35 (01 sep – 07 sep)</option>
+        </select>
+      </div>
+    </div>
+
+    <nav class="nav-list" aria-label="Navegación principal">
+      <div class="nav-section-title">LPS Macro</div>
+      <a href="#" class="nav-item active"><i class="fas fa-calendar-alt"></i> Programa General</a>
+      <a href="#" class="nav-item"><i class="fas fa-layer-group"></i> Lookahead 6 Semanas</a>
+      <a href="#" class="nav-item"><i class="fas fa-tasks"></i> Plan Semanal (PPC)</a>
+
+      <div class="nav-section-title" style="margin-top: 10px;">Gestión de Obra</div>
+      <a href="#" class="nav-item"><i class="fas fa-exclamation-triangle"></i> Restricciones</a>
+      <a href="#" class="nav-item"><i class="fas fa-shopping-cart"></i> Plan de Compras v2</a>
+      <a href="#" class="nav-item"><i class="fas fa-hard-hat"></i> Subcontratistas</a>
+      <a href="#" class="nav-item"><i class="fas fa-chart-line"></i> Control Tower & BI</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span>Felipe Benítez (A)</span>
+      <i class="fas fa-shield-alt" title="Rol A · Administrador"></i>
+    </div>
+  </aside>
+
+  <!-- Contenedor Principal -->
+  <main class="app-main">
+
+    <!-- Header Compacto con Selector de Modos para Felipe -->
+    <header class="header-band">
+      <div class="title-left">
+        <h1 class="page-title">Programa General</h1>
+        <span class="badge-vigente">Semana 33 Vigente</span>
+      </div>
+
+      <!-- Controles de Exploración del Mockup -->
+      <div class="header-controls">
+        <!-- Toggle: 13 Columnas Reales vs 8 Columnas Esenciales (Adoptadas) -->
+        <div class="mockup-toggle-group" title="Alternar visualización de columnas">
+          <button type="button" class="mockup-toggle-btn active" id="btn-view-reality" onclick="setColumnMode('reality')">
+            <i class="fas fa-table"></i> 13 Cols Reales
+          </button>
+          <button type="button" class="mockup-toggle-btn" id="btn-view-rational" onclick="setColumnMode('rational')">
+            <i class="fas fa-compress-arrows-alt"></i> 8 Cols Esenciales
+          </button>
+        </div>
+
+        <!-- Modelo de Edición Aprobado: Drawer Contextual LPS -->
+        <div class="mockup-toggle-group" title="Modelo de edición canónico adoptado">
+          <button type="button" class="mockup-toggle-btn active" id="btn-edit-drawer" onclick="abrirDrawerActividad(101)" title="Edición vía Drawer lateral contextual LPS (Adoptado)">
+            <i class="fas fa-columns" style="color: #10b981;"></i> Drawer LPS (Adoptado)
+          </button>
+        </div>
+
+        <!-- Toggle Tema -->
+        <button type="button" class="btn-compact" onclick="toggleTheme()" title="Alternar Modo Oscuro / Claro">
+          <i class="fas fa-adjust"></i> Tema
+        </button>
+
+        <button type="button" class="btn-compact" title="Exportar a CSV">
+          <i class="fas fa-file-csv"></i> CSV
+        </button>
+      </div>
+    </header>
+
+    <!-- Barra de Señales y 8 Chips de Estado Reales -->
+    <section class="signals-bar" aria-label="Filtros y Señales de Estado">
+      <div class="signals-top-row">
+        <div class="search-box-mini">
+          <i class="fas fa-search" style="font-size: 10px; color: var(--ds-text-muted);"></i>
+          <input type="text" class="search-input-mini" placeholder="Buscar por actividad o código..." aria-label="Buscar actividad">
+          <span class="search-kbd">⌘K</span>
+        </div>
+        <div style="font-size: 11px; color: var(--ds-text-muted);">
+          <span>22 actividades visibles · 0 filtros activos</span>
+        </div>
+      </div>
+
+      <!-- Los 8 Chips Contractuales de Estado -->
+      <div class="signals-chips-row" role="group" aria-label="Filtro rápido por estado">
+        <button type="button" class="state-chip chip-con-alerta" aria-pressed="false" title="Filtrar por Con Alerta">
+          <span>Con Alerta</span>
+          <span class="chip-counter">2</span>
+        </button>
+        <button type="button" class="state-chip chip-debe-iniciar" aria-pressed="false" title="Filtrar por Debe Iniciar">
+          <span>Debe Iniciar</span>
+          <span class="chip-counter">2</span>
+        </button>
+        <button type="button" class="state-chip chip-actividad-futura" aria-pressed="false" title="Filtrar por Actividad Futura">
+          <span>Actividad Futura</span>
+          <span class="chip-counter">3</span>
+        </button>
+        <button type="button" class="state-chip chip-en-curso" aria-pressed="false" title="Filtrar por En Curso">
+          <span>En Curso</span>
+          <span class="chip-counter">11</span>
+        </button>
+        <button type="button" class="state-chip chip-atrasada" aria-pressed="false" title="Filtrar por Atrasada">
+          <span>Atrasada</span>
+          <span class="chip-counter">2</span>
+        </button>
+        <button type="button" class="state-chip chip-terminada" aria-pressed="false" title="Filtrar por Terminada">
+          <span>Terminada</span>
+          <span class="chip-counter">1</span>
+        </button>
+        <button type="button" class="state-chip chip-fuera-de-ventana" aria-pressed="false" title="Filtrar por Fuera de Ventana">
+          <span>Fuera de Ventana</span>
+          <span class="chip-counter">1</span>
+        </button>
+        <button type="button" class="state-chip chip-sin-datos" aria-pressed="false" title="Filtrar por Sin Datos">
+          <span>Sin Datos</span>
+          <span class="chip-counter">1</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Contenedor de Tabla Alta Densidad con las 13 Columnas Reales de Programa General -->
+    <div class="table-container">
+      <table class="dense-table" aria-label="Programa General">
+        <thead>
+          <tr>
+            <th style="width: 32px;" class="col-filter text-center">Id</th>
+            <th style="width: 58px;" class="col-filter">Código</th>
+            <th style="width: 210px;" class="col-filter">Actividad <i class="fas fa-caret-down"></i></th>
+            <th style="width: 55px;" class="col-filter text-center col-sem-inicio">Sem.</th>
+            <th style="width: 68px;" class="col-filter col-fechas">F. Inicio</th>
+            <th style="width: 68px;" class="col-filter col-fechas">F. Fin</th>
+            <th style="width: 42px;" class="col-filter text-center col-critica">RC</th>
+            <th style="width: 42px;" class="col-filter text-center col-unidad">Und</th>
+            <th style="width: 65px;" class="numeric-cell col-filter col-ppto">Ppto</th>
+            <th style="width: 55px;" class="numeric-cell col-filter col-ej-teorico">Teór</th>
+            <th style="width: 55px;" class="numeric-cell col-filter col-avance"><span class="th-avance-title">Real</span></th>
+            <th style="width: 85px;" class="col-filter text-center">Estado <i class="fas fa-caret-down"></i></th>
+            <th style="width: 52px;" class="numeric-cell col-filter col-lib-restr">Restr</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- Capítulo 1 -->
+          <tr class="row-chapter">
+            <td colspan="13">
+              <i class="fas fa-folder-open" style="color: #10b981; margin-right: 6px;"></i>
+              1. CIMENTACIÓN Y ESTRUCTURA (8 actividades · 45% avance ponderado)
+            </td>
+          </tr>
+
+          <!-- Fila 1: Atrasada (Fondo Rojo) -->
+          <tr class="row-atrasada" onclick="abrirDrawerActividad(101, 'EST-01', 'Excavación mecánica de zapatas eje A-C', 'Atrasada', 'm³', 450, 50, 25, '10/08/2026', '20/08/2026')">
+            <td class="text-center" style="color:var(--ds-text-muted);">101</td>
+            <td><code>EST-01</code></td>
+            <td>
+              <span style="font-weight:600;">Excavación mecánica de zapatas eje A-C</span>
+              <button class="btn-drawer-icon has-comments" title="3 notas en bitácora"><i class="fas fa-comment-alt"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 33</td>
+            <td>10/08/2026</td>
+            <td><span class="date-overdue">20/08/2026 ⚠️</span></td>
+            <td class="text-center col-critica"><span class="badge-rc">RC</span></td>
+            <td class="text-center text-muted col-unidad">m³</td>
+            <td class="numeric-cell col-ppto">450.0<span class="unit-rational"> m³</span></td>
+            <td class="numeric-cell text-muted col-ej-teorico">50.0%</td>
+            <td class="numeric-cell col-avance"><span style="font-weight:700;">25.0%</span><span class="avance-teorico-rational"> / 50.0% <span class="delta-neg">(-25%)</span></span></td>
+            <td class="text-center"><span class="status-badge status-atrasada">Atrasada</span></td>
+            <td class="numeric-cell col-lib-restr">66%</td>
+          </tr>
+
+          <!-- Fila 2: Con alerta de restricciones (Fondo Ámbar) -->
+          <tr class="row-con-alerta" id="fila-102" onclick="abrirDrawerActividad(102, 'EST-02', 'Armado de acero para zapatas y vigas', 'Con Alerta', 'ton', 12.5, 40, 40, '18/08/2026', '28/08/2026')">
+            <td class="text-center" style="color:var(--ds-text-muted);">102</td>
+            <td><code>EST-02</code></td>
+            <td>
+              <span>Armado de acero para zapatas y vigas</span>
+              <button class="btn-drawer-icon" title="Comentarios y SOS"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 34</td>
+            <td>18/08/2026</td>
+            <td>28/08/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">ton</td>
+            <td class="numeric-cell col-ppto">12.5<span class="unit-rational"> ton</span></td>
+            <td class="numeric-cell text-muted col-ej-teorico">40.0%</td>
+            <td class="numeric-cell col-avance"><span style="font-weight:700;">40.0%</span><span class="avance-teorico-rational"> / 40.0% <span class="delta-ok">(0%)</span></span></td>
+            <td class="text-center"><span class="status-badge status-con-alerta">Con Alerta</span></td>
+            <td class="numeric-cell col-lib-restr">100%</td>
+          </tr>
+
+          <!-- Fila 3: Debe Iniciar (Fondo Naranja) -->
+          <tr class="row-debe-iniciar" onclick="abrirDrawerActividad(103, 'EST-03', 'Vaciado de concreto zapatas f\'c=3000 psi', 'Debe Iniciar', 'm³', 180, 10, 0, '24/08/2026', '29/08/2026')">
+            <td class="text-center" style="color:var(--ds-text-muted);">103</td>
+            <td><code>EST-03</code></td>
+            <td>
+              <span>Vaciado de concreto zapatas f'c=3000 psi</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 34</td>
+            <td>24/08/2026</td>
+            <td>29/08/2026</td>
+            <td class="text-center col-critica"><span class="badge-rc">RC</span></td>
+            <td class="text-center text-muted col-unidad">m³</td>
+            <td class="numeric-cell col-ppto">180.0<span class="unit-rational"> m³</span></td>
+            <td class="numeric-cell text-muted col-ej-teorico">10.0%</td>
+            <td class="numeric-cell col-avance"><span style="font-weight:700;">0.0%</span><span class="avance-teorico-rational"> / 10.0% <span class="delta-neg">(-10%)</span></span></td>
+            <td class="text-center"><span class="status-badge status-debe-iniciar">Debe Iniciar</span></td>
+            <td class="numeric-cell col-lib-restr">80%</td>
+          </tr>
+
+          <!-- Fila 4: En Curso (Fondo Azul) -->
+          <tr class="row-en-curso" onclick="abrirDrawerActividad(104, 'EST-04', 'Desencofrado y curado químico zapatas', 'En Curso', 'm²', 180, 15, 15, '25/08/2026', '30/08/2026')">
+            <td class="text-center" style="color:var(--ds-text-muted);">104</td>
+            <td><code>EST-04</code></td>
+            <td>
+              <span>Desencofrado y curado químico zapatas</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 34</td>
+            <td>25/08/2026</td>
+            <td>30/08/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">m²</td>
+            <td class="numeric-cell col-ppto">180.0<span class="unit-rational"> m²</span></td>
+            <td class="numeric-cell text-muted col-ej-teorico">15.0%</td>
+            <td class="numeric-cell col-avance"><span style="font-weight:700;">15.0%</span><span class="avance-teorico-rational"> / 15.0% <span class="delta-ok">(0%)</span></span></td>
+            <td class="text-center"><span class="status-badge status-en-curso">En Curso</span></td>
+            <td class="numeric-cell col-lib-restr">100%</td>
+          </tr>
+
+          <!-- Fila 5: En Curso (Fondo Azul) -->
+          <tr class="row-en-curso" onclick="abrirDrawerActividad(105, 'EST-05', 'Relleno compactado con material de sitio', 'En Curso', 'm³', 320, 25, 30, '22/08/2026', '31/08/2026')">
+            <td class="text-center" style="color:var(--ds-text-muted);">105</td>
+            <td><code>EST-05</code></td>
+            <td>
+              <span>Relleno compactado con material de sitio</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 33</td>
+            <td>22/08/2026</td>
+            <td>31/08/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">m³</td>
+            <td class="numeric-cell col-ppto">320.0<span class="unit-rational"> m³</span></td>
+            <td class="numeric-cell text-muted col-ej-teorico">25.0%</td>
+            <td class="numeric-cell col-avance"><span style="font-weight:700;">30.0%</span><span class="avance-teorico-rational"> / 25.0% <span class="delta-ok">(+5%)</span></span></td>
+            <td class="text-center"><span class="status-badge status-en-curso">En Curso</span></td>
+            <td class="numeric-cell col-lib-restr">100%</td>
+          </tr>
+
+          <!-- Fila 6: En Curso (Fondo Azul) -->
+          <tr class="row-en-curso" onclick="abrirDrawerActividad(106, 'EST-06', 'Instalación de columnas piso 1 metálicas', 'En Curso', 'ton', 8.4, 60, 60, '15/08/2026', '28/08/2026')">
+            <td class="text-center" style="color:var(--ds-text-muted);">106</td>
+            <td><code>EST-06</code></td>
+            <td>
+              <span>Instalación de columnas piso 1 metálicas</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 33</td>
+            <td>15/08/2026</td>
+            <td>28/08/2026</td>
+            <td class="text-center col-critica"><span class="badge-rc">RC</span></td>
+            <td class="text-center text-muted col-unidad">ton</td>
+            <td class="numeric-cell col-ppto">8.4<span class="unit-rational"> ton</span></td>
+            <td class="numeric-cell text-muted col-ej-teorico">60.0%</td>
+            <td class="numeric-cell col-avance"><span style="font-weight:700;">60.0%</span><span class="avance-teorico-rational"> / 60.0% <span class="delta-ok">(0%)</span></span></td>
+            <td class="text-center"><span class="status-badge status-en-curso">En Curso</span></td>
+            <td class="numeric-cell col-lib-restr">100%</td>
+          </tr>
+
+          <!-- Fila 7: Actividad Futura (Fondo Verde) -->
+          <tr class="row-actividad-futura" onclick="abrirDrawerActividad(107, 'EST-07', 'Vaciado de losa contrapiso e=15cm', 'Actividad Futura', 'm²', 520, 0, 0, '01/09/2026', '15/09/2026')">
+            <td class="text-center" style="color:var(--ds-text-muted);">107</td>
+            <td><code>EST-07</code></td>
+            <td>
+              <span>Vaciado de losa contrapiso e=15cm</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 35</td>
+            <td>01/09/2026</td>
+            <td>15/09/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">m²</td>
+            <td class="numeric-cell col-ppto">520.0<span class="unit-rational"> m²</span></td>
+            <td class="numeric-cell text-muted col-ej-teorico">0.0%</td>
+            <td class="numeric-cell col-avance"><span style="font-weight:700;">0.0%</span><span class="avance-teorico-rational"> / 0.0% <span class="delta-ok">(0%)</span></span></td>
+            <td class="text-center"><span class="status-badge status-actividad-futura">Actividad Futura</span></td>
+            <td class="numeric-cell col-lib-restr">40%</td>
+          </tr>
+
+          <!-- Fila 8: Terminada (Fondo Neutro) -->
+          <tr class="row-terminada" onclick="abrirDrawerActividad(108, 'EST-08', 'Replanteo topográfico de cimentación', 'Terminada', 'glb', 1.0, 100, 100, '01/08/2026', '08/08/2026')">
+            <td class="text-center" style="color:var(--ds-text-muted);">108</td>
+            <td><code>EST-08</code></td>
+            <td>
+              <span style="color:var(--ds-text-muted); text-decoration:line-through;">Replanteo topográfico de cimentación</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 31</td>
+            <td>01/08/2026</td>
+            <td>08/08/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">glb</td>
+            <td class="numeric-cell col-ppto">1.0<span class="unit-rational"> glb</span></td>
+            <td class="numeric-cell text-muted col-ej-teorico">100%</td>
+            <td class="numeric-cell col-avance"><span style="font-weight:700;">100%</span><span class="avance-teorico-rational"> / 100% <span class="delta-ok">(0%)</span></span></td>
+            <td class="text-center"><span class="status-badge status-terminada">Terminada</span></td>
+            <td class="numeric-cell col-lib-restr">100%</td>
+          </tr>
+
+          <!-- Capítulo 2 -->
+          <tr class="row-chapter">
+            <td colspan="13">
+              <i class="fas fa-folder-open" style="color: #10b981; margin-right: 6px;"></i>
+              2. MAMPOSTERÍA Y FACHADAS (7 actividades · 22% avance ponderado)
+            </td>
+          </tr>
+
+          <!-- Fila 9: En Curso (Fondo Azul) -->
+          <tr class="row-en-curso">
+            <td class="text-center" style="color:var(--ds-text-muted);">201</td>
+            <td><code>MAM-01</code></td>
+            <td>
+              <span>Levantamiento de muros en bloque concreto piso 1</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 33</td>
+            <td>18/08/2026</td>
+            <td>05/09/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">m²</td>
+            <td class="numeric-cell">680.0</td>
+            <td class="numeric-cell text-muted col-ej-teorico">45.0%</td>
+            <td class="numeric-cell">45.0%</td>
+            <td class="text-center"><span class="status-badge status-en-curso">En Curso</span></td>
+            <td class="numeric-cell col-lib-restr">100%</td>
+          </tr>
+
+          <!-- Fila 10: En Curso (Fondo Azul) -->
+          <tr class="row-en-curso">
+            <td class="text-center" style="color:var(--ds-text-muted);">202</td>
+            <td><code>MAM-02</code></td>
+            <td>
+              <span>Dinteles y columnetas de confinamiento piso 1</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 33</td>
+            <td>20/08/2026</td>
+            <td>08/09/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">ml</td>
+            <td class="numeric-cell">140.0</td>
+            <td class="numeric-cell text-muted col-ej-teorico">35.0%</td>
+            <td class="numeric-cell">35.0%</td>
+            <td class="text-center"><span class="status-badge status-en-curso">En Curso</span></td>
+            <td class="numeric-cell col-lib-restr">100%</td>
+          </tr>
+
+          <!-- Fila 11: Con alerta de restricciones (Fondo Ámbar) -->
+          <tr class="row-con-alerta">
+            <td class="text-center" style="color:var(--ds-text-muted);">203</td>
+            <td><code>MAM-03</code></td>
+            <td>
+              <span>Muros perimetrales de contención sótano 1</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 32</td>
+            <td>10/08/2026</td>
+            <td>28/08/2026</td>
+            <td class="text-center col-critica"><span class="badge-rc">RC</span></td>
+            <td class="text-center text-muted col-unidad">m²</td>
+            <td class="numeric-cell">210.0</td>
+            <td class="numeric-cell text-muted col-ej-teorico">70.0%</td>
+            <td class="numeric-cell">70.0%</td>
+            <td class="text-center"><span class="status-badge status-con-alerta">Con Alerta</span></td>
+            <td class="numeric-cell col-lib-restr">50%</td>
+          </tr>
+
+          <!-- Fila 12: Fuera de Ventana (Fondo Teal) -->
+          <tr class="row-fuera-de-ventana">
+            <td class="text-center" style="color:var(--ds-text-muted);">204</td>
+            <td><code>MAM-04</code></td>
+            <td>
+              <span>Pañete impermeable muros sótano</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 37</td>
+            <td>15/09/2026</td>
+            <td>30/09/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">m²</td>
+            <td class="numeric-cell">210.0</td>
+            <td class="numeric-cell text-muted col-ej-teorico">0.0%</td>
+            <td class="numeric-cell">0.0%</td>
+            <td class="text-center"><span class="status-badge status-fuera-de-ventana">Fuera de Ventana</span></td>
+            <td class="numeric-cell col-lib-restr">0%</td>
+          </tr>
+
+          <!-- Fila 13: En Curso (Fondo Azul) -->
+          <tr class="row-en-curso">
+            <td class="text-center" style="color:var(--ds-text-muted);">205</td>
+            <td><code>MAM-05</code></td>
+            <td>
+              <span>Instalación de anclajes para fachada flotante</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 33</td>
+            <td>22/08/2026</td>
+            <td>10/09/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">und</td>
+            <td class="numeric-cell">95.0</td>
+            <td class="numeric-cell text-muted col-ej-teorico">15.0%</td>
+            <td class="numeric-cell">15.0%</td>
+            <td class="text-center"><span class="status-badge status-en-curso">En Curso</span></td>
+            <td class="numeric-cell col-lib-restr">100%</td>
+          </tr>
+
+          <!-- Fila 14: Sin Datos (Fondo Violeta) -->
+          <tr class="row-sin-datos">
+            <td class="text-center" style="color:var(--ds-text-muted);">206</td>
+            <td><code>MAM-06</code></td>
+            <td>
+              <span>Afilado y remates de vanos en puertas</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 34</td>
+            <td>25/08/2026</td>
+            <td>12/09/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">und</td>
+            <td class="numeric-cell">45.0</td>
+            <td class="numeric-cell text-muted col-ej-teorico">—</td>
+            <td class="numeric-cell">—</td>
+            <td class="text-center"><span class="status-badge status-sin-datos">Sin Datos</span></td>
+            <td class="numeric-cell col-lib-restr">0%</td>
+          </tr>
+
+          <!-- Fila 15: En Curso (Fondo Azul) -->
+          <tr class="row-en-curso">
+            <td class="text-center" style="color:var(--ds-text-muted);">207</td>
+            <td><code>MAM-07</code></td>
+            <td>
+              <span>Cerrajería metálica marcos piso 1</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 33</td>
+            <td>16/08/2026</td>
+            <td>30/08/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">und</td>
+            <td class="numeric-cell">32.0</td>
+            <td class="numeric-cell text-muted col-ej-teorico">50.0%</td>
+            <td class="numeric-cell">50.0%</td>
+            <td class="text-center"><span class="status-badge status-en-curso">En Curso</span></td>
+            <td class="numeric-cell col-lib-restr">100%</td>
+          </tr>
+
+          <!-- Capítulo 3 -->
+          <tr class="row-chapter">
+            <td colspan="13">
+              <i class="fas fa-folder-open" style="color: #10b981; margin-right: 6px;"></i>
+              3. REDES HIDROSANITARIAS Y ELÉCTRICAS (6 actividades · 18% avance)
+            </td>
+          </tr>
+
+          <!-- Fila 16: En Curso (Fondo Azul) -->
+          <tr class="row-en-curso">
+            <td class="text-center" style="color:var(--ds-text-muted);">301</td>
+            <td><code>HID-01</code></td>
+            <td>
+              <span>Tendido de tubería sanitaria colgada sótano 1</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 32</td>
+            <td>14/08/2026</td>
+            <td>31/08/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">ml</td>
+            <td class="numeric-cell">185.0</td>
+            <td class="numeric-cell text-muted col-ej-teorico">55.0%</td>
+            <td class="numeric-cell">55.0%</td>
+            <td class="text-center"><span class="status-badge status-en-curso">En Curso</span></td>
+            <td class="numeric-cell col-lib-restr">100%</td>
+          </tr>
+
+          <!-- Fila 17: En Curso (Fondo Azul) -->
+          <tr class="row-en-curso">
+            <td class="text-center" style="color:var(--ds-text-muted);">302</td>
+            <td><code>HID-02</code></td>
+            <td>
+              <span>Cajas de inspección y desagües principales</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 32</td>
+            <td>12/08/2026</td>
+            <td>27/08/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">und</td>
+            <td class="numeric-cell">8.0</td>
+            <td class="numeric-cell text-muted col-ej-teorico">75.0%</td>
+            <td class="numeric-cell">75.0%</td>
+            <td class="text-center"><span class="status-badge status-en-curso">En Curso</span></td>
+            <td class="numeric-cell col-lib-restr">100%</td>
+          </tr>
+
+          <!-- Fila 18: En Curso (Fondo Azul) -->
+          <tr class="row-en-curso">
+            <td class="text-center" style="color:var(--ds-text-muted);">303</td>
+            <td><code>ELE-01</code></td>
+            <td>
+              <span>Canalización por losa para circuitos de fuerza</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 33</td>
+            <td>15/08/2026</td>
+            <td>29/08/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">ml</td>
+            <td class="numeric-cell">340.0</td>
+            <td class="numeric-cell text-muted col-ej-teorico">60.0%</td>
+            <td class="numeric-cell">60.0%</td>
+            <td class="text-center"><span class="status-badge status-en-curso">En Curso</span></td>
+            <td class="numeric-cell col-lib-restr">100%</td>
+          </tr>
+
+          <!-- Fila 19: Actividad Futura (Fondo Verde) -->
+          <tr class="row-actividad-futura">
+            <td class="text-center" style="color:var(--ds-text-muted);">304</td>
+            <td><code>ELE-02</code></td>
+            <td>
+              <span>Montaje de bandejas portacables en pasillos</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 35</td>
+            <td>05/09/2026</td>
+            <td>20/09/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">ml</td>
+            <td class="numeric-cell">110.0</td>
+            <td class="numeric-cell text-muted col-ej-teorico">0.0%</td>
+            <td class="numeric-cell">0.0%</td>
+            <td class="text-center"><span class="status-badge status-actividad-futura">Actividad Futura</span></td>
+            <td class="numeric-cell col-lib-restr">25%</td>
+          </tr>
+
+          <!-- Fila 20: Debe Iniciar (Fondo Naranja) -->
+          <tr class="row-debe-iniciar">
+            <td class="text-center" style="color:var(--ds-text-muted);">305</td>
+            <td><code>GAS-01</code></td>
+            <td>
+              <span>Acometida principal de gas y medidores</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 34</td>
+            <td>28/08/2026</td>
+            <td>15/09/2026</td>
+            <td class="text-center col-critica">No</td>
+            <td class="text-center text-muted col-unidad">ml</td>
+            <td class="numeric-cell">65.0</td>
+            <td class="numeric-cell text-muted col-ej-teorico">20.0%</td>
+            <td class="numeric-cell">0.0%</td>
+            <td class="text-center"><span class="status-badge status-debe-iniciar">Debe Iniciar</span></td>
+            <td class="numeric-cell col-lib-restr">50%</td>
+          </tr>
+
+          <!-- Fila 21: Atrasada (Fondo Rojo) -->
+          <tr class="row-atrasada">
+            <td class="text-center" style="color:var(--ds-text-muted);">306</td>
+            <td><code>PCI-01</code></td>
+            <td>
+              <span>Red contra incendio montantes piso 1 a 3</span>
+              <button class="btn-drawer-icon"><i class="far fa-comment"></i></button>
+            </td>
+            <td class="text-center col-sem-inicio">Sem 32</td>
+            <td>10/08/2026</td>
+            <td><span class="date-overdue">22/08/2026 ⚠️</span></td>
+            <td class="text-center col-critica"><span class="badge-rc">RC</span></td>
+            <td class="text-center text-muted col-unidad">ml</td>
+            <td class="numeric-cell">95.0</td>
+            <td class="numeric-cell text-muted col-ej-teorico">45.0%</td>
+            <td class="numeric-cell" style="font-weight:700;">15.0%</td>
+            <td class="text-center"><span class="status-badge status-atrasada">Atrasada</span></td>
+            <td class="numeric-cell col-lib-restr">33%</td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- CONTEXTUAL SIDE DRAWER (Alternativa de Edición & LPS Drawer) -->
+    <div class="drawer-backdrop" id="drawer-backdrop" onclick="cerrarDrawer()"></div>
+    <aside class="drawer-panel" id="drawer-actividad" aria-label="Editor de Actividad" role="dialog" aria-modal="true">
+      <div class="drawer-header">
+        <div class="drawer-header-content">
+          <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+            <code style="font-size:11px; background:rgba(0,0,0,0.2); padding:1px 5px; border-radius:3px;" id="drawer-codigo">EST-01</code>
+            <span class="status-badge status-atrasada" id="drawer-estado">Atrasada</span>
+            <span class="badge-rc" id="drawer-rc">RC</span>
+          </div>
+          <h3 id="drawer-titulo">Excavación mecánica de zapatas eje A-C</h3>
+          <div class="drawer-header-meta">
+            <span>Id: <strong id="drawer-id">101</strong></span> ·
+            <span>Capítulo: <strong>1. Cimentación</strong></span>
+          </div>
+        </div>
+        <button type="button" class="drawer-close-btn" onclick="cerrarDrawer()" aria-label="Cerrar panel">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Sección 1: Cronograma y Fechas -->
+        <div class="drawer-section">
+          <div class="drawer-section-title"><i class="far fa-calendar-alt"></i> Plazos y Cronograma</div>
+          <div class="drawer-field-row">
+            <div class="pg-editor-field">
+              <label>Fecha Inicio</label>
+              <input type="text" id="drawer-input-inicio" value="10/08/2026">
+            </div>
+            <div class="pg-editor-field">
+              <label>Fecha Fin</label>
+              <input type="text" id="drawer-input-fin" value="20/08/2026">
+            </div>
+          </div>
+          <div style="font-size: 11px; color: var(--ds-text-muted); display:flex; justify-content:space-between;">
+            <span>Duración: <strong>10 días contractuales</strong></span>
+            <span>Semana inicio: <strong>Sem 33 (hace 1 sem)</strong></span>
+          </div>
+        </div>
+
+        <!-- Sección 2: Asignaciones y Responsables (Opcional en Macro) -->
+        <div class="drawer-section">
+          <div class="drawer-section-title">
+            <span><i class="fas fa-user-hard-hat"></i> Responsables & Asignaciones</span>
+            <span class="badge-optional">Opcional en S05</span>
+          </div>
+          <div class="drawer-help-text">
+            <i class="fas fa-info-circle"></i> Opcional en Programa General. Si se asigna, viaja prellenado automáticamente a Programación Intermedia (Lookahead), donde la asignación es <strong>obligatoria</strong> para comprometer la actividad.
+          </div>
+          <div class="drawer-field-row">
+            <div class="pg-editor-field">
+              <label>Profesional AIA Responsable</label>
+              <select id="drawer-select-profesional">
+                <option value="1" selected>Ing. Carlos Restrepo (Residente Estructuras)</option>
+                <option value="2">Ing. María Paula Gómez (Directora Obra)</option>
+                <option value="3">Arq. Juan David Muñoz (Coordinador BIM)</option>
+                <option value="4">Ing. Laura Restrepo (Instalaciones)</option>
+                <option value="">(Sin asignar · Definir en Lookahead)</option>
+              </select>
+            </div>
+            <div class="pg-editor-field">
+              <label>Empresa Subcontratista</label>
+              <select id="drawer-select-subcontratista">
+                <option value="1" selected>Excavaciones del Norte S.A.S.</option>
+                <option value="2">Aceros de Colombia</option>
+                <option value="3">Concretos Argos S.A.</option>
+                <option value="4">Topografía Integral</option>
+                <option value="5">Instalaciones Hidráulicas del Norte</option>
+                <option value="">(Sin asignar · Definir en Lookahead)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 3: Cantidades y Avances -->
+        <div class="drawer-section">
+          <div class="drawer-section-title"><i class="fas fa-cubes"></i> Presupuesto y Avance Físico</div>
+          <div class="drawer-field-row">
+            <div class="pg-editor-field">
+              <label>Unidad Medida</label>
+              <select id="drawer-select-unidad">
+                <option value="m³" selected>m³ (Metros cúbicos)</option>
+                <option value="ton">ton (Toneladas)</option>
+                <option value="m²">m² (Metros cuadrados)</option>
+                <option value="%">% (Porcentaje)</option>
+              </select>
+            </div>
+            <div class="pg-editor-field">
+              <label>Cantidad PPTO</label>
+              <input type="text" id="drawer-input-ppto" value="450.0">
+            </div>
+          </div>
+          <div class="drawer-field-row">
+            <div class="pg-editor-field">
+              <label>Avance Teórico</label>
+              <input type="text" value="50.0%" disabled style="opacity: 0.6;">
+            </div>
+            <div class="pg-editor-field">
+              <label>Avance Real Reportado</label>
+              <input type="text" id="drawer-input-real" value="25.0%" style="font-weight:700; color:#ef4444;">
+            </div>
+          </div>
+          <div style="background:var(--ds-surface-elevated); border:1px solid var(--ds-border-subtle); padding:8px 10px; border-radius:5px; font-size:11px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <span>Desviación Física ($\Delta$):</span>
+              <strong style="color:#ef4444;">-25.0% (-112.5 m³)</strong>
+            </div>
+            <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+              <div style="height:100%; width:25%; background:#ef4444;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 3: Liberación de Restricciones LPS (Los 7 Recursos Lean) -->
+        <div class="drawer-section">
+          <div class="drawer-section-title">
+            <i class="fas fa-shield-alt"></i> Restricciones Lean (Liberación: 66%)
+          </div>
+          <div style="font-size:10.5px; color:var(--ds-text-secondary); display:flex; flex-direction:column; gap:4px;">
+            <div style="display:flex; justify-content:space-between; padding:4px 6px; background:rgba(239,68,68,0.1); border-left:3px solid #ef4444; border-radius:2px;">
+              <span>🚨 <strong>Equipos:</strong> Falta retroexcavadora de oruga 320</span>
+              <span style="color:#ef4444;">Bloqueante</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:4px 6px; background:rgba(245,158,11,0.1); border-left:3px solid #f59e0b; border-radius:2px;">
+              <span>⚠️ <strong>Seguridad:</strong> Línea de vida pendiente en talud</span>
+              <span style="color:#f59e0b;">En gestión</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:4px 6px; background:rgba(16,185,129,0.1); border-left:3px solid #10b981; border-radius:2px;">
+              <span>✓ <strong>Diseño:</strong> Planos estructurales R0 aprobados</span>
+              <span style="color:#10b981;">Liberado</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 4: Bitácora y Notas -->
+        <div class="drawer-section">
+          <div class="drawer-section-title"><i class="fas fa-comment-dots"></i> Bitácora de Campo & SOS</div>
+          <textarea style="width:100%; height:55px; background:var(--ds-surface-well); border:1px solid var(--ds-border-strong); border-radius:4px; color:var(--ds-text-primary); font-size:11px; padding:6px; resize:none;" placeholder="Escribir una nota u observación técnica...">Lluvia intensa el 18/08 retrasó excavación 2 días. Equipo mecánico en taller por falla hidráulica.</textarea>
+        </div>
+      </div>
+
+      <div class="drawer-footer">
+        <div class="nav-actividades-btn">
+          <button type="button" class="btn-compact" id="btn-prev-actividad" onclick="navigateDrawer(-1)" title="Actividad Anterior (Atajo: [)"><i class="fas fa-chevron-left"></i> Anterior <span style="opacity:0.6; font-size:10px;">[</span></button>
+          <button type="button" class="btn-compact" id="btn-next-actividad" onclick="navigateDrawer(1)" title="Actividad Siguiente (Atajo: ])">Siguiente <span style="opacity:0.6; font-size:10px;">]</span> <i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button type="button" class="btn-compact" onclick="cerrarDrawer()">Cerrar (Esc)</button>
+          <button type="button" class="btn-compact btn-save-inline" onclick="guardarCambiosDrawer()"><i class="fas fa-check"></i> Guardar Cambios (⌘S)</button>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- Notificación Toast -->
+  <div id="toastSave" class="toast-notification">
+    <i class="fas fa-check-circle" style="font-size: 14px;"></i>
+    <span id="toastMsg">Cambios guardados con éxito</span>
+  </div>
+
+  <!-- Script Interactivo para Pruebas en Vivo -->
+  <script>
+    const actividadesDb = [
+      { id: 101, codigo: 'EST-01', titulo: 'Excavación mecánica de zapatas eje A-C', estado: 'Atrasada', estadoClase: 'status-atrasada', rc: true, und: 'm³', ppto: '450.0', teorico: '50.0%', real: '25.0%', delta: '-25.0% (-112.5 m³)', inicio: '10/08/2026', fin: '20/08/2026', sem: 'Sem 33 (hace 1 sem)', prof: '1', subc: '1', restrPct: '66%', bitacora: 'Lluvia intensa el 18/08 retrasó excavación 2 días. Equipo mecánico en taller por falla hidráulica.' },
+      { id: 102, codigo: 'EST-02', titulo: 'Armado de acero para zapatas y vigas', estado: 'Con Alerta', estadoClase: 'status-con-alerta', rc: false, und: 'ton', ppto: '12.5', teorico: '40.0%', real: '40.0%', delta: '0.0% (Al día)', inicio: '18/08/2026', fin: '28/08/2026', sem: 'Sem 34 (esta sem)', prof: '1', subc: '2', restrPct: '100%', bitacora: 'Acero figurado en patio de obra. Pendiente liberación de seguridad en talud.' },
+      { id: 103, codigo: 'EST-03', titulo: 'Vaciado de concreto zapatas f\'c=3000 psi', estado: 'Debe Iniciar', estadoClase: 'status-debe-iniciar', rc: true, und: 'm³', ppto: '180.0', teorico: '10.0%', real: '0.0%', delta: '-10.0% (-18.0 m³)', inicio: '24/08/2026', fin: '29/08/2026', sem: 'Sem 34 (esta sem)', prof: '2', subc: '3', restrPct: '80%', bitacora: 'Mixers programados con Argos para el jueves 27.' },
+      { id: 104, codigo: 'EST-04', titulo: 'Desencofrado y curado químico zapatas', estado: 'En Curso', estadoClase: 'status-en-curso', rc: false, und: 'm²', ppto: '180.0', teorico: '15.0%', real: '15.0%', delta: '0.0% (Al día)', inicio: '25/08/2026', fin: '30/08/2026', sem: 'Sem 34 (esta sem)', prof: '1', subc: '1', restrPct: '100%', bitacora: 'Curado con membrana química antisol blanca.' },
+      { id: 105, codigo: 'EST-05', titulo: 'Relleno compactado con material de sitio', estado: 'En Curso', estadoClase: 'status-en-curso', rc: false, und: 'm³', ppto: '320.0', teorico: '25.0%', real: '30.0%', delta: '+5.0% (+16.0 m³)', inicio: '22/08/2026', fin: '31/08/2026', sem: 'Sem 33 (hace 1 sem)', prof: '3', subc: '1', restrPct: '100%', bitacora: 'Ensayos de densidad proctor al 98% aprobados por interventoría.' },
+      { id: 106, codigo: 'EST-06', titulo: 'Instalación de columnas piso 1 metálicas', estado: 'En Curso', estadoClase: 'status-en-curso', rc: true, und: 'ton', ppto: '8.4', teorico: '60.0%', real: '60.0%', delta: '0.0% (Al día)', inicio: '15/08/2026', fin: '28/08/2026', sem: 'Sem 33 (hace 1 sem)', prof: '1', subc: '2', restrPct: '100%', bitacora: 'Grúa telescópica operando con plan de izaje certificado.' },
+      { id: 107, codigo: 'EST-07', titulo: 'Vaciado de losa contrapiso e=15cm', estado: 'Actividad Futura', estadoClase: 'status-actividad-futura', rc: false, und: 'm²', ppto: '520.0', teorico: '0.0%', real: '0.0%', delta: '0.0% (Futura)', inicio: '01/09/2026', fin: '15/09/2026', sem: 'Sem 35 (en 1 sem)', prof: '', subc: '', restrPct: '40%', bitacora: 'En espera de terminación de instalaciones hidrosanitarias bajo losa.' },
+      { id: 108, codigo: 'EST-08', titulo: 'Replanteo topográfico de cimentación', estado: 'Terminada', estadoClase: 'status-terminada', rc: false, und: 'glb', ppto: '1.0', teorico: '100%', real: '100%', delta: '0.0% (Completada)', inicio: '01/08/2026', fin: '08/08/2026', sem: 'Sem 31 (cerrada)', prof: '3', subc: '4', restrPct: '100%', bitacora: 'Puntos y carteras topográficas entregadas a interventoría.' }
+    ];
+
+    let currentActividadIndex = 0;
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+    }
+
+    function setColumnMode(mode) {
+      const btnReality = document.getElementById('btn-view-reality');
+      const btnRational = document.getElementById('btn-view-rational');
+      const thAvance = document.querySelector('.th-avance-title');
+      const thPpto = document.querySelector('.col-ppto');
+      if (mode === 'rational') {
+        document.body.classList.add('mode-rationalized');
+        btnRational.classList.add('active');
+        btnReality.classList.remove('active');
+        if (thAvance) thAvance.innerText = 'Avance (Real / Teór)';
+        if (thPpto) thPpto.innerText = 'Ppto Total';
+      } else {
+        document.body.classList.remove('mode-rationalized');
+        btnReality.classList.add('active');
+        btnRational.classList.remove('active');
+        if (thAvance) thAvance.innerText = 'Real';
+        if (thPpto) thPpto.innerText = 'Ppto';
+      }
+    }
+
+    function abrirDrawerActividad(id) {
+      const index = actividadesDb.findIndex(a => a.id === id);
+      if (index !== -1) {
+        currentActividadIndex = index;
+      }
+      renderDrawerData();
+      document.getElementById('drawer-backdrop').classList.add('active');
+      document.getElementById('drawer-actividad').classList.add('active');
+    }
+
+    function renderDrawerData() {
+      const act = actividadesDb[currentActividadIndex] || actividadesDb[0];
+      document.getElementById('drawer-id').innerText = act.id;
+      document.getElementById('drawer-codigo').innerText = act.codigo;
+      document.getElementById('drawer-titulo').innerText = act.titulo;
+      
+      const estadoEl = document.getElementById('drawer-estado');
+      estadoEl.innerText = act.estado;
+      estadoEl.className = 'status-badge ' + act.estadoClase;
+
+      const rcEl = document.getElementById('drawer-rc');
+      if (rcEl) {
+        rcEl.style.display = act.rc ? 'inline-block' : 'none';
+      }
+
+      document.getElementById('drawer-input-inicio').value = act.inicio;
+      document.getElementById('drawer-input-fin').value = act.fin;
+      document.getElementById('drawer-select-profesional').value = act.prof || "";
+      document.getElementById('drawer-select-subcontratista').value = act.subc || "";
+      document.getElementById('drawer-select-unidad').value = act.und;
+      document.getElementById('drawer-input-ppto').value = act.ppto;
+      document.getElementById('drawer-input-real').value = act.real;
+    }
+
+    function navigateDrawer(direction) {
+      currentActividadIndex = (currentActividadIndex + direction + actividadesDb.length) % actividadesDb.length;
+      renderDrawerData();
+    }
+
+    function guardarCambiosDrawer() {
+      const act = actividadesDb[currentActividadIndex] || actividadesDb[0];
+      showToast(`✓ Actividad ${act.codigo} actualizada (reprogramada_por_usuario = 1)`);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastSave');
+      const toastMsg = document.getElementById('toastMsg');
+      toastMsg.innerText = msg;
+      toast.style.display = 'flex';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2500);
+    }
+
+    function cerrarDrawer() {
+      document.getElementById('drawer-backdrop').classList.remove('active');
+      document.getElementById('drawer-actividad').classList.remove('active');
+    }
+
+    // Atajos de teclado para productividad
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        cerrarDrawer();
+      } else if (e.key === '[' && document.getElementById('drawer-actividad').classList.contains('active')) {
+        navigateDrawer(-1);
+      } else if (e.key === ']' && document.getElementById('drawer-actividad').classList.contains('active')) {
+        navigateDrawer(1);
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        if (document.getElementById('drawer-actividad').classList.contains('active')) {
+          e.preventDefault();
+          guardarCambiosDrawer();
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
