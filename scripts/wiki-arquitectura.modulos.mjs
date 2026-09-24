@@ -38,7 +38,7 @@ export const MODULOS = [
     titulo: 'Programa General',
     areas: ['lps', 'arquitectura'],
     flujo: 'lps',
-    rutas: ['/programa-general', '/api/general', '/api/pg'],
+    rutas: ['/programa-general', '/api/programa-general', '/api/general', '/api/pg'],
     capacidades: ['canManageGeneralProgram', 'canEditPastGeneralProgram'],
     nota: '',
   },

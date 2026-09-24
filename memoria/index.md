@@ -138,6 +138,8 @@ alcance tienen ficha propia aquí: [[semi-auto-solo-lo-usa-pdc]] y
 
 ## Arquitectura por módulo
 
+El mapa exhaustivo de los 12 dominios, submódulos, pantallas y herramientas satélite está consolidado en **[[mapa-de-modulos-y-submodulos]]**.
+
 Una página por módulo real de la aplicación en `memoria/arquitectura/`, y dos de flujo en
 `memoria/flujos/`: [[flujo-lps]] y [[flujo-pdc]].
 
