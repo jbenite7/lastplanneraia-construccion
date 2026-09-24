@@ -66,7 +66,25 @@ class DevDoorController
 
         // Comparte la validación y el contexto de proyecto con el selector legado
         // y el API, pero conserva las redirecciones propias de la puerta de desarrollo.
-        $result = (new ProjectAccessService())->select($login, $proyecto);
+        $service = new ProjectAccessService();
+        $result = $service->select($login, $proyecto);
+        if (!$result['success'] && ctype_digit($proyecto)) {
+            $proyectos = $service->listForUser($login);
+            $target = null;
+            $numericId = (int) $proyecto;
+            foreach ($proyectos as $p) {
+                if ((int) ($p['ID'] ?? 0) === $numericId) {
+                    $target = (string) ($p['Proyecto_Proceso'] ?? '');
+                    break;
+                }
+            }
+            if ($target === null && isset($proyectos[$numericId - 1])) {
+                $target = (string) ($proyectos[$numericId - 1]['Proyecto_Proceso'] ?? '');
+            }
+            if ($target !== null && $target !== '') {
+                $result = $service->select($login, $target);
+            }
+        }
         if (!$result['success']) {
             $_SESSION['error'] = $result['message'];
             header('Location: /proyectos');

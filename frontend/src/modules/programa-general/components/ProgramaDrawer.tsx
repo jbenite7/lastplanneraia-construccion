@@ -244,7 +244,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
           <div className="drawer-pro-topline">
             <div className="drawer-breadcrumb">
               <i className="far fa-folder" aria-hidden="true"></i>
-              <span>{actividad.capituloNombre}</span> › Actividad <strong>{actividad.unique_id}</strong>
+              <span>{parsearTextoActividad(actividad.capituloNombre).titulo || actividad.capituloNombre}</span> › Actividad <strong>{actividad.unique_id}</strong>
             </div>
             <button
               type="button"

@@ -40,7 +40,8 @@ export function normalizarActividades(
   return filas.map((fila) => {
     const esCapitulo = fila.Titulo === 1;
     if (esCapitulo) {
-      capituloActual = fila.Actividad;
+      const parsedCap = parsearTextoActividad(fila.Actividad);
+      capituloActual = parsedCap.titulo || fila.Actividad;
       return {
         ...fila,
         esCapitulo: true,
