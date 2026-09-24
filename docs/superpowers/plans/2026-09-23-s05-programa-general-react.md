@@ -1845,11 +1845,34 @@ Los nombres de tipos e interfaces (`ActividadUI`, `FilaActividadPg`, `ContextoPg
 
 ---
 
-## Execution Handoff
+## Cierre
 
-Plan complete and saved to `docs/superpowers/plans/2026-09-23-s05-programa-general-react.md`. Two execution options:
+**Estado:** `CODE_COMPLETE` en la rama `feature/s05-programa-general-react`, listo para Pull Request contra `main` según la política de `AGENTS.md`.
 
-1. **Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration.
-2. **Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints.
+**Superficie entregada:**
+- Grilla principal racionalizada de 8 columnas esenciales en 1180×820 con cero scroll horizontal.
+- Alternador de densidad entre 8 columnas esenciales y 13 columnas contractuales.
+- Drawer Contextual LPS (440px) con navegación secuencial (`[` y `]`), plazos, asignaciones opcionales (`Responsable_AIA` y `Sub_Contratista` con advertencia de cascada a Lookahead S07), dual-gauge con desviación física volumétrica y porcentual $\Delta$, matriz de 7 recursos Lean, bitácora SOS y atajos `Escape` / `⌘S`.
+- Modo móvil adaptativo en tarjetas verticales (<768px).
+- Exportador CSV RFC 4180 con UTF-8 BOM preservando las 13 columnas completas.
+- Orquestación en la SPA `/app/programa-general` con cliente API tipado y seguro basado en `pedir()`.
 
-Which approach?
+**Tareas y commits:**
+| Tarea | Commits | Descripción |
+|---|---|---|
+| Task 1 (Backend PHP) | `a57b7628`, `ae8aa2e6` | Endpoints de contexto y actualización con asignaciones opcionales y catálogos |
+| Task 2 (Frontend API & Zod) | `f23b62ad`, `82904095` | Esquemas Zod y cliente API tipado con CSRF y soporte para números/textos |
+| Task 3 (Dominio Puro) | `6002270e`, `1a1efb4d` | Modelo puro, cálculo de $\Delta$ dual-gauge, validaciones de borrador y badges DESIGN.md |
+| Task 4 (Barra de Herramientas) | `9ced2953` | Toolbar, barra de conteo de señales y filtros facetados |
+| Task 5 (Tabla 8 cols & Móvil) | `cb1f1b75` | Grilla esencial sin scroll horizontal y tarjetas para viewport móvil |
+| Task 6 (Drawer Contextual LPS) | `b9de32d2` | Drawer de 440px con navegación `[` y `]`, 7 recursos Lean, bitácora y atajos |
+| Task 7 (Página y SPA Routing) | `55aaac64` | `ProgramaGeneralPage`, exportador CSV, CSS con tokens y ruta `/app/programa-general` |
+| Task 8 (E2E & Playwright) | `ea3e4c25` | Suite Playwright completa (6/6 pass) y verificación con Dev Door en Docker |
+
+**Verificación medida:**
+- PHP Backend: `tests/test_programa_general_update_assignments.php`, `tests/test_programa_general_context_contract.php` y `tests/test_global_table_safety.php` en verde (`RC=0`).
+- Frontend Unit: 72 test suites, 901 pruebas en Vitest en verde (`RC=0`).
+- TypeScript & Build: `tsc --noEmit` y `npm run build` en verde (`RC=0`).
+- Design System: `node scripts/design-system-static-suite.mjs` (8/8 checks PASS, `RC=0`).
+- Playwright E2E: `tests/browser/s05-programa-general-react.spec.mjs` (6 de 6 pruebas en verde, `RC=0`, duración 4.9s).
+
