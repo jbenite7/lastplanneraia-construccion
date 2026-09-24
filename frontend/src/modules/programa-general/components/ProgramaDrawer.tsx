@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ActividadUI } from '../domain/modelo';
+import { ActividadUI, parsearTextoActividad, formatearFechaObra } from '../domain/modelo';
 import { calcularDesviacionFisica } from '../domain/validacion';
 import { obtenerConfigEstado } from '../domain/presentacionEstados';
 
@@ -175,6 +175,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   const pptoNum = cantidadPpto !== '' ? parseFloat(cantidadPpto) : null;
   const desviacion = calcularDesviacionFisica(realRatio, teorRatio, pptoNum, unidad);
   const estadoCfg = obtenerConfigEstado(actividad.Estado);
+  const parsedAct = parsearTextoActividad(actividad.Actividad);
 
   // 7 Recursos Lean
   const recursosLean: RecursoLeanItem[] = [
@@ -256,8 +257,13 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
           </div>
 
           <div className="drawer-title-row">
-            <code className="cell-code">{actividad.codigo_actividad || '-'}</code>
-            <h2 className="drawer-act-title">{actividad.Actividad}</h2>
+            <div className="drawer-title-group">
+              <h3 className="drawer-act-title">{parsedAct.titulo}</h3>
+              {parsedAct.subtitulo && (
+                <span className="drawer-act-subtitle">{parsedAct.subtitulo}</span>
+              )}
+            </div>
+            <span className="drawer-act-code cell-code">{actividad.codigo_actividad || '-'}</span>
           </div>
 
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '2px' }}>
@@ -324,6 +330,9 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                     value={fechaInicio}
                     onChange={(e) => setFechaInicio(e.target.value)}
                   />
+                  <span className="drawer-date-formatted form-date-hint" style={{ fontSize: '11px', color: 'var(--ds-text-muted)', marginTop: '2px', display: 'block' }}>
+                    Formato obra: <strong>{formatearFechaObra(fechaInicio)}</strong>
+                  </span>
                 </div>
               </div>
               <div className="form-field-group">
@@ -338,13 +347,22 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                     value={fechaFin}
                     onChange={(e) => setFechaFin(e.target.value)}
                   />
+                  <span className="drawer-date-formatted form-date-hint" style={{ fontSize: '11px', color: 'var(--ds-text-muted)', marginTop: '2px', display: 'block' }}>
+                    Formato obra: <strong>{formatearFechaObra(fechaFin)}</strong>
+                  </span>
                 </div>
               </div>
             </div>
+            {actividad.Semanas_Inicio !== undefined && actividad.Semanas_Inicio !== null && (
+              <div className="drawer-schedule-meta" style={{ fontSize: '11px', color: 'var(--ds-text-muted)', marginTop: '2px' }}>
+                <span>Semana contractual: <strong>Sem {actividad.Semanas_Inicio}</strong></span>
+              </div>
+            )}
             {actividad.plazoVencido && (
               <div
+                className="drawer-alert-overdue cell-alert cell-date-overdue date-overdue"
                 style={{
-                  color: 'var(--ds-state-danger-text)',
+                  color: 'var(--ds-state-danger-text, #ef4444)',
                   fontSize: '11px',
                   marginTop: '4px',
                   fontWeight: 600,
@@ -489,17 +507,17 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
             <div className="dual-gauge-box" style={{ marginTop: '10px' }}>
               <div className="dual-gauge-header">
                 <span className="gauge-metric-title">Desviación Física (Δ):</span>
-                <span className={`gauge-delta-val ${desviacion.esNegativo ? 'delta-neg' : 'delta-pos'}`}>
+                <span className={`gauge-delta-val ${desviacion.esNegativo ? 'delta-neg' : 'delta-ok delta-pos'}`}>
                   {desviacion.textoFormateado}
                 </span>
               </div>
-              <div className="dual-track">
+              <div className="dual-track micro-gauge-bar">
                 <div
                   className="dual-fill-teor"
                   style={{ width: `${Math.min(Math.max(actividad.avanceTeoricoPct, 0), 100)}%` }}
                 ></div>
                 <div
-                  className="dual-fill-real"
+                  className="dual-fill-real micro-gauge-fill"
                   style={{
                     width: `${Math.min(Math.max(parseFloat(avanceReal) || 0, 0), 100)}%`,
                     backgroundColor: desviacion.esNegativo ? 'var(--ds-state-danger-text)' : 'var(--aia-corporate)',

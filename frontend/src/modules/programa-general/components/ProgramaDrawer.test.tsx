@@ -249,4 +249,106 @@ describe('ProgramaDrawer Contextual LPS', () => {
     fireEvent.keyDown(window, { key: 's', metaKey: true });
     expect(onGuardar).toHaveBeenCalledTimes(2);
   });
+
+  it('renderiza titulo sanitizado sin etiquetas <b> ni <small>, mostrando subtitulo y codigo', () => {
+    const actConHtml: ActividadUI = {
+      ...mockAct,
+      Actividad: '<b>VACIADO DE CONCRETO ZAPATAS, </b> <small>[Capítulo: 1. CIMENTACIÓN, EDIFICIO A]</small>',
+      codigo_actividad: 'EST-101',
+    };
+
+    render(
+      <ProgramaDrawer
+        actividad={actConHtml}
+        catalogos={catalogos}
+        indiceActual={1}
+        totalActividades={10}
+        onCerrar={vi.fn()}
+        onGuardar={vi.fn()}
+        onNavigateSeq={vi.fn()}
+      />
+    );
+
+    // No debe contener tags HTML crudos
+    expect(screen.queryByText(/<b>/)).toBeNull();
+    expect(screen.queryByText(/<small>/)).toBeNull();
+
+    // Debe renderizar el título limpio dentro de drawer-act-title
+    const tituloEl = screen.getByText('VACIADO DE CONCRETO ZAPATAS');
+    expect(tituloEl).toBeInTheDocument();
+    expect(tituloEl.className).toContain('drawer-act-title');
+
+    // Debe renderizar el subtítulo limpio dentro de drawer-act-subtitle
+    const subtituloEl = screen.getByText('1. CIMENTACIÓN, EDIFICIO A');
+    expect(subtituloEl).toBeInTheDocument();
+    expect(subtituloEl.className).toContain('drawer-act-subtitle');
+
+    // Debe renderizar el código de la actividad
+    expect(screen.getByText('EST-101')).toBeInTheDocument();
+  });
+
+  it('muestra fechas formateadas de obra y alerta visual de plazo vencido en cronograma', () => {
+    render(
+      <ProgramaDrawer
+        actividad={mockAct}
+        catalogos={catalogos}
+        indiceActual={1}
+        totalActividades={10}
+        onCerrar={vi.fn()}
+        onGuardar={vi.fn()}
+        onNavigateSeq={vi.fn()}
+      />
+    );
+
+    // Debe renderizar las fechas formateadas en formato obra DD/MM/AAAA
+    expect(screen.getByText(/10\/08\/2026/)).toBeInTheDocument();
+    expect(screen.getByText(/20\/08\/2026/)).toBeInTheDocument();
+
+    // Alerta de plazo vencido con clase semántica
+    const alertaVencido = screen.getByText(/Plazo vencido hace 3 días/i);
+    expect(alertaVencido).toBeInTheDocument();
+    expect(alertaVencido.className).toContain('date-overdue');
+  });
+
+  it('aplica clases delta-neg y delta-ok segun desviacion en micro-medidor', () => {
+    // Actividad retrasada (delta negativo)
+    const { rerender } = render(
+      <ProgramaDrawer
+        actividad={mockAct}
+        catalogos={catalogos}
+        indiceActual={1}
+        totalActividades={10}
+        onCerrar={vi.fn()}
+        onGuardar={vi.fn()}
+        onNavigateSeq={vi.fn()}
+      />
+    );
+
+    const deltaNeg = screen.getByText(/-25\.0%/);
+    expect(deltaNeg.className).toContain('delta-neg');
+
+    // Actividad al día (delta positivo o cero)
+    const actAlDia: ActividadUI = {
+      ...mockAct,
+      avanceRealPct: 50.0,
+      avanceTeoricoPct: 50.0,
+      deltaPct: 0.0,
+      Ejecutado: 0.5,
+    };
+
+    rerender(
+      <ProgramaDrawer
+        actividad={actAlDia}
+        catalogos={catalogos}
+        indiceActual={1}
+        totalActividades={10}
+        onCerrar={vi.fn()}
+        onGuardar={vi.fn()}
+        onNavigateSeq={vi.fn()}
+      />
+    );
+
+    const deltaOk = screen.getByText(/0\.0%/);
+    expect(deltaOk.className).toContain('delta-ok');
+  });
 });
