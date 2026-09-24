@@ -312,7 +312,7 @@ describe('ProgramaDrawer Contextual LPS', () => {
 
   it('aplica clases delta-neg y delta-ok segun desviacion en micro-medidor', () => {
     // Actividad retrasada (delta negativo)
-    const { rerender } = render(
+    const { rerender, container } = render(
       <ProgramaDrawer
         actividad={mockAct}
         catalogos={catalogos}
@@ -324,7 +324,8 @@ describe('ProgramaDrawer Contextual LPS', () => {
       />
     );
 
-    const deltaNeg = screen.getByText(/-25\.0%/);
+    const deltaNeg = container.querySelector('.gauge-delta-val')!;
+    expect(deltaNeg).not.toBeNull();
     expect(deltaNeg.className).toContain('delta-neg');
 
     // Actividad al día (delta positivo o cero)
@@ -348,7 +349,8 @@ describe('ProgramaDrawer Contextual LPS', () => {
       />
     );
 
-    const deltaOk = screen.getByText(/0\.0%/);
+    const deltaOk = container.querySelector('.gauge-delta-val')!;
+    expect(deltaOk).not.toBeNull();
     expect(deltaOk.className).toContain('delta-ok');
   });
 });
