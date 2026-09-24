@@ -145,7 +145,9 @@ export function BarraLateral({
   const asideRef = useRef<HTMLElement | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
 
-  const estado = barraAutonoma ? (colapsadoPropio ? 'collapsed' : 'expanded') : (estadoExterno ?? 'expanded');
+  const estado = barraAutonoma
+    ? (flotante || colapsadoPropio ? 'collapsed' : 'expanded')
+    : (flotante ? 'collapsed' : (estadoExterno ?? 'expanded'));
   const alAlternarEstado = barraAutonoma
     ? () => setColapsadoPropio((valor) => !valor)
     : alAlternarEstadoExterno;

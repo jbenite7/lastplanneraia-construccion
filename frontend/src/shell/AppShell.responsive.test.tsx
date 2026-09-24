@@ -62,6 +62,7 @@ test('a 390px (móvil) el drawer arranca cerrado con disparador visible y velo a
   expect(screen.getByRole('button', { name: /abrir menú de navegación/i })).toHaveAttribute('aria-expanded', 'false');
   expect(document.querySelector('.shell-menu-velo')).not.toBeInTheDocument();
   expect(screen.getByRole('navigation').closest('aside')).not.toHaveAttribute('data-shell-drawer-open');
+  expect(screen.getByRole('navigation').closest('aside')).toHaveAttribute('data-sidebar-state', 'collapsed');
 });
 
 // Tarea 9b, S04 (pedido de Felipe: «en celular y tablet, junto a Menú»). Con el drawer cerrado
