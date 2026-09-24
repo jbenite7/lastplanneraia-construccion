@@ -378,7 +378,7 @@ git commit -m "fix(ps): corregir guardado de TNP en afterChange y mostrar mensaj
 **Files:**
 - Verify: Todas las rutas afectadas.
 
-- [ ] **Step 1: Análisis estático con PHPStan**
+- [x] **Step 1: Análisis estático con PHPStan**
 
 Ejecutar:
 ```bash
@@ -386,7 +386,7 @@ docker compose exec app vendor/bin/phpstan analyse src/Controllers/Api/SemanalAp
 ```
 Esperado: [OK] No errors.
 
-- [ ] **Step 2: Suite de seguridad de tablas globales**
+- [x] **Step 2: Suite de seguridad de tablas globales**
 
 Ejecutar:
 ```bash
@@ -394,7 +394,7 @@ docker compose exec app php tests/test_global_table_safety.php
 ```
 Esperado: OK.
 
-- [ ] **Step 3: Suite de conciliación de tablas globales**
+- [x] **Step 3: Suite de conciliación de tablas globales**
 
 Ejecutar:
 ```bash
@@ -402,7 +402,7 @@ docker compose exec app php tests/test_global_table_reconciliation.php
 ```
 Esperado: OK.
 
-- [ ] **Step 4: Re-ejecutar test de TNP calificado**
+- [x] **Step 4: Re-ejecutar test de TNP calificado**
 
 Ejecutar:
 ```bash
