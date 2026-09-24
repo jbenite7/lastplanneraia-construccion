@@ -1,5 +1,7 @@
 /* Programa General — S05 Estilos de Producción con Tokens Canónicos DESIGN.md */
 
+@layer module {
+
 .programa-general-container {
   display: flex;
   flex-direction: column;
@@ -879,4 +881,6 @@
   .drawer-panel-pro {
     width: 100vw;
   }
+}
+
 }
