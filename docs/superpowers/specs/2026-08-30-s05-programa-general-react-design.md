@@ -60,8 +60,9 @@ de esa sesión.
 
 ### Requisitos nuevos de Felipe (2026-09-24, en el chat)
 
-- **R1.2-1 — La tabla no tiene desbordamiento horizontal.** *(Abierto: ¿vale solo para el modo de
-  8 columnas o también para el de 13?)*
+- **R1.2-1 — La tabla no tiene desbordamiento horizontal, ni con 8 ni con 13 columnas**, a 1180px
+  en ambos temas. Con 13, «Actividad» parte en más líneas y las columnas numéricas se compactan;
+  nunca aparece barra horizontal (decidido por Felipe el 2026-09-24).
 - **R1.2-2 — «Actividad» parte el texto en varias líneas y muestra siempre el texto completo**,
   sin truncar ni usar puntos suspensivos.
 - **R1.2-3 — El scroll vertical de la tabla funciona** y alcanza la última fila.
@@ -83,7 +84,7 @@ de esa sesión.
 2. **Referencia visual:** ¿`public/mockups/s05-production-mockup.html` (commit `30550c35`, que se
    presenta como «maqueta aprobada») es el contrato visual? **Felipe lo revisa antes de decidir
    (2026-09-24).** Mientras no lo apruebe, solo mandan R1.2-1 a R1.2-4.
-3. **Alcance de R1.2-1:** solo el modo de 8 columnas, o también el de 13. *Pendiente.*
+3. ~~Alcance de R1.2-1~~ → **decidido por Felipe (2026-09-24):** vale para las dos vistas.
 4. **Alcance de R1.2-4** en la barra lateral. *Pendiente.*
 5. **Condición de hecho:** los gates de runtime en verde en ambos temas (`G_PILOT_LAB_GATES`,
    `G_PG_PERSISTENCE_RBAC`, `G_FULL_APP_FLOW`, presupuestos) más el corte de pruebas al DOM de
