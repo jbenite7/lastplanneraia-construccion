@@ -23,7 +23,8 @@ resumen: "Migración vertical S05 de Programa General a React con paridad funcio
 
 ## Enmienda del 2026-09-24 (ronda 1.2) — `status: propuesto`, en grilleo
 
-> Borrador del paso 01 del flujo maestro. **No está aprobada** y no autoriza nada. Donde choque
+> Paso 01 cerrado con lectura simple limpia (Felipe, 2026-09-24): sin decisiones abiertas. Siguen
+> el paso 02 (preguntas de abajo) y el `/aprobar` de Felipe. **No está aprobada** y no autoriza nada. Donde choque
 > con la ronda 1.1 o con el resto, manda esta sección una vez que Felipe la apruebe con `/aprobar`.
 
 ### Por qué hay ronda nueva
@@ -83,9 +84,10 @@ de esa sesión.
    `feature/s05-paridad-visual` (`8ad3ca3f`), **auditados**. Los archivos sin commit de esa sesión
    se descartan. Antes de construir encima se revisan el cambio a `DevDoorController.php`
    (`security-reviewer`) y los assets compilados que se commitearon en `public/app/`.
-2. **Referencia visual:** ¿`public/mockups/s05-production-mockup.html` (commit `30550c35`, que se
-   presenta como «maqueta aprobada») es el contrato visual? **Felipe lo revisa antes de decidir
-   (2026-09-24).** Mientras no lo apruebe, solo mandan R1.2-1 a R1.2-4.
+2. ~~Referencia visual~~ → **decidido por Felipe (2026-09-24):** el mockup
+   `public/mockups/s05-production-mockup.html` es **solo de guía**, no contrato 1:1. El contrato
+   visual son R1.2-1 a R1.2-4, `DESIGN.md` y la barra lateral del legado. Donde el mockup choque con
+   ellos, ganan ellos.
 3. ~~Alcance de R1.2-1~~ → **decidido por Felipe (2026-09-24):** vale para las dos vistas.
 4. ~~Alcance de R1.2-4~~ → **decidido por Felipe (2026-09-24):** paridad con la barra lateral del
    legado.
