@@ -67,10 +67,13 @@ de esa sesión.
 - **R1.2-2 — «Actividad» parte el texto en varias líneas y muestra siempre el texto completo**,
   sin truncar ni usar puntos suspensivos.
 - **R1.2-3 — El scroll vertical de la tabla funciona** y alcanza la última fila.
-- **R1.2-4 — La barra lateral de las páginas React se ve igual que la del legado PHP** (Felipe,
-  2026-09-24: lo que molesta es «que se vea distinta al legado»). La referencia es la barra de las
-  páginas PHP que hoy funcionan bien. El bloque de semana, que el legado no tiene, se diseña con
-  las mismas primitivas y la misma escala para que no desentone.
+- **R1.2-4 — La barra lateral de las páginas React se ve y se comporta igual que la del legado
+  PHP, en todo el shell React y no solo en PG** (Felipe, 2026-09-24, precisado tras H4): riel
+  angosto de íconos que se despliega con su botón, ítem activo legible, y **el selector de semana
+  sale de la barra lateral y pasa a la barra superior**, junto a la ruta y la fase, como en
+  `/programacion-semanal`. `ContextoSemana` se rehace en ese lugar con las primitivas del legado.
+  Como toca el shell compartido (`frontend/src/shell/`), lo heredan todos los módulos React, y cada
+  uno se verifica.
 
 ### Decisiones tomadas (Felipe, 2026-09-24)
 
@@ -144,7 +147,7 @@ carga en la página React. **Es falso:** entra por `@import` desde `public/css/a
 | V1 | Qué aserción exacta tumba `programa-general-design-system.mjs` (timeout en `waitForFunction` en «desktop dark» y «wide-desktop dark»); los selectores que pide sí existen en React. | Codex en el paso 05, con `systematic-debugging` |
 | V2 | Qué aserción tumba `G_FULL_APP_FLOW`: su chequeo de selectores tiene `body` como respaldo, así que no es el selector de PG. | Codex en el paso 05 |
 | V3 | Con el host SPA sirviendo `/programa-general` a todos los roles, el rol sin permiso (Subcontratista) recibe 200 y la negación pasa al payload del API. Falta confirmar que la prueba de RBAC siga probando la negación, no solo el código HTTP. | Codex en el paso 05; `security-reviewer` en el 06 |
-| V4 | Cómo se parece la barra lateral React a la del legado (H4): riel de íconos y semana en la barra superior, o conservar la barra ancha. Toca el shell de todos los módulos React, no solo PG. | **Felipe (decisión de producto)** |
+| V4 | ~~Cómo se parece la barra lateral React a la del legado~~ → **cerrado por Felipe el 2026-09-24:** igual al legado **en todo el shell React**. Riel de íconos que se despliega con su botón, y la semana en un selector de la barra superior, como en el legado. | Felipe |
 | V5 | Si se quita el fallback por posición de `DevDoorController` (H10) y se cambian la prueba y el script a nombre de proyecto. | Decisión de código de la sesión: se quita. Revisión de `security-reviewer` en el 06 |
 
 ## Enmienda del 2026-09-21 (ronda 1.1) — manda sobre el resto
