@@ -49,7 +49,7 @@ export const ProgramaToolbar: React.FC<ProgramaToolbarProps> = ({
     >
       <div className="toolbar-left">
         <h1 className="programa-title">{titulo}</h1>
-        <span className="badge-semana">Semana {semana} Vigente</span>
+        <span className="badge-live-week badge-semana">Semana {semana} Vigente</span>
       </div>
 
       <div className="toolbar-actions" role="group" aria-label="Acciones de Programa General">

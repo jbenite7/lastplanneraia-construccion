@@ -1,8 +1,13 @@
 import React from 'react';
 import { ConteosSenales } from '../domain/filtros';
 
+export type ConteosSenalesProps = ConteosSenales & {
+  fueraVentana?: number;
+  sinDatos?: number;
+};
+
 export interface ProgramaSignalsBarProps {
-  conteos: ConteosSenales;
+  conteos: ConteosSenalesProps;
   estadoFiltro: string | null;
   onSelectEstado: (estado: string | null) => void;
   className?: string;
@@ -67,6 +72,20 @@ export const ProgramaSignalsBar: React.FC<ProgramaSignalsBarProps> = ({
       className: 'chip-neutral',
       title: 'Terminada: Al 100% de ejecución',
     },
+    {
+      label: 'Fuera de Ventana',
+      count: conteos.fueraVentana ?? 0,
+      color: 'var(--ds-state-solid-teal)',
+      className: 'chip-teal',
+      title: 'Fuera de Ventana: Más allá de 6 semanas',
+    },
+    {
+      label: 'Sin Datos',
+      count: conteos.sinDatos ?? 0,
+      color: 'var(--ds-state-solid-violet)',
+      className: 'chip-violet',
+      title: 'Sin Datos: Sin fechas contractuales válidas',
+    },
   ];
 
   return (
@@ -98,7 +117,7 @@ export const ProgramaSignalsBar: React.FC<ProgramaSignalsBarProps> = ({
                 aria-hidden="true"
               />
               <span className="signal-label">{c.label}</span>
-              <span className="signal-count chip-count">{c.count}</span>
+              <span className="signal-count chip-count monospace">{c.count}</span>
             </button>
           );
         })}
