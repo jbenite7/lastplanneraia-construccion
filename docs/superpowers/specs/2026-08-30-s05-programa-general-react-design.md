@@ -66,8 +66,10 @@ de esa sesión.
 - **R1.2-2 — «Actividad» parte el texto en varias líneas y muestra siempre el texto completo**,
   sin truncar ni usar puntos suspensivos.
 - **R1.2-3 — El scroll vertical de la tabla funciona** y alcanza la última fila.
-- **R1.2-4 — La barra lateral queda bien**, empezando por el bloque de semana. *(Abierto: qué más
-  incluye «muy mal».)*
+- **R1.2-4 — La barra lateral de las páginas React se ve igual que la del legado PHP** (Felipe,
+  2026-09-24: lo que molesta es «que se vea distinta al legado»). La referencia es la barra de las
+  páginas PHP que hoy funcionan bien. El bloque de semana, que el legado no tiene, se diseña con
+  las mismas primitivas y la misma escala para que no desentone.
 
 ### Decisiones tomadas (Felipe, 2026-09-24)
 
@@ -85,7 +87,8 @@ de esa sesión.
    presenta como «maqueta aprobada») es el contrato visual? **Felipe lo revisa antes de decidir
    (2026-09-24).** Mientras no lo apruebe, solo mandan R1.2-1 a R1.2-4.
 3. ~~Alcance de R1.2-1~~ → **decidido por Felipe (2026-09-24):** vale para las dos vistas.
-4. **Alcance de R1.2-4** en la barra lateral. *Pendiente.*
+4. ~~Alcance de R1.2-4~~ → **decidido por Felipe (2026-09-24):** paridad con la barra lateral del
+   legado.
 5. **Condición de hecho:** los gates de runtime en verde en ambos temas (`G_PILOT_LAB_GATES`,
    `G_PG_PERSISTENCE_RBAC`, `G_FULL_APP_FLOW`, presupuestos) más el corte de pruebas al DOM de
    React. *Recomendación de la sesión; pendiente.*
