@@ -89,9 +89,13 @@ de esa sesión.
 3. ~~Alcance de R1.2-1~~ → **decidido por Felipe (2026-09-24):** vale para las dos vistas.
 4. ~~Alcance de R1.2-4~~ → **decidido por Felipe (2026-09-24):** paridad con la barra lateral del
    legado.
-5. **Condición de hecho:** los gates de runtime en verde en ambos temas (`G_PILOT_LAB_GATES`,
-   `G_PG_PERSISTENCE_RBAC`, `G_FULL_APP_FLOW`, presupuestos) más el corte de pruebas al DOM de
-   React. *Recomendación de la sesión; pendiente.*
+5. ~~Condición de hecho~~ → **decidido por Felipe (2026-09-24):** el sprint termina cuando
+   **todas** las variables `G_*` del paso «Summarize gate results» están en verde en ambos temas
+   (incluidos `G_PILOT_LAB_GATES`, `G_PG_PERSISTENCE_RBAC`, `G_FULL_APP_FLOW` y los dos de
+   presupuesto de runtime) **y** hay capturas a 1180×820 en claro y oscuro, tomadas después del
+   último commit, que prueben R1.2-1 a R1.2-4 (en la vista de 13 columnas también). Las pruebas que
+   hoy leen el DOM PHP se adaptan al DOM React sin rebajar lo que verifican. Ningún gate se saca de
+   la condición para conseguir el verde.
 
 ### Preguntas para investigar (entrada del paso 02)
 
