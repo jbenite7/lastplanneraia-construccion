@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-09-24
+areas: [lps, programacion_semanal, tnp, backend, frontend]
+fuente: docs/superpowers/plans/2026-09-24-calificacion-tnp-semana-confirmada.md
+resumen: Calificación y registro de Trabajo No Planificado (TNP) en semanas confirmadas sin bloqueo HTTP 409
+---
+
 # Calificación y Registro de TNP en Semanas Confirmadas Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
