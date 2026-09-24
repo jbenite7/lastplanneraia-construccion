@@ -25,31 +25,7 @@ export const ProgramaGeneralPage: React.FC = () => {
   const [exportandoCsv, setExportandoCsv] = useState(false);
   const [generandoCorte, setGenerandoCorte] = useState(false);
 
-  const api = useMemo(
-    () =>
-      programaGeneralApi({
-        get: async (url, schema) => {
-          const res = await fetch(url);
-          if (!res.ok) {
-            throw new Error(`Error en petición HTTP (${res.status})`);
-          }
-          const json = await res.json();
-          return schema.parse(json.data !== undefined ? json.data : json);
-        },
-        postForm: async (url, data) => {
-          const formData = new FormData();
-          Object.entries(data).forEach(([k, v]) => {
-            if (v !== undefined && v !== null) formData.append(k, String(v));
-          });
-          const res = await fetch(url, { method: 'POST', body: formData });
-          if (!res.ok) {
-            throw new Error(`Error en petición HTTP (${res.status})`);
-          }
-          return res.json();
-        },
-      }),
-    []
-  );
+  const api = useMemo(() => programaGeneralApi(), []);
 
   useEffect(() => {
     let cancelado = false;

@@ -17,9 +17,9 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 494 |
+| hecha | 495 |
 | en progreso | 11 |
-| pendiente | 161 |
+| pendiente | 160 |
 | sin señal | 174 |
 | descartada | 41 |
 
@@ -477,7 +477,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - hecha · 11 · Prove the pilot with intercepted browser, accessibility and design-system gates
   - hecha · 12 · Promote canonical GET/HEAD with a reversible method-aware cut
   - en progreso · 13 · Retire VIEW-34 exclusively and run the complete no-DML closure
-- **S05 — Programa General en React** (sin estado): 7 de 8 hechas · `2026-09-23-s05-programa-general-react.md`
+- **S05 — Programa General en React** (vigente): 8 de 8 hechas · `2026-09-23-s05-programa-general-react.md`
   - hecha · 1 · Backend PHP — Context Endpoint y Asignaciones en Update
   - hecha · 2 · Frontend — Esquemas Zod y Cliente API Tipado
   - hecha · 3 · Frontend — Dominio Puro, Cálculos de Avance con $\Delta$, Validaciones y Filtros
@@ -485,7 +485,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - hecha · 5 · Frontend — Grilla Principal Racionalizada (8 Columnas Esenciales) y Tarjetas Móviles
   - hecha · 6 · Frontend — Drawer Contextual LPS (440px) y Edición de Actividad
   - hecha · 7 · Frontend — Página Orquestadora, Integración de Shell y Rutas
-  - pendiente · 8 · Verificación Visual Playwright y Cierre E2E
+  - hecha · 8 · Verificación Visual Playwright y Cierre E2E
 
 ### S06 — Actualizar Cronograma en React (vigente)
 
@@ -930,7 +930,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - cerrado_sin_archivos · `plans/2026-08-04-biblia-t4-soporte.md`: dice «plan cerrado»; git dice «5 de 7 archivos que mandaba crear no existieron nunca en ninguna rama: docs/flujos/soporte-contratos-y-actividades.md, docs/flujos/soporte-subcontratistas.md, docs/flujos/soporte-profesionales.md…»
 - cerrado_sin_archivos · `plans/2026-08-04-biblia-t5-lectura.md`: dice «plan cerrado»; git dice «2 de 4 archivos que mandaba crear no existieron nunca en ninguna rama: docs/flujos/lectura-indicadores.md, docs/flujos/lectura-torre-de-control.md»
 - cerrado_sin_archivos · `plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas.md`: dice «plan cerrado»; git dice «1 de 2 archivos que mandaba crear no existieron nunca en ninguna rama: docs/design-system/manifests/dashboard.json»
-- sin_estado · `plans/2026-09-23-s05-programa-general-react.md`: dice «sin `estado:` en el frontmatter»; git dice «no hay de dónde leer si está vivo o cerrado»
+- parece_cerrado · `plans/2026-09-23-s05-programa-general-react.md`: dice «plan vigente»; git dice «las 8 tareas con señal están hechas según git»
 - spec_cerrado_plan_vivo · `specs/2026-07-23-a16-comparativo-versiones-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-07-22-roadmap-pdc-v2.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-03-reparto-trabajo-pendiente-design.md`: dice «spec derogada»; git dice «1 plan suyo sigue vivo: 2026-08-03-usabilidad-altas-y-medias.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-11-plan-cierre-hasta-produccion-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-11-cierre-hasta-produccion.md»

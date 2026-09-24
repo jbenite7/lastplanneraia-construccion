@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-09-23
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-09-23-s05-programa-general-react.md
+resumen: Implementar la superficie React completa de Programa General (/programa-general) con tabla semántica racionalizada de 8 columnas esenciales sin scroll…
+---
+
 # S05 — Programa General en React Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
