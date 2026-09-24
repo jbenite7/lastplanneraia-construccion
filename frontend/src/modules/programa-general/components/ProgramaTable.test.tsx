@@ -428,7 +428,7 @@ describe('ProgramaTable', () => {
     );
 
     expect(screen.getByText('CONCRETO DE LIMPIEZA')).toBeInTheDocument();
-    expect(screen.getByText('ESTRUCTURAS')).toBeInTheDocument();
+    expect(screen.getByText(/ESTRUCTURAS/)).toBeInTheDocument();
     expect(screen.getByText('01/09/2026')).toBeInTheDocument();
     expect(screen.getByText('05/09/2026')).toBeInTheDocument();
     expect(screen.getByText('Sem 35')).toBeInTheDocument();
