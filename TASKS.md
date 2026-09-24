@@ -19,7 +19,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 |---|---|
 | hecha | 501 |
 | en progreso | 7 |
-| pendiente | 159 |
+| pendiente | 166 |
 | sin señal | 173 |
 | descartada | 41 |
 
@@ -858,7 +858,14 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### S05-PARIDAD-VISUAL — Elevación Estética y Paridad 1:1 de Programa General en React (vigente)
 
-- Sin plan todavía.
+- **S05-PARIDAD-VISUAL: Paridad Visual 1:1 de Programa General en React** (vigente): 0 de 7 hechas · `2026-09-24-s05-paridad-visual-programa-general.md`
+  - pendiente · 1 · Backend PHP — Corte Canónico de `/programa-general` en `SpaRouter` y Verificación de Frontera
+  - pendiente · 2 · Frontend Dominio — Sanitizador y Parser Semántico de Actividades y Formateo Canónico de Fechas
+  - pendiente · 3 · Frontend Toolbar y Filtros — Separación de Estadísticas, Badges Canónicos y Buscador 1:1
+  - pendiente · 4 · Frontend Tabla — Integración de Jerarquía de Actividades Sanitizadas, Capítulos con Avance Mini, Celdas Duales y Formato de Fechas
+  - pendiente · 5 · Frontend Drawer LPS — Título Sanitizado, Alertas de Plazo Vencido y Paridad Estética de Controles
+  - pendiente · 6 · Frontend CSS — Traslado de Reglas de Producción de `s05-production-mockup.html` a `programa-general.css` (@layer module)
+  - pendiente · 7 · Verificación Integral — Playwright E2E contra Docker Real y Capturas de Paridad 1:1
 
 ### Sin spec
 
