@@ -7,7 +7,7 @@ fecha: 2026-08-30
 superficie: programa-general
 rutas: ["/programa-general"]
 depende_de: [T01, T02, S04]
-version: 1.1
+version: 1.2
 views: [VIEW-34]
 areas: [lps, design-system]
 fuente: "auditoría de public/index.php, ProgramaGeneralController, GeneralApiController, ReportController, LpsApiController, hot.js, VIEW-34, contratos, RBAC, T01 y frontend actual en shell-minimo-react, 2026-08-30"
@@ -20,6 +20,83 @@ resumen: "Migración vertical S05 de Programa General a React con paridad funcio
 > pendientes. Esta spec no autoriza implementación, commits, DDL/DML, cambios RLS, cambios de
 > permisos, deploy, publicación ni trabajo en `/admin/`. Su plan se escribe inmediatamente después
 > con `superpowers:writing-plans`, conforme al programa aprobado de 27 specs y 27 planes.
+
+## Enmienda del 2026-09-24 (ronda 1.2) — `status: propuesto`, en grilleo
+
+> Borrador del paso 01 del flujo maestro. **No está aprobada** y no autoriza nada. Donde choque
+> con la ronda 1.1 o con el resto, manda esta sección una vez que Felipe la apruebe con `/aprobar`.
+
+### Por qué hay ronda nueva
+
+El 2026-09-24 una sesión de Antigravity ejecutó la «paridad visual 1:1» de Programa General en la
+rama `feature/s05-paridad-visual` (16 commits sobre `main`, PR #60) con su propia spec
+(`docs/superpowers/specs/2026-09-24-s05-paridad-visual-programa-general-design.md`, solo en esa
+rama). **Felipe detuvo esa sesión el mismo día** tras ver el resultado en vivo («siento que falta
+demasiado, y además la sidebar sigue muy mal»). El PR #60 no se mergea en su estado actual.
+
+### Lo medido en vivo (2026-09-24, `localhost:8081/programa-general`, `test.A`, Da Porto, 1180×820)
+
+Sirve el checkout principal en `feature/s05-paridad-visual` `8ad3ca3f` con 10 archivos sin commit
+de esa sesión.
+
+1. **Desbordamiento horizontal.** La tabla mide 1375px dentro de un contenedor de 851px
+   (`table-layout: auto`). «Actividad» no parte el texto y ocupa 742px, de modo que F. Inicio,
+   F. Fin, Ppto, Avance y Estado quedan fuera de la vista: las 8 columnas existen, pero solo se ven
+   ID, Código y Actividad.
+2. **Scroll vertical roto.** `.table-wrapper-pro` tiene `overflow-y: hidden` con 638px de alto y
+   10.669px de contenido: las filas por debajo del pliegue no se alcanzan.
+3. **Contador incoherente:** «Actividades visibles: 324 de 282».
+4. **Bloque de semana de la barra lateral sin estilos.** `frontend/src/shell/ContextoSemana.tsx`
+   (en `main` desde `06dca377`) emite `aia-sidebar__week-label`, `-select`, `-actions` y `-dialog`,
+   y ninguna hoja del repo les da estilo. La única regla que las nombra
+   (`public/css/design-system/adapters/shell-sidebar.css:461`) está en una hoja que la página React
+   no carga. Resultado: `select` nativo, botones «Crear semana» y «Eliminar semana N» a 16px, rango
+   de fechas partido en dos líneas y el selector montado sobre los chips de estado.
+5. **Chips de estado en dos filas** en 1180px.
+6. **CI del PR #60 en rojo** en ambos temas: `G_PILOT_LAB_GATES`, `G_PG_PERSISTENCE_RBAC`,
+   `G_FULL_APP_FLOW`, `G_RUNTIME_BUDGET_MEASURE` y `G_RUNTIME_BUDGET_CHECK`. Las pruebas buscan el DOM
+   de la página PHP (`#semana`, `body.aia-shell`), que el corte a React ya no emite. La condición de
+   hecho que declaró el PR dejaba fuera justamente esos gates.
+
+### Requisitos nuevos de Felipe (2026-09-24, en el chat)
+
+- **R1.2-1 — La tabla no tiene desbordamiento horizontal.** *(Abierto: ¿vale solo para el modo de
+  8 columnas o también para el de 13?)*
+- **R1.2-2 — «Actividad» parte el texto en varias líneas y muestra siempre el texto completo**,
+  sin truncar ni usar puntos suspensivos.
+- **R1.2-3 — El scroll vertical de la tabla funciona** y alcanza la última fila.
+- **R1.2-4 — La barra lateral queda bien**, empezando por el bloque de semana. *(Abierto: qué más
+  incluye «muy mal».)*
+
+### Decisiones tomadas (Felipe, 2026-09-24)
+
+- Se detiene la sesión de Antigravity y se abre esta ronda.
+- Ejecutor: Codex (default de §2b), en un worktree propio y nunca en el checkout principal
+  compartido. *(Pendiente de confirmar en el `ejecutor:` del plan.)*
+
+### Decisiones abiertas (cada una con recomendación)
+
+1. **Punto de partida:** ¿se toman los 16 commits de `feature/s05-paridad-visual` o se parte de
+   `main`? *Pendiente.*
+2. **Referencia visual:** ¿`public/mockups/s05-production-mockup.html` (commit `30550c35`, que se
+   presenta como «maqueta aprobada») es el contrato visual? *Pendiente: no hay registro del visto
+   de Felipe.*
+3. **Alcance de R1.2-1:** solo el modo de 8 columnas, o también el de 13. *Pendiente.*
+4. **Alcance de R1.2-4** en la barra lateral. *Pendiente.*
+5. **Condición de hecho:** los gates de runtime en verde en ambos temas (`G_PILOT_LAB_GATES`,
+   `G_PG_PERSISTENCE_RBAC`, `G_FULL_APP_FLOW`, presupuestos) más el corte de pruebas al DOM de
+   React. *Recomendación de la sesión; pendiente.*
+
+### Preguntas para investigar (entrada del paso 02)
+
+1. ¿Qué pruebas del laboratorio y de e2e dependen del DOM PHP de Programa General? Importa porque
+   hay que adaptarlas sin maquillar una regresión.
+2. ¿Por qué `shell-sidebar.css` no llega al host React (`SpaHostRenderer`)? Importa porque la
+   corrección de la barra lateral vale para todos los módulos React, no solo para PG.
+3. ¿De dónde sale el «324 de 282»: filas de capítulo contadas como actividades, o un filtro mal
+   aplicado?
+4. ¿Qué cambió `feature/s05-paridad-visual` en `src/Controllers/Core/DevDoorController.php` y por
+   qué? Importa porque es la puerta de sesión de desarrollo y pide revisión de seguridad.
 
 ## Enmienda del 2026-09-21 (ronda 1.1) — manda sobre el resto
 
