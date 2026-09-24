@@ -856,6 +856,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 - Sin plan todavía.
 
+### S05-PARIDAD-VISUAL — Elevación Estética y Paridad 1:1 de Programa General en React (vigente)
+
+- Sin plan todavía.
+
 ### Sin spec
 
 - **Sidebar canónico del laboratorio** (cerrado): 0 de 0 hechas · `2026-07-20-sidebar-canonico-laboratorio.md`
