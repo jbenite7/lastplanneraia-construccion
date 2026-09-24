@@ -2,6 +2,7 @@
 capa: fuente
 tipo: plan
 estado: vigente
+version: 1.1
 fecha: 2026-08-30
 areas: [lps, design-system]
 fuente: docs/superpowers/plans/2026-08-30-s05-programa-general-react.md
@@ -9,6 +10,127 @@ resumen: "migrate /programa-general from VIEW-34 + Handsontable/jQuery to a nati
 ---
 
 # S05 Programa General React Implementation Plan
+
+## Enmienda del 2026-09-21 — manda sobre el cuerpo
+
+Este plan se escribió el 2026-08-30, antes de que T01, T02 y S01–S04 llegaran a `main`. El
+2026-09-21 se verificó contra `origin/main` (`519ef3b7`) tarea por tarea. **Donde esta sección y
+el cuerpo choquen, gana esta sección.** El cuerpo no se reescribe para que su historia siga siendo
+legible; las correcciones puntuales llevan la marca «enmendado 2026-09-21».
+
+### Quién ejecuta y cómo (decisiones de Felipe del 2026-09-21, en el chat)
+
+- **Claude planea y verifica; Codex ejecuta.** Claude le entrega a Codex el encargo; Codex ejecuta
+  y devuelve el reporte; Claude lo verifica contra el código y los comandos; Codex corrige. **Solo
+  con la spec S05 cerrada** se planea la siguiente (S06).
+- **Corrección del mismo día: Codex trabaja de corrido, con Superpowers.** La primera versión de
+  esta enmienda ponía una parada al final de cada checkpoint y decía que las sub-skills de
+  Superpowers no aplican a Codex. Codex se detuvo dos veces por roces menores, y Felipe lo corrigió:
+  el flujo maestro ejecuta mediante Superpowers. Vale esto: `subagent-driven-development` (o
+  `executing-plans`), TDD por tarea, revisión propia, `verification-before-completion` y commit
+  atómico. Los checkpoints V1…V5 son gates de calidad que Codex cruza solo, no paradas. **Las
+  decisiones de código las toma quien ejecuta y las anota**; a Felipe suben solo las de producto,
+  alcance o riesgo (skill `flujo-maestro`).
+- **Codex para solo en tres casos:** (1) los goldens de la Tarea 11, que aprueba Felipe; (2) algo
+  irreversible o prohibido; (3) una decisión de producto que la spec no resuelve, o el mismo fallo
+  tres veces seguidas.
+- **Ya autorizado por Felipe el 2026-09-21:** la fila de auditoría que la puerta dev escribe sola al
+  seleccionar proyecto (`general_auditoria_acciones`), que no se borra; y arrancar o reiniciar
+  Docker Desktop y los servicios existentes, sin borrar volúmenes ni datos. Los rojos que también
+  están en `origin/main` se anotan como heredados y no detienen el trabajo.
+
+### Qué significa «S05 cerrada»
+
+Tareas 1–12 en `main` por PR, con las variables `G_*` del paso «Summarize gate results» en verde
+y los ocho goldens aprobados por Felipe. **La Tarea 13 (retiro de VIEW-34) no es parte del
+cierre:** como en S02, S03 y S04, el retiro del legado se le pregunta a Felipe aparte, después del
+corte. Cerrada S05 en estos términos, se planea S06.
+
+### Correcciones por tarea
+
+**Tarea 1 — se mantiene el lado servidor, con dos ajustes.**
+- El catálogo que devuelve `RestrictionConfigResolver::presentationConfig()` tiene que poder
+  alimentar tal cual el tipo `ConfiguracionRestricciones` de
+  `frontend/src/shared/lps/dominio/restricciones.ts` (T02). No se crea un segundo catálogo ni un
+  segundo tipo de restricciones en el frontend.
+- **Semana ausente.** El error SQL del alias de `semanas_activas` ya se arregló
+  (`9ff1040c`, `6f55e5a2`; la consulta vive en `App\Services\EstadoSemanalService`). Sigue abierta
+  en `TASKS.md` la entrada «`/programa-general` responde 500 si se entra sin semana en sesión», con
+  el encuadre de Felipe: siempre debe haber semana, salvo un proyecto nuevo sin cronograma. S05 **no**
+  investiga por qué se pierde la semana, que tiene su propio dueño. Sí debe: (a) medir primero, con la
+  puerta dev, si hoy `/programa-general` sin semana sigue dando 500, y anotarlo; (b) hacer que
+  `GET /api/programa-general/context` nunca responda 500 por semana ausente. Devuelve un estado
+  tipado y la pantalla React guía a cargar el primer cronograma.
+
+**Tarea 2 — sin trabajo en `cliente.ts`.** La negociación de `Content-Type` para
+`URLSearchParams`/`FormData` ya está en `frontend/src/lib/api/cliente.ts` (T02, `195d6c8f`). No se
+modifican `cliente.ts` ni `cliente.test.ts`. Las pasarelas LPS no se crean, se consumen de
+`frontend/src/shared/lps/api/`:
+
+| El plan decía | Se usa |
+|---|---|
+| `cargarComentariosLps` | `obtenerHilo({ consecutivo, modulo: 'PG' })` (`api/hilo.ts`) |
+| `agregarComentarioLps` | `agregarComentario` (`api/hilo.ts`) |
+| `registrarCrisisLps` | `registrarCrisis` (`api/crisis.ts`) |
+| `cerrarCrisisLps` | `cerrarCrisis` (`api/crisis.ts`) |
+| tipo `ComentarioLps` | `ComentarioRaiz` (`api/esquemas.ts`) |
+
+Solo se crean los esquemas y las pasarelas propias de Programa General (contexto, lista, códigos,
+guardar, ejecución, corte).
+
+**Tarea 5 — punto de inserción real.** `frontend/src/shell/rutas.tsx` todavía no tiene rutas hijas
+bajo `AppShell` (lo dice el comentario «ninguna superficie migrada todavía»). S05 es la primera:
+cuelga `/app/programa-general` del outlet de `AppShell` sin tocar los siete estados de sesión ni
+`RutaProyectos`. El ítem activo del menú se resuelve en
+`frontend/src/shell/navegacion/NavegacionLateral.tsx`, que es quien arma los grupos desde la
+sesión. `BarraLateral.tsx` es presentacional y no interpreta roles.
+
+**Tarea 6 — re-verificar antes de escribir.** El orden actual del preflight de
+`GeneralApiController::update()` no se leyó línea por línea el 2026-09-21. Codex lo lee y lo
+describe en su reporte antes de escribir la prueba roja.
+
+**Tarea 10 — consumir T02, no construir un cajón nuevo.** Decisión de Felipe del 2026-09-21: el
+paso 3 del programa se absorbe en S05 (`docs/superpowers/plans/2026-08-30-t02-contexto-lps-react.md`
+› «Estado al 2026-09-21»). El *cómo* es decisión técnica de esta enmienda:
+- **Servidor:** no se crea `src/Services/LpsContextResolver.php`. `LpsApiController` ya resuelve
+  `ProjectScope` y pasa por `LpsTargetResolver`, con `LpsLegacyGeneralActivityAdapter` para
+  `modulo=PG`, y `tests/test_lps_api_contract.php` ya lo cubre con `modulo=PG`. Si falta cobertura
+  de las dos áreas (Construcción y Preconstrucción), la prueba nueva
+  `tests/test_lps_programa_general_scope.php` se escribe sobre el resolver de T02, no sobre uno nuevo.
+- **Cliente:** en vez de `ProgramaDrawer.tsx`, se usan `CajonContextualLps`, `LpsDrawerProvider`,
+  `useLpsDrawer` y `useHiloLps` de `frontend/src/shared/lps/`. En vez de crear funciones de dominio:
+  `crearMensajeSos` → `construirTextoSos`, `siguienteTriggerSos` → `triggerSos`
+  (`dominio/crisis.ts`), y `crearResumenSemanal` → `compilarDigestSemanal` (`dominio/digest.ts`). Si
+  alguno no cubre un caso del legado de Programa General, se extiende en `shared/lps` con su prueba,
+  nunca se duplica.
+- **Lo único nuevo:** el adaptador de fila de Programa General a `FilaLps`
+  (`dominio/campos.ts`) y el cableado del disparador en la tabla y en las tarjetas.
+- **Entra aquí lo que T02 dejó pendiente:** `tests/browser/t02-lps-drawer-react.spec.mjs`,
+  `tests/browser/t02-lps-notifications-react.spec.mjs` y el primer consumidor de producción de
+  `frontend/src/shell/errores/PanelError.tsx` (y de `useRecuperacionErrorApi.ts`). La bandeja de
+  notificaciones **no** se cablea al shell: sigue aparcada en `wip-cableado-bandeja` hasta que
+  Felipe decida.
+
+**Tarea 11 — goldens con parada.** El manifiesto `docs/design-system/manifests/programa-general.json`
+crece con escenarios React **al lado** de los del legado, como hizo S04 en `project-selector.json`
+(ver `tests/browser/project-selector-react.visual.mjs`). Codex genera los candidatos, **para** y
+los entrega. Los aprueba Felipe; Codex nunca los aprueba ni regenera baselines.
+
+**Tarea 12:** firma y constante corregidas arriba, en el cuerpo (`sirveLaSpa($ruta, $metodo)`,
+`RUTAS_EXACTAS_MIGRADAS`). Mismo patrón que el corte de S04 (`tests/test_spa_frontera.php`,
+`tests/test_spa_frontera_http.php`).
+
+**Tarea 13 — fuera de este programa hasta que Felipe lo autorice.** Cuando se autorice, sus
+`Files:` suman los dos censos, que se actualizan **a propósito** con comentario fechado y no se
+«arreglan» bajando un número: `tests/design-system/shell-runtime-react-caller-census.test.mjs`
+(VIEW-29 y VIEW-30 cuentan `programa_general.view.php`) y `tests/test_t02_lps_caller_census.mjs`
+(Programa General es uno de sus cuatro consumidores legados).
+
+### Checkpoints: gates, no paradas
+
+La tabla «Vertical Checkpoints» sigue mandando como gate de calidad: no se empieza un checkpoint
+con el anterior en rojo. Codex los cruza de corrido hasta los goldens de la Tarea 11; la Tarea 12
+(el corte) arranca con la aprobación de Felipe.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development`
 > (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use
@@ -35,16 +157,19 @@ Vitest 4, Testing Library, Playwright 1.61, Axe, PhpSpreadsheet and AIA design-s
 
 ## Global Constraints
 
-- Work only in
-  `/Users/felipebenitez/Developer/lps-aia/.claude/worktrees/shell-minimo-react`, branch
-  `shell-minimo-react`; never use `/Volumes/Crucial X6/Developer/lps-aia` or another checkout.
-- Execute after T01, S04 and their shared shell contracts are present. Reuse `BrowserRouter`,
-  `BarraLateral`, server-driven `navigation.groups`, week bootstrap, project switch, dark-first
-  theme, `ErrorApi` and method-aware `SpaRouter`; do not recreate them inside S05.
+- *(Enmendado 2026-09-21.)* Trabajar en una rama propia creada desde `origin/main` actualizado
+  (`codex/s05-programa-general-react`), en su propio worktree. La rama `shell-minimo-react` está
+  cerrada y no se usa.
+- Execute after T01, S04 and their shared shell contracts are present (they are, since PR #20 and
+  PR #50). Reuse `BrowserRouter`, `AppShell`, `NavegacionLateral`/`BarraLateral`, server-driven
+  `navigation.groups`, week bootstrap, project switch, the theme bootstrap (`frontend/src/shell/tema.ts`),
+  `ApiError`, `PanelError`, the T02 LPS provider (`frontend/src/shared/lps/`) and method-aware
+  `SpaRouter`; do not recreate them inside S05.
 - Inspect `git status --short` and the relevant diff before every task. Preserve all unrelated and
   pre-existing changes; no courtesy refactors.
-- Documentation phase only now: do not implement, commit, push, publish or deploy. Every commit
-  command below is an instruction for a later, explicitly authorized execution session.
+- *(Enmendado 2026-09-21.)* Implementación autorizada por Felipe el 2026-09-21 (programa S/T),
+  checkpoint por checkpoint según «Enmienda del 2026-09-21» arriba. Commit atómico por tarea en la
+  rama propia; push y PR solo al cerrar el checkpoint que el encargo indique. Nunca deploy.
 - `/admin/` is excluded. Do not read as an implementation dependency, edit, test, route, restyle or
   publish any admin surface.
 - Do not modify RLS, `ProjectScope` semantics, schema, migrations, grants, users, credentials,
@@ -69,7 +194,8 @@ Vitest 4, Testing Library, Playwright 1.61, Axe, PhpSpreadsheet and AIA design-s
   and LPS comment/crisis services. Extract test seams; do not port these algorithms to TypeScript.
 - Use only `public/css/tokens.css` tokens. No literal colors, inline style objects, `!important`,
   Bootstrap, jQuery, Handsontable, Toastr, Font Awesome, CSS-in-JS or a new grid/state/query library.
-- Dark is default/fallback; light has identical capability. Required viewports are `390×844`,
+- *(Enmendado 2026-09-21.)* Light is the entry theme and fallback (`TEMA_FALLBACK = 'claro'`,
+  decisión de Felipe del 2026-09-03); dark has identical capability. Required viewports are `390×844`,
   `768×1024`, `1180×820` and `1440×900`; no horizontal page overflow.
 - Do not regenerate, overwrite or bless visual goldens without explicit approval. New screenshots are
   candidates outside git until approved.
@@ -1507,21 +1633,21 @@ candidates. Without that approval, stop here; do not replace baselines or promot
 - Modify: `tests/design-system/contracts.test.mjs`
 
 **Interfaces:**
-- `SpaRouter::sirveLaSpa(method, path)` recognizes GET/HEAD `/programa-general` exactly as a migrated
+- `SpaRouter::sirveLaSpa($ruta, $metodo)` (firma real, `src/Core/SpaRouter.php`; enmendado 2026-09-21) recognizes GET/HEAD `/programa-general` exactly as a migrated
   surface, never POST/filter/API/assets.
 - React route aliases `/app/programa-general` and `/programa-general` render the same page.
-- Rollback is one versioned change: remove canonical path from `RUTAS_MIGRADAS`; the still-present
+- Rollback is one versioned change: remove canonical path from `RUTAS_EXACTAS_MIGRADAS`; the still-present
   VIEW-34 route serves again until Task 13.
 
 - [ ] **Step 1: Write failing method-aware boundary/canonical browser tests**
 
 ```php
-assertTrue(SpaRouter::sirveLaSpa('GET', '/programa-general'));
-assertTrue(SpaRouter::sirveLaSpa('HEAD', '/programa-general'));
-assertFalse(SpaRouter::sirveLaSpa('POST', '/programa-general'));
-assertFalse(SpaRouter::sirveLaSpa('POST', '/programa-general/filtros'));
-assertFalse(SpaRouter::sirveLaSpa('GET', '/api/general/list'));
-assertFalse(SpaRouter::sirveLaSpa('GET', '/app/assets/index.js'));
+assertTrue(SpaRouter::sirveLaSpa('/programa-general', 'GET'));
+assertTrue(SpaRouter::sirveLaSpa('/programa-general', 'HEAD'));
+assertFalse(SpaRouter::sirveLaSpa('/programa-general', 'POST'));
+assertFalse(SpaRouter::sirveLaSpa('/programa-general/filtros', 'POST'));
+assertFalse(SpaRouter::sirveLaSpa('/api/general/list', 'GET'));
+assertFalse(SpaRouter::sirveLaSpa('/app/assets/index.js', 'GET'));
 ```
 
 HTTP boundary asserts anonymous GET returns shell HTML, HEAD has no legacy body, APIs remain JSON,

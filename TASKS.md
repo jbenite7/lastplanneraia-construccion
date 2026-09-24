@@ -17,10 +17,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 495 |
-| en progreso | 11 |
-| pendiente | 160 |
-| sin señal | 174 |
+| hecha | 501 |
+| en progreso | 7 |
+| pendiente | 159 |
+| sin señal | 173 |
 | descartada | 41 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -422,21 +422,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### S01 — Login React (vigente)
 
-- **S01 Login React** (vigente): 10 de 14 hechas · `2026-08-30-s01-login-react.md`
-  - hecha · 1 · Tipar todos los errores del cliente HTTP
-  - en progreso · 2 · Definir los contratos Zod y el gateway de autenticación
-  - hecha · 3 · Hacer explícitas las cinco reglas de contraseña en PHP
-  - hecha · 4 · Centralizar la transición de cambio obligatorio
-  - hecha · 5 · Publicar los tres contratos HTTP S01
-  - pendiente · 6 · Convertir `/api/session` en la máquina de estados preproyecto
-  - en progreso · 7 · Hacer oscuro el fallback y exponer tema antes del login
-  - hecha · 8 · Construir el login React normal con avisos consumibles una vez
-  - hecha · 9 · Construir el cambio obligatorio y la cancelación confirmada
-  - hecha · 10 · Integrar bootstrap, avisos y recuperación T01 en las rutas React
-  - hecha · 11 · Aplicar la presentación responsive y registrar el design system
-  - hecha · 12 · Servir la entrada oculta React sin publicar el secreto en el bundle
-  - hecha · 13 · Cortar GET/HEAD de acceso a React con rollback comprobable
-  - en progreso · 14 · Verificar navegador, aprobar visual y retirar VIEW-01 tras el gate
+- **S01 Login React** (cerrado): 14 de 14 hechas · `2026-08-30-s01-login-react.md`
 - **S01 · Paridad visual del login React** (cerrado): 8 de 8 hechas · `2026-09-16-s01-paridad-visual.md`
 
 ### S02 — Recuperar contraseña en React (cerrado)
@@ -449,17 +435,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### S04 — Selector de proyectos en React (vigente)
 
-- **S04 Project Selector React** (vigente): 8 de 10 hechas · `2026-08-30-s04-selector-proyectos-react.md`
-  - hecha · 1 · Definir contratos Zod y gateway S04
-  - hecha · 2 · Adaptar `ProjectApiController` con un contrato puro
-  - hecha · 3 · Hacer seguro y no mutante el contrato HTTP existente
-  - hecha · 4 · Implementar búsqueda y conteos como dominio puro
-  - hecha · 5 · Construir tarjetas y estados de lectura S04
-  - sin señal · 6 · Completar selección, errores y landing server-authoritative
-  - hecha · 7 · Integrar sidebar T01, ruta piloto y cambio de proyecto
-  - hecha · 8 · Entregar responsive, ambos temas y build piloto
-  - hecha · 9 · Verificar el piloto en navegador sin tocar datos
-  - en progreso · 10 · Cortar `/proyectos`, actualizar contratos y retirar VIEW-11
+- **S04 Project Selector React** (cerrado): 10 de 10 hechas · `2026-08-30-s04-selector-proyectos-react.md`
 
 ### S05 — Programa General en React (vigente)
 
@@ -930,6 +906,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - cerrado_sin_archivos · `plans/2026-08-04-biblia-t4-soporte.md`: dice «plan cerrado»; git dice «5 de 7 archivos que mandaba crear no existieron nunca en ninguna rama: docs/flujos/soporte-contratos-y-actividades.md, docs/flujos/soporte-subcontratistas.md, docs/flujos/soporte-profesionales.md…»
 - cerrado_sin_archivos · `plans/2026-08-04-biblia-t5-lectura.md`: dice «plan cerrado»; git dice «2 de 4 archivos que mandaba crear no existieron nunca en ninguna rama: docs/flujos/lectura-indicadores.md, docs/flujos/lectura-torre-de-control.md»
 - cerrado_sin_archivos · `plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas.md`: dice «plan cerrado»; git dice «1 de 2 archivos que mandaba crear no existieron nunca en ninguna rama: docs/design-system/manifests/dashboard.json»
+- cerrado_sin_archivos · `plans/2026-08-30-s01-login-react.md`: dice «plan cerrado»; git dice «3 de 26 archivos que mandaba crear no existieron nunca en ninguna rama: frontend/src/lib/api/frontera.test.ts, frontend/src/lib/api/esquemas/sesion.test.ts, src/Controllers/Core/SpaHostController.php»
 - parece_cerrado · `plans/2026-09-23-s05-programa-general-react.md`: dice «plan vigente»; git dice «las 8 tareas con señal están hechas según git»
 - spec_cerrado_plan_vivo · `specs/2026-07-23-a16-comparativo-versiones-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-07-22-roadmap-pdc-v2.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-03-reparto-trabajo-pendiente-design.md`: dice «spec derogada»; git dice «1 plan suyo sigue vivo: 2026-08-03-usabilidad-altas-y-medias.md»
@@ -939,6 +916,8 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - spec_cerrado_plan_vivo · `specs/2026-08-19-runtime-budgets-al-ci-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-19-runtime-budgets-al-ci.md»
 - spec_vivo_planes_cerrados · `specs/2026-08-26-v0-del-producto-design.md`: dice «spec vigente»; git dice «sus 2 planes están cerrados o derogados»
 - spec_vivo_planes_cerrados · `specs/2026-08-28-migracion-react-typescript-design.md`: dice «spec vigente»; git dice «sus 1 planes están cerrados o derogados»
+- spec_vivo_planes_cerrados · `specs/2026-08-30-s01-login-react-design.md`: dice «spec vigente»; git dice «sus 2 planes están cerrados o derogados»
+- spec_vivo_planes_cerrados · `specs/2026-08-30-s04-selector-proyectos-react-design.md`: dice «spec vigente»; git dice «sus 1 planes están cerrados o derogados»
 
 <!-- tablero:fin -->
 
@@ -1296,6 +1275,16 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   el escenario `auth-login-dark-1180x820`, que es el golden del login PHP y ya no representa lo que
   sirve `/login`; y quitar `login.view.php` de `auth.json.sources` sin tocar las de S02/S03. Pasos 6–7
   de §12 y tabla de §13 de la spec.
+  **Al día el 2026-09-21:** el PR #20 ya está en `main` (`ec57dd46`, 2026-09-06), y el 2026-09-16
+  Felipe decidió que el login legado no necesita poder activarse como respaldo (entrada del criterio
+  de deploy, más abajo). El plan S01 quedó `cerrado` como `CODE_COMPLETE` por su decisión del
+  2026-09-21; este retiro sigue sin ejecutar y es lo que falta para `MIGRATION_COMPLETE`.
+- [ ] **S04 — retirar VIEW-11, el selector PHP.** El PR #50 (`5aa9c73a`, 2026-09-18) cortó
+  `GET/HEAD /proyectos` a React conservando el PHP, por decisión de Felipe («Corte, conservando el
+  PHP»). Quedan sin uso en `main`: `views/core/project_selector.view.php`,
+  `src/Controllers/Core/ProjectSelectorController.php`, `public/css/project-selector.css` (y su
+  espejo en `public/dist-css/`) y `POST /proyecto/seleccionar`. Retirarlo se le pregunta a Felipe
+  aparte, como se hizo con S02 y S03. Plan: `docs/superpowers/plans/2026-08-30-s04-selector-proyectos-react.md` › `## Cierre`.
 - [x] **Resuelto el 2026-09-03: el acceso abre en claro.** Decisión de Felipe, siguiendo la
   recomendación: `AGENTS.md` («claro es la cara del producto y el tema de entrada», spec de temas
   2026-08-28) y `docs/design-system/manifests/auth.json` («claro por defecto sin flash») ceden la

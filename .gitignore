@@ -481,3 +481,8 @@ goals/**/*.jpeg
 #
 # Versionarlo no lo deja sin vigilancia: `css-minify-freshness.test.mjs` pone la
 # suite en rojo si una copia no corresponde a su fuente.
+
+# Grafo de conocimiento de Understand-Anything (`/understand`). Es un artefacto
+# local y regenerable: knowledge-graph.json, fingerprints.json y la papelera de
+# intermedios pesan varios MB y cambian en cada análisis.
+.ua/

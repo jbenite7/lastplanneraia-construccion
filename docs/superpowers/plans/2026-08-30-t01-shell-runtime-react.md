@@ -10,6 +10,13 @@ resumen: "close the measured gaps in the existing React shell so T02, T03 and S0
 
 # T01 Shell and React Runtime Implementation Plan
 
+## Estado verificado — vigente (2026-09-21)
+
+**`estado: vigente` es deliberado.** T01-A (Tareas 1–10) está hecho y en `main` desde el PR #20
+(`ec57dd46`, 2026-09-06). Sigue vivo por T01-R (Tarea 11), que el plan difiere hasta que el censo
+real de llamadores de VIEW-26, VIEW-29 y VIEW-30 llegue a cero, y eso solo ocurre a medida que
+S05–S27 migran sus pantallas. Detalle con fecha en «Estado al 2026-09-21», al final del `## Cierre`.
+
 > **For agentic workers:** this is an implementation plan, not implementation authorization. In a
 > future session explicitly authorized to execute it, use `superpowers:test-driven-development` for
 > every production change and `superpowers:verification-before-completion` before either gate is
@@ -628,3 +635,25 @@ VIEW-29 = 20, VIEW-30 = 14.
 
 Sin push, PR ni despliegue desde este plan: el trabajo vive en la rama y se publica con el cierre de
 la Entrega 0.
+
+### Estado al 2026-09-21
+
+Escrito el 2026-09-21 contra `origin/main` (`2873213b`). Supera, no corrige, lo de arriba.
+
+**Hecho:** T01-A, publicado. Los nueve commits de la tabla (`b03aca43` … `5ec9cb3b`) son
+ancestros de `origin/main`; entraron con el PR #20 (`ec57dd46`, 2026-09-06), no con un cierre de
+«Entrega 0» aparte como decía el último párrafo.
+
+**Ya no es salvedad:** la 2 (agregador `run-php-tests.php` roto). La arregló T02 en `9d11aa6c`,
+que está en `main`; el PR #50 corrió `run-php-tests.php --nivel=puro` en RC 0.
+
+**Falta de T01-A, y no se cierra desde T01:** la salvedad 1 sigue igual. `PanelError.tsx` y
+`useRecuperacionErrorApi.ts` no tienen consumidor de producción (búsqueda en `frontend/src` del
+2026-09-21: solo aparecen en `frontend/src/shell/errores/`). Los consumirán las rutas de S05–S27.
+La salvedad 3 (`/programa-general` da 500 sin semana) sigue como entrada abierta en `TASKS.md`; no
+se volvió a medir.
+
+**T01-R, diferido por diseño:** `node --test tests/design-system/shell-runtime-react-caller-census.test.mjs`
+el 2026-09-21, 3/3 en verde, fija el censo de hoy en **VIEW-26 = 1, VIEW-29 = 18, VIEW-30 = 14**
+(el 2026-08-31 eran 1, 20 y 14). Ninguno es cero, así que la Tarea 11 no puede empezar. No es un
+pendiente de T01 que se pueda terminar antes de S05: llega al final de la serie.

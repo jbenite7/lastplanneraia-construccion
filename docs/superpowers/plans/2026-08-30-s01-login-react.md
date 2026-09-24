@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-30
 areas: [arquitectura, rbac, design-system]
 fuente: docs/superpowers/plans/2026-08-30-s01-login-react.md
@@ -9,6 +9,38 @@ resumen: "migrar / y /login al shell React con paridad observable del acceso leg
 ---
 
 # S01 Login React Implementation Plan
+
+## Estado verificado — cerrado como `CODE_COMPLETE`
+
+Verificado contra el código y el remoto el 2026-09-21. **`estado: cerrado` es decisión de Felipe
+del 2026-09-21** (orden del programa S/T, paso 2), no el criterio por defecto: el pase del
+2026-08-25 pide «ninguna Task entera sin ejecutar» y aquí la segunda mitad de la Tarea 14 sigue sin
+ejecutar. Lo que se cierra es el alcance `CODE_COMPLETE` que el propio plan define en su «Completion
+Gate»; `MIGRATION_COMPLETE` **no** está hecho y su pendiente vive en `TASKS.md`. El `## Cierre` de
+abajo se escribió el 2026-09-02, antes de publicar; esta sección lo supera, no lo corrige.
+
+**Evidencia:** PR #20 mergeado en `main` (`ec57dd46`, 2026-09-06), que lleva los commits de las
+Tareas 3–14 citados abajo (`36b7df22`, el corte, y `f06839fa` son ancestros de `origin/main`);
+PR #42 (`1858f008`, 2026-09-17) con la paridad visual. Hoy `SpaRouter::RUTAS_EXACTAS_MIGRADAS`
+sirve `/` y `/login` desde React.
+
+**Qué del `## Cierre` ya no está pendiente:**
+
+- Ítem 1 (CI contradictorio, PR #20 sin integrar): resuelto, el PR #20 está en `main`.
+- Ítem 4 (tema de entrada): resuelto el 2026-09-03 por Felipe, claro
+  (`frontend/src/shell/tema.ts`, `TEMA_FALLBACK = 'claro'`; entrada cerrada en `TASKS.md`).
+
+**Qué sigue abierto (no es de este cierre):**
+
+- Segunda mitad de la Tarea 14: retirar el login PHP. `views/auth/login.view.php` y
+  `GET/HEAD/POST /login` siguen en `origin/main` a 2026-09-21. Entrada en `TASKS.md`
+  («S01 — segunda mitad: retirar el login PHP»). Contexto: el 2026-09-16 Felipe decidió que el
+  login legado **no necesita** poder activarse como respaldo; retirarlo sigue siendo una
+  ejecución aparte.
+- Ítem 5: `docs/design-system/manifests/auth.json` sigue sin `consumerContract: "v1"`
+  (comprobado el 2026-09-21 con `grep`). Entrada propia en `TASKS.md`.
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
