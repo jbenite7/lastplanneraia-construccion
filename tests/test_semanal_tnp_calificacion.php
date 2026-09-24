@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-// @requiere: http
+// @requiere: datos-proyecto
 
 const BASE = 'http://localhost';
 const PROYECTO = 'PDC Sandbox E2E';

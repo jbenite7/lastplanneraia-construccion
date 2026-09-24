@@ -308,8 +308,7 @@ class SemanalApiController
             || $performance !== trim((string) ($rowActual['Rendimientos'] ?? ''))
             || $suggestedChanged;
         $confirmed = (int) ($weekState['Semanal_Confirmada'] ?? 0) === 1;
-        $esTnp = (int) ($rowActual['Es_TNP'] ?? 0) === 1
-            || (isset($_POST['Es_TNP']) && (int) $_POST['Es_TNP'] === 1);
+        $esTnp = (int) ($rowActual['Es_TNP'] ?? 0) === 1;
 
         if ($realChanged && !$confirmed) {
             $this->jsonError('El avance real solo se registra en la fase de calificación.', 409);
