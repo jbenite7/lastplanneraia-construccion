@@ -71,6 +71,15 @@
     --ds-state-solid-orange: #b55211;
     --ds-state-solid-red: #ef4444;
 
+    --pg-critical-bg: #431414;
+    --pg-delayed-bg: #431414;
+    --pg-dot-alert: oklch(from var(--ds-color-state-warning-text) 0.68 calc(c * 1.4) h);
+    --pg-dot-due: oklch(from var(--ds-color-state-warning-text) 0.68 calc(c * 1.4) h);
+    --pg-dot-future: oklch(from var(--ds-color-state-success-text) 0.72 calc(c * 1.75) h);
+    --pg-dot-progress: var(--ds-color-state-info-text);
+    --pg-dot-delayed: oklch(from var(--ds-color-state-critical-text) 0.68 calc(c * 1.5) h);
+    --pg-dot-out-of-window: oklch(from var(--ds-state-teal-bg) 0.55 calc(c * 3) h);
+
     --font-display: 'Montserrat', system-ui, -apple-system, sans-serif;
     --font-body: 'Inter', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -139,6 +148,31 @@
     --ds-color-state-success-text: #166534;
     --ds-state-solid-orange: #b55211;
     --ds-state-solid-red: #c62828;
+
+    --pg-critical-bg: #fef2f2;
+    --pg-delayed-bg: #fef2f2;
+    --pg-dot-alert: var(--ds-color-state-warning-text);
+    --pg-dot-due: var(--ds-color-state-warning-text);
+    --pg-dot-future: var(--ds-color-state-success-text);
+    --pg-dot-progress: var(--ds-color-state-info-text);
+    --pg-dot-delayed: var(--ds-color-state-critical-text);
+    --pg-dot-out-of-window: oklch(from var(--ds-state-teal-bg) 0.55 calc(c * 3) h);
+  }
+
+  /* ==========================================================================
+     BODY CANVAS Y COMPATIBILIDAD CON TEMA OSCURO
+     ========================================================================== */
+  body.pg-page {
+    background-color: var(--ds-active-bg-page, #ffffff);
+    --pg-critical-bg: var(--ds-state-tint-red, #431414);
+  }
+
+  html.aia-theme-dark body.pg-page,
+  [data-aia-theme="dark"] body.pg-page,
+  html.aia-theme-dark .pg-page,
+  [data-aia-theme="dark"] .pg-page {
+    background-color: var(--ds-color-bg-page-dark, rgb(17, 26, 21));
+    --pg-critical-bg: #431414;
   }
 
   /* ==========================================================================

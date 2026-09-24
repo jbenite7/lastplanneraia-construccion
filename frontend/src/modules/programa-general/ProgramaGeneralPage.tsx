@@ -28,6 +28,32 @@ export const ProgramaGeneralPage: React.FC = () => {
   const api = useMemo(() => programaGeneralApi(), []);
 
   useEffect(() => {
+    document.body.classList.add('pg-page');
+    return () => {
+      document.body.classList.remove('pg-page');
+    };
+  }, []);
+
+  useEffect(() => {
+    const token = contexto?.csrf_shell || contexto?.csrf_token;
+    if (!token) return;
+    let meta = document.querySelector('meta[name="lps-shell-csrf-token"]') as HTMLMetaElement | null;
+    let created = false;
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.name = 'lps-shell-csrf-token';
+      document.head.appendChild(meta);
+      created = true;
+    }
+    meta.content = token;
+    return () => {
+      if (created && meta && meta.parentNode) {
+        meta.parentNode.removeChild(meta);
+      }
+    };
+  }, [contexto?.csrf_shell, contexto?.csrf_token]);
+
+  useEffect(() => {
     let cancelado = false;
     async function cargar() {
       try {
@@ -162,6 +188,17 @@ export const ProgramaGeneralPage: React.FC = () => {
 
   return (
     <div className="programa-general-container">
+      {/* Compatibilidad con contratos E2E y shell legacy */}
+      <div style={{ display: 'none' }} aria-hidden="true">
+        <input type="hidden" id="baseDatos_PHP" value={contexto.proyecto.codigo || ''} readOnly />
+        <input type="hidden" id="baseDatos" value={contexto.proyecto.codigo || ''} readOnly />
+        <input type="hidden" id="proyecto_PHP" value={contexto.proyecto.nombre || ''} readOnly />
+        <input type="hidden" id="proyecto" value={contexto.proyecto.nombre || ''} readOnly />
+        <input type="hidden" id="semana_PHP" value={String(contexto.semana.numero || '')} readOnly />
+        <input type="hidden" id="semana" name="semana" value={String(contexto.semana.numero || '')} readOnly />
+        <input type="hidden" id="area_PHP" value={contexto.proyecto.tipo || 'Construccion'} readOnly />
+      </div>
+
       <ProgramaToolbar
         semana={contexto.semana.numero}
         modo13Cols={modo13Cols}

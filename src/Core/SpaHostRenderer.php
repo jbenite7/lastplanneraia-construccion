@@ -31,6 +31,11 @@ class SpaHostRenderer
     {
         $html = (string) file_get_contents(PROJECT_ROOT . '/public/app/index.html');
 
+        $uri = strtok((string) ($_SERVER['REQUEST_URI'] ?? ''), '?') ?: '';
+        if ($uri === '/programa-general' || $uri === '/app/programa-general') {
+            $html = str_replace('<body>', '<body class="pg-page">', $html);
+        }
+
         if ($config !== []) {
             $json = json_encode(
                 $config,

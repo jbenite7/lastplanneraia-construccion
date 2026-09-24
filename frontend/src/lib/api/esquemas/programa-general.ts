@@ -60,6 +60,7 @@ export const esquemaContextoPgBase = z.object({
     })).default([]),
   }),
   csrf_token: z.string(),
+  csrf_shell: z.string().optional(),
 });
 
 export const esquemaContextoPg = z.preprocess((val: unknown) => {
@@ -82,7 +83,7 @@ export const esquemaContextoPg = z.preprocess((val: unknown) => {
       proyecto: {
         id: Number(proj.id ?? 0),
         nombre: String(proj.name ?? ''),
-        codigo: String(proj.name ?? ''),
+        codigo: String(proj.dbPrefix ?? proj.codigo ?? proj.db ?? proj.name ?? ''),
         tipo: proj.area ? String(proj.area) : undefined,
       },
       semana: {
@@ -105,6 +106,7 @@ export const esquemaContextoPg = z.preprocess((val: unknown) => {
         subcontratistas: Array.isArray(cat.subcontratistas) ? cat.subcontratistas : [],
       },
       csrf_token: typeof csrf.programaGeneral === 'string' ? csrf.programaGeneral : String(obj.csrf_token ?? ''),
+      csrf_shell: typeof csrf.shell === 'string' ? csrf.shell : undefined,
     };
   }
   return obj;

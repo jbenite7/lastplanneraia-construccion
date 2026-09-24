@@ -115,6 +115,7 @@ $session = [
     'Proyecto_Proceso' => 'Torre 1',
     'Area' => 'Construccion',
     'Semana' => 18,
+    'db' => 'torre_1',
 ];
 
 $ctx = $service->build($scope, $session);
@@ -126,6 +127,7 @@ assertStrictEqual(['project', 'week', 'actions', 'csrf', 'restrictionConfig', 'l
 assertStrictEqual(73, $ctx['project']['id'], 'project id');
 assertStrictEqual('Torre 1', $ctx['project']['name'], 'project name');
 assertStrictEqual('Construccion', $ctx['project']['area'], 'project area');
+assertStrictEqual('torre_1', $ctx['project']['dbPrefix'], 'project dbPrefix');
 
 // Week keys
 assertStrictEqual(18, $ctx['week']['number'], 'week number');
@@ -140,6 +142,7 @@ assertStrictEqual(true, $ctx['actions']['runBatch'], 'runBatch');
 // CSRF
 assertStrictEqual('csrf_programa_general', $ctx['csrf']['programaGeneral'], 'csrf programaGeneral');
 assertStrictEqual('csrf_lps_drawer', $ctx['csrf']['drawer'], 'csrf drawer');
+assertStrictEqual('csrf_shell_api', $ctx['csrf']['shell'], 'csrf shell_api');
 
 // Links
 assertStrictEqual('/bi/programa-general', $ctx['links']['bi'], 'bi link');

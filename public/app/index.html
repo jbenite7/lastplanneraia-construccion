@@ -13,14 +13,17 @@
           document.documentElement.classList.add('aia-theme-dark');
         }
       } catch (error) {}
+      if (location.pathname === '/programa-general' || location.pathname === '/app/programa-general') {
+        document.body ? document.body.classList.add('pg-page') : document.addEventListener('DOMContentLoaded', function() { if (document.body) document.body.classList.add('pg-page'); });
+      }
     </script>
     <link rel="stylesheet" href="/css/tokens.css" />
     <link rel="stylesheet" href="/css/aia-design-system.css" />
     <link rel="stylesheet" href="/css/design-system/theme-claro.css" />
     <link rel="stylesheet" href="/css/auth-react.css" />
     <link rel="stylesheet" href="/css/project-selector-react.css" />
-    <script type="module" crossorigin src="/app/assets/index-nJw5p2yS.js"></script>
-    <link rel="stylesheet" crossorigin href="/app/assets/index-of9Go7p1.css">
+    <script type="module" crossorigin src="/app/assets/index-Boj43-wO.js"></script>
+    <link rel="stylesheet" crossorigin href="/app/assets/index-ja4kFNyv.css">
   </head>
   <body>
     <div id="root"></div>

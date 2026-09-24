@@ -185,13 +185,7 @@
     },
     "/programa-general": {
       "authenticated": true,
-      "unlayered": [
-        {
-          "sheet": "/public/vendor/toastr.min.css",
-          "via": "link",
-          "unlayeredRules": 43
-        }
-      ]
+      "unlayered": []
     },
     "/programacion-intermedia": {
       "authenticated": true,
