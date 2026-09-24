@@ -297,21 +297,24 @@ class SemanalApiController
         $company = trim((string) ($_POST['Empresa'] ?? ''));
         $performance = trim((string) ($_POST['Rendimientos'] ?? ''));
         $suggested = $this->parseLocalizedFloat($_POST['Cantidad_Sugerida'] ?? null);
+        $dbSuggested = $this->lpsService->toFloat($rowActual['Cantidad_Sugerida'] ?? null);
+        $suggestedChanged = ($dbSuggested === null && ($suggested === null || abs($suggested) < 0.0001))
+            ? false
+            : $this->nullableFloatChanged($suggested, $dbSuggested);
+
         $planningFieldsChanged = $description !== trim((string) ($rowActual['Descripcion'] ?? ''))
             || $location !== trim((string) ($rowActual['Ubicacion'] ?? ''))
             || $company !== trim((string) ($rowActual['Empresa'] ?? ''))
             || $performance !== trim((string) ($rowActual['Rendimientos'] ?? ''))
-            || $this->nullableFloatChanged(
-                $suggested,
-                $this->lpsService->toFloat($rowActual['Cantidad_Sugerida'] ?? null),
-            );
+            || $suggestedChanged;
         $confirmed = (int) ($weekState['Semanal_Confirmada'] ?? 0) === 1;
+        $esTnp = (int) ($rowActual['Es_TNP'] ?? 0) === 1;
 
         if ($realChanged && !$confirmed) {
             $this->jsonError('El avance real solo se registra en la fase de calificación.', 409);
             return;
         }
-        if ($confirmed && ($commitmentChanged || $assigneesChanged || $planningFieldsChanged)) {
+        if ($confirmed && !$esTnp && ($commitmentChanged || $assigneesChanged || $planningFieldsChanged)) {
             $this->jsonError('Los datos de planificación solo se editan en programación.', 409);
             return;
         }
@@ -320,7 +323,6 @@ class SemanalApiController
             return;
         }
 
-        $esTnp = (int) ($rowActual['Es_TNP'] ?? 0) === 1;
         if (!$esTnp && $compromiso !== null && $compromiso <= 0) {
             $this->jsonError("El compromiso no puede ser 0. Use CNP para desprogramar.");
             return;
@@ -1325,7 +1327,7 @@ private function autoprogramar(string $dbPrefix, int $semana): void
     private function tnp(string $dbPrefix, int $semana): void
     {
         $projectId = $this->projectId($dbPrefix);
-        \CommitmentLockGuard::guard($dbPrefix, $semana, 'tnp');
+        \CommitmentLockGuard::guard($dbPrefix, $semana, 'tnp', true);
         $consecutivo = filter_input(INPUT_POST, 'Consecutivo', FILTER_VALIDATE_INT);
         $id = trim($_POST['Id'] ?? '');
         $ejecutadoReal = filter_input(INPUT_POST, 'Ejecutado_Real', FILTER_VALIDATE_FLOAT);

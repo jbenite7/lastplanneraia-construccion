@@ -2584,11 +2584,15 @@
       setMobileSaveState(visualRow, prop, 'error', message);
       renderMobileCards(getFilteredRows());
       showFeedback('error', message);
-    }).fail(function () {
+    }).fail(function (jqXHR) {
       if (!isMobileSave) { revertCell(visualRow, prop, oldValue); }
-      setMobileSaveState(visualRow, prop, 'error', 'Error de red');
+      var serverMsg = (jqXHR && jqXHR.responseJSON && (jqXHR.responseJSON.mensaje || jqXHR.responseJSON.message))
+        ? jqXHR.responseJSON.mensaje || jqXHR.responseJSON.message
+        : null;
+      var finalError = serverMsg || 'No se pudo guardar: sin conexión con el servidor. Revisa la red y vuelve a escribir el dato.';
+      setMobileSaveState(visualRow, prop, 'error', serverMsg ? 'Error al guardar' : 'Error de red');
       renderMobileCards(getFilteredRows());
-      showFeedback('error', 'No se pudo guardar: sin conexión con el servidor. Revisa la red y vuelve a escribir el dato.');
+      showFeedback('error', finalError);
     });
   }
 
@@ -3075,28 +3079,24 @@
             if (!esTnpRow && typeof getStateKey === 'function') {
               esTnpRow = (getStateKey(rowData) === 'cal-tnp');
             }
-            if (esTnpRow) {
-              continue;
-            }
-          }
 
-          // HARD GUARD: Block real execution registration if missing assignees
-          if (prop === 'Ejecutado_Real') {
-            var isSubMissing = isBlank(rowData.Sub_Contratista);
-            var isResMissing = isBlank(rowData.Responsable_AIA);
+            // En filas TNP no se exige CNC ni asignados previos; en filas planificadas sí
+            if (!esTnpRow) {
+              var isSubMissing = isBlank(rowData.Sub_Contratista);
+              var isResMissing = isBlank(rowData.Responsable_AIA);
 
-            if (isSubMissing || isResMissing) {
-              revertCell(rowIndex, prop, oldValue);
-              showFeedback('error', 'Falta Sub-Contratista o Resp. AIA para registrar avance');
-              continue;
-            }
+              if (isSubMissing || isResMissing) {
+                revertCell(rowIndex, prop, oldValue);
+                showFeedback('error', 'Falta Sub-Contratista o Resp. AIA para registrar avance');
+                continue;
+              }
 
-            // Si el avance real es menor al compromiso, SIEMPRE pedir CNC
-            if (requiresCnc(rowData, newValue)) {
+              // Si el avance real es menor al compromiso, SIEMPRE pedir CNC
+              if (requiresCnc(rowData, newValue)) {
                 queueCncSave(rowIndex, rowData, prop, oldValue, newValue, { mobile: false });
-
                 revertCell(rowIndex, prop, oldValue);
                 continue;
+              }
             }
           }
 
