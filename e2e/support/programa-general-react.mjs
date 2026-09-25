@@ -31,7 +31,7 @@ export async function guardarDrawerPg(page) {
   const save = page.getByRole('button', { name: /Guardar Cambios/i });
   await expect(save).toBeEnabled();
   await save.click();
-  await expect(page.getByRole('status')).toContainText(/Cambios guardados con éxito/i);
+  await expect(page.locator('.pro-toast[role="status"]')).toContainText(/Cambios guardados con éxito/i);
 }
 
 export async function abrirLeyendaPg(page) {

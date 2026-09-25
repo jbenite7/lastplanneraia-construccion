@@ -2,11 +2,12 @@ import { test, expect } from '@playwright/test';
 import { PROJECTS } from '../../../tests/browser/fixtures/projects.mjs';
 import { ProjectDbSnapshot, runSql } from '../../../tests/browser/support/dbSnapshot.mjs';
 import { installErrorCollectors } from '../../../tests/browser/support/assertions.mjs';
-import { changeWeek, loginAndSelectProject, logout, getJson } from '../../../tests/browser/support/session.mjs';
+import { loginAndSelectProject, logout, getJson } from '../../../tests/browser/support/session.mjs';
 import { generateFindings, attachAssertionCollector } from '../../support/findings.mjs';
 import { abrirActividadPg, abrirLeyendaPg, contarFilasPg, editarCampoDrawerPg, esperarTablaPg, guardarDrawerPg, leerCampoFilaPg, postearActualizacionPgConCsrf } from '../../support/programa-general-react.mjs';
 
 const PROJECT_DA_PORTO = PROJECTS.find((project) => project.key === 'construction');
+const PROJECT_JMC = PROJECTS.find((project) => project.key === 'jmc');
 const PROJECT_PC = PROJECTS.find((project) => project.key === 'pc');
 const ADMIN = { username: 'test.A', password: 'aia2026' };
 const RESIDENT = { username: 'test.R', password: 'aia2026' };
@@ -32,6 +33,19 @@ async function apiGet(page, url) {
   return { ok: result.ok && !result.payload.parseError, payload: result.payload };
 }
 
+async function abrirSemanaPg(page, week) {
+  await page.goto('/programa-general');
+  await expect.poll(() => page.locator('meta[name="lps-shell-csrf-token"]').getAttribute('content')).toMatch(/\S+/);
+  const csrfToken = await page.locator('meta[name="lps-shell-csrf-token"]').getAttribute('content');
+  const response = await page.request.post('/context/week', {
+    headers: { 'X-CSRF-Token': csrfToken },
+    data: { semana: week },
+  });
+  expect(response.ok(), `Seleccionar semana ${week}: ${await response.text()}`).toBe(true);
+  await page.goto('/programa-general');
+  await expect(page.locator('#semana_PHP')).toHaveValue(String(week));
+}
+
 async function escogerActividadConUnidad(page) {
   await esperarTablaPg(page);
   const row = page.locator('table.programa-table-pro tbody tr.row-activity').first();
@@ -47,8 +61,6 @@ async function guardarUnidad(page, target, value) {
   const response = page.waitForResponse((candidate) => (
     candidate.url().includes('/api/general/update?')
       && candidate.request().method() === 'POST'
-      && new URLSearchParams(candidate.request().postData() || '').get('unique_id') === String(target.uniqueId)
-      && new URLSearchParams(candidate.request().postData() || '').get('unidad') === value
   ));
   await abrirActividadPg(page, target.uniqueId);
   await editarCampoDrawerPg(page, 'Unidad', value);
@@ -75,7 +87,7 @@ test.describe('PG interactions', () => {
       snapshot = new ProjectDbSnapshot(PROJECT_DA_PORTO).capture();
       beforeFingerprint = snapshot.fingerprint();
       await loginAndSelectProject(page, PROJECT_DA_PORTO, ADMIN);
-      await changeWeek(page, 1, '/programa-general');
+      await abrirSemanaPg(page, 1);
       expect(await contarFilasPg(page), 'PG React must have activity rows').toBeGreaterThan(0);
       const target = await escogerActividadConUnidad(page);
       await guardarUnidad(page, target, target.testValue);
@@ -108,14 +120,15 @@ test.describe('PG interactions', () => {
     testInfo._e2eErrors = errors;
   });
 
-  test('Da Porto Residente: persiste el campo permitido desde el Drawer', async ({ page }, testInfo) => {
+  test('JMC Residente: persiste el campo permitido desde el Drawer en la semana vigente', async ({ page }, testInfo) => {
+    test.skip(!PROJECT_JMC, 'JMC project required');
     const errors = installErrorCollectors(page);
     attachAssertionCollector(errors);
     let snapshot;
     try {
-      snapshot = new ProjectDbSnapshot(PROJECT_DA_PORTO).capture();
-      await loginAndSelectProject(page, PROJECT_DA_PORTO, RESIDENT);
-      await changeWeek(page, 1, '/programa-general');
+      snapshot = new ProjectDbSnapshot(PROJECT_JMC).capture();
+      await loginAndSelectProject(page, PROJECT_JMC, RESIDENT);
+      await abrirSemanaPg(page, PROJECT_JMC.operationalWeek);
       expect(await contarFilasPg(page), 'Resident must see PG activities').toBeGreaterThan(0);
       const target = await escogerActividadConUnidad(page);
       await guardarUnidad(page, target, target.testValue);
@@ -141,7 +154,7 @@ test.describe('PG interactions', () => {
       snapshot = new ProjectDbSnapshot(PROJECT_DA_PORTO).capture();
       beforeFingerprint = snapshot.fingerprint();
       await loginAndSelectProject(page, PROJECT_DA_PORTO, ADMIN);
-      await changeWeek(page, 1, '/programa-general');
+      await abrirSemanaPg(page, 1);
       const target = await escogerActividadConUnidad(page);
       await logout(page);
 
@@ -154,6 +167,7 @@ test.describe('PG interactions', () => {
 
       await loginAndSelectProject(page, PROJECT_DA_PORTO, VIEWER);
       expect((await page.goto('/programa-general')).status()).toBe(200);
+      await abrirSemanaPg(page, 1);
       await esperarTablaPg(page);
       await abrirActividadPg(page, target.uniqueId);
       const unit = page.getByLabel('Unidad', { exact: true });
@@ -199,20 +213,21 @@ test.describe('PG interactions', () => {
       snapshot = new ProjectDbSnapshot(PROJECT_PC).capture();
       beforeFingerprint = snapshot.fingerprint();
       await loginAndSelectProject(page, PROJECT_PC, ADMIN);
-      await changeWeek(page, 1, '/programa-general');
+      await abrirSemanaPg(page, PROJECT_PC.operationalWeek);
       expect(await contarFilasPg(page)).toBeGreaterThan(0);
       for (const label of ['Atrasada', 'Con Alerta', 'Debe Iniciar', 'En Curso']) await expect(page.getByRole('button', { name: new RegExp(label) }).first()).toBeVisible();
       const target = await escogerActividadConUnidad(page);
       await guardarUnidad(page, target, target.testValue);
+      await page.keyboard.press('Escape');
       await activarTreceColumnas(page);
       expect(await leerCampoFilaPg(page, target.uniqueId, 'UNIDAD')).toBe(target.testValue);
-      const api = await apiGet(page, `/api/general/list?db=${PROJECT_PC.dbPrefix}&semana=1`);
+      const api = await apiGet(page, `/api/general/list?db=${PROJECT_PC.dbPrefix}&semana=${PROJECT_PC.operationalWeek}`);
       const apiRow = api.payload.data?.find((row) => Number(row.unique_id) === target.uniqueId);
       expect(apiRow?.unidad, 'UI → API persistence in Aeropuerto PC').toBe(target.testValue);
       const leyenda = await abrirLeyendaPg(page);
       await page.keyboard.press('Escape');
       await expect(leyenda).toBeHidden();
-      expect(scalar(`SELECT COUNT(*) FROM programa_consolidado WHERE project_id=${PROJECT_PC.projectId} AND unique_id=${target.uniqueId} AND unidad='${target.testValue}'`)).toBe(1);
+      expect(scalar(`SELECT COUNT(*) FROM programa_consolidado WHERE project_id=${PROJECT_PC.projectId} AND Semana=${PROJECT_PC.operationalWeek} AND unique_id=${target.uniqueId} AND unidad='${target.testValue}'`)).toBe(1);
       const download = page.waitForEvent('download');
       await page.getByRole('button', { name: 'CSV', exact: true }).click();
       expect((await download).suggestedFilename()).toContain('programa_general');
