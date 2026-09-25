@@ -1,9 +1,14 @@
 ---
+capa: fuente
+tipo: plan
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-09-24-s05-ronda-1-2-informe.md
+resumen: Informe de sprint S05 ronda 1.2
 fecha: 2026-09-25
 sprint: S05 ronda 1.2
 ejecutor: codex
 rama: codex/s05-ronda-1-2
-estado: verificacion-final
+estado: abierto
 ---
 
 # Informe de sprint S05 ronda 1.2
@@ -60,6 +65,7 @@ estado: verificacion-final
 | `full-app-flow.spec.mjs` en stack CI aislado | RC 0 · 30/30; cada escenario emitió recibo de restauración de base y archivos |
 | `npm run test:runtime-budget:measure` y `npm run test:runtime-budget:check` | RC 0 ambos · tres muestras ligadas a `c68330f6`; CSS gzip 128963 B, JS gzip 134709 B, solicitudes duplicadas 0, flashes 0, inicialización 320,4 ms, interacción 135,5 ms; baseline 0.5.0 → medición 1.1.0 |
 | `programa-general.visual.mjs` contra referencias previas | RC 1 esperado · 78187 px distintos a 1180×820 y 86953 px a 1440×900; referencia nueva sin aprobación |
+| `npm run test:wiki` | RC 1 · sus pruebas unitarias pasaron; el lint estricto detecta 14 metadatos inválidos en cuatro documentos ajenos a esta ronda y en el propio plan sellado. El informe nuevo ya pasó su validación de frontmatter. No se alteraron esos contratos. |
 
 La suite PHP y los E2E de mutación se ejecutaron sobre base CI aislada. No se alteraron datos de la base de desarrollo compartida en esta reanudación.
 
@@ -75,6 +81,7 @@ Las catorce capturas finales de `docs/superpowers/evidence/s05-ronda-1-2/` cubre
 - Revisión adicional del diff de los dos ajustes finales de prueba: «sin hallazgos».
 - Revisión adicional del selector de semana para runtime y de la deduplicación CSS: «sin hallazgos».
 - Revisión independiente de seguridad: se amplió la prueba a la negación real del lote y a restauración en `finally`; último veredicto sin hallazgos accionables.
+- El lint de wiki estricto queda rojo por metadatos anteriores a este informe en planes y specs fuera del alcance. Cambiar el frontmatter del plan S05 sellado invalidaría su huella; se deja registrado para el cierre con Felipe.
 - **BLOCKED · tarea 9:** Felipe rechazó las capturas iniciales. Las seis imágenes de referencia, candidata y diferencia en dos tamaños están en `docs/superpowers/evidence/s05-ronda-1-2/goldens-candidatas/`, regeneradas desde `c68330f6`. Se solicitó un nuevo visto sobre las candidatas posteriores a R1.2-5. Hasta obtenerlo, no se modifican los goldens ni se considera verde el gate visual.
 - No se hizo push, merge a `main` ni despliegue, según el alcance aprobado del sprint.
 
