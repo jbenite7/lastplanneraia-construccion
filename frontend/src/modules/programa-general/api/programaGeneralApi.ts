@@ -33,12 +33,12 @@ export interface ActualizarEjecucionPayload {
 }
 
 export interface ClienteHttpPg {
-  get: <T>(url: string, schema: z.ZodType<T, any, any>) => Promise<T>;
+  get: <T>(url: string, schema: z.ZodType<T, any, any>, signal?: AbortSignal) => Promise<T>;
   postForm: <T>(url: string, data: Record<string, unknown>, schema?: z.ZodType<T, any, any>, headers?: Record<string, string>) => Promise<T>;
 }
 
 const defaultCliente: ClienteHttpPg = {
-  get: <T>(url: string, schema: z.ZodType<T, any, any>) => pedir(url, schema),
+  get: <T>(url: string, schema: z.ZodType<T, any, any>, signal?: AbortSignal) => pedir(url, schema, { signal }),
   postForm: async <T>(
     url: string,
     data: Record<string, unknown>,
@@ -70,14 +70,15 @@ export const esquemaListaActividadesPg: z.ZodType<{ data: FilaActividadPg[] }> =
 
 export function programaGeneralApi(cliente: ClienteHttpPg = defaultCliente) {
   return {
-    async obtenerContexto(): Promise<ContextoPg> {
-      return cliente.get('/api/programa-general/context', esquemaContextoPg);
+    async obtenerContexto(signal?: AbortSignal): Promise<ContextoPg> {
+      return cliente.get('/api/programa-general/context', esquemaContextoPg, signal);
     },
 
-    async obtenerActividades(semana: number): Promise<FilaActividadPg[]> {
+    async obtenerActividades(semana: number, signal?: AbortSignal): Promise<FilaActividadPg[]> {
       const response = await cliente.get<{ data: FilaActividadPg[] }>(
         `/api/general/list?semana=${semana}`,
-        esquemaListaActividadesPg
+        esquemaListaActividadesPg,
+        signal
       );
       return response.data;
     },

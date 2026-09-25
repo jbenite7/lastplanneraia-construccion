@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { ProgramaGeneralPage } from './ProgramaGeneralPage';
 
@@ -181,6 +181,36 @@ describe('ProgramaGeneralPage', () => {
     expect(screen.getAllByText('Excavación mecánica de zapatas').length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
     await waitFor(() => expect(screen.queryByText(/datos desactualizados/i)).not.toBeInTheDocument());
+  });
+
+  it('cancela una recarga anterior y descarta su respuesta tardía', async () => {
+    render(<ProgramaGeneralPage />);
+    await screen.findByText('Programa General');
+    let resolverAnterior: ((value: typeof mockActividadesRaw) => void) | undefined;
+    let senalAnterior: AbortSignal | undefined;
+    mockObtenerActividades.mockImplementationOnce((_week, signal) => {
+      senalAnterior = signal;
+      return new Promise((resolve) => { resolverAnterior = resolve; });
+    }).mockResolvedValueOnce(mockActividadesRaw.map((row) => row.unique_id === 101 ? { ...row, Actividad: 'Versión nueva' } : row));
+    fireEvent.click(screen.getByRole('button', { name: 'Recargar' }));
+    await waitFor(() => expect(resolverAnterior).toBeDefined());
+    fireEvent.click(screen.getByRole('button', { name: 'Recargar' }));
+    expect(senalAnterior?.aborted).toBe(true);
+    expect(await screen.findAllByText('Versión nueva')).not.toHaveLength(0);
+    await act(async () => { resolverAnterior?.(mockActividadesRaw); });
+    await waitFor(() => expect(screen.queryByText('Excavación mecánica de zapatas')).not.toBeInTheDocument());
+  });
+
+  it('quita el aviso de datos desactualizados tras reconciliar un lote', async () => {
+    render(<ProgramaGeneralPage />);
+    await screen.findByText('Programa General');
+    mockObtenerActividades.mockRejectedValueOnce(new Error('red caída'));
+    fireEvent.click(screen.getByRole('button', { name: 'Recargar' }));
+    await screen.findByText(/datos desactualizados/i);
+    mockActualizarEjecucion.mockResolvedValueOnce({ respuesta: 'BIEN', actualizadas: 2, carryover_actualizadas: 1 });
+    fireEvent.click(screen.getByRole('button', { name: 'Actualizar Ejecución' }));
+    await waitFor(() => expect(screen.queryByText(/datos desactualizados/i)).not.toBeInTheDocument());
+    expect(screen.getByText(/2 filas y 1 carryovers/)).toBeInTheDocument();
   });
 
   it('confirma un borrador del Drawer antes de actualizar ejecución', async () => {

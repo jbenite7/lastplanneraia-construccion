@@ -29,6 +29,9 @@ export const ProgramaGeneralPage: React.FC = () => {
   const [borradorDrawer, setBorradorDrawer] = useState(false);
   const cierreLeyendaRef = useRef<HTMLButtonElement>(null);
   const origenLeyendaRef = useRef<HTMLElement | null>(null);
+  const recargaControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => () => recargaControllerRef.current?.abort(), []);
 
   const api = useMemo(() => programaGeneralApi(), []);
 
@@ -71,9 +74,10 @@ export const ProgramaGeneralPage: React.FC = () => {
     };
   }, [contexto?.csrf_shell, contexto?.csrf_token]);
 
-  const cargarDatos = useCallback(async () => {
-    const ctx = await api.obtenerContexto();
-    const rawAct = await api.obtenerActividades(ctx.semana.numero);
+  const cargarDatos = useCallback(async (signal?: AbortSignal) => {
+    const ctx = await api.obtenerContexto(signal);
+    const rawAct = await api.obtenerActividades(ctx.semana.numero, signal);
+    if (signal?.aborted) return;
     setContexto(ctx);
     setActividades(normalizarActividades(rawAct, ctx.semana.numero));
   }, [api]);
@@ -106,20 +110,30 @@ export const ProgramaGeneralPage: React.FC = () => {
   }, [api]);
 
   const handleRecargar = useCallback(async () => {
+    recargaControllerRef.current?.abort();
+    const controller = new AbortController();
+    recargaControllerRef.current = controller;
     try {
       setCargando(true);
-      await cargarDatos();
+      await cargarDatos(controller.signal);
+      if (controller.signal.aborted) return;
       setError(null);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error recargando Programa General');
+      if (!controller.signal.aborted) setError(err instanceof Error ? err.message : 'Error recargando Programa General');
     } finally {
-      setCargando(false);
+      if (recargaControllerRef.current === controller) {
+        recargaControllerRef.current = null;
+        setCargando(false);
+      }
     }
   }, [cargarDatos]);
 
   const handleActualizarEjecucion = useCallback(async () => {
     if (!contexto || !contexto.permisos.puedeLote) return;
     if (borradorDrawer && !window.confirm('Hay cambios sin guardar en el Drawer. ¿Actualizar la ejecución y descartar el borrador?')) return;
+    recargaControllerRef.current?.abort();
+    recargaControllerRef.current = null;
+    setCargando(false);
     try {
       setActualizandoEjecucion(true);
       const resultado = await api.actualizarEjecucion({
@@ -128,6 +142,7 @@ export const ProgramaGeneralPage: React.FC = () => {
         csrf_token: contexto.csrf_token,
       });
       await cargarDatos();
+      setError(null);
       setBorradorDrawer(false);
       setToastMsg(`Ejecución actualizada: ${resultado.actualizadas ?? 0} filas y ${resultado.carryover_actualizadas ?? 0} carryovers`);
     } catch (err: unknown) {
