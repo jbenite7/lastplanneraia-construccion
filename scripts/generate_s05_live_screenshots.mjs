@@ -25,8 +25,8 @@ async function generateLiveScreenshots() {
   });
   const page = await context.newPage();
 
-  console.log('1. Autenticando en Docker vía Dev Door (u=test.A&p=1)...');
-  await page.goto('http://localhost:8081/dev/entrar?u=test.A&p=1');
+  console.log('1. Autenticando en Docker vía Dev Door (u=test.A&p=Da Porto)...');
+  await page.goto('http://localhost:8081/dev/entrar?u=test.A&p=' + encodeURIComponent('Da Porto'));
   await page.waitForLoadState('networkidle');
 
   console.log('2. Navegando a la ruta canónica http://localhost:8081/programa-general...');

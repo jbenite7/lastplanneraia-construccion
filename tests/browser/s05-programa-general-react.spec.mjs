@@ -328,7 +328,7 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
 test.describe('S05 Programa General React — Servidor Real Docker', () => {
   test('abre Programa General canónico en 1180x820 sin scroll horizontal autenticado vía Dev Door', async ({ page }) => {
     await page.setViewportSize({ width: 1180, height: 820 });
-    await page.goto('http://localhost:8081/dev/entrar?u=test.A&p=1');
+    await page.goto('http://localhost:8081/dev/entrar?u=test.A&p=' + encodeURIComponent('Da Porto'));
     await page.waitForLoadState('networkidle');
 
     // Navegar directamente a la ruta canónica de primer nivel /programa-general (sin /app y sin redirección a PHP legado ni 404)
