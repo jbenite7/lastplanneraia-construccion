@@ -33,8 +33,11 @@ test('pilot persistence never writes a synthetic unit outside the domain', () =>
 });
 
 test('pilot role contract verifies a manipulated write is rejected', () => {
-  assert.match(source, /postFormJson/);
-  assert.match(source, /\[403, 422\]/);
+  assert.match(source, /postearActualizacionPgConCsrf/);
+  assert.match(source, /context\.payload\?\.data\?\.csrf\?\.programaGeneral/);
+  assert.match(source, /unique_id: target\.uniqueId/);
+  assert.match(source, /denied\.status[^\n]*\.toBe\(403\)/);
+  assert.match(source, /Un POST denegado no modifica la base/);
   assert.match(source, /Viewer drawer must not permit editing/);
   assert.match(source, /getByRole\('alert'\)/);
 });

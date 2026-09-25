@@ -34,12 +34,48 @@ export async function guardarDrawerPg(page) {
   await expect(page.getByRole('status')).toContainText(/Cambios guardados con éxito/i);
 }
 
+export async function abrirLeyendaPg(page) {
+  await page.getByRole('button', { name: 'Leyenda', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: /Gu[ií]a Operativa - Programa General/i });
+  await expect(dialog, 'La Leyenda debe abrirse desde la barra de herramientas React').toBeVisible();
+  return dialog;
+}
+
+export async function postearActualizacionPgConCsrf(page, url, body, csrfToken) {
+  return page.evaluate(
+    async ({ apiUrl, apiBody, token }) => {
+      const formData = new URLSearchParams();
+      Object.entries(apiBody).forEach(([key, value]) => formData.set(key, String(value)));
+      formData.set('_csrf_token', token);
+      formData.set('csrf_token', token);
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRF-Token': token,
+        },
+        body: formData.toString(),
+      });
+      const text = await response.text();
+      let payload;
+      try {
+        payload = JSON.parse(text);
+      } catch {
+        payload = { parseError: true, text };
+      }
+      return { ok: response.ok, status: response.status, payload };
+    },
+    { apiUrl: url, apiBody: body, token: csrfToken },
+  );
+}
+
 export async function leerCampoFilaPg(page, uniqueId, columna) {
   const headers = page.locator('table.programa-table-pro thead th');
   const headerCount = await headers.count();
   let columnIndex = -1;
   for (let index = 0; index < headerCount; index += 1) {
-    if ((await headers.nth(index).innerText()).trim() === columna) {
+    if ((await headers.nth(index).getAttribute('aria-label') || await headers.nth(index).innerText()).trim() === columna) {
       columnIndex = index;
       break;
     }

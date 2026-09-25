@@ -2,9 +2,9 @@ import { test, expect } from '@playwright/test';
 import { PROJECTS } from '../../../tests/browser/fixtures/projects.mjs';
 import { ProjectDbSnapshot, runSql } from '../../../tests/browser/support/dbSnapshot.mjs';
 import { installErrorCollectors } from '../../../tests/browser/support/assertions.mjs';
-import { changeWeek, loginAndSelectProject, logout, postFormJson, getJson } from '../../../tests/browser/support/session.mjs';
+import { changeWeek, loginAndSelectProject, logout, getJson } from '../../../tests/browser/support/session.mjs';
 import { generateFindings, attachAssertionCollector } from '../../support/findings.mjs';
-import { abrirActividadPg, contarFilasPg, editarCampoDrawerPg, esperarTablaPg, guardarDrawerPg, leerCampoFilaPg } from '../../support/programa-general-react.mjs';
+import { abrirActividadPg, abrirLeyendaPg, contarFilasPg, editarCampoDrawerPg, esperarTablaPg, guardarDrawerPg, leerCampoFilaPg, postearActualizacionPgConCsrf } from '../../support/programa-general-react.mjs';
 
 const PROJECT_DA_PORTO = PROJECTS.find((project) => project.key === 'construction');
 const PROJECT_PC = PROJECTS.find((project) => project.key === 'pc');
@@ -45,13 +45,18 @@ async function escogerActividadConUnidad(page) {
 
 async function guardarUnidad(page, target, value) {
   const response = page.waitForResponse((candidate) => (
-    candidate.url().includes('/api/general/update?') && candidate.request().method() === 'POST'
+    candidate.url().includes('/api/general/update?')
+      && candidate.request().method() === 'POST'
+      && new URLSearchParams(candidate.request().postData() || '').get('unique_id') === String(target.uniqueId)
+      && new URLSearchParams(candidate.request().postData() || '').get('unidad') === value
   ));
   await abrirActividadPg(page, target.uniqueId);
   await editarCampoDrawerPg(page, 'Unidad', value);
   await guardarDrawerPg(page);
   const payload = await (await response).json();
-  expect(payload.respuesta ?? payload.success).toBeTruthy();
+  expect(payload.respuesta, 'GeneralApiController confirma el guardado').toBe('BIEN');
+  expect(payload.unidad, 'GeneralApiController devuelve la unidad persistida').toBe(value);
+  return payload;
 }
 
 async function activarTreceColumnas(page) {
@@ -88,7 +93,10 @@ test.describe('PG interactions', () => {
       await abrirActividadPg(page, target.uniqueId);
       await expect(page.getByRole('dialog', { name: 'Editor Contextual LPS' })).toBeVisible();
       await page.keyboard.press('Escape');
-      await guardarUnidad(page, target, target.originalValue);
+      const restored = await guardarUnidad(page, target, target.originalValue);
+      expect(restored.respuesta).toBe('BIEN');
+      expect(restored.unidad).toBe(target.originalValue);
+      expect(await leerCampoFilaPg(page, target.uniqueId, 'UNIDAD')).toBe(target.originalValue);
     } finally {
       await logout(page).catch(() => {});
       if (snapshot) {
@@ -115,7 +123,10 @@ test.describe('PG interactions', () => {
       await esperarTablaPg(page);
       await activarTreceColumnas(page);
       expect(await leerCampoFilaPg(page, target.uniqueId, 'UNIDAD')).toBe(target.testValue);
-      await guardarUnidad(page, target, target.originalValue);
+      const restored = await guardarUnidad(page, target, target.originalValue);
+      expect(restored.respuesta).toBe('BIEN');
+      expect(restored.unidad).toBe(target.originalValue);
+      expect(await leerCampoFilaPg(page, target.uniqueId, 'UNIDAD')).toBe(target.originalValue);
     } finally {
       await logout(page).catch(() => {});
       if (snapshot) { snapshot.restore(); snapshot.dispose(); }
@@ -124,24 +135,57 @@ test.describe('PG interactions', () => {
   });
 
   test('Da Porto read-only roles: UI and manipulated API writes remain denied', async ({ page }) => {
-    for (const role of [{ credentials: SUBCONTRACTOR, canView: false }, { credentials: VIEWER, canView: true }]) {
-      await loginAndSelectProject(page, PROJECT_DA_PORTO, role.credentials);
+    let snapshot;
+    let beforeFingerprint;
+    try {
+      snapshot = new ProjectDbSnapshot(PROJECT_DA_PORTO).capture();
+      beforeFingerprint = snapshot.fingerprint();
+      await loginAndSelectProject(page, PROJECT_DA_PORTO, ADMIN);
+      await changeWeek(page, 1, '/programa-general');
+      const target = await escogerActividadConUnidad(page);
+      await logout(page);
+
+      await loginAndSelectProject(page, PROJECT_DA_PORTO, SUBCONTRACTOR);
       expect((await page.goto('/programa-general')).status()).toBe(200);
       const list = await getJson(page, `/api/general/list?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`);
-      expect(list.status).toBe(role.canView ? 200 : 403);
-      if (role.canView) {
-        await esperarTablaPg(page);
-        const uniqueId = Number(await page.locator('tr.row-activity').first().getAttribute('data-unique-id'));
-        await abrirActividadPg(page, uniqueId);
-        const unit = page.getByLabel('Unidad', { exact: true });
-        const save = page.getByRole('button', { name: /Guardar Cambios/i });
-        expect((await unit.isDisabled()) || !(await save.isVisible().catch(() => false)), 'Viewer drawer must not permit editing').toBe(true);
-      } else {
-        await expect(page.getByRole('alert')).toBeVisible();
-      }
-      const denied = await postFormJson(page, `/api/general/update?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`, { opcion: 'modificar', Id: '0', unidad: 'E2E_FORBIDDEN' });
-      expect([403, 422], 'Manipulated PG update must be denied').toContain(denied.status);
+      expect(list.status).toBe(403);
+      await expect(page.getByRole('alert')).toBeVisible();
       await logout(page);
+
+      await loginAndSelectProject(page, PROJECT_DA_PORTO, VIEWER);
+      expect((await page.goto('/programa-general')).status()).toBe(200);
+      await esperarTablaPg(page);
+      await abrirActividadPg(page, target.uniqueId);
+      const unit = page.getByLabel('Unidad', { exact: true });
+      const save = page.getByRole('button', { name: /Guardar Cambios/i });
+      expect((await unit.isDisabled()) || !(await save.isVisible().catch(() => false)), 'Viewer drawer must not permit editing').toBe(true);
+      const context = await apiGet(page, '/api/programa-general/context');
+      const csrfToken = context.payload?.data?.csrf?.programaGeneral;
+      expect(typeof csrfToken, 'El POST manipulado debe llevar el CSRF real de Programa General').toBe('string');
+      expect(csrfToken.length).toBeGreaterThan(0);
+      const denied = await postearActualizacionPgConCsrf(
+        page,
+        `/api/general/update?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`,
+        { unique_id: target.uniqueId, unidad: 'E2E_FORBIDDEN' },
+        csrfToken,
+      );
+      expect(denied.status, 'El permiso niega un POST manipulado con CSRF y unique_id válidos').toBe(403);
+      const deniedBatch = await postearActualizacionPgConCsrf(
+        page,
+        `/api/general/update-batch?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`,
+        { opcion: 'modificargrupo' },
+        csrfToken,
+      );
+      expect(deniedBatch.status, 'El permiso niega también el lote con CSRF válido').toBe(403);
+      await logout(page);
+      expect(snapshot.fingerprint(), 'Un POST denegado no modifica la base').toBe(beforeFingerprint);
+    } finally {
+      await logout(page).catch(() => {});
+      if (snapshot) {
+        snapshot.restore();
+        expect(snapshot.fingerprint()).toBe(beforeFingerprint);
+        snapshot.dispose();
+      }
     }
   });
 
@@ -162,11 +206,20 @@ test.describe('PG interactions', () => {
       await guardarUnidad(page, target, target.testValue);
       await activarTreceColumnas(page);
       expect(await leerCampoFilaPg(page, target.uniqueId, 'UNIDAD')).toBe(target.testValue);
+      const api = await apiGet(page, `/api/general/list?db=${PROJECT_PC.dbPrefix}&semana=1`);
+      const apiRow = api.payload.data?.find((row) => Number(row.unique_id) === target.uniqueId);
+      expect(apiRow?.unidad, 'UI → API persistence in Aeropuerto PC').toBe(target.testValue);
+      const leyenda = await abrirLeyendaPg(page);
+      await page.keyboard.press('Escape');
+      await expect(leyenda).toBeHidden();
       expect(scalar(`SELECT COUNT(*) FROM programa_consolidado WHERE project_id=${PROJECT_PC.projectId} AND unique_id=${target.uniqueId} AND unidad='${target.testValue}'`)).toBe(1);
       const download = page.waitForEvent('download');
       await page.getByRole('button', { name: 'CSV', exact: true }).click();
       expect((await download).suggestedFilename()).toContain('programa_general');
-      await guardarUnidad(page, target, target.originalValue);
+      const restored = await guardarUnidad(page, target, target.originalValue);
+      expect(restored.respuesta).toBe('BIEN');
+      expect(restored.unidad).toBe(target.originalValue);
+      expect(await leerCampoFilaPg(page, target.uniqueId, 'UNIDAD')).toBe(target.originalValue);
     } finally {
       await logout(page).catch(() => {});
       if (snapshot) {
