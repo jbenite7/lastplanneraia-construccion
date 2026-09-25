@@ -1,7 +1,10 @@
 ---
 capa: fuente
 tipo: plan
-estado: propuesto
+estado: aprobado
+aprobado_por: felipe
+aprobado_el: 2026-09-24
+sello: "ninguno — /aprobar no está instalado en la sesión donde se aprobó; visto dado en el chat"
 fecha: 2026-09-24
 areas: [lps, design-system, shell]
 ejecutor: codex

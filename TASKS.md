@@ -462,7 +462,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - hecha · 6 · Frontend — Drawer Contextual LPS (440px) y Edición de Actividad
   - hecha · 7 · Frontend — Página Orquestadora, Integración de Shell y Rutas
   - hecha · 8 · Verificación Visual Playwright y Cierre E2E
-- **S05 ronda 1.2 — Programa General y shell React a la par del legado** (propuesto): 0 de 11 hechas · `2026-09-24-s05-ronda-1-2-paridad-legado.md`
+- **S05 ronda 1.2 — Programa General y shell React a la par del legado** (aprobado): 0 de 11 hechas · `2026-09-24-s05-ronda-1-2-paridad-legado.md`
   - sin señal · 0 · Worktree, base y línea de partida medida
   - pendiente · 1 · Puerta de desarrollo sin el respaldo por posición (V5, H10)
   - pendiente · 2 · El contador cuenta tareas, no capítulos (H3)
