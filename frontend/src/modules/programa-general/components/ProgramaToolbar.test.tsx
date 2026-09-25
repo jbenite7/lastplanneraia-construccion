@@ -10,6 +10,10 @@ describe('ProgramaToolbar', () => {
     onOpenDrawer: vi.fn(),
     onExportCsv: vi.fn(),
     onDownloadCorteXlsx: vi.fn(),
+    onOpenLegend: vi.fn(),
+    onActualizarEjecucion: vi.fn(),
+    onRecargar: vi.fn(),
+    puedeLote: true,
   };
 
   it('renderiza título, badge de semana vigente y controles principales', () => {
@@ -22,6 +26,10 @@ describe('ProgramaToolbar', () => {
     expect(screen.getByRole('button', { name: /Drawer LPS/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /CSV/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Corte XLSX/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Leyenda' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Actualizar Ejecución' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Recargar' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'BI Programa' })).toHaveAttribute('href', '/bi/programa-general');
   });
 
   it('refleja correctamente el estado activo del conmutador de columnas', () => {
@@ -104,5 +112,36 @@ describe('ProgramaToolbar', () => {
     rerender(<ProgramaToolbar {...defaultProps} deshabilitado={false} puedeDescargarCorte={false} />);
     expect(screen.getByRole('button', { name: /Corte XLSX/i })).toBeDisabled();
     expect(screen.getByRole('button', { name: /CSV/i })).not.toBeDisabled();
+  });
+
+  it('conserva las acciones de lectura y oculta la actualización para quien no puede ejecutar lote', () => {
+    const onActualizar = vi.fn();
+    const onLegend = vi.fn();
+    const onRecargar = vi.fn();
+    render(
+      <ProgramaToolbar
+        {...defaultProps}
+        puedeLote={false}
+        biUrl={null}
+        onActualizarEjecucion={onActualizar}
+        onOpenLegend={onLegend}
+        onRecargar={onRecargar}
+      />
+    );
+
+    expect(screen.queryByRole('button', { name: 'Actualizar Ejecución' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Leyenda' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Recargar' }));
+    expect(onLegend).toHaveBeenCalledTimes(1);
+    expect(onRecargar).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('link', { name: 'BI Programa' })).not.toBeInTheDocument();
+  });
+
+  it('dispara la actualización masiva solo para quien tiene permiso de lote', () => {
+    const onActualizar = vi.fn();
+    render(<ProgramaToolbar {...defaultProps} puedeLote={true} onActualizarEjecucion={onActualizar} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Actualizar Ejecución' }));
+    expect(onActualizar).toHaveBeenCalledTimes(1);
   });
 });

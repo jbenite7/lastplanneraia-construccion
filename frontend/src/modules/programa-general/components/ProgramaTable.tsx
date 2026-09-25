@@ -56,28 +56,28 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
           {modo13Cols ? (
             <tr>
               <th>ID</th>
-              <th>CÓDIGO</th>
+              <th aria-label="CÓDIGO" title="CÓDIGO">CÓD.</th>
               <th>ACTIVIDAD</th>
               <th>RC</th>
               <th>F. INICIO</th>
-              <th>SEM. INICIO</th>
+              <th aria-label="SEM. INICIO" title="SEM. INICIO">SEM. INI.</th>
               <th>F. FIN</th>
-              <th>CANTIDAD PPTO</th>
-              <th>UNIDAD</th>
-              <th>AVANCE REAL</th>
-              <th>AVANCE TEÓR</th>
-              <th>LIB. RESTRICCIONES</th>
+              <th aria-label="CANTIDAD PPTO" title="CANTIDAD PPTO">CANT.</th>
+              <th aria-label="UNIDAD" title="UNIDAD">UND.</th>
+              <th aria-label="AVANCE REAL" title="AVANCE REAL">AV. REAL</th>
+              <th aria-label="AVANCE TEÓR" title="AVANCE TEÓR">AV. TEÓR</th>
+              <th aria-label="LIB. RESTRICCIONES" title="LIB. RESTRICCIONES">RESTR. LIB.</th>
               <th>ESTADO</th>
             </tr>
           ) : (
             <tr>
               <th>ID</th>
-              <th>CÓDIGO</th>
+              <th aria-label="CÓDIGO" title="CÓDIGO">CÓD.</th>
               <th>ACTIVIDAD</th>
               <th>F. INICIO</th>
               <th>F. FIN</th>
               <th>PPTO TOTAL</th>
-              <th>AVANCE (REAL / TEÓR)</th>
+              <th aria-label="AVANCE (REAL / TEÓR)" title="AVANCE (REAL / TEÓR)">AV. REAL / TEÓR</th>
               <th>ESTADO</th>
             </tr>
           )}

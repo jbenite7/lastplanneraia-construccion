@@ -345,6 +345,11 @@ test.describe('Ronda 1.2 — layout de la tabla', () => {
             const vista = tabla.parentElement;
             const actividad = tabla.querySelector('col.pg-col-actividad');
             const celdas = [...tabla.querySelectorAll('.activity-title, .activity-subtitle')];
+            const compactas = [
+              ...tabla.querySelectorAll('thead th'),
+              ...tabla.querySelectorAll('tbody tr.row-activity td:not(:nth-child(3))'),
+              ...tabla.querySelectorAll('.status-cell-badge, .badge-rc'),
+            ];
             return {
               tablaAncho: tabla.scrollWidth,
               vistaAncho: vista.clientWidth,
@@ -352,11 +357,18 @@ test.describe('Ronda 1.2 — layout de la tabla', () => {
               ventana: window.innerWidth,
               anchoActividad: actividad.getBoundingClientRect().width,
               recortadas: celdas.filter((c) => c.scrollWidth > c.clientWidth + 1).length,
+              compactasConSalto: compactas.filter((celda) => {
+                const estilo = getComputedStyle(celda);
+                return estilo.whiteSpace !== 'nowrap' || celda.scrollHeight > celda.clientHeight + 1;
+              }).length,
+              compactasRecortadas: compactas.filter((celda) => celda.scrollWidth > celda.clientWidth + 1).length,
             };
           });
           expect(medidas.tablaAncho).toBeLessThanOrEqual(medidas.vistaAncho);
           expect(medidas.docAncho).toBeLessThanOrEqual(medidas.ventana);
           expect(medidas.recortadas).toBe(0);
+          expect(medidas.compactasConSalto).toBe(0);
+          expect(medidas.compactasRecortadas).toBe(0);
           expect(medidas.anchoActividad).toBeGreaterThanOrEqual(modo === '8' ? 280 : 160);
         });
       }
@@ -373,10 +385,17 @@ test('Ronda 1.2 — el scroll vertical de la tabla alcanza la última fila', asy
   const vista = page.locator('.table-wrapper-pro');
   const estilo = await vista.evaluate((el) => {
     const cs = getComputedStyle(el);
-    return { oy: cs.overflowY, h: el.clientHeight, sh: el.scrollHeight };
+    return {
+      oy: cs.overflowY,
+      h: el.clientHeight,
+      sh: el.scrollHeight,
+      documento: document.documentElement.scrollHeight,
+      ventana: window.innerHeight,
+    };
   });
   expect(['auto', 'scroll']).toContain(estilo.oy);
   expect(estilo.sh).toBeGreaterThan(estilo.h);
+  expect(estilo.documento).toBeLessThanOrEqual(estilo.ventana);
   await vista.hover();
   await page.mouse.wheel(0, estilo.sh);
   await expect(filas.last()).toBeInViewport();

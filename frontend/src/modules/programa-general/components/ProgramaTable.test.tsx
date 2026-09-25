@@ -105,12 +105,12 @@ describe('ProgramaTable', () => {
 
     // Encabezados de 8 columnas
     expect(screen.getByText('ID')).toBeInTheDocument();
-    expect(screen.getByText('CÓDIGO')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'CÓDIGO' })).toHaveTextContent('CÓD.');
     expect(screen.getByText('ACTIVIDAD')).toBeInTheDocument();
     expect(screen.getByText('F. INICIO')).toBeInTheDocument();
     expect(screen.getByText('F. FIN')).toBeInTheDocument();
     expect(screen.getByText('PPTO TOTAL')).toBeInTheDocument();
-    expect(screen.getByText('AVANCE (REAL / TEÓR)')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'AVANCE (REAL / TEÓR)' })).toHaveTextContent('AV. REAL / TEÓR');
     expect(screen.getByText('ESTADO')).toBeInTheDocument();
 
     // Datos combinados en 8 columnas
@@ -221,17 +221,17 @@ describe('ProgramaTable', () => {
 
     // 13 columnas individuales
     expect(screen.getByText('ID')).toBeInTheDocument();
-    expect(screen.getByText('CÓDIGO')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'CÓDIGO' })).toHaveTextContent('CÓD.');
     expect(screen.getByText('ACTIVIDAD')).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'RC' })).toBeInTheDocument();
     expect(screen.getByText('F. INICIO')).toBeInTheDocument();
-    expect(screen.getByText('SEM. INICIO')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'SEM. INICIO' })).toHaveTextContent('SEM. INI.');
     expect(screen.getByText('F. FIN')).toBeInTheDocument();
-    expect(screen.getByText('CANTIDAD PPTO')).toBeInTheDocument();
-    expect(screen.getByText('UNIDAD')).toBeInTheDocument();
-    expect(screen.getByText('AVANCE REAL')).toBeInTheDocument();
-    expect(screen.getByText('AVANCE TEÓR')).toBeInTheDocument();
-    expect(screen.getByText('LIB. RESTRICCIONES')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'CANTIDAD PPTO' })).toHaveTextContent('CANT.');
+    expect(screen.getByRole('columnheader', { name: 'UNIDAD' })).toHaveTextContent('UND.');
+    expect(screen.getByRole('columnheader', { name: 'AVANCE REAL' })).toHaveTextContent('AV. REAL');
+    expect(screen.getByRole('columnheader', { name: 'AVANCE TEÓR' })).toHaveTextContent('AV. TEÓR');
+    expect(screen.getByRole('columnheader', { name: 'LIB. RESTRICCIONES' })).toHaveTextContent('RESTR. LIB.');
     expect(screen.getByText('ESTADO')).toBeInTheDocument();
 
     // Capítulo con colSpan={13}

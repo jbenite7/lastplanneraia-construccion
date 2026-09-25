@@ -26,6 +26,12 @@ export interface GuardarActividadPayload {
   csrf_token: string;
 }
 
+export interface ActualizarEjecucionPayload {
+  semana: number;
+  db: string;
+  csrf_token: string;
+}
+
 export interface ClienteHttpPg {
   get: <T>(url: string, schema: z.ZodType<T, any, any>) => Promise<T>;
   postForm: <T>(url: string, data: Record<string, unknown>, schema?: z.ZodType<T, any, any>, headers?: Record<string, string>) => Promise<T>;
@@ -105,6 +111,18 @@ export function programaGeneralApi(cliente: ClienteHttpPg = defaultCliente) {
         '/reportes/corte-programacion',
         { semana },
         esquemaRespuestaCortePg
+      );
+    },
+
+    async actualizarEjecucion(payload: ActualizarEjecucionPayload): Promise<RespuestaUpdatePg> {
+      const params = new URLSearchParams({ db: payload.db, semana: String(payload.semana) });
+      return cliente.postForm<RespuestaUpdatePg>(
+        `/api/general/update-batch?${params.toString()}`,
+        {
+          csrf_token: payload.csrf_token,
+        },
+        esquemaRespuestaUpdatePg,
+        { 'X-CSRF-Token': payload.csrf_token }
       );
     },
   };

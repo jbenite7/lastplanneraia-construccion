@@ -148,6 +148,20 @@ describe('Dominio S05: filtros y senales', () => {
     expect(conteos.terminadas).toBe(1);
   });
 
+  it('cuenta y filtra Fuera de Ventana y estados vacíos como Sin Datos', () => {
+    const fueraVentana = { ...actividadesMock[1], unique_id: 8, Estado: 'Fuera de Ventana' };
+    const sinDatos = { ...actividadesMock[1], unique_id: 9, Estado: null };
+    const sinDatosVacio = { ...actividadesMock[1], unique_id: 10, Estado: '' };
+    const sinDatosAusente = { ...actividadesMock[1], unique_id: 11, Estado: undefined };
+    const filas = [...actividadesMock, fueraVentana, sinDatos, sinDatosVacio, sinDatosAusente];
+    const conteos = calcularConteosSenales(filas);
+
+    expect(conteos.fueraVentana).toBe(1);
+    expect(conteos.sinDatos).toBe(3);
+    expect(filtrarActividades(filas, '', 'Fuera de Ventana').filter((a) => !a.esCapitulo).map((a) => a.unique_id)).toEqual([8]);
+    expect(filtrarActividades(filas, '', 'Sin Datos').filter((a) => !a.esCapitulo).map((a) => a.unique_id)).toEqual([9, 10, 11]);
+  });
+
   it('preserva capitulos en el filtrado independientemente de la busqueda o estado', () => {
     const filtradas = filtrarActividades(actividadesMock, 'xyzNoExiste', 'Atrasada');
     expect(filtradas).toHaveLength(1);

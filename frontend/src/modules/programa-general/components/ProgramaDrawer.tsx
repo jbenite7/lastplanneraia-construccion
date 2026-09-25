@@ -44,6 +44,7 @@ export interface ProgramaDrawerProps {
   totalActividades: number;
   onCerrar: () => void;
   onGuardar: (datos: DatosGuardarActividad) => void;
+  onDirtyChange?: (dirty: boolean) => void;
   onNavigateSeq: (direccion: number) => void;
   puedeEditar?: boolean;
 }
@@ -63,6 +64,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   totalActividades,
   onCerrar,
   onGuardar,
+  onDirtyChange,
   onNavigateSeq,
   puedeEditar = true,
 }) => {
@@ -75,6 +77,19 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   const [subcontratista, setSubcontratista] = useState(actividad.Sub_Contratista || '');
   const [observaciones, setObservaciones] = useState(actividad.Observaciones || '');
   const [sosDeclarado, setSosDeclarado] = useState(actividad.alerta_crisis === 1);
+
+  useEffect(() => {
+    onDirtyChange?.(
+      fechaInicio !== (actividad.Fecha_Inicio || '') ||
+      fechaFin !== (actividad.Fecha_Fin || '') ||
+      unidad !== (actividad.unidad || 'm³') ||
+      cantidadPpto !== (actividad.cantidad_ppto?.toString() || '') ||
+      avanceReal !== actividad.avanceRealPct.toString() ||
+      profesional !== (actividad.Responsable_AIA || '') ||
+      subcontratista !== (actividad.Sub_Contratista || '') ||
+      observaciones !== (actividad.Observaciones || '')
+    );
+  }, [actividad, fechaInicio, fechaFin, unidad, cantidadPpto, avanceReal, profesional, subcontratista, observaciones, onDirtyChange]);
 
   // Sincronizar estado cuando cambia la actividad seleccionada (navegación secuencial)
   useEffect(() => {

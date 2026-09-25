@@ -45,6 +45,9 @@ export const esquemaContextoPgBase = z.object({
     readDrawer: z.boolean(),
     writeDrawer: z.boolean(),
   }),
+  enlaces: z.object({
+    bi: z.string().nullable().default(null),
+  }).default({ bi: null }),
   catalogos: z.object({
     unidades: z.array(z.string()).default([]),
     codigos: z.array(z.string()).default([]),
@@ -99,6 +102,11 @@ export const esquemaContextoPg = z.preprocess((val: unknown) => {
         readDrawer: Boolean(act.readDrawer ?? false),
         writeDrawer: Boolean(act.writeDrawer ?? false),
       },
+      enlaces: {
+        bi: typeof (obj.links as Record<string, unknown> | undefined)?.bi === 'string'
+          ? (obj.links as Record<string, unknown>).bi as string
+          : null,
+      },
       catalogos: {
         unidades: Array.isArray(cat.unidades) ? cat.unidades : ['m³', 'm²', 'ml', 'kg', 'ton', 'und', 'gl', 'mes', '%'],
         codigos: Array.isArray(cat.codigos) ? cat.codigos : [],
@@ -124,6 +132,8 @@ export const esquemaRespuestaUpdatePg = z.preprocess((val: unknown) => {
   respuesta: z.string().optional(),
   estado: z.string().optional(),
   Semana_Inicio: z.coerce.number().optional(),
+  actualizadas: z.coerce.number().optional(),
+  carryover_actualizadas: z.coerce.number().optional(),
 }));
 
 export type RespuestaUpdatePg = z.infer<typeof esquemaRespuestaUpdatePg>;
