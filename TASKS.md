@@ -17,9 +17,9 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 512 |
+| hecha | 516 |
 | en progreso | 7 |
-| pendiente | 168 |
+| pendiente | 164 |
 | sin señal | 175 |
 | descartada | 41 |
 
@@ -462,12 +462,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - hecha · 6 · Frontend — Drawer Contextual LPS (440px) y Edición de Actividad
   - hecha · 7 · Frontend — Página Orquestadora, Integración de Shell y Rutas
   - hecha · 8 · Verificación Visual Playwright y Cierre E2E
-- **S05 ronda 1.2 — Programa General y shell React a la par del legado** (aprobado): 0 de 11 hechas · `2026-09-24-s05-ronda-1-2-paridad-legado.md`
+- **S05 ronda 1.2 — Programa General y shell React a la par del legado** (aprobado): 4 de 11 hechas · `2026-09-24-s05-ronda-1-2-paridad-legado.md`
   - sin señal · 0 · Worktree, base y línea de partida medida
-  - pendiente · 1 · Puerta de desarrollo sin el respaldo por posición (V5, H10)
-  - pendiente · 2 · El contador cuenta tareas, no capítulos (H3)
-  - pendiente · 3 · El módulo deja de redefinir tokens globales (H12)
-  - pendiente · 4 · Tabla sin desbordamiento y con «Actividad» completa (R1.2-1, R1.2-2, H2)
+  - hecha · 1 · Puerta de desarrollo sin el respaldo por posición (V5, H10)
+  - hecha · 2 · El contador cuenta tareas, no capítulos (H3)
+  - hecha · 3 · El módulo deja de redefinir tokens globales (H12)
+  - hecha · 4 · Tabla sin desbordamiento y con «Actividad» completa (R1.2-1, R1.2-2, H2)
   - sin señal · 5 · Scroll vertical real en la tabla (R1.2-3, H1)
   - pendiente · 6 · Riel del shell React como el del legado (R1.2-4, H4, H5, H14)
   - pendiente · 7 · La semana sale del riel a la barra de contexto (R1.2-4, H14)
