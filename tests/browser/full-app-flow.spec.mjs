@@ -56,7 +56,7 @@ for (const project of PROJECTS) {
       const errors = installErrorCollectors(page);
 
       await validateProjectShell(page, project);
-      await changeWeek(page, project.maxWeek, '/programa-general');
+      await changeWeek(page, project.weekSwitchTarget ?? project.maxWeek, '/programa-general');
       await validateProjectShell(page, project);
 
       assertNoRuntimeErrors(errors);

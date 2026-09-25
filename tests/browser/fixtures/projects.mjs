@@ -90,6 +90,7 @@ const ALL_PROJECTS = [
     // `programacion-semanal-roles-phases.mjs`). Medido el 2026-08-13.
     maxWeek: 6,
     operationalWeek: 5,
+    weekSwitchTarget: 4, // Semana previa sembrada en el fixture aislado.
     purchasingWeek: 5,
     assistantProgramUniqueId: 11058,
     purchasingCapabilities: ['pdc'],
