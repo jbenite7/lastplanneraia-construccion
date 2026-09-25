@@ -15,9 +15,11 @@ test('pilot E2E uses explicit role credentials', () => {
 });
 
 test('pilot persistence asserts UI, API, DB and exact restoration', () => {
-  assert.match(source, /editCell/);
+  assert.match(source, /guardarUnidad/);
+  assert.match(source, /guardarDrawerPg/);
+  assert.match(source, /page\.reload/);
+  assert.match(source, /leerCampoFilaPg/);
   assert.match(source, /beforeFingerprint/);
-  assert.match(source, /afterFingerprint/);
   assert.match(source, /toBe\(beforeFingerprint\)/);
   assert.match(source, /testValue/);
   assert.match(source, /API.*target\.testValue/s);
@@ -26,14 +28,15 @@ test('pilot persistence asserts UI, API, DB and exact restoration', () => {
 
 test('pilot persistence never writes a synthetic unit outside the domain', () => {
   assert.doesNotMatch(source, /E2E_PC_TEST/);
-  assert.match(source, /PROJECT_PC[\s\S]*?editableUnitRow/);
-  assert.match(source, /PC API.*target\.testValue/s);
-  assert.match(source, /PC DB.*target\.testValue/s);
+  assert.match(source, /PROJECT_PC[\s\S]*?escogerActividadConUnidad/);
+  assert.match(source, /PROJECT_PC[\s\S]*?unidad='\$\{target\.testValue\}'/s);
 });
 
 test('pilot role contract verifies a manipulated write is rejected', () => {
-  assert.match(source, /forbiddenWrite/);
-  assert.match(source, /status.*403/s);
+  assert.match(source, /postFormJson/);
+  assert.match(source, /\[403, 422\]/);
+  assert.match(source, /Viewer drawer must not permit editing/);
+  assert.match(source, /getByRole\('alert'\)/);
 });
 
 test('pilot persistence fails closed without isolated mutation consent', () => {

@@ -103,23 +103,23 @@ async function collectRuntimeSample(page, testInfo, project, runtimeContext) {
   await loginAndSelectProject(page, project, ADMIN);
   await page.evaluate((theme) => localStorage.setItem('aia-theme', theme), EXPECTED_THEME);
   await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => Boolean(
-    window.PGHotModule?.getHotInstance?.()
-      || document.querySelector('#hot-container .ht_master.handsontable'),
-  ), null, { timeout: 45_000 });
+  await page.waitForSelector('table.programa-table-pro tbody tr.row-activity', { timeout: 45_000 });
 
   const initializationMs = round(await page.evaluate(() => performance.now()));
-  const filterButton = page.locator('#hot-container .ht_clone_top:visible .changeType:visible').first();
+  const rowsBeforeFilter = await page.locator('table.programa-table-pro tbody tr.row-activity').count();
+  const filterButton = page.locator('#pgLegend .pg-filter-chip:visible').first();
   await expect(filterButton).toBeVisible({ timeout: 15_000 });
   const interactionStart = await page.evaluate(() => performance.now());
   await filterButton.click();
-  const filterMenu = page.locator('.htDropdownMenu:visible').first();
-  await expect(filterMenu).toBeVisible();
+  await expect(filterButton).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(
+    () => page.locator('table.programa-table-pro tbody tr.row-activity').count(),
+  ).not.toBe(rowsBeforeFilter);
   const handsontableInteractionMs = round(
     await page.evaluate((startedAt) => performance.now() - startedAt, interactionStart),
   );
-  await page.keyboard.press('Escape');
-  await expect(filterMenu).toBeHidden();
+  await filterButton.click();
+  await expect(filterButton).toHaveAttribute('aria-pressed', 'false');
 
   const browserState = await page.evaluate((expectedTheme) => {
     const resources = performance.getEntriesByType('resource').map((entry) => ({
@@ -198,7 +198,7 @@ async function collectRuntimeSample(page, testInfo, project, runtimeContext) {
       assetInventorySha256,
       duplicateRequests: duplicates,
       themeProbe: browserState.themeProbe,
-      interactionKind: 'column-filter-menu',
+      interactionKind: 'state-signal-filter',
       node: process.version,
       playwrightProject: testInfo.project.name,
       runtime: {

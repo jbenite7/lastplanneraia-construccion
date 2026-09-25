@@ -55,7 +55,7 @@
     padding: 2px 7px;
     border-radius: 4px;
     background-color: var(--ds-active-state-tint-green);
-    color: var(--ds-active-action-primary);
+    color: var(--ds-active-text-primary);
     border: 1px solid var(--ds-active-border-control);
     letter-spacing: 0.02em;
   }
@@ -79,7 +79,7 @@
   .btn-toggle-pill {
     border: none;
     background: transparent;
-    color: var(--ds-color-text-tertiary);
+    color: var(--ds-active-text-secondary);
     font-family: var(--ds-font-body);
     padding: 4px 10px;
     font-size: 11px;
@@ -107,7 +107,7 @@
     align-items: center;
     gap: 6px;
     background-color: var(--ds-active-action-primary);
-    color: var(--ds-color-text-inverse);
+    color: var(--ds-active-action-text);
     border: none;
     font-family: var(--ds-font-display);
     padding: 5px 12px;
@@ -171,7 +171,7 @@
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    color: var(--ds-color-text-tertiary);
+    color: var(--ds-active-text-secondary);
     letter-spacing: 0.05em;
   }
 
@@ -252,7 +252,7 @@
     transform: translateY(-50%);
     font-family: var(--ds-font-mono);
     font-size: 9.5px;
-    color: var(--ds-color-text-tertiary);
+    color: var(--ds-active-text-secondary);
     background: var(--ds-active-surface-raised);
     padding: 1px 4px;
     border-radius: 3px;
@@ -355,14 +355,15 @@
     font-weight: 700;
     padding: 1px 5px;
     border-radius: 9999px;
-    background: color-mix(in srgb, var(--ds-active-text-primary) 25%, transparent);
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
   }
 
   /* 8 Chips Canónicos */
   .chip-amber,
   .chip-warning {
     background: var(--ds-active-state-tint-amber);
-    color: var(--ds-active-state-solid-amber-text);
+    color: var(--ds-active-text-primary);
     border-color: var(--ds-active-border);
   }
   .chip-amber .chip-dot,
@@ -375,7 +376,7 @@
 
   .chip-orange {
     background: var(--ds-active-state-tint-orange);
-    color: var(--ds-active-state-solid-orange-text);
+    color: var(--ds-active-text-primary);
     border-color: var(--ds-active-border);
   }
   .chip-orange .chip-dot,
@@ -386,7 +387,7 @@
   .chip-green-future,
   .chip-success {
     background: var(--ds-active-state-tint-green);
-    color: var(--ds-active-state-solid-green-text);
+    color: var(--ds-active-text-primary);
     border-color: var(--ds-active-border);
   }
   .chip-green-future .chip-dot,
@@ -399,7 +400,7 @@
   .chip-blue,
   .chip-info {
     background: var(--ds-active-state-tint-blue);
-    color: var(--ds-active-state-solid-blue-text);
+    color: var(--ds-active-text-primary);
     border-color: var(--ds-active-border);
   }
   .chip-blue .chip-dot,
@@ -412,7 +413,7 @@
   .chip-red,
   .chip-critical {
     background: var(--ds-active-state-tint-red);
-    color: var(--ds-active-state-solid-red-text);
+    color: var(--ds-active-text-primary);
     border-color: var(--ds-active-border);
   }
   .chip-red .chip-dot,
@@ -426,7 +427,7 @@
   .chip-neutral,
   .chip-muted {
     background: var(--ds-active-state-tint-neutral);
-    color: var(--ds-active-state-solid-neutral-text);
+    color: var(--ds-active-text-primary);
     border-color: var(--ds-active-border);
   }
   .chip-neutral .chip-dot,
@@ -438,7 +439,7 @@
 
   .chip-teal {
     background: var(--ds-active-state-tint-teal);
-    color: var(--ds-active-state-solid-teal-text);
+    color: var(--ds-active-text-primary);
     border-color: var(--ds-active-border);
   }
   .chip-teal .chip-dot,
@@ -448,7 +449,7 @@
 
   .chip-violet {
     background: var(--ds-active-state-tint-violet);
-    color: var(--ds-active-state-solid-violet-text);
+    color: var(--ds-active-text-primary);
     border-color: var(--ds-active-border);
   }
   .chip-violet .chip-dot,
@@ -613,7 +614,7 @@
     font-family: var(--ds-font-display);
     font-size: 11.5px;
     font-weight: 700;
-    color: var(--ds-active-action-primary);
+    color: var(--ds-active-text-primary);
     cursor: pointer;
   }
 
@@ -641,9 +642,9 @@
     font-weight: 600;
     padding: 1px 6px;
     border-radius: 4px;
-    background: color-mix(in srgb, var(--ds-active-text-primary) 25%, transparent);
+    background: var(--ds-active-surface);
     margin-left: 8px;
-    color: var(--ds-active-text-secondary);
+    color: var(--ds-active-text-primary);
   }
 
   .chapter-progress {
@@ -736,7 +737,7 @@
   .cell-id {
     font-family: var(--ds-font-mono);
     font-size: 10.5px;
-    color: var(--ds-color-text-tertiary);
+    color: var(--ds-active-text-secondary);
     text-align: center;
   }
 
@@ -782,7 +783,7 @@
 
   .activity-subtitle {
     font-size: 11px;
-    color: var(--ds-color-text-tertiary);
+    color: var(--ds-active-text-secondary);
     line-height: 1.2;
     white-space: normal;
     overflow-wrap: anywhere;
@@ -798,7 +799,7 @@
     padding: 1px 4px;
     border-radius: 3px;
     background: var(--ds-active-state-tint-red);
-    color: var(--ds-active-state-solid-red-text);
+    color: var(--ds-color-state-critical-text);
     border: 1px solid var(--ds-active-border);
     letter-spacing: 0.05em;
     display: inline-flex;
@@ -808,7 +809,7 @@
   .btn-cell-comment {
     background: transparent;
     border: none;
-    color: var(--ds-color-text-tertiary);
+    color: var(--ds-active-text-secondary);
     cursor: pointer;
     font-size: 11px;
     padding: 1px 4px;
@@ -829,7 +830,7 @@
 
   .cell-date-overdue,
   .date-overdue {
-    color: var(--ds-active-state-solid-red-text);
+    color: var(--ds-color-state-critical-text);
     font-weight: 700;
   }
 
@@ -887,7 +888,7 @@
   .avance-teor-val,
   .avance-teor {
     font-size: 10px;
-    color: var(--ds-color-text-tertiary);
+    color: var(--ds-active-text-secondary);
   }
 
   .avance-delta-badge,
@@ -900,14 +901,14 @@
 
   .delta-neg {
     background: var(--ds-active-state-tint-red);
-    color: var(--ds-active-state-solid-red-text);
+    color: var(--ds-color-state-critical-text);
     border: 1px solid var(--ds-active-border);
   }
 
   .delta-ok,
   .delta-pos {
     background: var(--ds-active-state-tint-green);
-    color: var(--ds-active-state-solid-green-text);
+    color: var(--ds-color-state-success-text);
     border: 1px solid var(--ds-active-border);
   }
 

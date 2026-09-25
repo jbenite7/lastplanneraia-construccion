@@ -264,6 +264,7 @@ export const ProgramaGeneralPage: React.FC = () => {
           onCerrar={() => setActividadSeleccionadaId(null)}
           onGuardar={handleGuardar}
           onNavigateSeq={handleNavigateSeq}
+          puedeEditar={contexto.permisos.puedeEditar}
         />
       )}
 

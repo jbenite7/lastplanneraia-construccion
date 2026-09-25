@@ -45,6 +45,7 @@ export interface ProgramaDrawerProps {
   onCerrar: () => void;
   onGuardar: (datos: DatosGuardarActividad) => void;
   onNavigateSeq: (direccion: number) => void;
+  puedeEditar?: boolean;
 }
 
 interface RecursoLeanItem {
@@ -63,6 +64,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   onCerrar,
   onGuardar,
   onNavigateSeq,
+  puedeEditar = true,
 }) => {
   const [fechaInicio, setFechaInicio] = useState(actividad.Fecha_Inicio || '');
   const [fechaFin, setFechaFin] = useState(actividad.Fecha_Fin || '');
@@ -149,7 +151,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
         return;
       }
 
-      if ((e.metaKey || e.ctrlKey) && (e.key === 's' || e.key === 'S')) {
+      if (puedeEditar && (e.metaKey || e.ctrlKey) && (e.key === 's' || e.key === 'S')) {
         e.preventDefault();
         handleSave();
         return;
@@ -168,7 +170,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onCerrar, onNavigateSeq, handleSave]);
+  }, [onCerrar, onNavigateSeq, handleSave, puedeEditar]);
 
   const realRatio = (parseFloat(avanceReal) || 0) / 100;
   const teorRatio = actividad.avanceTeoricoPct / 100;
@@ -328,6 +330,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                     type="date"
                     className="form-input-pro"
                     value={fechaInicio}
+                    disabled={!puedeEditar}
                     onChange={(e) => setFechaInicio(e.target.value)}
                   />
                   <span className="drawer-date-formatted form-date-hint" style={{ fontSize: '11px', color: 'var(--ds-text-muted)', marginTop: '2px', display: 'block' }}>
@@ -345,6 +348,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                     type="date"
                     className="form-input-pro"
                     value={fechaFin}
+                    disabled={!puedeEditar}
                     onChange={(e) => setFechaFin(e.target.value)}
                   />
                   <span className="drawer-date-formatted form-date-hint" style={{ fontSize: '11px', color: 'var(--ds-text-muted)', marginTop: '2px', display: 'block' }}>
@@ -398,6 +402,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                 id="drawerSelectProfesional"
                 className="form-select-pro"
                 value={profesional}
+                disabled={!puedeEditar}
                 onChange={(e) => setProfesional(e.target.value)}
               >
                 <option value="">(Sin asignar · Definir en Lookahead)</option>
@@ -416,6 +421,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                 id="drawerSelectSubcontratista"
                 className="form-select-pro"
                 value={subcontratista}
+                disabled={!puedeEditar}
                 onChange={(e) => setSubcontratista(e.target.value)}
               >
                 <option value="">(Sin asignar · Definir en Lookahead)</option>
@@ -445,6 +451,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                   id="drawerSelectUnidad"
                   className="form-select-pro"
                   value={unidad}
+                  disabled={!puedeEditar}
                   onChange={(e) => {
                     const nuevaUnidad = e.target.value;
                     setUnidad(nuevaUnidad);
@@ -470,7 +477,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                   className="form-input-pro"
                   value={cantidadPpto}
                   onChange={(e) => setCantidadPpto(e.target.value)}
-                  disabled={unidad === '%'}
+                  disabled={!puedeEditar || unidad === '%'}
                 />
               </div>
             </div>
@@ -498,6 +505,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                   max={unidad === '%' ? '100' : undefined}
                   className="form-input-pro"
                   value={avanceReal}
+                  disabled={!puedeEditar}
                   onChange={(e) => setAvanceReal(e.target.value)}
                 />
               </div>
@@ -625,6 +633,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                 style={{ height: '54px', padding: '6px', resize: 'none' }}
                 placeholder="Escribir una nueva observación técnica..."
                 value={observaciones}
+                disabled={!puedeEditar}
                 onChange={(e) => setObservaciones(e.target.value)}
               ></textarea>
             </div>
@@ -633,6 +642,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
               type="button"
               className="btn-sos-trigger"
               onClick={() => setSosDeclarado(true)}
+              disabled={!puedeEditar}
             >
               <i className="fas fa-bell" aria-hidden="true"></i>{' '}
               {sosDeclarado || actividad.alerta_crisis === 1 ? 'Alerta SOS LPS Activa' : 'Declarar Crisis SOS LPS'}
@@ -645,9 +655,11 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
           <button type="button" className="btn-pro-cancel" onClick={onCerrar}>
             Descartar (Esc)
           </button>
-          <button type="button" className="btn-pro-save" onClick={handleSave}>
-            <i className="fas fa-check" aria-hidden="true"></i> Guardar Cambios (⌘S)
-          </button>
+          {puedeEditar && (
+            <button type="button" className="btn-pro-save" onClick={handleSave}>
+              <i className="fas fa-check" aria-hidden="true"></i> Guardar Cambios (⌘S)
+            </button>
+          )}
         </div>
       </aside>
     </>

@@ -17,9 +17,9 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 518 |
+| hecha | 519 |
 | en progreso | 7 |
-| pendiente | 162 |
+| pendiente | 161 |
 | sin señal | 175 |
 | descartada | 41 |
 
@@ -462,7 +462,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - hecha · 6 · Frontend — Drawer Contextual LPS (440px) y Edición de Actividad
   - hecha · 7 · Frontend — Página Orquestadora, Integración de Shell y Rutas
   - hecha · 8 · Verificación Visual Playwright y Cierre E2E
-- **S05 ronda 1.2 — Programa General y shell React a la par del legado** (aprobado): 6 de 11 hechas · `2026-09-24-s05-ronda-1-2-paridad-legado.md`
+- **S05 ronda 1.2 — Programa General y shell React a la par del legado** (aprobado): 7 de 11 hechas · `2026-09-24-s05-ronda-1-2-paridad-legado.md`
   - sin señal · 0 · Worktree, base y línea de partida medida
   - hecha · 1 · Puerta de desarrollo sin el respaldo por posición (V5, H10)
   - hecha · 2 · El contador cuenta tareas, no capítulos (H3)
@@ -471,7 +471,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 5 · Scroll vertical real en la tabla (R1.2-3, H1)
   - hecha · 6 · Riel del shell React como el del legado (R1.2-4, H4, H5, H14)
   - hecha · 7 · La semana sale del riel a la barra de contexto (R1.2-4, H14)
-  - pendiente · 8 · Pruebas de CI contra el DOM React, sin rebajarlas (H6, H7, V1, V2, V3)
+  - hecha · 8 · Pruebas de CI contra el DOM React, sin rebajarlas (H6, H7, V1, V2, V3)
   - pendiente · 9 · Capturas de referencia candidatas — PARA hasta el visto de Felipe (H8)
   - pendiente · 10 · Verificación final, evidencia e informe
 

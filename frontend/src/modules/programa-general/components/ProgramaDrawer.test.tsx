@@ -147,6 +147,25 @@ describe('ProgramaDrawer Contextual LPS', () => {
     expect(inputPpto).toBeDisabled();
   });
 
+  it('deja los campos sin edición y oculta el guardado para un rol de solo lectura', () => {
+    render(
+      <ProgramaDrawer
+        actividad={mockAct}
+        catalogos={catalogos}
+        indiceActual={1}
+        totalActividades={10}
+        onCerrar={vi.fn()}
+        onGuardar={vi.fn()}
+        onNavigateSeq={vi.fn()}
+        puedeEditar={false}
+      />
+    );
+
+    expect(screen.getByLabelText(/Unidad/i)).toBeDisabled();
+    expect(screen.getByLabelText(/Avance Real/i)).toBeDisabled();
+    expect(screen.queryByRole('button', { name: /Guardar Cambios/i })).not.toBeInTheDocument();
+  });
+
   it('reacciona a atajos de teclado [, ] para navegación secuencial fuera de inputs', () => {
     const onNav = vi.fn();
     render(
