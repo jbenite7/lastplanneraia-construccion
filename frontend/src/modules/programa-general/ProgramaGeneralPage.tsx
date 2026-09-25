@@ -84,28 +84,35 @@ export const ProgramaGeneralPage: React.FC = () => {
 
   useEffect(() => {
     let cancelado = false;
+    const controller = new AbortController();
+    recargaControllerRef.current = controller;
     async function cargar() {
       try {
         setCargando(true);
         setError(null);
-        const ctx = await api.obtenerContexto();
-        if (cancelado) return;
+        const ctx = await api.obtenerContexto(controller.signal);
+        if (cancelado || controller.signal.aborted) return;
+        const rawAct = await api.obtenerActividades(ctx.semana.numero, controller.signal);
+        if (cancelado || controller.signal.aborted) return;
         setContexto(ctx);
-        const rawAct = await api.obtenerActividades(ctx.semana.numero);
-        if (cancelado) return;
         setActividades(normalizarActividades(rawAct, ctx.semana.numero));
       } catch (err: unknown) {
-        if (!cancelado) {
+        if (!cancelado && !controller.signal.aborted) {
           const msg = err instanceof Error ? err.message : 'Error cargando Programa General';
           setError(msg);
         }
       } finally {
-        if (!cancelado) setCargando(false);
+        if (!cancelado && recargaControllerRef.current === controller) {
+          recargaControllerRef.current = null;
+          setCargando(false);
+        }
       }
     }
     cargar();
     return () => {
       cancelado = true;
+      controller.abort();
+      if (recargaControllerRef.current === controller) recargaControllerRef.current = null;
     };
   }, [api]);
 

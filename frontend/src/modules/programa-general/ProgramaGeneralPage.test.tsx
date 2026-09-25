@@ -75,6 +75,15 @@ vi.mock('./api/programaGeneralApi', () => ({
 }));
 
 describe('ProgramaGeneralPage', () => {
+  it('espera contexto y lista completos antes de ofrecer recarga manual', async () => {
+    let resolverLista: ((value: typeof mockActividadesRaw) => void) | undefined;
+    mockObtenerActividades.mockImplementationOnce(() => new Promise((resolve) => { resolverLista = resolve; }));
+    render(<ProgramaGeneralPage />);
+    await waitFor(() => expect(resolverLista).toBeDefined());
+    expect(screen.queryByRole('button', { name: 'Recargar' })).not.toBeInTheDocument();
+    await act(async () => { resolverLista?.(mockActividadesRaw); });
+    expect(await screen.findByRole('button', { name: 'Recargar' })).toBeInTheDocument();
+  });
   it('monta la página mostrando el título, semana y grilla de actividades', async () => {
     render(<ProgramaGeneralPage />);
 
