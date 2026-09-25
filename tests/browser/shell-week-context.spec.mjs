@@ -23,7 +23,14 @@ function bootstrapAutenticado(estado) {
     user: { username: 'test.R', displayName: 'Residente QA', role: 'R' },
     project: { id: 73, name: 'Da Porto', area: 'Construccion' },
     capabilities: { canManageWeeks: true },
-    navigation: { bi: null, groups: [] },
+    navigation: {
+      bi: null,
+      groups: [{
+        id: 'informacion',
+        label: 'Información',
+        items: [{ id: 'semanas-proyecto', label: 'Semanas del Proyecto', href: null, icon: 'calendar', action: true }],
+      }],
+    },
     week: estado.week,
     csrfToken: CSRF,
   };
@@ -105,10 +112,12 @@ test.describe('Contexto de semana — red completamente interceptada', () => {
     const { requests } = await interceptarRed(page, { week: semanaDe(6, opciones) });
 
     await page.goto('/app');
-    await expect(page.locator('.aia-sidebar__week-label')).toContainText('Semana 6');
+    const chip = page.locator('#shellContextBar .context-week-chip');
+    await expect(chip).toContainText('Semana 6');
 
-    await page.getByLabel(/cambiar de semana/i).selectOption('5');
-    await expect(page.locator('.aia-sidebar__week-label')).toContainText('Semana 5');
+    await chip.click();
+    await page.getByRole('menuitem', { name: /semana 5/i }).click();
+    await expect(chip).toContainText('Semana 5');
 
     const mutacion = requests.find((r) => r.url.includes('/context/week') && r.method === 'POST');
     expect(mutacion?.body).toEqual({ semana: 5 });
@@ -122,12 +131,13 @@ test.describe('Contexto de semana — red completamente interceptada', () => {
     const { requests } = await interceptarRed(page, { week: semanaDe(6, opciones) });
 
     await page.goto('/app');
+    await page.getByRole('button', { name: /semanas del proyecto/i }).click();
     await page.getByRole('button', { name: /crear semana/i }).click();
     await page.getByLabel(/fecha de inicio/i).fill('2026-08-31');
-    await page.getByRole('button', { name: /^crear$/i }).click();
+    await page.getByRole('button', { name: /^crear semana$/i }).click();
 
-    await expect(page.locator('.aia-sidebar__week-label')).toContainText('Semana 7');
-    await expect(page.getByRole('dialog', { name: /crear nueva semana/i })).toHaveCount(0);
+    await expect(page.locator('#shellContextBar .context-week-chip')).toContainText('Semana 7');
+    await expect(page.getByRole('dialog', { name: /crear semana 7/i })).toHaveCount(0);
 
     const mutacion = requests.find((r) => r.url.includes('/api/context/weeks/create'));
     expect(mutacion?.body).toEqual({ startsOn: '2026-08-31' });
@@ -142,11 +152,12 @@ test.describe('Contexto de semana — red completamente interceptada', () => {
     const { requests } = await interceptarRed(page, { week: semanaDe(6, opciones) });
 
     await page.goto('/app');
+    await page.getByRole('button', { name: /semanas del proyecto/i }).click();
     await page.getByRole('button', { name: /eliminar semana 6/i }).click();
-    await expect(page.getByRole('dialog', { name: /eliminar la semana 6/i })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: /eliminar semana 6/i })).toBeVisible();
 
-    await page.getByRole('button', { name: /^eliminar$/i }).click();
-    await expect(page.locator('.aia-sidebar__week-label')).toContainText('Semana 5');
+    await page.getByRole('button', { name: /^eliminar semana$/i }).click();
+    await expect(page.locator('#shellContextBar .context-week-chip')).toContainText('Semana 5');
 
     const llamadasDelete = requests.filter((r) => r.url.includes('/api/context/weeks/delete-last'));
     expect(llamadasDelete).toHaveLength(1); // nunca se reintenta sola
@@ -176,9 +187,10 @@ test.describe('Contexto de semana — red completamente interceptada', () => {
     });
 
     await page.goto('/app');
+    await page.getByRole('button', { name: /semanas del proyecto/i }).click();
     await page.getByRole('button', { name: /crear semana/i }).click();
     await page.getByLabel(/fecha de inicio/i).fill('2026-08-31');
-    await page.getByRole('button', { name: /^crear$/i }).click();
+    await page.getByRole('button', { name: /^crear semana$/i }).click();
 
     await expect(page.getByRole('alert')).toContainText(/confirmar los compromisos/i);
     expect(llamadasCreate).toBe(1);

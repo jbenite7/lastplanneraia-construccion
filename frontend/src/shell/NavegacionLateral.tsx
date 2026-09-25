@@ -1,6 +1,6 @@
 import type { ReactNode, Ref } from 'react';
 import type { Sesion } from '../lib/api/esquemas/sesion';
-import { BarraLateral } from './navegacion/BarraLateral';
+import { BarraLateral, type ItemBarraLateral } from './navegacion/BarraLateral';
 
 /**
  * Encuentra la entrada del manifiesto cuyo `href` coincide EXACTAMENTE con la URL actual (spec
@@ -26,10 +26,7 @@ type PropiedadesNavegacionLateral = {
    *  drawer — ver el comentario sobre `data-shell-drawer-open` en `BarraLateral`. React 19 acepta
    *  `ref` como prop normal, sin `forwardRef`. */
   ref?: Ref<HTMLElement>;
-  /** Selector semanal completo (Tarea 5, T01): número, rango y acciones server-issued.
-   *  `AppShell` arma este nodo (`ContextoSemana`) — este componente solo le da su lugar en el
-   *  header, igual que ya hace con `children` en el footer para `MenuCuenta`. */
-  contextoSemana?: ReactNode;
+  alEjecutarAccion?: (item: ItemBarraLateral) => void;
   /** Estado del rail persistente en escritorio (Tarea 4). `AppShell` es quien lo gobierna. */
   estado?: 'expanded' | 'collapsed';
   alAlternarEstado?: () => void;
@@ -53,7 +50,7 @@ export function NavegacionLateral({
   sesion,
   id = 'app-shell-nav',
   ref,
-  contextoSemana = null,
+  alEjecutarAccion,
   estado,
   alAlternarEstado,
   abiertoEnMovil,
@@ -73,7 +70,7 @@ export function NavegacionLateral({
       barraAutonoma={false}
       id={id}
       ref={ref}
-      contextoSemana={contextoSemana}
+      alEjecutarAccion={alEjecutarAccion}
       estado={estado}
       alAlternarEstado={alAlternarEstado}
       abiertoEnMovil={abiertoEnMovil}

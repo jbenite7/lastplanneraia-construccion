@@ -6,15 +6,15 @@ import { bootstrapAutenticado } from './fixtures/shell-runtime-react.mjs';
  *
  * Por qué un test de navegador y no uno de componente: el bug era puramente de CSS Grid
  * (`shell-sidebar.css` fija `grid-template-columns: 1fr auto` en el header, pensado para 2
- * hijos explícitos; el shell React mete 4 — marca, contexto, semana, toggle). jsdom no calcula
+ * hijos explícitos; antes el shell React metía 4 — marca, contexto, semana, toggle). jsdom no calcula
  * layout de grid (todo `getBoundingClientRect()` devuelve 0 ahí), así que ningún test de
  * componente (Vitest + Testing Library) puede detectar que la columna `1fr` colapsó a 0px y
  * que "Last Planner AIA" se partió en una letra por línea. Solo un navegador real —Playwright—
  * calcula el grid y puede medir el ancho renderizado.
  *
  * Qué mide: que el nombre de marca y el contexto de proyecto/usuario ocupan un ancho real
- * (no colapsan a la columna auto-colocada perdiendo la 1fr), y que el bloque de semana no
- * termina compartiendo la columna del botón de colapsar. Sigue el mismo método con el que se
+ * (no colapsan a la columna auto-colocada perdiendo la 1fr), y que el chip de semana queda fuera
+ * del grid del riel, en la barra de contexto. Sigue el mismo método con el que se
  * midió el bug originalmente (medición de `getBoundingClientRect()` en el navegador integrado).
  */
 
@@ -31,13 +31,13 @@ const SEMANA_COMPLETA = {
 
 async function entrarConSemanaCompleta(page, viewport) {
   await page.setViewportSize(viewport);
+  await page.addInitScript(() => localStorage.setItem('aia-sidebar-state', 'expanded'));
   await page.route('**/api/**', (route) => route.abort('failed'));
   await page.route('**/api/session', (route) => route.fulfill({
     status: 200,
     contentType: 'application/json',
     body: JSON.stringify(bootstrapAutenticado({
-      // Semana con las tres acciones habilitadas: reproduce el header de 4 hijos real
-      // (marca + contexto + semana con selector/botones + toggle), no una versión reducida.
+      // Semana con las tres acciones habilitadas: reproduce el contexto completo del shell.
       week: SEMANA_COMPLETA,
     })),
   }));
@@ -68,6 +68,7 @@ function grupoConNItems(n) {
 async function entrarConMenuDeTamano(page, viewport, tema, n) {
   await page.setViewportSize(viewport);
   await page.addInitScript((t) => { try { localStorage.setItem('aia-theme', t); } catch { /* modo privado */ } }, tema);
+  await page.addInitScript(() => localStorage.setItem('aia-sidebar-state', 'expanded'));
   await page.route('**/api/**', (route) => route.abort('failed'));
   await page.route('**/api/session', (route) => route.fulfill({
     status: 200,
@@ -91,7 +92,7 @@ test('[1180×820] el encabezado del rail expandido no colapsa la columna de marc
 
   const marca = page.locator('.aia-sidebar__brand-name');
   const contexto = page.locator('.aia-sidebar__context');
-  const semana = page.locator('.aia-sidebar__week');
+  const semana = page.locator('#shellContextBar .context-week-chip');
   const toggle = page.locator('.aia-sidebar__toggle');
 
   await expect(marca).toBeVisible();
@@ -114,37 +115,38 @@ test('[1180×820] el encabezado del rail expandido no colapsa la columna de marc
   const alturaLinea = await marca.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
   expect(cajaMarca.height, `alto marca=${cajaMarca.height}px, fontSize=${alturaLinea}px`).toBeLessThan(alturaLinea * 4);
 
-  // El bloque de semana no debe terminar compartiendo la columna angosta del toggle: su ancho
-  // real debe acercarse al ancho del header, no al ancho (~44px) del botón de colapsar.
-  const cajaHeader = await page.locator('.aia-sidebar__header').boundingBox();
-  expect(cajaSemana.width, `semana=${cajaSemana.width}px, header=${cajaHeader.width}px`).toBeGreaterThan(cajaHeader.width * 0.5);
+  // El chip vive fuera del grid del riel y conserva un área pulsable completa.
+  expect(cajaSemana.width, `semana=${cajaSemana.width}px`).toBeGreaterThanOrEqual(40);
 
   // El toggle conserva su tamaño de objetivo táctil, sin ser aplastado por el bloque de semana.
   expect(cajaToggle.width).toBeGreaterThanOrEqual(40);
 });
 
-test('[1180×820] el rail colapsado oculta el bloque de semana sin romper el layout', async ({ page }) => {
+test('[1180×820] el rail colapsado conserva la semana en la barra de contexto', async ({ page }) => {
   await entrarConSemanaCompleta(page, { width: 1180, height: 820 });
 
   await page.getByRole('button', { name: /colapsar menú/i }).click();
   await expect(page.locator('[data-sidebar-state="collapsed"]')).toBeVisible();
-  await expect(page.locator('.aia-sidebar__week')).toBeHidden();
+  await expect(page.locator('aside.aia-navigation--sidebar .aia-sidebar__week')).toHaveCount(0);
+  await expect(page.locator('#shellContextBar .context-week-chip')).toBeVisible();
 });
 
-test('[390×844] el drawer móvil muestra marca, contexto y semana legibles', async ({ page }) => {
+test('[390×844] el drawer móvil conserva la marca y el contexto superior visible', async ({ page }) => {
   await entrarConSemanaCompleta(page, { width: 390, height: 844 });
 
   await page.getByRole('button', { name: /abrir menú de navegación/i }).click();
   const aside = page.getByRole('navigation').locator('xpath=ancestor::aside');
   await expect(aside).toHaveAttribute('data-shell-drawer-open', 'true');
 
-  const marca = page.locator('.aia-sidebar__brand-name');
+  const marca = page.locator('.shell-mobile-topbar .aia-sidebar__brand-name');
   await expect(marca).toHaveText('Last Planner AIA');
   const cajaMarca = await marca.boundingBox();
   expect(cajaMarca.width, `marca=${cajaMarca.width}px`).toBeGreaterThan(ANCHO_MINIMO_MARCA);
 
-  await expect(page.locator('.aia-sidebar__context')).toBeVisible();
-  await expect(page.locator('.aia-sidebar__week')).toBeVisible();
+  await expect(page.locator('aside.aia-navigation--sidebar .aia-sidebar__context')).toBeHidden();
+  await expect(page.locator('#shellContextBar #ctxProyecto')).toBeVisible();
+  await expect(page.locator('aside.aia-navigation--sidebar .aia-sidebar__week')).toHaveCount(0);
+  await expect(page.locator('#shellContextBar .context-week-chip')).toBeVisible();
 });
 
 /**

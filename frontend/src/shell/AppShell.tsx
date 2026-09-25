@@ -4,10 +4,11 @@ import type { ArranqueAutenticado } from '../lib/api/esquemas/arranque';
 import { CajonContextualLps } from '../shared/lps/componentes/CajonContextualLps';
 import { LpsDrawerProvider } from '../shared/lps/estado/LpsDrawerProvider';
 import { useLpsDrawer } from '../shared/lps/estado/useLpsDrawer';
-import { ContextoSemana } from './ContextoSemana';
+import { BarraContexto } from './BarraContexto';
+import { DialogosSemana } from './DialogosSemana';
 import { LimiteErrorRuta } from './errores/LimiteErrorRuta';
 import { MenuCuenta } from './MenuCuenta';
-import { esBarraLateralFlotante } from './modoBarraLateral';
+import { esBarraLateralFlotante, guardarEstadoRiel, leerEstadoRiel } from './modoBarraLateral';
 import { MarcaLockup } from './navegacion/MarcaLockup';
 import { NavegacionLateral } from './NavegacionLateral';
 import { useTituloDocumento } from './useTituloDocumento';
@@ -74,7 +75,8 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
     esBarraLateralFlotante(typeof window === 'undefined' ? Infinity : window.innerWidth),
   );
   const [abierto, setAbierto] = useState(false);
-  const [colapsado, setColapsado] = useState(false);
+  const [colapsado, setColapsado] = useState(() => leerEstadoRiel() === 'collapsed');
+  const [dialogosSemanaAbiertos, setDialogosSemanaAbiertos] = useState(false);
   const disparadorRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const contenidoRef = useRef<HTMLElement>(null);
@@ -91,26 +93,6 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
     evento.preventDefault();
     contenidoRef.current?.focus();
   }, []);
-
-  // Respaldo inline al `transform` del drawer (Tarea 4, ronda de arreglos 1). El contrato
-  // documental de `shell-sidebar.css` es `data-shell-drawer-open="true"` — la regla que lo
-  // consume vive más abajo en el archivo que la regla "cerrado" y comparte su especificidad
-  // exacta (`body.aia-shell--sidebar .aia-navigation--sidebar[...]`), así que en teoría el orden
-  // de aparición debería bastar. Verificado en el navegador integrado (390×844) que NO basta:
-  // con el atributo puesto, `getComputedStyle` seguía devolviendo `translateX(-100%)` — el
-  // drawer quedaba "abierto" en el árbol de accesibilidad pero invisible en pantalla. No se
-  // tocó `shell-sidebar.css` (es el contrato que este componente debe cumplir, no un archivo que
-  // esta tarea posea) ni se investigó más a fondo el motivo exacto del empate de cascada por
-  // presupuesto de tiempo; en su lugar, el estilo inline —que siempre gana sobre cualquier regla
-  // de hoja de estilos sin `!important`, existente o no— hace que el resultado visual deje de
-  // depender de esa ambigüedad. Sigue coexistiendo con el atributo: éste conserva su valor
-  // semántico/testeable y las demás reglas de ese selector (z-index, box-shadow) que no compiten
-  // por la misma propiedad.
-  useEffect(() => {
-    const nodo = navRef.current;
-    if (!nodo) return;
-    nodo.style.transform = flotante && abierto ? 'translateX(0)' : '';
-  }, [flotante, abierto]);
 
   // Layout del rail canónico (docs/design-system + shell-sidebar.css): esta página React es
   // dueña de todo el `<body>` (frontend/index.html no trae otro shell), así que activar la
@@ -235,9 +217,15 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
       <NavegacionLateral
         ref={navRef}
         sesion={sesion}
-        contextoSemana={<ContextoSemana semana={sesion.week} csrfToken={sesion.csrfToken} recargar={recargar} />}
+        alEjecutarAccion={(item) => {
+          if (item.id === 'semanas-proyecto') setDialogosSemanaAbiertos(true);
+        }}
         estado={colapsado ? 'collapsed' : 'expanded'}
-        alAlternarEstado={() => setColapsado((valor) => !valor)}
+        alAlternarEstado={() => setColapsado((valor) => {
+          const siguiente = !valor;
+          guardarEstadoRiel(siguiente ? 'collapsed' : 'expanded');
+          return siguiente;
+        })}
         abiertoEnMovil={flotante ? abierto : undefined}
       >
         <MenuCuenta nombre={sesion.user.displayName} cerrarSesion={cerrarSesion} />
@@ -269,6 +257,13 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
         <CerrarCajonLpsAlNavegar />
         <div className="lps-layout-cajon">
           <main id={ID_PANEL_CONTENIDO} ref={contenidoRef} tabIndex={-1}>
+            <BarraContexto
+              csrfToken={sesion.csrfToken}
+              modulo={tituloVigente.split(' · ')[0]}
+              proyecto={sesion.project?.name ?? 'Proyecto'}
+              recargar={recargar}
+              semana={sesion.week}
+            />
             <LimiteErrorRuta>
               <Outlet />
             </LimiteErrorRuta>
@@ -276,6 +271,13 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
           <CajonContextualLps />
         </div>
       </LpsDrawerProvider>
+      <DialogosSemana
+        abierto={dialogosSemanaAbiertos}
+        alCerrar={() => setDialogosSemanaAbiertos(false)}
+        csrfToken={sesion.csrfToken}
+        recargar={recargar}
+        semana={sesion.week}
+      />
     </>
   );
 }

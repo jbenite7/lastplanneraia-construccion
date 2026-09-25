@@ -76,7 +76,7 @@ type PropiedadesBarraLateral = {
   barraAutonoma?: boolean;
   id?: string;
   ref?: Ref<HTMLElement>;
-  contextoSemana?: ReactNode;
+  alEjecutarAccion?: (item: ItemBarraLateral) => void;
   estado?: 'expanded' | 'collapsed';
   alAlternarEstado?: () => void;
   abiertoEnMovil?: boolean;
@@ -126,7 +126,7 @@ export function BarraLateral({
   barraAutonoma = true,
   id = 'app-shell-nav',
   ref,
-  contextoSemana = null,
+  alEjecutarAccion,
   estado: estadoExterno,
   alAlternarEstado: alAlternarEstadoExterno,
   abiertoEnMovil: abiertoEnMovilExterno,
@@ -331,7 +331,6 @@ export function BarraLateral({
               {context.secondary && <small>{context.secondary}</small>}
             </div>
           )}
-          {contextoSemana}
           {alAlternarEstado && (
             <button
               type="button"
@@ -377,10 +376,11 @@ export function BarraLateral({
                       </a>
                     ) : (
                       <button
-                        aria-disabled={item.action}
                         aria-label={item.label}
                         className="aia-sidebar__link"
-                        disabled={item.action}
+                        data-destination-id={item.id}
+                        disabled={!item.action || !alEjecutarAccion}
+                        onClick={() => alEjecutarAccion?.(item)}
                         type="button"
                       >
                         <span className="aia-sidebar__label">{item.label}</span>

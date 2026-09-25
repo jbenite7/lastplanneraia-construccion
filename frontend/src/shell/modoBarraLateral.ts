@@ -9,6 +9,28 @@
  */
 export const UMBRAL_BARRA_LATERAL_FLOTANTE = 1180;
 
+export type EstadoRiel = 'collapsed' | 'expanded';
+
+/** Misma clave del shell PHP para conservar el estado al cruzar entre ambos hosts. */
+export const CLAVE_ESTADO_RIEL = 'aia-sidebar-state';
+
+export function leerEstadoRiel(): EstadoRiel {
+  try {
+    const guardado = window.localStorage.getItem(CLAVE_ESTADO_RIEL);
+    return guardado === 'expanded' || guardado === 'collapsed' ? guardado : 'collapsed';
+  } catch {
+    return 'collapsed';
+  }
+}
+
+export function guardarEstadoRiel(estado: EstadoRiel): void {
+  try {
+    window.localStorage.setItem(CLAVE_ESTADO_RIEL, estado);
+  } catch {
+    // Sin almacenamiento el riel conserva su comportamiento durante esta visita.
+  }
+}
+
 export function esBarraLateralFlotante(ancho: number, umbral: number = UMBRAL_BARRA_LATERAL_FLOTANTE): boolean {
   const medido = Number(ancho);
   if (!Number.isFinite(medido)) return false;
