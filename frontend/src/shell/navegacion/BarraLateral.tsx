@@ -21,6 +21,7 @@ export type ItemBarraLateral = {
   id: string;
   label: string;
   href: string | null;
+  icon?: string | null;
   /** Entrada sin destino propio (p. ej. abrir un flyout): se pinta como botón deshabilitado,
    *  igual que ya hacía `NavegacionLateral` (T01) para "Semanas del Proyecto". */
   action?: boolean;
@@ -48,6 +49,26 @@ function IconoColapsarMenu() {
     <span className="aia-icon aia-icon--collapse" data-aia-component="icon" aria-hidden="true">
       <svg className="aia-icon__glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="m14 6-6 6 6 6" />
+      </svg>
+    </span>
+  );
+}
+
+const GLIFOS_ICONO: Record<string, ReactNode> = {
+  calendar: <><rect height="15" rx="2" width="16" x="4" y="5" /><path d="M8 3v4M16 3v4M4 10h16" /></>,
+  chart: <><path d="M5 20V10M12 20V4M19 20v-7" /><path d="M3 20h18" /></>,
+  project: <><path d="M4 7h6l2 2h8v10H4z" /><path d="M4 7V5h6l2 2" /></>,
+  program: <><path d="M5 5h14v14H5z" /><path d="M8 9h8M8 13h5M8 17h3" /></>,
+  overview: <><rect height="6" rx="1" width="6" x="4" y="4" /><rect height="6" rx="1" width="6" x="14" y="4" /><rect height="6" rx="1" width="6" x="4" y="14" /><rect height="6" rx="1" width="6" x="14" y="14" /></>,
+};
+
+/** Ícono decorativo con el mismo contrato DOM del componente PHP canónico. */
+function IconoBarraLateral({ nombre }: { nombre: string | null | undefined }) {
+  const icono = nombre ?? 'overview';
+  return (
+    <span className={`aia-icon aia-icon--${icono}`} data-aia-component="icon" aria-hidden="true">
+      <svg className="aia-icon__glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        {GLIFOS_ICONO[icono] ?? <circle cx="12" cy="12" r="7" />}
       </svg>
     </span>
   );
@@ -368,10 +389,13 @@ export function BarraLateral({
                     {item.href !== null ? (
                       <a
                         aria-current={item.id === activeId ? 'page' : undefined}
+                        aria-label={item.label}
                         className="aia-sidebar__link"
                         data-destination-id={item.id}
+                        data-sidebar-icon={item.icon ?? 'overview'}
                         href={item.href}
                       >
+                        <IconoBarraLateral nombre={item.icon} />
                         <span className="aia-sidebar__label">{item.label}</span>
                       </a>
                     ) : (
@@ -379,10 +403,12 @@ export function BarraLateral({
                         aria-label={item.label}
                         className="aia-sidebar__link"
                         data-destination-id={item.id}
+                        data-sidebar-icon={item.icon ?? 'overview'}
                         disabled={!item.action || !alEjecutarAccion}
                         onClick={() => alEjecutarAccion?.(item)}
                         type="button"
                       >
+                        <IconoBarraLateral nombre={item.icon} />
                         <span className="aia-sidebar__label">{item.label}</span>
                       </button>
                     )}

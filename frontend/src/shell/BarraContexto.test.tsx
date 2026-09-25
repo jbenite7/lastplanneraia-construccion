@@ -34,7 +34,10 @@ describe('BarraContexto (paridad con .context-bar del legado)', () => {
     expect(document.querySelector('#shellContextBar.context-bar')).not.toBeNull();
     expect(screen.getByText('Da Porto')).toBeInTheDocument();
     expect(screen.getByText('Programa General')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Semana 2/ })).toHaveAttribute('aria-haspopup', 'menu');
+    const chip = screen.getByRole('button', { name: /Semana 2/ });
+    expect(chip).toHaveAttribute('aria-haspopup', 'menu');
+    expect(chip.querySelector('.aia-icon--calendar svg.aia-icon__glyph')).not.toBeNull();
+    expect(chip.querySelector('.aia-icon--chevron-down svg.aia-icon__glyph')).not.toBeNull();
   });
 
   it('abre el menú y cambia de semana', async () => {

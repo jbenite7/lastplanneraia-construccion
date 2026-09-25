@@ -18,6 +18,16 @@ async function medirRiel(page, ruta) {
       navegacion: [...el.querySelectorAll('[data-destination-id]')]
         .map((nodo) => (nodo.getAttribute('aria-label') || nodo.textContent || '').trim())
         .filter(Boolean),
+      iconos: [...el.querySelectorAll('[data-destination-id]')].map((nodo) => {
+        const icono = nodo.querySelector('.aia-icon, i');
+        const rect = icono?.getBoundingClientRect();
+        const estilo = icono ? getComputedStyle(icono) : null;
+        return {
+          id: nodo.getAttribute('data-destination-id'),
+          visible: Boolean(rect && rect.width > 0 && rect.height > 0
+            && estilo?.display !== 'none' && estilo?.visibility !== 'hidden'),
+        };
+      }),
       colorActivo: cs?.color ?? null,
     };
   });
@@ -36,6 +46,8 @@ for (const tema of ['light', 'dark']) {
     expect(legado.estado).toBe('collapsed');
     expect(react.estado).toBe('collapsed');
     expect(Math.abs(react.ancho - legado.ancho)).toBeLessThanOrEqual(2);
+    expect(legado.iconos.every((icono) => icono.visible)).toBe(true);
+    expect(react.iconos.every((icono) => icono.visible)).toBe(true);
     // Las opciones de semana ya no pertenecen al riel React (R1.2-4), y tema/cuenta son
     // controles propios del host. La paridad verificable del riel son sus destinos emitidos por
     // el servidor; se excluye solo la entrada activa que difiere entre las dos rutas comparadas.
@@ -63,6 +75,13 @@ test('la semana vive en la barra de contexto, como en el legado', async ({ page 
   await expect(page.locator('aside.aia-navigation--sidebar .aia-sidebar__week')).toHaveCount(0);
   const chip = page.locator('#shellContextBar .context-week-chip');
   await expect(chip).toBeVisible();
+  for (const icono of ['calendar', 'chevron-down']) {
+    const glifo = chip.locator(`.aia-icon--${icono} svg.aia-icon__glyph`);
+    await expect(glifo).toBeVisible();
+    const caja = await glifo.boundingBox();
+    expect(caja?.width).toBeGreaterThan(0);
+    expect(caja?.height).toBeGreaterThan(0);
+  }
   await chip.click();
   await expect(page.getByRole('menu')).toBeVisible();
   await page.keyboard.press('Escape');

@@ -49,12 +49,12 @@
     padding: var(--ds-space-2) var(--ds-space-4);
     border-block-end: var(--ds-border-width) solid var(--ds-active-border);
     background: var(--ds-active-nav-bg);
-    color: var(--ds-active-text-secondary);
+    color: var(--ds-active-nav-text-muted);
     font-size: var(--ds-type-size-sm);
   }
 
   body.aia-shell--sidebar .context-bar #ctxProyecto {
-    color: var(--ds-active-text-primary);
+    color: var(--ds-active-nav-text);
     font-weight: var(--ds-type-weight-semibold);
   }
 

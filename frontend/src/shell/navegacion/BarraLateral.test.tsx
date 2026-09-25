@@ -8,8 +8,8 @@ const GRUPOS = [
     id: 'global',
     label: 'Navegación',
     items: [
-      { id: 'projects', label: 'Tus proyectos', href: '/proyectos' },
-      { id: 'bi', label: 'Control Tower - Informes', href: '/bi/control-tower' },
+      { id: 'projects', label: 'Tus proyectos', href: '/proyectos', icon: 'project' },
+      { id: 'bi', label: 'Control Tower - Informes', href: '/bi/control-tower', icon: 'chart' },
     ],
   },
 ];
@@ -81,6 +81,19 @@ test('el botón de colapsar/expandir menú trae el ícono decorativo de la barra
   expect(icono).toHaveAttribute('viewBox', '0 0 24 24');
   expect(icono).toHaveAttribute('aria-hidden', 'true');
   expect(icono).toHaveAttribute('focusable', 'false');
+});
+
+test('el rail colapsado conserva un ícono decorativo por cada entrada de navegación', async () => {
+  fijarAncho(1440);
+  render(<BarraLateral activeId="projects" accountName="Ana" groups={GRUPOS} showChangeProject={false} />);
+
+  fireEvent.click(screen.getByRole('button', { name: 'Colapsar menú' }));
+
+  for (const item of GRUPOS[0].items) {
+    const enlace = screen.getByRole('link', { name: item.label });
+    expect(enlace).toHaveAttribute('data-sidebar-icon', item.icon);
+    expect(enlace.querySelector(`.aia-icon--${item.icon} svg.aia-icon__glyph`)).not.toBeNull();
+  }
 });
 
 // Bajo 1180px (modo autónomo, `flotante`), la marca se repite en la fila superior junto al
