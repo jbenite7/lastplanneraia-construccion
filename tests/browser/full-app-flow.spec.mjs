@@ -126,11 +126,9 @@ for (const project of PROJECTS) {
       // disparador propio. Que exista y abra es parte de que la navegacion sea
       // alcanzable: sin el, el menu flotante seria inalcanzable con el dedo.
       //
-      // El selector es `.shell-menu-trigger` y no `[data-shell-drawer-toggle]`:
-      // ese segundo lo emite `DesignSystemComponent::navigation()`, y estas
-      // vistas montan `views/partials/shell_sidebar.php`, que trae el suyo.
-      // Medido en el DOM real a 390 px, no deducido de la spec.
-      const disparador = page.locator('button.shell-menu-trigger');
+      // En Programa General React, AppShell monta el disparador en la barra móvil.
+      // Se comprueba el botón real y su estado, sin emular el selector legado.
+      const disparador = page.locator('button.shell-mobile-topbar__trigger');
       await expect(disparador, 'el menu flotante necesita su disparador por debajo de 1180 px').toBeVisible();
       await expect(disparador).toHaveAttribute('aria-expanded', 'false');
       await disparador.click();
