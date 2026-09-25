@@ -38,6 +38,7 @@ estado: verificacion-final
 - La recarga cancela la petición anterior, incluida la carga inicial, y solo reconcilia la respuesta vigente. Mantiene datos y filtros visibles si falla. El lote de ejecución exige confirmación y usa el endpoint real con CSRF.
 - La prueba de persistencia usa un stack CI aislado para Da Porto, JMC y PC; cada escenario restaura datos y archivos y compara sus huellas antes y después. La denegación de Viewer se comprueba contra las respuestas API 403 de guardado y lote.
 - La corrida integral reveló que `maxWeek: 6` de JMC no existe en el fixture CI (el endpoint respondió `WEEK_NOT_FOUND` 404). El escenario ahora cambia a la semana 4, sembrada y distinta de la operativa 5; el caso enfocado pasó con restauración idéntica. No se cambió el límite del API ni el fixture SQL.
+- La primera corrida de presupuesto llegó a la semana 2 de Da Porto, vacía deliberadamente en el fixture, y no encontró `row-activity`. La medición selecciona ahora la semana operativa 1 mediante `/context/week` con CSRF antes de iniciar la navegación cronometrada, sin alterar datos ni calentar previamente Programa General.
 - `css-minify.mjs` resuelve la ruta real del propio archivo, de modo que el comando funcione en un checkout cuyo nombre contiene espacios (`7850aa0e`).
 
 ## Verificación local

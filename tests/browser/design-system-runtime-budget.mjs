@@ -61,6 +61,21 @@ async function measureAssets(page, resources) {
   return assets;
 }
 
+async function selectFixtureWeek(page, week) {
+  const result = await page.evaluate(async (selectedWeek) => {
+    const csrfToken = document.querySelector('meta[name="lps-shell-csrf-token"]')?.content || '';
+    const response = await fetch('/context/week', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+      body: JSON.stringify({ semana: selectedWeek }),
+    });
+    return { status: response.status, payload: await response.json() };
+  }, week);
+  expect(result.status, JSON.stringify(result.payload)).toBe(200);
+  expect(result.payload.ok, JSON.stringify(result.payload)).toBe(true);
+}
+
 async function collectRuntimeSample(page, testInfo, project, runtimeContext) {
   expect(project, 'sanitized construction fixture is required').toBeTruthy();
 
@@ -101,6 +116,8 @@ async function collectRuntimeSample(page, testInfo, project, runtimeContext) {
   }, EXPECTED_THEME);
 
   await loginAndSelectProject(page, project, ADMIN);
+  // La semana 2 del fixture de Da Porto está vacía a propósito; medir la semana operativa.
+  await selectFixtureWeek(page, project.operationalWeek);
   await page.evaluate((theme) => localStorage.setItem('aia-theme', theme), EXPECTED_THEME);
   await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('table.programa-table-pro tbody tr.row-activity', { timeout: 45_000 });
