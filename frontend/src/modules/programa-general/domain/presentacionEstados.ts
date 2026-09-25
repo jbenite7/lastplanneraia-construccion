@@ -15,10 +15,14 @@ export function obtenerConfigEstado(estado: string | null | undefined): EstadoBa
     case 'En Curso':
       return { claseChip: 'chip-blue', colorDot: 'var(--ds-color-state-info-text)', texto: 'En Curso' };
     case 'Actividad Futura':
-      return { claseChip: 'chip-green', colorDot: 'var(--ds-color-state-success-text)', texto: 'Futura' };
+      return { claseChip: 'chip-green-future', colorDot: 'var(--ds-color-state-success-text)', texto: 'Futura' };
     case 'Terminada':
-      return { claseChip: 'chip-gray', colorDot: 'var(--ds-text-muted)', texto: 'Terminada' };
+      return { claseChip: 'chip-neutral', colorDot: 'var(--ds-text-muted)', texto: 'Terminada' };
+    case 'Fuera de Ventana':
+      return { claseChip: 'chip-teal', colorDot: 'var(--ds-state-solid-teal)', texto: 'Fuera de Ventana' };
     default:
-      return { claseChip: 'chip-gray', colorDot: 'var(--ds-text-muted)', texto: estado || 'Sin Datos' };
+      return estado
+        ? { claseChip: 'chip-gray', colorDot: 'var(--ds-text-muted)', texto: estado }
+        : { claseChip: 'chip-violet', colorDot: 'var(--ds-state-solid-violet)', texto: 'Sin Datos' };
   }
 }

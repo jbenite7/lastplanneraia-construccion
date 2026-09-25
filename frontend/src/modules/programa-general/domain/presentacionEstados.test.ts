@@ -32,22 +32,32 @@ describe('Dominio S05: presentacion de estados canonicos', () => {
 
   it('retorna configuracion canónica para Actividad Futura (texto: Futura)', () => {
     const config = obtenerConfigEstado('Actividad Futura');
-    expect(config.claseChip).toBe('chip-green');
+    expect(config.claseChip).toBe('chip-green-future');
     expect(config.colorDot).toBe('var(--ds-color-state-success-text)');
     expect(config.texto).toBe('Futura');
   });
 
   it('retorna configuracion canónica para Terminada', () => {
     const config = obtenerConfigEstado('Terminada');
-    expect(config.claseChip).toBe('chip-gray');
+    expect(config.claseChip).toBe('chip-neutral');
     expect(config.colorDot).toBe('var(--ds-text-muted)');
     expect(config.texto).toBe('Terminada');
   });
 
+  it('distingue Fuera de Ventana y Sin Datos con los matices declarados', () => {
+    const fueraVentana = obtenerConfigEstado('Fuera de Ventana');
+    expect(fueraVentana.claseChip).toBe('chip-teal');
+    expect(fueraVentana.texto).toBe('Fuera de Ventana');
+
+    const sinDatos = obtenerConfigEstado(null);
+    expect(sinDatos.claseChip).toBe('chip-violet');
+    expect(sinDatos.texto).toBe('Sin Datos');
+  });
+
   it('retorna fallback sobrio para estados nulos, indefinidos o desconocidos', () => {
     const configNull = obtenerConfigEstado(null);
-    expect(configNull.claseChip).toBe('chip-gray');
-    expect(configNull.colorDot).toBe('var(--ds-text-muted)');
+    expect(configNull.claseChip).toBe('chip-violet');
+    expect(configNull.colorDot).toBe('var(--ds-state-solid-violet)');
     expect(configNull.texto).toBe('Sin Datos');
 
     const configUndefined = obtenerConfigEstado(undefined);
