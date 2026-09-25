@@ -325,6 +325,45 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
   });
 });
 
+test.describe('Ronda 1.2 — layout de la tabla', () => {
+  for (const tema of ['light', 'dark']) {
+    for (const modo of ['8', '13']) {
+      for (const riel of ['collapsed', 'expanded']) {
+        test(`sin desbordamiento · tema ${tema} · ${modo} columnas · riel ${riel}`, async ({ page }) => {
+          await page.setViewportSize({ width: 1180, height: 820 });
+          await page.addInitScript(([t, r]) => {
+            localStorage.setItem('aia-theme', t);
+            localStorage.setItem('aia-sidebar-state', r);
+          }, [tema, riel]);
+          await page.goto('http://localhost:8081/dev/entrar?u=test.A&p=' + encodeURIComponent('Da Porto'));
+          await page.goto('http://localhost:8081/programa-general');
+          await page.locator('table.programa-table-pro tbody tr.row-activity').first().waitFor();
+          if (modo === '13') await page.getByRole('button', { name: /13 Cols/i }).click();
+
+          const medidas = await page.evaluate(() => {
+            const tabla = document.querySelector('table.programa-table-pro');
+            const vista = tabla.parentElement;
+            const actividad = tabla.querySelector('col.pg-col-actividad');
+            const celdas = [...tabla.querySelectorAll('.activity-title, .activity-subtitle')];
+            return {
+              tablaAncho: tabla.scrollWidth,
+              vistaAncho: vista.clientWidth,
+              docAncho: document.documentElement.scrollWidth,
+              ventana: window.innerWidth,
+              anchoActividad: actividad.getBoundingClientRect().width,
+              recortadas: celdas.filter((c) => c.scrollWidth > c.clientWidth + 1).length,
+            };
+          });
+          expect(medidas.tablaAncho).toBeLessThanOrEqual(medidas.vistaAncho);
+          expect(medidas.docAncho).toBeLessThanOrEqual(medidas.ventana);
+          expect(medidas.recortadas).toBe(0);
+          expect(medidas.anchoActividad).toBeGreaterThanOrEqual(modo === '8' ? 280 : 160);
+        });
+      }
+    }
+  }
+});
+
 test.describe('S05 Programa General React — Servidor Real Docker', () => {
   test('abre Programa General canónico en 1180x820 sin scroll horizontal autenticado vía Dev Door', async ({ page }) => {
     await page.setViewportSize({ width: 1180, height: 820 });

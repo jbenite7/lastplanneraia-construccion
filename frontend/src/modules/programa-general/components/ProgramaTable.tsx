@@ -15,6 +15,12 @@ export interface ProgramaTableProps {
   className?: string;
 }
 
+const COLUMNAS_8 = ['id', 'codigo', 'actividad', 'inicio', 'fin', 'ppto', 'avance', 'estado'] as const;
+const COLUMNAS_13 = [
+  'id', 'codigo', 'actividad', 'rc', 'inicio', 'sem', 'fin',
+  'cantidad', 'unidad', 'real', 'teorico', 'restricciones', 'estado',
+] as const;
+
 export function formatearRestricciones(val?: string | number | null): string {
   if (val === null || val === undefined || val === '') return '-';
   const str = String(val).trim();
@@ -41,33 +47,38 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
       aria-label="Cronograma de Actividades"
     >
       <table className="programa-table-pro lps-dense-table" aria-label="Cronograma de Actividades">
+        <colgroup>
+          {(modo13Cols ? COLUMNAS_13 : COLUMNAS_8).map((clave) => (
+            <col key={clave} className={`pg-col-${clave}`} />
+          ))}
+        </colgroup>
         <thead>
           {modo13Cols ? (
             <tr>
-              <th style={{ width: '40px', textAlign: 'center' }}>ID</th>
-              <th style={{ width: '65px' }}>CÓDIGO</th>
+              <th>ID</th>
+              <th>CÓDIGO</th>
               <th>ACTIVIDAD</th>
-              <th style={{ width: '45px', textAlign: 'center' }}>RC</th>
-              <th style={{ width: '85px' }}>F. INICIO</th>
-              <th style={{ width: '80px', textAlign: 'center' }}>SEM. INICIO</th>
-              <th style={{ width: '85px' }}>F. FIN</th>
-              <th style={{ width: '95px', textAlign: 'right' }}>CANTIDAD PPTO</th>
-              <th style={{ width: '50px', textAlign: 'center' }}>UNIDAD</th>
-              <th style={{ width: '80px', textAlign: 'right' }}>AVANCE REAL</th>
-              <th style={{ width: '80px', textAlign: 'right' }}>AVANCE TEÓR</th>
-              <th style={{ width: '95px', textAlign: 'right' }}>LIB. RESTRICCIONES</th>
-              <th style={{ width: '100px', textAlign: 'center' }}>ESTADO</th>
+              <th>RC</th>
+              <th>F. INICIO</th>
+              <th>SEM. INICIO</th>
+              <th>F. FIN</th>
+              <th>CANTIDAD PPTO</th>
+              <th>UNIDAD</th>
+              <th>AVANCE REAL</th>
+              <th>AVANCE TEÓR</th>
+              <th>LIB. RESTRICCIONES</th>
+              <th>ESTADO</th>
             </tr>
           ) : (
             <tr>
-              <th style={{ width: '42px', textAlign: 'center' }}>ID</th>
-              <th style={{ width: '68px' }}>CÓDIGO</th>
+              <th>ID</th>
+              <th>CÓDIGO</th>
               <th>ACTIVIDAD</th>
-              <th style={{ width: '85px' }}>F. INICIO</th>
-              <th style={{ width: '85px' }}>F. FIN</th>
-              <th style={{ width: '95px', textAlign: 'right' }}>PPTO TOTAL</th>
-              <th style={{ width: '150px' }}>AVANCE (REAL / TEÓR)</th>
-              <th style={{ width: '100px', textAlign: 'center' }}>ESTADO</th>
+              <th>F. INICIO</th>
+              <th>F. FIN</th>
+              <th>PPTO TOTAL</th>
+              <th>AVANCE (REAL / TEÓR)</th>
+              <th>ESTADO</th>
             </tr>
           )}
         </thead>
@@ -77,7 +88,7 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
               const parsedCap = parsearTextoActividad(act.Actividad);
               return (
                 <tr key={`cap-${act.unique_id}`} className="row-chapter chapter-heading-row">
-                  <td colSpan={modo13Cols ? 13 : 8}>
+                  <td colSpan={(modo13Cols ? COLUMNAS_13 : COLUMNAS_8).length}>
                     <div className="chapter-cell-content">
                       <span className="chapter-icon">
                         <i className="far fa-folder" aria-hidden="true"></i>
@@ -121,6 +132,7 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
             return (
               <tr
                 key={act.unique_id}
+                data-unique-id={act.unique_id}
                 className={`row-activity data-row ${isSelected ? 'active-editing' : ''}`.trim()}
                 onClick={() => onSelectActividad(act.unique_id)}
                 tabIndex={0}

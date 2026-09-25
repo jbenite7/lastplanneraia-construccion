@@ -75,6 +75,25 @@ describe('ProgramaTable', () => {
     },
   ];
 
+  it('declara ocho columnas en colgroup sin anchos inline', () => {
+    const { container } = render(
+      <ProgramaTable actividades={[]} actividadSeleccionadaId={null} onSelectActividad={vi.fn()} />,
+    );
+    expect([...container.querySelectorAll('colgroup col')].map((col) => col.className)).toEqual([
+      'pg-col-id', 'pg-col-codigo', 'pg-col-actividad', 'pg-col-inicio',
+      'pg-col-fin', 'pg-col-ppto', 'pg-col-avance', 'pg-col-estado',
+    ]);
+    container.querySelectorAll<HTMLTableCellElement>('thead th').forEach((th) => expect(th.style.width).toBe(''));
+  });
+
+  it('declara trece columnas en colgroup en modo completo', () => {
+    const { container } = render(
+      <ProgramaTable actividades={[]} actividadSeleccionadaId={null} onSelectActividad={vi.fn()} modo13Cols />,
+    );
+    expect(container.querySelectorAll('colgroup col')).toHaveLength(13);
+    expect(container.querySelectorAll('thead th')).toHaveLength(13);
+  });
+
   it('renderiza las 8 columnas requeridas por defecto y celdas combinadas', () => {
     render(
       <ProgramaTable
