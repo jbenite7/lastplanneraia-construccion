@@ -53,7 +53,8 @@ const FILAS_DE_ESTADO = [
 const CONTEXTO_REACT = {
   proyecto: { id: 1, nombre: 'Da Porto', codigo: 'da_porto', tipo: 'Construccion' },
   semana: { numero: 1, confirmada: false, esPasada: false },
-  permisos: { puedeVer: true, puedeEditar: true, puedeCorteXlsx: true, puedeLote: false, readDrawer: true, writeDrawer: true },
+  permisos: { puedeVer: true, puedeEditar: true, puedeCorteXlsx: true, puedeLote: true, readDrawer: true, writeDrawer: true },
+  enlaces: { bi: '/bi/programa-general?project_id=1&semana=1' },
   catalogos: { unidades: ['m3', 'm2', 'ml'], codigos: [], profesionales: [], subcontratistas: [] },
   csrf_token: 'visual-fixture',
   csrf_shell: 'visual-fixture',

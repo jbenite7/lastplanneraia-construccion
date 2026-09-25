@@ -372,11 +372,13 @@ export const ProgramaGeneralPage: React.FC = () => {
             <p>Atiende primero las actividades atrasadas, después las que deben iniciar y mantén seguimiento sobre las que están en curso.</p>
             <ul className="pg-legend-dialog__list">
               <li><strong>Atrasada:</strong> avance por debajo de lo esperado; requiere atención hoy.</li>
+              <li><strong>Con Alerta:</strong> restricciones pendientes que requieren gestión antes de ejecutar.</li>
               <li><strong>Debe Iniciar:</strong> inicia durante la semana y aún no registra avance.</li>
               <li><strong>En Curso:</strong> ejecución alineada o por encima de la curva semanal.</li>
               <li><strong>Terminada:</strong> actividad con avance completo.</li>
               <li><strong>Actividad Futura:</strong> preparar compras, personal y permisos para su inicio.</li>
               <li><strong>Sin Datos:</strong> asignar fechas y registrar la ejecución.</li>
+              <li><strong>Fuera de Ventana:</strong> vigilar la actividad y preparar su entrada al horizonte.</li>
             </ul>
             <h3>Alertas secundarias de restricciones</h3>
             <p>R0-R1-R2/3-R4/6 no cambian el estado principal. R0 exige atención inmediata; R1 se libera en una semana; R2/3 y R4/6 anticipan riesgos del lookahead.</p>

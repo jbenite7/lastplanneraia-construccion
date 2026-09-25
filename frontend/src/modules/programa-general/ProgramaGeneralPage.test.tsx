@@ -150,6 +150,8 @@ describe('ProgramaGeneralPage', () => {
     expect(screen.getByRole('dialog', { name: /Guía Operativa/i })).toBeInTheDocument();
     expect(screen.getByText(/Actividad Futura:/)).toBeInTheDocument();
     expect(screen.getByText(/Sin Datos:/)).toBeInTheDocument();
+    expect(screen.getByText(/Con Alerta:/)).toBeInTheDocument();
+    expect(screen.getByText(/Fuera de Ventana:/)).toBeInTheDocument();
     expect(screen.getByText(/R0-R1-R2\/3-R4\/6/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cerrar leyenda' })).toHaveFocus();
     fireEvent.keyDown(document, { key: 'Escape' });
