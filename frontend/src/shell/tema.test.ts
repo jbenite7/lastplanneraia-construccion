@@ -100,20 +100,19 @@ test('el bootstrap de tema deja claro como fallback y solo el override "dark" lo
   expect(bootstrap).not.toContain("if (tema === 'light')");
 });
 
-test('el bootstrap de tema corre antes que cualquier hoja de estilos y nunca importa el theme.js legado', () => {
+test('el bootstrap de tema precede las hojas y el sistema carga el tema claro una sola vez', () => {
   const bootstrap = htmlIndice.match(/<script>\s*[\s\S]*?<\/script>/)?.[0] ?? '';
   const indiceBootstrap = htmlIndice.indexOf(bootstrap);
   const indicePrimerLink = htmlIndice.indexOf('<link rel="stylesheet"');
   const indiceTokens = htmlIndice.indexOf('/css/tokens.css');
   const indiceSistema = htmlIndice.indexOf('/css/aia-design-system.css');
-  const indiceClaro = htmlIndice.indexOf('/css/design-system/theme-claro.css');
 
   expect(indiceBootstrap).toBeGreaterThanOrEqual(0);
   expect(indicePrimerLink).toBeGreaterThan(-1);
   expect(indiceBootstrap).toBeLessThan(indicePrimerLink);
   expect(indiceBootstrap).toBeLessThan(indiceTokens);
   expect(indiceTokens).toBeLessThan(indiceSistema);
-  expect(indiceSistema).toBeLessThan(indiceClaro);
+  expect(htmlIndice).not.toContain('<link rel="stylesheet" href="/css/design-system/theme-claro.css"');
 
   expect(htmlIndice).not.toContain('aia_ui/theme.js');
   expect(htmlIndice).not.toContain('aia_ui/theme-bootstrap.js');
