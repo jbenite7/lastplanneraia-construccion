@@ -687,6 +687,12 @@
     overflow-wrap: anywhere;
   }
 
+  .programa-table-pro .row-activity td:first-child,
+  .programa-table-pro .row-activity td.cell-date {
+    padding-inline: 3px;
+    white-space: nowrap;
+  }
+
   .data-row:hover,
   .row-activity:hover {
     background-color: var(--ds-active-surface-raised);
