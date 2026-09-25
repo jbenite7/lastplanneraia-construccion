@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { programaGeneralApi } from './api/programaGeneralApi';
 import { ContextoPg } from '../../lib/api/esquemas/programa-general';
 import { ActividadUI, normalizarActividades } from './domain/modelo';
-import { calcularConteosSenales, filtrarActividades } from './domain/filtros';
+import { calcularConteosSenales, contarTareasVisibles, filtrarActividades } from './domain/filtros';
 import { generarContenidoCsv13Cols, dispararDescargaCsv } from './domain/exportarCsv';
 import { ProgramaToolbar } from './components/ProgramaToolbar';
 import { ProgramaSignalsBar } from './components/ProgramaSignalsBar';
@@ -227,7 +227,7 @@ export const ProgramaGeneralPage: React.FC = () => {
         onBusquedaChange={setBusqueda}
         estadoFiltro={estadoFiltro}
         onLimpiarEstado={() => setEstadoFiltro(null)}
-        totalVisibles={actividadesFiltradas.length}
+        totalVisibles={contarTareasVisibles(actividadesFiltradas)}
         totalTotal={conteos.total}
         avanceMacroPct={
           conteos.total > 0

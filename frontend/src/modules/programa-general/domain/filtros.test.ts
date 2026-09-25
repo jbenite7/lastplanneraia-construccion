@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calcularConteosSenales, filtrarActividades } from './filtros';
+import { calcularConteosSenales, contarTareasVisibles, filtrarActividades } from './filtros';
 import { ActividadUI } from './modelo';
 
 describe('Dominio S05: filtros y senales', () => {
@@ -195,5 +195,19 @@ describe('Dominio S05: filtros y senales', () => {
     // 1 capítulo + 1 tarea (vigas y losas, resp Restrepo, en curso)
     expect(combinadas).toHaveLength(2);
     expect(combinadas.find((a) => !a.esCapitulo)?.unique_id).toBe(5);
+  });
+
+  it('contarTareasVisibles excluye las filas de capítulo, igual que conteos.total', () => {
+    const visibles = filtrarActividades(actividadesMock, '', null);
+    const conteos = calcularConteosSenales(actividadesMock);
+    expect(visibles.some((a) => a.esCapitulo)).toBe(true);
+    expect(contarTareasVisibles(visibles)).toBe(conteos.total);
+  });
+
+  it('contarTareasVisibles nunca supera conteos.total con un filtro aplicado', () => {
+    const visibles = filtrarActividades(actividadesMock, '', 'Atrasada');
+    const conteos = calcularConteosSenales(actividadesMock);
+    expect(contarTareasVisibles(visibles)).toBeLessThanOrEqual(conteos.total);
+    expect(contarTareasVisibles(visibles)).toBe(conteos.atrasadas);
   });
 });

@@ -48,3 +48,8 @@ export function filtrarActividades(
     return matchTexto || matchCodigo || matchResponsable || matchSubc;
   });
 }
+
+/** Cuenta solo tareas operativas: los capítulos agrupan, no son actividades (spec S05 ronda 1.2, H3). */
+export function contarTareasVisibles(actividades: ActividadUI[]): number {
+  return actividades.filter((a) => !a.esCapitulo).length;
+}
