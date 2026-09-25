@@ -364,6 +364,25 @@ test.describe('Ronda 1.2 — layout de la tabla', () => {
   }
 });
 
+test('Ronda 1.2 — el scroll vertical de la tabla alcanza la última fila', async ({ page }) => {
+  await page.setViewportSize({ width: 1180, height: 820 });
+  await page.goto('http://localhost:8081/dev/entrar?u=test.A&p=' + encodeURIComponent('Da Porto'));
+  await page.goto('http://localhost:8081/programa-general');
+  const filas = page.locator('table.programa-table-pro tbody tr');
+  await filas.first().waitFor();
+  const vista = page.locator('.table-wrapper-pro');
+  const estilo = await vista.evaluate((el) => {
+    const cs = getComputedStyle(el);
+    return { oy: cs.overflowY, h: el.clientHeight, sh: el.scrollHeight };
+  });
+  expect(['auto', 'scroll']).toContain(estilo.oy);
+  expect(estilo.sh).toBeGreaterThan(estilo.h);
+  await vista.hover();
+  await page.mouse.wheel(0, estilo.sh);
+  await expect(filas.last()).toBeInViewport();
+  await expect(page.locator('table.programa-table-pro thead')).toBeInViewport();
+});
+
 test.describe('S05 Programa General React — Servidor Real Docker', () => {
   test('abre Programa General canónico en 1180x820 sin scroll horizontal autenticado vía Dev Door', async ({ page }) => {
     await page.setViewportSize({ width: 1180, height: 820 });

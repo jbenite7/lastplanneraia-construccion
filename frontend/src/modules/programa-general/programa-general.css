@@ -539,6 +539,9 @@
   .table-viewport {
     width: 100%;
     overflow-x: hidden;
+    overflow-y: auto;
+    max-height: calc(100dvh - 16rem);
+    overscroll-behavior: contain;
     border: 1px solid var(--ds-active-border);
     border-radius: 8px;
     background-color: var(--ds-active-surface);
@@ -567,6 +570,12 @@
   .programa-table-pro .pg-col-real,
   .programa-table-pro .pg-col-teorico { width: 3.5rem; }
   .programa-table-pro .pg-col-restricciones { width: 5.5rem; }
+
+  .programa-table-pro thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
 
   .programa-table-pro thead th,
   .lps-dense-table thead th {
