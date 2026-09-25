@@ -77,6 +77,14 @@ de esa sesión.
   Como toca el shell compartido (`frontend/src/shell/`), lo heredan todos los módulos React, y cada
   uno se verifica.
 
+- **R1.2-5 — La barra de herramientas de Programa General en React tiene las acciones del legado**
+  que hoy le faltan: Leyenda, Actualizar Ejecución, Recargar y BI Programa, con los mismos permisos
+  por rol que el legado (`views/programa-general/programa_general.view.php`). Lo decidió Felipe el
+  2026-09-24, durante el sprint, al revisar las capturas candidatas: entra en esta ronda y no se
+  deja para `TASKS.md`.
+- **Capturas de referencia:** Felipe **no aprobó** las candidatas del 2026-09-24 (21:15). Se
+  regeneran solo cuando la pantalla cumpla R1.2-1 a R1.2-5, y se le vuelven a presentar.
+
 ### Decisiones tomadas (Felipe, 2026-09-24)
 
 - Se detiene la sesión de Antigravity y se abre esta ronda.
