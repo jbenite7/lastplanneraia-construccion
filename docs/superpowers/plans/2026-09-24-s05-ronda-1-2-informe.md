@@ -33,7 +33,7 @@ estado: abierto
 | 6–7 · Shell | Riel, iconos, contraste, estados y selector de semana en la barra de contexto, en ambos temas; se quitó una carga CSS duplicada. | `32b15bbb`, `e77540a2`, `c68330f6` |
 | R1.2-5 · Toolbar | Leyenda, actualización de ejecución, recarga y BI conectados a permisos y API; se corrigieron carreras de carga y avisos obsoletos. | `a559d7f6`, `26bfed75`, `2c919385`, `5e3e42a1` |
 | 8 · Pruebas | Persistencia React UI→API→BD, restauración, RBAC real, presupuesto de runtime y flujo móvil con el disparador real. | `d8459b2b`, `c9ebacfa`, `784f846f`, `a87c8824`, `f942d76e`, `f9391db6` |
-| 9 · Goldens | Comparaciones candidatas preparadas; sustitución de referencias bloqueada por el visto de Felipe. | Sin commit de referencias. |
+| 9 · Goldens | Felipe aprobó el 2026-09-26 las candidatas tomadas desde `ad01da32`; Claude reemplazó las dos referencias oscuras de macOS y sus hashes en el manifiesto, por encargo de Felipe. Las referencias de Linux quedan pendientes del artefacto de CI. | Ver «Cierre de la tarea 9». |
 | 10 · Evidencia | Catorce capturas finales en dos temas; revisión funcional y de seguridad independiente. | `b02bc36a`, `131e158a`, `073f8b17` |
 
 ## Decisiones de código
@@ -66,7 +66,7 @@ Resultados de la corrección del 26 de septiembre sobre `ad01da321af32e619905bb7
 | E2E `pg-interactions.spec.mjs` en stack CI aislado | RC 0 · 4/4, restauración verificada |
 | `full-app-flow.spec.mjs` en stack CI aislado | RC 0 · 30/30; treinta recibos con huellas de base y archivos idénticas antes/después |
 | `npm run test:runtime-budget:measure` y comprobación con `design-system-runtime-budget.mjs check` | RC 0 ambos · tres muestras ligadas a `ad01da32`; CSS gzip 128965 B, JS gzip 135001 B, solicitudes duplicadas 0, flashes 0, inicialización 134,6 ms, interacción 242,6 ms; baseline 0.5.0 → medición 1.1.0 |
-| `programa-general.visual.mjs` contra referencias previas | RC 1 · 77847 px distintos a 1180×820 y 86644 px a 1440×900; gate visual pendiente del visto, referencias intactas |
+| `programa-general.visual.mjs` contra las referencias aprobadas (macOS, código de `ad01da32`) | RC 0 · 2/2 (corrida de Claude, 2026-09-26) |
 | `npm run test:wiki` | RC 1 · sus pruebas unitarias pasaron; el lint estricto detecta 14 metadatos inválidos en cuatro documentos ajenos a esta ronda y en el propio plan sellado. El informe nuevo ya pasó su validación de frontmatter. No se alteraron esos contratos. |
 
 La suite PHP y los E2E de mutación se ejecutaron sobre base CI aislada. No se alteraron datos de la base de desarrollo compartida en esta reanudación.
@@ -94,7 +94,7 @@ Las catorce capturas finales de `docs/superpowers/evidence/s05-ronda-1-2/` cubre
 - Revisión adicional del selector de semana para runtime y de la deduplicación CSS: «sin hallazgos».
 - Revisión independiente de seguridad: se amplió la prueba a la negación real del lote y a restauración en `finally`; último veredicto sin hallazgos accionables.
 - El lint de wiki estricto queda rojo por metadatos anteriores a este informe en planes y specs fuera del alcance. Cambiar el frontmatter del plan S05 sellado invalidaría su huella; se deja registrado para el cierre con Felipe.
-- **BLOCKED · tarea 9:** Felipe rechazó las tandas anteriores, de nuevo el 26 de septiembre. Las seis imágenes de referencia, candidata y diferencia en dos tamaños están en `docs/superpowers/evidence/s05-ronda-1-2/goldens-candidatas/`, regeneradas desde `ad01da32`, junto con manifiesto y comparación HTML. Hasta obtener un visto explícito sobre esta tanda, no se modifican los goldens ni se considera verde el gate visual.
+- ~~BLOCKED · tarea 9~~ → cerrada en macOS el 2026-09-26: ver «Cierre de la tarea 9». Queda abierto el gemelo de Linux.
 - No se hizo push, merge a `main` ni despliegue, según el alcance aprobado del sprint.
 
 ## Condición de hecho para un PR futuro
@@ -104,3 +104,12 @@ Antes de correr CI, el cuerpo del PR deberá declarar esta condición: **todas l
 ## Costo
 
 El costo real de esta sesión no está disponible en el arnés; no se estima.
+
+
+## Cierre de la tarea 9 (2026-09-26)
+
+- **Aprobación:** Felipe aprobó en el chat de Claude, el 2026-09-26, reemplazar las dos referencias oscuras (1180×820 y 1440×900) con las candidatas tomadas desde `ad01da321af32e619905bb70f6d5a32c6a50aff1` (manifiesto de candidatas: assets servidos iguales a los del commit).
+- **Quién lo ejecutó:** Claude, por encargo explícito de Felipe (§2b), porque la app de Codex no aceptaba mensajes sin control de pantalla y a Codex le quedaba 5 % de uso.
+- **Qué cambió:** `tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-{1180x820,1440x900}.png` (macOS) y sus `sha256` en `docs/design-system/manifests/programa-general.json` (`0edee143…` y `3173fb85…`, iguales a las candidatas aprobadas).
+- **Verificación:** `npm run test:design-system:static` RC 0; `npx playwright test tests/browser/programa-general.visual.mjs` RC 0 · 2/2, contra `localhost:8081` sirviendo este worktree; después el contenedor volvió a la raíz del repo.
+- **Pendiente — referencias de Linux (CI):** `goldenPlatforms.linux` sigue con las referencias anteriores. Por el procedimiento documentado (`docs/decisiones-pendientes.md`, D-GAC-4), se toman del artefacto que sube la corrida de CI en Linux al fallar el piloto visual; se copian a `…/linux/` y se actualiza su `sha256`. Requiere publicar la rama y correr el CI: paso 08, con Felipe.
