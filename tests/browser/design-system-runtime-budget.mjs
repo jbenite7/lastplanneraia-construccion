@@ -126,15 +126,44 @@ async function collectRuntimeSample(page, testInfo, project, runtimeContext) {
   const rowsBeforeFilter = await page.locator('table.programa-table-pro tbody tr.row-activity').count();
   const filterButton = page.locator('#pgLegend .pg-filter-chip:visible').first();
   await expect(filterButton).toBeVisible({ timeout: 15_000 });
-  const interactionStart = await page.evaluate(() => performance.now());
+  // Measure inside the page from the real pointer event through a paint opportunity.
+  // Playwright actionability and expect polling stay outside the product latency.
+  await filterButton.evaluate((button, previousRowCount) => {
+    const tbody = button.ownerDocument.querySelector('table.programa-table-pro tbody');
+    if (!tbody) throw new Error('Programa General activity rows are missing');
+
+    const probe = { startedAt: null, durationMs: null };
+    const observer = new MutationObserver(() => {
+      const isPressed = button.getAttribute('aria-pressed') === 'true';
+      const rowCount = tbody.querySelectorAll('tr.row-activity').length;
+      if (probe.startedAt === null || !isPressed || rowCount === previousRowCount) return;
+
+      observer.disconnect();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          probe.durationMs = performance.now() - probe.startedAt;
+        });
+      });
+    });
+
+    button.addEventListener('pointerdown', () => {
+      probe.startedAt = performance.now();
+    }, { capture: true, once: true });
+    observer.observe(button, { attributes: true, attributeFilter: ['aria-pressed'] });
+    observer.observe(tbody, { childList: true, subtree: true });
+    window.__pgRuntimeInteractionProbe = probe;
+  }, rowsBeforeFilter);
   await filterButton.click();
   await expect(filterButton).toHaveAttribute('aria-pressed', 'true');
   await expect.poll(
     () => page.locator('table.programa-table-pro tbody tr.row-activity').count(),
   ).not.toBe(rowsBeforeFilter);
-  const handsontableInteractionMs = round(
-    await page.evaluate((startedAt) => performance.now() - startedAt, interactionStart),
+  const measuredInteractionMs = await page.evaluate(
+    () => window.__pgRuntimeInteractionProbe?.durationMs ?? null,
   );
+  expect(Number.isFinite(measuredInteractionMs), 'filter interaction should be measured by the page').toBe(true);
+  expect(measuredInteractionMs).toBeGreaterThan(0);
+  const handsontableInteractionMs = round(measuredInteractionMs);
   await filterButton.click();
   await expect(filterButton).toHaveAttribute('aria-pressed', 'false');
 
@@ -215,7 +244,7 @@ async function collectRuntimeSample(page, testInfo, project, runtimeContext) {
       assetInventorySha256,
       duplicateRequests: duplicates,
       themeProbe: browserState.themeProbe,
-      interactionKind: 'state-signal-filter',
+      interactionKind: 'state-signal-filter-pointerdown-to-paint',
       node: process.version,
       playwrightProject: testInfo.project.name,
       runtime: {

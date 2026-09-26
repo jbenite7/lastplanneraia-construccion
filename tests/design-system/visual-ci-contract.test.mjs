@@ -464,7 +464,7 @@ test('pilot runtime budgets remain available while the canonical runtime uses th
   assert.match(collector, /table\.programa-table-pro tbody tr\.row-activity/);
   assert.match(collector, /#pgLegend \.pg-filter-chip:visible/);
   assert.match(collector, /aria-pressed/);
-  assert.match(collector, /interactionKind:\s*['"]state-signal-filter['"]/);
+  assert.match(collector, /interactionKind:\s*['"]state-signal-filter-pointerdown-to-paint['"]/);
   assert.match(collector, /laboratoryAssets/);
   assert.match(collector, /sourceTreeHash/);
   assert.match(collector, /readCurrentRuntimeContext/);
