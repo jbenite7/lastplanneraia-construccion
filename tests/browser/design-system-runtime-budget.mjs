@@ -158,6 +158,11 @@ async function collectRuntimeSample(page, testInfo, project, runtimeContext) {
   await expect.poll(
     () => page.locator('table.programa-table-pro tbody tr.row-activity').count(),
   ).not.toBe(rowsBeforeFilter);
+  await expect.poll(
+    () => page.evaluate(
+      () => Number.isFinite(window.__pgRuntimeInteractionProbe?.durationMs),
+    ),
+  ).toBe(true);
   const measuredInteractionMs = await page.evaluate(
     () => window.__pgRuntimeInteractionProbe?.durationMs ?? null,
   );
