@@ -1,0 +1,142 @@
+{
+  "sha": "ad01da321af32e619905bb70f6d5a32c6a50aff1",
+  "capturedAt": "2026-09-26T12:56:32.369Z",
+  "assets": [
+    {
+      "file": "index-eaCgzGHC.css",
+      "sha256": "c48ed0ce1fbf83e6751d2b8a119dcfc629e25861201ded5ac76e093149a977f5",
+      "servedSha256": "c48ed0ce1fbf83e6751d2b8a119dcfc629e25861201ded5ac76e093149a977f5"
+    },
+    {
+      "file": "index-p0WzQ9Nz.js",
+      "sha256": "6f4f191fd8e827e6fd96b7070eb52ffa9a2baa149e958241d64a77b0fe3f170f",
+      "servedSha256": "6f4f191fd8e827e6fd96b7070eb52ffa9a2baa149e958241d64a77b0fe3f170f"
+    }
+  ],
+  "images": [
+    {
+      "file": "programa-general-dark-1440x900-candidato.png",
+      "sha256": "3173fb85a137991dbb10377fc34930d6c81687e05a6e24655311c09567c5c111",
+      "previousSha256": "3b797b9b060c9e815d7a158fce8c12fc76f30448c177d93ce8bd4cd5cc027a54",
+      "changed": true
+    },
+    {
+      "file": "programa-general-dark-1440x900-diferencia.png",
+      "sha256": "e97c6b4d2078d143e8cd6891cc17c49a89f96581025ed59fb12b1355bd6fd9f5",
+      "previousSha256": "12097d6d56626ed95128d046bcf6f44a9e508f505491b0ac0414eb82b2322a43",
+      "changed": true
+    },
+    {
+      "file": "programa-general-dark-1440x900-referencia.png",
+      "sha256": "f4e68a72e9774f26adb3e3208f16762d85114c81d5b22b3c32a32c762df3b43c",
+      "previousSha256": "f4e68a72e9774f26adb3e3208f16762d85114c81d5b22b3c32a32c762df3b43c",
+      "changed": false
+    },
+    {
+      "file": "programa-general-dark-1180x820-candidato.png",
+      "sha256": "0edee1430380d645d5d82d1dee9da1327fedf2afe42ed5d397332f5c28ef40ad",
+      "previousSha256": "8ab436f04040c7d18c466e6fa39cf523a95ec0c23c0451bd01c170cb958b8d33",
+      "changed": true
+    },
+    {
+      "file": "programa-general-dark-1180x820-diferencia.png",
+      "sha256": "537038c4f3862705933e863c1097480388820551722fadce2bb10571a5a53985",
+      "previousSha256": "0bfdbe5c198d115ec1c331353e89ae41ee574646f87fa83a1dff1b20b8b8a051",
+      "changed": true
+    },
+    {
+      "file": "programa-general-dark-1180x820-referencia.png",
+      "sha256": "15ea91a7c3b8f08b68e4a4b514e71cf738a121d341e190aa74e7a7a34213b547",
+      "previousSha256": "15ea91a7c3b8f08b68e4a4b514e71cf738a121d341e190aa74e7a7a34213b547",
+      "changed": false
+    }
+  ],
+  "verifiedAfterCaptureAt": "2026-09-26T12:57:15.589Z",
+  "referenceApproval": "pending",
+  "liveCaptures": [
+    {
+      "file": "programa-general-dark-08-columnas.png",
+      "sha256": "02bd3edf56bcff1c6048f335f6294d181137733b674614b1feda5e57b70651e4",
+      "capturedAt": "2026-09-26T12:55:32.907Z",
+      "sourceRef": "ad01da321af32e619905bb70f6d5a32c6a50aff1"
+    },
+    {
+      "file": "programa-general-dark-13-columnas.png",
+      "sha256": "68ca6d17a12bbc142c8d0206ca72a46e62f850e3f4ffb160358f73612569986d",
+      "capturedAt": "2026-09-26T12:55:33.038Z",
+      "sourceRef": "ad01da321af32e619905bb70f6d5a32c6a50aff1"
+    },
+    {
+      "file": "programa-general-dark-drawer.png",
+      "sha256": "f9875cb9a35c4ad65fa6ea2c69c803d1110849fc92a59a5f6822bfcaad777e08",
+      "capturedAt": "2026-09-26T12:55:33.860Z",
+      "sourceRef": "ad01da321af32e619905bb70f6d5a32c6a50aff1"
+    },
+    {
+      "file": "programa-general-dark-menu-semana.png",
+      "sha256": "1d10630c35c75f2b14b9d99279ea736247d1da8f6057d87e24371db2e871a3f4",
+      "capturedAt": "2026-09-26T12:55:33.730Z",
+      "sourceRef": "ad01da321af32e619905bb70f6d5a32c6a50aff1"
+    },
+    {
+      "file": "programa-general-dark-riel-colapsado.png",
+      "sha256": "eff6d9194ceded61bcb047251b5894f5fdefd05d570b7339b9fee2e68961fb2b",
+      "capturedAt": "2026-09-26T12:55:33.650Z",
+      "sourceRef": "ad01da321af32e619905bb70f6d5a32c6a50aff1"
+    },
+    {
+      "file": "programa-general-dark-riel-expandido.png",
+      "sha256": "eb827054de78413b60237e7e4ce27c87112cfe35225f23b74848a96124f98ea6",
+      "capturedAt": "2026-09-26T12:55:33.556Z",
+      "sourceRef": "ad01da321af32e619905bb70f6d5a32c6a50aff1"
+    },
+    {
+      "file": "programa-general-dark-ultima-fila.png",
+      "sha256": "2fe12d8edb59087f8dcb9f4117da4b64e038e1a41431b1fa46f7bb1fc439eaca",
+      "capturedAt": "2026-09-26T12:55:33.225Z",
+      "sourceRef": "ad01da321af32e619905bb70f6d5a32c6a50aff1"
+    },
+    {
+      "file": "programa-general-light-08-columnas.png",
+      "sha256": "5a79866293472ec3fe3c901eaab089606d9e020d5a79324168d4ca5e5e7c1ef1",
+      "capturedAt": "2026-09-26T12:55:31.691Z",
+      "sourceRef": "ad01da321af32e619905bb70f6d5a32c6a50aff1"
+    },
+    {
+      "file": "programa-general-light-13-columnas.png",
+      "sha256": "05c87923f0c41c9a3c6f9d831199a3be49bb7d62dcb3ad1f09bed82a8dd67473",
+      "capturedAt": "2026-09-26T12:55:31.870Z",
+      "sourceRef": "ad01da321af32e619905bb70f6d5a32c6a50aff1"
+    },
+    {
+      "file": "programa-general-light-drawer.png",
+      "sha256": "0726a95e4332e95dc773c652a96e4b5f3c5772aee2661b79896bdaba431d23e4",
+      "capturedAt": "2026-09-26T12:55:32.638Z",
+      "sourceRef": "ad01da321af32e619905bb70f6d5a32c6a50aff1"
+    },
+    {
+      "file": "programa-general-light-menu-semana.png",
+      "sha256": "f8240810df0e206ca6be0ca6938227cf30bd6b99cab28368fb1d63b108c31309",
+      "capturedAt": "2026-09-26T12:55:32.495Z",
+      "sourceRef": "ad01da321af32e619905bb70f6d5a32c6a50aff1"
+    },
+    {
+      "file": "programa-general-light-riel-colapsado.png",
+      "sha256": "472103eaa22a1e256fd323a2981f4fda131fbc04687ec91638ba50a160d998ae",
+      "capturedAt": "2026-09-26T12:55:32.432Z",
+      "sourceRef": "ad01da321af32e619905bb70f6d5a32c6a50aff1"
+    },
+    {
+      "file": "programa-general-light-riel-expandido.png",
+      "sha256": "00566f74e041733d329a19fec98467925643046bf5848803ea78bad413e958bf",
+      "capturedAt": "2026-09-26T12:55:32.355Z",
+      "sourceRef": "ad01da321af32e619905bb70f6d5a32c6a50aff1"
+    },
+    {
+      "file": "programa-general-light-ultima-fila.png",
+      "sha256": "692ce56c3a376900080971cf9d5bcb875468e5536de8c51e66fa218862fcae49",
+      "capturedAt": "2026-09-26T12:55:32.055Z",
+      "sourceRef": "ad01da321af32e619905bb70f6d5a32c6a50aff1"
+    }
+  ]
+}
