@@ -2,6 +2,10 @@
 
 @layer module {
 
+  body.pg-page {
+    background: var(--ds-active-bg-page);
+  }
+
   body.pg-page .lps-layout-cajon > main {
     display: flex;
     flex-direction: column;

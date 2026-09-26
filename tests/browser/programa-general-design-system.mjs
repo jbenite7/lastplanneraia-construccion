@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { PROJECTS } from './fixtures/projects.mjs';
-import { loginAndSelectProject } from './support/session.mjs';
+import { changeWeek, loginAndSelectProject } from './support/session.mjs';
 import { scanAccessibility } from './support/accessibility.mjs';
 
 const VIEWPORTS = [
@@ -26,6 +26,10 @@ for (const viewport of VIEWPORTS) {
       }, theme);
       await page.setViewportSize(viewport);
       await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
+      // Da Porto tiene la semana 2 vacía a propósito; este gate necesita renglones reales
+      // para medir la tabla y axe, así que selecciona la semana operativa del fixture.
+      await page.waitForSelector('meta[name="lps-shell-csrf-token"]', { state: 'attached' });
+      await changeWeek(page, PROJECTS[0].operationalWeek, '/programa-general');
       await page.waitForSelector('table.programa-table-pro tbody tr.row-activity');
       await page.waitForTimeout(500);
 
