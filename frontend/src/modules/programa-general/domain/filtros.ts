@@ -8,6 +8,12 @@ export interface ConteosSenales {
   enCurso: number;
   futuras: number;
   terminadas: number;
+  fueraVentana?: number;
+  sinDatos?: number;
+}
+
+function estadoVisible(estado: string | null | undefined): string {
+  return estado?.trim() || 'Sin Datos';
 }
 
 export function calcularConteosSenales(actividades: ActividadUI[]): ConteosSenales {
@@ -20,6 +26,8 @@ export function calcularConteosSenales(actividades: ActividadUI[]): ConteosSenal
     enCurso: soloTareas.filter((a) => a.Estado === 'En Curso').length,
     futuras: soloTareas.filter((a) => a.Estado === 'Actividad Futura').length,
     terminadas: soloTareas.filter((a) => a.Estado === 'Terminada').length,
+    fueraVentana: soloTareas.filter((a) => a.Estado === 'Fuera de Ventana').length,
+    sinDatos: soloTareas.filter((a) => estadoVisible(a.Estado) === 'Sin Datos').length,
   };
 }
 
@@ -34,7 +42,7 @@ export function filtrarActividades(
   return actividades.filter((act) => {
     if (act.esCapitulo) return true; // Los capítulos se preservan para agrupar
 
-    if (filtroActivo && act.Estado !== filtroActivo) {
+    if (filtroActivo && estadoVisible(act.Estado) !== filtroActivo) {
       return false;
     }
 
@@ -47,4 +55,9 @@ export function filtrarActividades(
 
     return matchTexto || matchCodigo || matchResponsable || matchSubc;
   });
+}
+
+/** Cuenta solo tareas operativas: los capítulos agrupan, no son actividades (spec S05 ronda 1.2, H3). */
+export function contarTareasVisibles(actividades: ActividadUI[]): number {
+  return actividades.filter((a) => !a.esCapitulo).length;
 }

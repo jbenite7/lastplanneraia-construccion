@@ -40,7 +40,8 @@ export function normalizarActividades(
   return filas.map((fila) => {
     const esCapitulo = fila.Titulo === 1;
     if (esCapitulo) {
-      capituloActual = fila.Actividad;
+      const parsedCap = parsearTextoActividad(fila.Actividad);
+      capituloActual = parsedCap.titulo || fila.Actividad;
       return {
         ...fila,
         esCapitulo: true,
@@ -91,3 +92,71 @@ export function normalizarActividades(
     };
   });
 }
+
+export interface TextoActividadParseado {
+  titulo: string;
+  subtitulo: string | null;
+}
+
+export function parsearTextoActividad(textoCrudo: string | null | undefined): TextoActividadParseado {
+  if (!textoCrudo || typeof textoCrudo !== 'string') {
+    return { titulo: '', subtitulo: null };
+  }
+
+  let texto = textoCrudo.trim();
+  let subtitulo: string | null = null;
+
+  // 1. Extraer subtítulo de <small>...</small> si existe
+  const smallMatch = texto.match(/<small>(.*?)<\/small>/i);
+  if (smallMatch && smallMatch[1]) {
+    let sub = smallMatch[1].replace(/<[^>]+>/g, '').trim();
+    // Limpiar corchetes exteriores si los tiene: [Capítulo: PRELIMINARES...]
+    sub = sub.replace(/^\[\s*/, '').replace(/\s*\]$/, '');
+    // Limpiar prefijo 'Capítulo:' o 'Capitulo:' si existe
+    sub = sub.replace(/^Cap[ií]tulo:\s*/i, '');
+    subtitulo = sub.trim() || null;
+    // Remover el bloque <small> del texto original
+    texto = texto.replace(/<small>.*?<\/small>/gi, '').trim();
+  }
+
+  // 2. Eliminar cualquier otro tag HTML (como <b>, </b>, <br>, etc.)
+  let titulo = texto.replace(/<[^>]+>/g, '').trim();
+
+  // 3. Limpiar comas, puntos o guiones finales sobrantes
+  titulo = titulo.replace(/[,;.\s]+$/, '').trim();
+
+  return {
+    titulo,
+    subtitulo,
+  };
+}
+
+export function formatearFechaObra(fechaIso?: string | null): string {
+  if (!fechaIso || typeof fechaIso !== 'string') return '-';
+  const trimmed = fechaIso.trim();
+  if (!trimmed) return '-';
+
+  // Si ya viene como DD/MM/AAAA devolverlo directo
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(trimmed)) return trimmed;
+
+  // Validar formato YYYY-MM-DD
+  const partes = trimmed.split('T')[0].split('-');
+  if (partes.length === 3 && partes[0].length === 4) {
+    const [yyyy, mm, dd] = partes;
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  return trimmed;
+}
+
+export function formatearCantidadPresupuesto(
+  cantidad?: number | null,
+  unidad?: string | null
+): string {
+  if (cantidad === null || cantidad === undefined || isNaN(Number(cantidad))) {
+    return '-';
+  }
+  const valor = Number(cantidad).toFixed(1);
+  return unidad ? `${valor} ${unidad.trim()}` : valor;
+}
+

@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { arranqueAutenticadoConProyecto, CSRF_TOKEN } from './support/project-selector-react-fixtures.mjs';
+import { BASE_URL } from './fixtures/projects.mjs';
 
 /**
  * S05 Programa General React E2E & Visual Verification Spec.
@@ -10,6 +11,8 @@ import { arranqueAutenticadoConProyecto, CSRF_TOKEN } from './support/project-se
  *    asignaciones opcionales (Responsable AIA y Subcontratista), dual-gauge con desviación Δ,
  *    matriz de 7 recursos Lean y bitácora SOS.
  * 4. Cierre con tecla Escape.
+ * 5. Sanitización de etiquetas HTML crudas (<b> y <small>) y formateo canónico de fechas DD/MM/AAAA.
+ * 6. Verificación integral de la ruta canónica /programa-general contra servidor Docker real.
  */
 
 const MOCK_CONTEXT = {
@@ -51,7 +54,7 @@ const MOCK_ACTIVIDADES = [
     unique_id: 1,
     Consecutivo_en_Programa: 'CAP-01',
     codigo_actividad: 'CAP-01',
-    Actividad: '1. Cimentación y Estructura',
+    Actividad: '<b>1. Cimentación y Estructura, </b> <small>[Capítulo: GENERAL]</small>',
     Titulo: 1,
     Fecha_Inicio: '2026-08-01',
     Fecha_Fin: '2026-09-30',
@@ -72,7 +75,7 @@ const MOCK_ACTIVIDADES = [
     unique_id: 101,
     Consecutivo_en_Programa: 'EST-01',
     codigo_actividad: 'EST-01',
-    Actividad: 'Excavación mecánica de zapatas eje A-C',
+    Actividad: '<b>Excavación mecánica de zapatas eje A-C, </b> <small>[Capítulo: PRELIMINARES]</small>',
     Titulo: 0,
     Fecha_Inicio: '2026-08-10',
     Fecha_Fin: '2026-08-20',
@@ -131,6 +134,27 @@ const MOCK_ACTIVIDADES = [
     Observaciones: null,
     alerta_crisis: 0,
   },
+  {
+    unique_id: 104,
+    Consecutivo_en_Programa: 'EST-04',
+    codigo_actividad: 'EST-04',
+    Actividad: 'Curado final de concreto',
+    Titulo: 0,
+    Fecha_Inicio: '2026-08-05',
+    Fecha_Fin: '2026-08-12',
+    Ruta_Critica: 0,
+    Ejecutado: 1,
+    Ejecutado_Teorico: 1,
+    Estado: 'Terminada',
+    Semanas_Inicio: 31,
+    Estado_Restricciones: '100%',
+    cantidad_ppto: 12,
+    unidad: 'm³',
+    Responsable_AIA: 'Ing. Carlos Restrepo',
+    Sub_Contratista: 'Aceros & Concretos de Colombia',
+    Observaciones: null,
+    alerta_crisis: 0,
+  },
 ];
 
 async function configurarMocksS05(page) {
@@ -185,7 +209,8 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
 
   test('abre Programa General en 1180x820 sin scroll horizontal y verifica las 8 columnas esenciales', async ({ page }) => {
     await page.setViewportSize({ width: 1180, height: 820 });
-    await page.goto('/app/programa-general');
+    // Navegar directamente a la ruta canónica /programa-general
+    await page.goto('/programa-general');
 
     // 1. Verificar visibilidad de la página y toolbar
     await expect(page.getByRole('heading', { level: 1, name: 'Programa General' })).toBeVisible();
@@ -205,16 +230,27 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
     expect(scrollWidth).toBeLessThanOrEqual(1180);
 
-    // 4. Datos renderizados en celdas combinadas
+    // 4. Datos renderizados en celdas combinadas y sanitización de tags
     await expect(page.locator('.programa-table-pro').getByText('EST-01')).toBeVisible();
     await expect(page.locator('.programa-table-pro').getByText('450.0 m³')).toBeVisible();
     await expect(page.locator('.programa-table-pro').getByText('25.0%')).toBeVisible();
     await expect(page.locator('.programa-table-pro .badge-rc').first()).toBeVisible();
+
+    // 5. Verificar que las fechas están en formato DD/MM/AAAA (2026-08-10 -> 10/08/2026)
+    await expect(page.locator('.programa-table-pro').getByText('10/08/2026')).toBeVisible();
+    await expect(page.locator('.programa-table-pro').getByText('20/08/2026')).toBeVisible();
+
+    // 6. Verificar que no hay etiquetas HTML crudas (<b> o <small>) en la tabla
+    const tableHtml = await page.locator('.programa-table-pro').innerHTML();
+    expect(tableHtml).not.toContain('&lt;b&gt;');
+    expect(tableHtml).not.toContain('<b>');
+    expect(tableHtml).not.toContain('&lt;small&gt;');
+    expect(tableHtml).not.toContain('<small>');
   });
 
   test('alterna entre 8 columnas esenciales y 13 columnas contractuales', async ({ page }) => {
     await page.setViewportSize({ width: 1180, height: 820 });
-    await page.goto('/app/programa-general');
+    await page.goto('/programa-general');
 
     const btn13Cols = page.getByRole('button', { name: /13 Cols Reales/i });
     const btn8Cols = page.getByRole('button', { name: /8 Cols Esenciales/i });
@@ -232,7 +268,7 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
 
   test('abre Drawer Contextual LPS (440px), navega con [ y ], y cierra con Escape', async ({ page }) => {
     await page.setViewportSize({ width: 1180, height: 820 });
-    await page.goto('/app/programa-general');
+    await page.goto('/programa-general');
 
     // Clic en fila de actividad operativa
     const filaActividad = page.locator('.row-activity').first();
@@ -248,6 +284,11 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
     await expect(drawer.getByText('Matriz de los 7 Recursos Lean')).toBeVisible();
     await expect(drawer.getByText('Bitácora SOS')).toBeVisible();
 
+    // Título limpio sin etiquetas
+    const drawerTitle = await drawer.locator('.drawer-act-title').textContent();
+    expect(drawerTitle).not.toContain('<b>');
+    expect(drawerTitle).not.toContain('<small>');
+
     // Navegación secuencial con tecla ]
     await page.keyboard.press(']');
     await expect(drawer).toBeVisible();
@@ -259,7 +300,7 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
 
   test('edita datos en el Drawer, guarda cambios y recibe notificación toast', async ({ page }) => {
     await page.setViewportSize({ width: 1180, height: 820 });
-    await page.goto('/app/programa-general');
+    await page.goto('/programa-general');
 
     // Abrir Drawer
     await page.locator('.row-activity').first().click();
@@ -282,7 +323,7 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
 
   test('filtra por chips de señales y búsqueda por texto', async ({ page }) => {
     await page.setViewportSize({ width: 1180, height: 820 });
-    await page.goto('/app/programa-general');
+    await page.goto('/programa-general');
 
     // Chip Atrasada
     const chipAtrasada = page.locator('.signal-chip', { hasText: 'Atrasada' });
@@ -304,28 +345,188 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
     await expect(tabla.getByText('Colocación de acero de refuerzo zapatas')).toBeVisible();
     await expect(tabla.getByText('Excavación mecánica de zapatas eje A-C')).not.toBeVisible();
   });
+
+  for (const tema of ['light', 'dark']) {
+    test(`muestra el punto neutral de Terminada en señales y Estado · ${tema}`, async ({ page }) => {
+      await page.addInitScript((temaInicial) => localStorage.setItem('aia-theme', temaInicial), tema);
+      await page.goto('/programa-general');
+
+      const chipTerminada = page.locator('.signal-chip', { hasText: 'Terminada' });
+      const puntoSenal = chipTerminada.locator('.signal-dot');
+      const puntoEstado = page
+        .locator('.programa-table-pro .status-cell-badge', { hasText: 'Terminada' })
+        .locator('.status-dot');
+      await expect(puntoSenal).toBeVisible();
+      await expect(puntoEstado).toBeVisible();
+
+      for (const punto of [puntoSenal, puntoEstado]) {
+        const estilo = await punto.evaluate((elemento) => {
+          const css = getComputedStyle(elemento);
+          const color = css.backgroundColor.match(/[\d.]+/g)?.map(Number) ?? [];
+          return { ancho: elemento.getBoundingClientRect().width, alto: elemento.getBoundingClientRect().height, alpha: color[3] ?? 1 };
+        });
+        expect(estilo.ancho).toBeGreaterThan(0);
+        expect(estilo.alto).toBeGreaterThan(0);
+        expect(estilo.alpha).toBeGreaterThan(0);
+      }
+    });
+  }
+});
+
+test.describe('Ronda 1.2 — layout de la tabla', () => {
+  for (const tema of ['light', 'dark']) {
+    for (const modo of ['8', '13']) {
+      for (const riel of ['collapsed', 'expanded']) {
+        test(`sin desbordamiento · tema ${tema} · ${modo} columnas · riel ${riel}`, async ({ page }) => {
+          await page.setViewportSize({ width: 1180, height: 820 });
+          await page.addInitScript(([t, r]) => {
+            localStorage.setItem('aia-theme', t);
+            localStorage.setItem('aia-sidebar-state', r);
+          }, [tema, riel]);
+          await page.goto(`${BASE_URL}/dev/entrar?u=test.A&p=${encodeURIComponent('Da Porto')}`);
+          await page.goto(`${BASE_URL}/programa-general`);
+          await page.locator('table.programa-table-pro tbody tr.row-activity').first().waitFor();
+          if (modo === '13') await page.getByRole('button', { name: /13 Cols/i }).click();
+
+          const medidas = await page.evaluate(() => {
+            const tabla = document.querySelector('table.programa-table-pro');
+            const vista = tabla.parentElement;
+            const actividad = tabla.querySelector('col.pg-col-actividad');
+            const celdas = [...tabla.querySelectorAll('.activity-title, .activity-subtitle')];
+            const compactas = [
+              ...tabla.querySelectorAll('thead th'),
+              ...tabla.querySelectorAll('tbody tr.row-activity td:not(:nth-child(3))'),
+              ...tabla.querySelectorAll('.status-cell-badge, .badge-rc'),
+            ];
+            return {
+              tablaAncho: tabla.scrollWidth,
+              vistaAncho: vista.clientWidth,
+              docAncho: document.documentElement.scrollWidth,
+              ventana: window.innerWidth,
+              anchoActividad: actividad.getBoundingClientRect().width,
+              recortadas: celdas.filter((c) => c.scrollWidth > c.clientWidth + 1).length,
+              compactasConSalto: compactas.filter((celda) => {
+                const estilo = getComputedStyle(celda);
+                return estilo.whiteSpace !== 'nowrap' || celda.scrollHeight > celda.clientHeight + 1;
+              }).length,
+              compactasRecortadas: compactas.filter((celda) => celda.scrollWidth > celda.clientWidth + 1).length,
+              separacionFechas: (() => {
+                const primeraFila = tabla.querySelector('tbody tr.row-activity');
+                const valores = [...primeraFila.querySelectorAll('.cell-date-value')];
+                if (valores.length < 2) return null;
+                const cajas = valores.map((valor) => valor.getBoundingClientRect());
+                return Math.min(...cajas.slice(1).map((caja, indice) => caja.left - cajas[indice].right));
+              })(),
+            };
+          });
+          expect(medidas.tablaAncho).toBeLessThanOrEqual(medidas.vistaAncho);
+          expect(medidas.docAncho).toBeLessThanOrEqual(medidas.ventana);
+          expect(medidas.recortadas).toBe(0);
+          expect(medidas.compactasConSalto).toBe(0);
+          expect(medidas.compactasRecortadas).toBe(0);
+          expect(medidas.anchoActividad).toBeGreaterThanOrEqual(modo === '8' ? 280 : 160);
+          expect(medidas.separacionFechas).toBeGreaterThanOrEqual(8);
+        });
+      }
+    }
+  }
+});
+
+test('Ronda 1.2 — el scroll vertical de la tabla alcanza la última fila', async ({ page }) => {
+  await page.setViewportSize({ width: 1180, height: 820 });
+  await page.goto(`${BASE_URL}/dev/entrar?u=test.A&p=${encodeURIComponent('Da Porto')}`);
+  await page.goto(`${BASE_URL}/programa-general`);
+  const filas = page.locator('table.programa-table-pro tbody tr');
+  await filas.first().waitFor();
+  const vista = page.locator('.table-wrapper-pro');
+  const estilo = await vista.evaluate((el) => {
+    const cs = getComputedStyle(el);
+    return {
+      oy: cs.overflowY,
+      h: el.clientHeight,
+      sh: el.scrollHeight,
+      documento: document.documentElement.scrollHeight,
+      ventana: window.innerHeight,
+    };
+  });
+  expect(['auto', 'scroll']).toContain(estilo.oy);
+  expect(estilo.sh).toBeGreaterThan(estilo.h);
+  expect(estilo.documento).toBeLessThanOrEqual(estilo.ventana);
+  await vista.hover();
+  await page.mouse.wheel(0, estilo.sh);
+  await expect(filas.last()).toBeInViewport();
+  await expect(page.locator('table.programa-table-pro thead')).toBeInViewport();
 });
 
 test.describe('S05 Programa General React — Servidor Real Docker', () => {
-  test('abre Programa General en 1180x820 sin scroll horizontal autenticado vía Dev Door', async ({ page }) => {
+  test('abre Programa General canónico en 1180x820 sin scroll horizontal autenticado vía Dev Door', async ({ page }) => {
     await page.setViewportSize({ width: 1180, height: 820 });
-    await page.goto('http://localhost:8081/dev/entrar?u=test.A');
+    await page.goto(`${BASE_URL}/dev/entrar?u=test.A&p=${encodeURIComponent('Da Porto')}`);
+    await page.waitForLoadState('networkidle');
 
-    // Ingresar al primer proyecto disponible
-    const btnIngresar = page.getByRole('button', { name: /^Ingresar al proyecto/i }).first();
-    await expect(btnIngresar).toBeVisible({ timeout: 15000 });
-    await btnIngresar.click();
-    await page.waitForURL((url) => !url.toString().includes('/proyectos'), { timeout: 15000 });
+    // Navegar directamente a la ruta canónica de primer nivel /programa-general (sin /app y sin redirección a PHP legado ni 404)
+    await page.goto(`${BASE_URL}/programa-general`);
+    await page.waitForSelector('.programa-general-container', { timeout: 15000 });
+    await page.waitForSelector('.programa-table-pro', { timeout: 15000 });
 
-    // Navegar a la SPA de Programa General
-    await page.goto('http://localhost:8081/app/programa-general');
-
-    // Comprobar que carga el título de Programa General
+    // 1. Comprobar que carga el título de Programa General y no hubo redirección
+    expect(page.url()).toBe(`${BASE_URL}/programa-general`);
     await expect(page.getByRole('heading', { level: 1, name: 'Programa General' })).toBeVisible({ timeout: 15000 });
 
-    // Comprobar que no hay scroll horizontal en 1180px
+    // 2. Comprobar que no hay scroll horizontal en 1180px
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
     expect(scrollWidth).toBeLessThanOrEqual(1180);
+
+    // 3. Comprobar que la tabla muestra actividades reales y no contiene etiquetas HTML crudas (<b> o <small>)
+    const rowCount = await page.locator('.row-activity').count();
+    expect(rowCount).toBeGreaterThan(0);
+
+    const tableHtml = await page.locator('.programa-table-pro').innerHTML();
+    expect(tableHtml).not.toContain('&lt;b&gt;');
+    expect(tableHtml).not.toContain('<b>');
+    expect(tableHtml).not.toContain('&lt;small&gt;');
+    expect(tableHtml).not.toContain('<small>');
+
+    // 4. Comprobar que las fechas se visualizan en formato DD/MM/AAAA
+    const dateCells = await page.locator('.cell-date').allInnerTexts();
+    const nonEmptyDates = dateCells.map((d) => d.trim()).filter((d) => d !== '-' && d !== '');
+    expect(nonEmptyDates.length).toBeGreaterThan(0);
+    const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+    for (const fecha of nonEmptyDates.slice(0, 10)) {
+      expect(fecha).toMatch(dateRegex);
+    }
+
+    // 5. Comprobar alternancia entre 8 y 13 columnas en vivo
+    const thCountInitial = await page.locator('.programa-table-pro thead th').count();
+    expect(thCountInitial).toBe(8);
+
+    const btn13 = page.getByRole('button', { name: /13 Cols Reales/i });
+    await btn13.click();
+    const thCount13 = await page.locator('.programa-table-pro thead th').count();
+    expect(thCount13).toBe(13);
+
+    const btn8 = page.getByRole('button', { name: /8 Cols Esenciales/i });
+    await btn8.click();
+    const thCount8 = await page.locator('.programa-table-pro thead th').count();
+    expect(thCount8).toBe(8);
+
+    // 6. Comprobar apertura del Drawer LPS (440px), título limpio y cierre con Escape
+    const firstActivity = page.locator('.row-activity').first();
+    await firstActivity.click();
+    const drawer = page.locator('.drawer-panel-pro');
+    await expect(drawer).toBeVisible({ timeout: 5000 });
+
+    const drawerTitle = await page.locator('.drawer-act-title').textContent();
+    expect(drawerTitle).toBeTruthy();
+    expect(drawerTitle).not.toContain('<b>');
+    expect(drawerTitle).not.toContain('<small>');
+
+    const drawerBreadcrumb = await page.locator('.drawer-breadcrumb').textContent();
+    expect(drawerBreadcrumb).not.toContain('<b>');
+    expect(drawerBreadcrumb).not.toContain('<small>');
+
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(400);
+    await expect(page.locator('.drawer-panel-pro.active')).not.toBeVisible();
   });
 });
-

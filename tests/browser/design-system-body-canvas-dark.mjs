@@ -29,7 +29,7 @@ const VIEWPORT = { width: 1180, height: 820 };
 // generico --ds-color-bg-canvas-dark (#0b100d), que es exactamente el valor que
 // la regla rota de Finding 1 dejaba de aplicar.
 const EXPECTED_BODY_BACKGROUND = {
-  '/programa-general': 'rgb(17, 26, 21)', // --ds-color-bg-page-dark via .pg-page
+  '/programa-general': 'rgb(17, 26, 21)', // --ds-color-bg-page-dark via the React .pg-page shell
   '/programacion-semanal': 'rgb(17, 26, 21)', // --ds-color-bg-page-dark via .ps-page
   '/programacion-intermedia': 'rgb(17, 26, 21)', // --ds-color-bg-page-dark via .pi-page
   // Las cinco de abajo son las superficies claras que F1 ataca (spec F1-styles-css.md /
@@ -48,28 +48,15 @@ const EXPECTED_BODY_BACKGROUND = {
   '/control-cambios': 'rgb(11, 16, 13)',
 };
 
-// `/programa-general`, `/programacion-semanal` y `/programacion-intermedia`
-// pintan el body via `background: var(--ds-active-bg-page)` en una regla SIN
-// condicion de tema (programa-general.css:24, programacion-semanal.css:12-13,
-// programacion-intermedia.css:41). EXPECTED_BODY_BACKGROUND pasa en esas tres
-// rutas solo porque <html> siempre lleva `.aia-theme-dark`: no prueba nada
-// sobre las reglas SI condicionadas por tema. Esas tres rutas si definen sus
-// custom properties de color de estado bajo un selector con la condicion de
-// tema (`html.aia-theme-dark .pg-page` / `html.aia-theme-dark body.ps-page` /
-// `html.aia-theme-dark .pi-page`); este bloque cierra el hueco leyendo el
-// valor calculado real de esa custom property (no solo que no este vacia).
-// `.pg-page`/`.pi-page` son clases del propio <body> (ver
-// views/programa-general/programa_general.view.php:30 y
-// views/programacion-intermedia/programacion_intermedia.view.php:15), asi
-// que se leen desde `document.body` igual que el fondo.
+// Programa General migro a React en H12: su chip real de «Atrasada» consume el
+// tinte rojo canonico del sistema de diseno. Comparar su color calculado con el
+// token resuelto conserva el guard visual sin depender de `--pg-critical-bg`,
+// propiedad local de la pantalla PHP retirada durante la migracion. Las dos
+// rutas legado mantienen la comprobacion de sus propiedades propias.
 const EXPECTED_STATE_TOKEN = {
   '/programa-general': {
-    property: '--pg-critical-bg',
-    // public/css/programa-general.css, bajo `html.aia-theme-dark .pg-page`.
-    // Consume `--ds-state-tint-red`, que desde la reconstruccion de la
-    // escalera es el ancla de /pdc en vez de una mezcla contra una superficie
-    // con alfa (antes: color-mix(in srgb, #8f1d1d 48%, rgba(35, 48, 41, 0.86) 52%)).
-    value: '#431414',
+    selector: '#pgLegend .signal-chip[data-filter="atrasada"]',
+    token: '--ds-state-tint-red',
   },
   '/programacion-semanal': {
     property: '--ps-critical-bg',
@@ -115,15 +102,44 @@ test('el body de cada ruta de la Tarea 3 usa su fondo oscuro, no el fallback cla
 
       const stateToken = EXPECTED_STATE_TOKEN[route];
       if (stateToken) {
-        const tokenValue = await page.evaluate(
-          (propertyName) => getComputedStyle(document.body).getPropertyValue(propertyName).trim(),
-          stateToken.property,
-        );
-        expect.soft(
-          tokenValue,
-          `${route}: ${stateToken.property} debe resolver al valor dark declarado (${stateToken.value}), ` +
-            'no quedar vacio ni con un valor distinto (p. ej. si la regla condicionada por tema pierde su prefijo)',
-        ).toBe(stateToken.value);
+        if (stateToken.selector) {
+          await page.waitForSelector(stateToken.selector, { state: 'attached', timeout: 15000 });
+          const colors = await page.evaluate(({ selector, token }) => {
+            const target = document.querySelector(selector);
+            if (!target) return null;
+
+            const tokenProbe = document.createElement('span');
+            tokenProbe.style.backgroundColor = `var(${token})`;
+            document.body.append(tokenProbe);
+            const expected = getComputedStyle(tokenProbe).backgroundColor;
+            tokenProbe.remove();
+
+            return {
+              actual: getComputedStyle(target).backgroundColor,
+              expected,
+            };
+          }, stateToken);
+          expect.soft(
+            colors,
+            `${route}: debe existir el chip React de «Atrasada» para medir su tinte crítico`,
+          ).not.toBeNull();
+          if (colors) {
+            expect.soft(
+              colors.actual,
+              `${route}: el tinte calculado de «Atrasada» debe coincidir con ${stateToken.token}`,
+            ).toBe(colors.expected);
+          }
+        } else {
+          const tokenValue = await page.evaluate(
+            (propertyName) => getComputedStyle(document.body).getPropertyValue(propertyName).trim(),
+            stateToken.property,
+          );
+          expect.soft(
+            tokenValue,
+            `${route}: ${stateToken.property} debe resolver al valor dark declarado (${stateToken.value}), ` +
+              'no quedar vacio ni con un valor distinto (p. ej. si la regla condicionada por tema pierde su prefijo)',
+          ).toBe(stateToken.value);
+        }
       }
     }
   } finally {

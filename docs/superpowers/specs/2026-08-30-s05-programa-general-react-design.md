@@ -7,7 +7,7 @@ fecha: 2026-08-30
 superficie: programa-general
 rutas: ["/programa-general"]
 depende_de: [T01, T02, S04]
-version: 1.1
+version: 1.2
 views: [VIEW-34]
 areas: [lps, design-system]
 fuente: "auditoría de public/index.php, ProgramaGeneralController, GeneralApiController, ReportController, LpsApiController, hot.js, VIEW-34, contratos, RBAC, T01 y frontend actual en shell-minimo-react, 2026-08-30"
@@ -20,6 +20,148 @@ resumen: "Migración vertical S05 de Programa General a React con paridad funcio
 > pendientes. Esta spec no autoriza implementación, commits, DDL/DML, cambios RLS, cambios de
 > permisos, deploy, publicación ni trabajo en `/admin/`. Su plan se escribe inmediatamente después
 > con `superpowers:writing-plans`, conforme al programa aprobado de 27 specs y 27 planes.
+
+## Enmienda del 2026-09-24 (ronda 1.2) — aprobada por Felipe en el chat, sin sello
+
+> **Aprobada por Felipe en el chat el 2026-09-24** («/aprobar S05»). **Sin sello:** el comando
+> `/aprobar` no está instalado en la sesión donde se escribió y no generó sello ni huella. Felipe
+> eligió registrar el visto y seguir; si una compuerta exige el sello, se genera con `/aprobar S05`
+> en una sesión que tenga el comando. Pasos 01 y 02 cerrados; sigue el plan (paso 03). Donde choque
+> con la ronda 1.1 o con el resto, manda esta sección una vez que Felipe la apruebe con `/aprobar`.
+
+### Por qué hay ronda nueva
+
+El 2026-09-24 una sesión de Antigravity ejecutó la «paridad visual 1:1» de Programa General en la
+rama `feature/s05-paridad-visual` (16 commits sobre `main`, PR #60) con su propia spec
+(`docs/superpowers/specs/2026-09-24-s05-paridad-visual-programa-general-design.md`, solo en esa
+rama). **Felipe detuvo esa sesión el mismo día** tras ver el resultado en vivo («siento que falta
+demasiado, y además la sidebar sigue muy mal»). El PR #60 no se mergea en su estado actual.
+
+### Lo medido en vivo (2026-09-24, `localhost:8081/programa-general`, `test.A`, Da Porto, 1180×820)
+
+Sirve el checkout principal en `feature/s05-paridad-visual` `8ad3ca3f` con 10 archivos sin commit
+de esa sesión.
+
+1. **Desbordamiento horizontal.** La tabla mide 1375px dentro de un contenedor de 851px
+   (`table-layout: auto`). «Actividad» no parte el texto y ocupa 742px, de modo que F. Inicio,
+   F. Fin, Ppto, Avance y Estado quedan fuera de la vista: las 8 columnas existen, pero solo se ven
+   ID, Código y Actividad.
+2. **Scroll vertical roto.** `.table-wrapper-pro` tiene `overflow-y: hidden` con 638px de alto y
+   10.669px de contenido: las filas por debajo del pliegue no se alcanzan.
+3. **Contador incoherente:** «Actividades visibles: 324 de 282».
+4. **Bloque de semana de la barra lateral sin estilos.** `frontend/src/shell/ContextoSemana.tsx`
+   (en `main` desde `06dca377`) emite `aia-sidebar__week-label`, `-select`, `-actions` y `-dialog`,
+   y ninguna hoja del repo les da estilo. La única regla que las nombra
+   (`public/css/design-system/adapters/shell-sidebar.css:461`) está en una hoja que la página React
+   no carga. Resultado: `select` nativo, botones «Crear semana» y «Eliminar semana N» a 16px, rango
+   de fechas partido en dos líneas y el selector montado sobre los chips de estado.
+5. **Chips de estado en dos filas** en 1180px.
+6. **CI del PR #60 en rojo** en ambos temas: `G_PILOT_LAB_GATES`, `G_PG_PERSISTENCE_RBAC`,
+   `G_FULL_APP_FLOW`, `G_RUNTIME_BUDGET_MEASURE` y `G_RUNTIME_BUDGET_CHECK`. Las pruebas buscan el DOM
+   de la página PHP (`#semana`, `body.aia-shell`), que el corte a React ya no emite. La condición de
+   hecho que declaró el PR dejaba fuera justamente esos gates.
+
+### Requisitos nuevos de Felipe (2026-09-24, en el chat)
+
+- **R1.2-1 — La tabla no tiene desbordamiento horizontal, ni con 8 ni con 13 columnas**, a 1180px
+  en ambos temas. Con 13, «Actividad» parte en más líneas y las columnas numéricas se compactan;
+  nunca aparece barra horizontal (decidido por Felipe el 2026-09-24).
+- **R1.2-2 — «Actividad» parte el texto en varias líneas y muestra siempre el texto completo**,
+  sin truncar ni usar puntos suspensivos.
+- **R1.2-3 — El scroll vertical de la tabla funciona** y alcanza la última fila.
+- **R1.2-4 — La barra lateral de las páginas React se ve y se comporta igual que la del legado
+  PHP, en todo el shell React y no solo en PG** (Felipe, 2026-09-24, precisado tras H4): riel
+  angosto de íconos que se despliega con su botón, ítem activo legible, y **el selector de semana
+  sale de la barra lateral y pasa a la barra superior**, junto a la ruta y la fase, como en
+  `/programacion-semanal`. `ContextoSemana` se rehace en ese lugar con las primitivas del legado.
+  Como toca el shell compartido (`frontend/src/shell/`), lo heredan todos los módulos React, y cada
+  uno se verifica.
+
+- **R1.2-5 — La barra de herramientas de Programa General en React tiene las acciones del legado**
+  que hoy le faltan: Leyenda, Actualizar Ejecución, Recargar y BI Programa, con los mismos permisos
+  por rol que el legado (`views/programa-general/programa_general.view.php`). Lo decidió Felipe el
+  2026-09-24, durante el sprint, al revisar las capturas candidatas: entra en esta ronda y no se
+  deja para `TASKS.md`.
+- **Capturas de referencia:** Felipe **no aprobó** las candidatas del 2026-09-24 (21:15). Se
+  regeneran solo cuando la pantalla cumpla R1.2-1 a R1.2-5, y se le vuelven a presentar.
+
+### Decisiones tomadas (Felipe, 2026-09-24)
+
+- Se detiene la sesión de Antigravity y se abre esta ronda.
+- Ejecutor: Codex (default de §2b), en un worktree propio y nunca en el checkout principal
+  compartido. *(Pendiente de confirmar en el `ejecutor:` del plan.)*
+
+### Decisiones abiertas (cada una con recomendación)
+
+1. ~~Punto de partida~~ → **decidido por Felipe el 2026-09-24:** se parte de los commits de
+   `feature/s05-paridad-visual` (`8ad3ca3f`), **auditados**. Los archivos sin commit de esa sesión
+   se descartan. Antes de construir encima se revisan el cambio a `DevDoorController.php`
+   (`security-reviewer`) y los assets compilados que se commitearon en `public/app/`.
+2. ~~Referencia visual~~ → **decidido por Felipe (2026-09-24):** el mockup
+   `public/mockups/s05-production-mockup.html` es **solo de guía**, no contrato 1:1. El contrato
+   visual son R1.2-1 a R1.2-4, `DESIGN.md` y la barra lateral del legado. Donde el mockup choque con
+   ellos, ganan ellos.
+3. ~~Alcance de R1.2-1~~ → **decidido por Felipe (2026-09-24):** vale para las dos vistas.
+4. ~~Alcance de R1.2-4~~ → **decidido por Felipe (2026-09-24):** paridad con la barra lateral del
+   legado.
+5. ~~Condición de hecho~~ → **decidido por Felipe (2026-09-24):** el sprint termina cuando
+   **todas** las variables `G_*` del paso «Summarize gate results» están en verde en ambos temas
+   (incluidos `G_PILOT_LAB_GATES`, `G_PG_PERSISTENCE_RBAC`, `G_FULL_APP_FLOW` y los dos de
+   presupuesto de runtime) **y** hay capturas a 1180×820 en claro y oscuro, tomadas después del
+   último commit, que prueben R1.2-1 a R1.2-4 (en la vista de 13 columnas también). Las pruebas que
+   hoy leen el DOM PHP se adaptan al DOM React sin rebajar lo que verifican. Ningún gate se saca de
+   la condición para conseguir el verde.
+
+### Preguntas para investigar (entrada del paso 02)
+
+1. ¿Qué pruebas del laboratorio y de e2e dependen del DOM PHP de Programa General? Importa porque
+   hay que adaptarlas sin maquillar una regresión.
+2. ¿Por qué `shell-sidebar.css` no llega al host React (`SpaHostRenderer`)? Importa porque la
+   corrección de la barra lateral vale para todos los módulos React, no solo para PG.
+3. ¿De dónde sale el «324 de 282»: filas de capítulo contadas como actividades, o un filtro mal
+   aplicado?
+4. ¿Qué cambió `feature/s05-paridad-visual` en `src/Controllers/Core/DevDoorController.php` y por
+   qué? Importa porque es la puerta de sesión de desarrollo y pide revisión de seguridad.
+
+### Hechos y vacíos (paso 02, 2026-09-24)
+
+Verificado sobre `feature/s05-paridad-visual` `8ad3ca3f` con búsquedas en código y medición en vivo
+(`localhost:8081`, 1180×820). Cada hecho lleva su fuente; cada vacío, quién lo cierra.
+
+**Corrección de la sesión:** el punto 4 de «Lo medido en vivo» decía que `shell-sidebar.css` no se
+carga en la página React. **Es falso:** entra por `@import` desde `public/css/aia-design-system.css:39`
+(medido en `cssRules`: `/css/design-system/adapters/shell-sidebar.css?v=1.1.0`). La lista de
+`document.styleSheets` que se usó no muestra los `@import`. Lo que sí es cierto: las clases
+`aia-sidebar__week-*` no tienen CSS en ningún lado.
+
+#### Hechos
+
+| # | Hecho | Fuente |
+|---|---|---|
+| H1 | El scroll vertical lo corta una regla **compartida** del design system, `.aia-table-shell, .aia-grid-shell { overflow: hidden }`, que el módulo no neutraliza en el eje Y (solo fija `overflow-x: auto`). Cualquier otra superficie con esas clases hereda el recorte. | `public/css/design-system/core.css:138-151`; `frontend/src/modules/programa-general/programa-general.css:347-353` |
+| H2 | El desbordamiento viene de `table-layout: auto` sin anchos de columna (solo `.cell-avance-dual { min-width: 140px }`) y sin reglas para la celda de actividad: «Actividad» crece a 742px en vez de partir el texto. | `programa-general.css:355-360, 464-468`; `ProgramaTable.tsx:125-126, 189-190` |
+| H3 | «324 de 282»: el numerador es `actividadesFiltradas.length`, que **conserva** las filas de capítulo (`esCapitulo`), y el denominador es `conteos.total`, que las **excluye**. En Da Porto: 282 tareas más 42 capítulos. | `ProgramaGeneralPage.tsx:193-194`; `domain/filtros.ts:14-16, 34-35`; `domain/modelo.ts:41` |
+| H4 | **La barra lateral React y la del legado son dos diseños distintos**, no la misma con estilos faltantes. Legado (`/programacion-semanal`): riel angosto solo de íconos, con la semana en un selector de la barra superior junto a la ruta y la fase. React (`/programa-general`): barra ancha con texto y el bloque de semana dentro de la barra. El ítem activo en React se pinta `rgb(20,28,24)` sobre verde oscuro. | Medición en vivo, 2026-09-24; `frontend/src/shell/AppShell.tsx:95-124`; `frontend/src/shell/ContextoSemana.tsx` |
+| H5 | `AppShell.tsx` activa las mismas clases del shell PHP para reutilizar `shell-sidebar.css` y ya compensó con estilo inline una regla que «no bastaba». | `frontend/src/shell/AppShell.tsx:96-118` |
+| H6 | `G_PG_PERSISTENCE_RBAC` falla porque `pg-interactions.spec.mjs` maneja la tabla por la API de Handsontable (`window.PGHotModule.getHotInstance()`, `.htCore`), que React no tiene. Verifica persistencia de edición (UI→API→BD) y RBAC por rol. | `e2e/tests/workflows/pg-interactions.spec.mjs:48-61, 92, 100-124, 183-260`; `e2e/support/handsontable.mjs:5-17` |
+| H7 | `G_RUNTIME_BUDGET_MEASURE` falla por lo mismo: espera `window.PGHotModule` o `.ht_master`, `.ht_clone_top .changeType` y `.htDropdownMenu`. `G_RUNTIME_BUDGET_CHECK` cae en cascada. | `tests/browser/design-system-runtime-budget.mjs:106-120`; `.github/workflows/ci.yml:554-568` |
+| H8 | `programa-general.visual.mjs` compara contra capturas de referencia de la grilla Handsontable; con la tabla React el diff de imagen no puede pasar sin capturas nuevas. | `tests/browser/programa-general.visual.mjs:29, 110, 130`; `docs/design-system/manifests/programa-general.json:67-69` |
+| H9 | `changeWeek()` no es la causa: `#semana` y `#semana_PHP` sobreviven en React como `input hidden`. | `tests/browser/support/session.mjs:99-124`; `ProgramaGeneralPage.tsx:197-198` |
+| H10 | La rama cambió `DevDoorController.php`: si `p` es numérico, busca un proyecto con ese ID y, si no lo encuentra, **toma el que esté en esa posición de la lista**. No escala permisos (todo pasa por `ProjectAccessService::select()`), pero el resultado depende del orden de la lista. Solo lo usan su prueba y su script de capturas (`p=1`). | `git diff main...8ad3ca3f -- src/Controllers/Core/DevDoorController.php`; `tests/browser/s05-programa-general-react.spec.mjs:331`; `scripts/generate_s05_live_screenshots.mjs:29` |
+| H11 | Los assets compilados de `public/app/` se versionan normalmente en `main`: que la rama los commitee no es una anomalía. | `git ls-tree main public/app/` |
+| H12 | `programa-general.css` redefine **en `:root`** tokens globales del design system (`--ds-bg-canvas`, `--ds-text-primary`, `--ds-focus-ring`…) con valores hex propios y el oscuro como tema por defecto: 102 colores hex en el archivo. Mientras esa hoja está cargada, pisa los tokens de toda la página, shell incluido. Va contra `DESIGN.md` y `AGENTS.md` («evita hex, estilos inline y variantes locales en módulos migrados») y contra el tema claro de entrada. | `frontend/src/modules/programa-general/programa-general.css:8-40` (en `8ad3ca3f`); import en `ProgramaGeneralPage.tsx:13` |
+| H13 | Los 10 archivos sin commit que dejó la sesión de Antigravity (descartados por decisión de Felipe) hacían que el DOM React **imitara el de Handsontable** para pasar las pruebas: `id="hot-container"`, clase `handsontable` en una `<table>` plana, `body.aia-shell` inyectado por `str_replace` en `SpaHostRenderer`. | `git diff` del checkout principal, 2026-09-24 |
+| H14 | El legado abre el riel **colapsado** (`'initialState' => 'collapsed'`) y recuerda el estado en `localStorage` con la clave `aia-sidebar-state`. React arranca siempre expandido (`useState(false)`) y no lo recuerda. En el legado, la semana va en `.context-bar#shellContextBar` (proyecto / módulo / chip `context-week-chip` con menú), y crear o eliminar semana cuelga del ítem de acción «Semanas del Proyecto» con diálogos `shell-week-dialog`. Los ítems del menú React ya llegan del servidor (`ShellNavigationService`). | `views/partials/shell_sidebar.php:96, 128-230`; `public/js/modules/aia_ui/sidebar_navigation.js:41-98`; `frontend/src/shell/AppShell.tsx:77, 239`; `frontend/src/shell/NavegacionLateral.tsx:46-71` |
+
+#### Vacíos
+
+| # | Vacío | Quién lo cierra |
+|---|---|---|
+| V1 | Qué aserción exacta tumba `programa-general-design-system.mjs` (timeout en `waitForFunction` en «desktop dark» y «wide-desktop dark»); los selectores que pide sí existen en React. | Codex en el paso 05, con `systematic-debugging` |
+| V2 | Qué aserción tumba `G_FULL_APP_FLOW`: su chequeo de selectores tiene `body` como respaldo, así que no es el selector de PG. | Codex en el paso 05 |
+| V3 | Con el host SPA sirviendo `/programa-general` a todos los roles, el rol sin permiso (Subcontratista) recibe 200 y la negación pasa al payload del API. Falta confirmar que la prueba de RBAC siga probando la negación, no solo el código HTTP. | Codex en el paso 05; `security-reviewer` en el 06 |
+| V4 | ~~Cómo se parece la barra lateral React a la del legado~~ → **cerrado por Felipe el 2026-09-24:** igual al legado **en todo el shell React**. Riel de íconos que se despliega con su botón, y la semana en un selector de la barra superior, como en el legado. | Felipe |
+| V5 | Si se quita el fallback por posición de `DevDoorController` (H10) y se cambian la prueba y el script a nombre de proyecto. | Decisión de código de la sesión: se quita. Revisión de `security-reviewer` en el 06 |
 
 ## Enmienda del 2026-09-21 (ronda 1.1) — manda sobre el resto
 

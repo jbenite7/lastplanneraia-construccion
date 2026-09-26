@@ -461,8 +461,14 @@ test('pilot runtime budgets remain available while the canonical runtime uses th
   assert.match(collector, /themeFlashCount/);
   assert.match(collector, /initializationMs/);
   assert.match(collector, /handsontableInteractionMs/);
-  assert.match(collector, /\.htDropdownMenu:visible/);
-  assert.match(collector, /interactionKind:\s*['"]column-filter-menu['"]/);
+  assert.match(collector, /table\.programa-table-pro tbody tr\.row-activity/);
+  assert.match(collector, /#pgLegend \.pg-filter-chip:visible/);
+  assert.match(collector, /aria-pressed/);
+  assert.match(collector, /interactionKind:\s*['"]state-signal-filter-pointerdown-to-paint['"]/);
+  assert.match(
+    collector,
+    /await expect\.poll\([\s\S]*?Number\.isFinite\(window\.__pgRuntimeInteractionProbe\?\.durationMs\)[\s\S]*?\.toBe\(true\)/,
+  );
   assert.match(collector, /laboratoryAssets/);
   assert.match(collector, /sourceTreeHash/);
   assert.match(collector, /readCurrentRuntimeContext/);

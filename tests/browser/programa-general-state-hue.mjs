@@ -12,7 +12,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
 import { PROJECTS } from './fixtures/projects.mjs';
-import { changeWeek, loginAndSelectProject, logout } from './support/session.mjs';
+import { loginAndSelectProject, logout } from './support/session.mjs';
 import { installContrastProbe, measure } from './support/contrast.mjs';
 
 const ADMIN = { username: 'test.A', password: 'aia2026' };
@@ -24,53 +24,52 @@ const SEMANTICS = JSON.parse(readFileSync(
 ));
 const PG_STATES = SEMANTICS.moduleMappings.find((m) => m.module === 'programa-general').states;
 
-// Las mismas filas del mock de la prueba visual, para que ambas midan lo
-// mismo, mas una septima para el matiz `amber`. Sin `Consecutivo` ni `Id` la
-// fila cae a `sin-datos`; `Titulo` distinto de 0 se clasificaria como cabecera.
-//
-// `con-alerta-restricciones` no depende del mock de `restriction-config`
-// (linea 42 mas abajo): `getRestrictionConfig()` en hot.js cae a
-// `_DEFAULT_RESTRICTION_CONFIG` tanto si la respuesta es `success:false` como
-// si `window.__RESTRICTION_CONFIG__` aun no llego, asi que los umbrales duros
-// por defecto (D_y_E, Materiales, MdeO, Equipos, Predecesora) siguen activos.
-// Lo que dispara el amber es `getRestrictionAlertKey()` (hot.js:718-748):
-// necesita `Titulo: 0`, una restriccion dura por debajo de su umbral (aqui
-// `D_y_E: 0.5` contra el umbral 1.0) y `Semanas_Inicio` para elegir el label
-// r0/r1/r2-3/r4-6 (aqui `0` -> `r0`). Sin `Ejecutado` el ratio cae a 0, que no
-// alcanza el escape `ejecutado >= 0.999`.
+// Cada fila ejercita exactamente uno de los siete matices del contrato. La
+// prueba mide el badge que pinta la tabla React, no la leyenda estática: si el
+// mapeo de un estado vuelve a un color duplicado, el pixel y el contraste fallan.
 const FILAS = [
-  { Id: 1, Consecutivo: 1, Titulo: 0, Actividad: 'Cimentacion eje 4', Estado: 'Terminada', Ruta_Critica: '0' },
-  { Id: 2, Consecutivo: 2, Titulo: 0, Actividad: 'Muros nivel 2', Estado: 'En curso', Ruta_Critica: '0' },
-  { Id: 3, Consecutivo: 3, Titulo: 0, Actividad: 'Redes', Estado: 'Actividad futura', Ruta_Critica: '0' },
-  { Id: 4, Consecutivo: 4, Titulo: 0, Actividad: 'Electrica', Estado: 'Debe iniciar', Ruta_Critica: '0' },
-  { Id: 5, Consecutivo: 5, Titulo: 0, Actividad: 'Losa nivel 3', Estado: 'Atrasada', Ruta_Critica: '0' },
-  { Titulo: 0, Actividad: 'Cubierta', Estado: '', Ruta_Critica: '0' },
-  {
-    Id: 7, Consecutivo: 7, Titulo: 0, Actividad: 'Fachada', Estado: 'Debe iniciar', Ruta_Critica: '0',
-    Semanas_Inicio: 0, D_y_E: 0.5,
-  },
-  // `fuera-de-ventana` (hue teal) entro al vocabulario el 2026-08-19 (8418449a) y esta fila
-  // faltaba: sin ella el test no podia detectar que se pintara igual que otro matiz, que es
-  // justo lo que paso con `en-curso` antes de que existiera este archivo. normalizeEstadoToStateKey
-  // (hot.js:665-667) mapea el string 'Fuera de Ventana' a la clave 'fuera-de-ventana'.
-  { Id: 8, Consecutivo: 8, Titulo: 0, Actividad: 'Cubierta ala norte', Estado: 'Fuera de Ventana', Ruta_Critica: '0' },
+  { unique_id: 1, Id: 1, Consecutivo_en_Programa: 1, Titulo: 0, Actividad: 'Cimentacion eje 4', Estado: 'Terminada', Ruta_Critica: 0, Ejecutado: 1 },
+  { unique_id: 2, Id: 2, Consecutivo_en_Programa: 2, Titulo: 0, Actividad: 'Muros nivel 2', Estado: 'En Curso', Ruta_Critica: 0, Ejecutado: 0.5 },
+  { unique_id: 3, Id: 3, Consecutivo_en_Programa: 3, Titulo: 0, Actividad: 'Redes', Estado: 'Actividad Futura', Ruta_Critica: 0 },
+  { unique_id: 4, Id: 4, Consecutivo_en_Programa: 4, Titulo: 0, Actividad: 'Electrica', Estado: 'Debe Iniciar', Ruta_Critica: 0 },
+  { unique_id: 5, Id: 5, Consecutivo_en_Programa: 5, Titulo: 0, Actividad: 'Losa nivel 3', Estado: 'Atrasada', Ruta_Critica: 0 },
+  { unique_id: 6, Titulo: 0, Actividad: 'Cubierta', Estado: '', Ruta_Critica: 0 },
+  { unique_id: 7, Id: 7, Consecutivo_en_Programa: 7, Titulo: 0, Actividad: 'Cubierta ala norte', Estado: 'Fuera de Ventana', Ruta_Critica: 0 },
 ];
+
+const CONTEXTO_REACT = {
+  proyecto: { id: 1, nombre: 'Da Porto', codigo: 'da_porto', tipo: 'Construccion' },
+  semana: { numero: 1, confirmada: false, esPasada: false },
+  permisos: { puedeVer: true, puedeEditar: true, puedeCorteXlsx: true, puedeLote: false, readDrawer: true, writeDrawer: true },
+  catalogos: { unidades: [], codigos: [], profesionales: [], subcontratistas: [] },
+  csrf_token: 'hue-fixture',
+  csrf_shell: 'hue-fixture',
+};
+
+const MATIZ_POR_FILA = {
+  1: 'neutral',
+  2: 'blue',
+  3: 'green',
+  4: 'orange',
+  5: 'red',
+  6: 'violet',
+  7: 'teal',
+};
 
 test.use({ viewport: { width: 1180, height: 820 }, colorScheme: 'dark' });
 
 test('cada matiz declarado se pinta distinto y legible', async ({ page }) => {
-  await page.route('**/api/general/restriction-config**', (r) => r.fulfill({ contentType: 'application/json', body: '{"success":false}' }));
-  await page.route('**/api/general/codigos**', (r) => r.fulfill({ contentType: 'application/json', body: '{"success":true,"data":[]}' }));
-  await page.route('**/programa-general/filtros', (r) => r.fulfill({ contentType: 'application/json', body: '{"success":true,"data":{}}' }));
+  await page.route('**/api/programa-general/context', (r) => r.fulfill({
+    contentType: 'application/json', body: JSON.stringify(CONTEXTO_REACT),
+  }));
   await page.route('**/api/general/list**', (r) => r.fulfill({
-    contentType: 'application/json', body: JSON.stringify({ success: true, data: FILAS }),
+    contentType: 'application/json', body: JSON.stringify(FILAS),
   }));
 
   await installContrastProbe(page);
   await loginAndSelectProject(page, PROJECTS[0], ADMIN);
-  await changeWeek(page, PROJECTS[0].maxWeek, '/programa-general');
-  await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => document.querySelectorAll('#hot-container .ops-state-chip').length > 0, null, { timeout: 20000 });
+  await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('table.programa-table-pro tbody tr.row-activity')).toHaveCount(FILAS.length);
 
   const fondos = await page.evaluate(() => {
     const canvas = document.createElement('canvas');
@@ -82,8 +81,10 @@ test('cada matiz declarado se pinta distinto y legible', async ({ page }) => {
       return `${d[0]},${d[1]},${d[2]}`;
     };
     const out = {};
-    for (const chip of document.querySelectorAll('#hot-container .ops-state-chip')) {
-      out[chip.getAttribute('data-aia-hue')] = srgb(getComputedStyle(chip).backgroundColor);
+    const huesByRow = { 1: 'neutral', 2: 'blue', 3: 'green', 4: 'orange', 5: 'red', 6: 'violet', 7: 'teal' };
+    for (const [id, hue] of Object.entries(huesByRow)) {
+      const chip = document.querySelector(`tr[data-unique-id="${id}"] .status-pill`);
+      if (chip) out[hue] = srgb(getComputedStyle(chip).backgroundColor);
     }
     return out;
   });
@@ -119,7 +120,8 @@ test('cada matiz declarado se pinta distinto y legible', async ({ page }) => {
 
   const bajos = [];
   for (const hue of matices) {
-    const medida = await measure(page, `#hot-container .ops-state-chip[data-aia-hue="${hue}"]`);
+    const id = Object.entries(MATIZ_POR_FILA).find(([, matiz]) => matiz === hue)?.[0];
+    const medida = id ? await measure(page, `tr[data-unique-id="${id}"] .status-pill`) : null;
     if (!medida || typeof medida.ratio !== 'number') { bajos.push(`${hue}: la sonda no pudo medir`); continue; }
     if (medida.ratio < AA_MIN) bajos.push(`${hue}: ${medida.ratio.toFixed(2)}:1`);
   }

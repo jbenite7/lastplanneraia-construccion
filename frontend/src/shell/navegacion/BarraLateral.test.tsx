@@ -8,8 +8,8 @@ const GRUPOS = [
     id: 'global',
     label: 'Navegación',
     items: [
-      { id: 'projects', label: 'Tus proyectos', href: '/proyectos' },
-      { id: 'bi', label: 'Control Tower - Informes', href: '/bi/control-tower' },
+      { id: 'projects', label: 'Tus proyectos', href: '/proyectos', icon: 'project' },
+      { id: 'bi', label: 'Control Tower - Informes', href: '/bi/control-tower', icon: 'chart' },
     ],
   },
 ];
@@ -81,6 +81,103 @@ test('el botón de colapsar/expandir menú trae el ícono decorativo de la barra
   expect(icono).toHaveAttribute('viewBox', '0 0 24 24');
   expect(icono).toHaveAttribute('aria-hidden', 'true');
   expect(icono).toHaveAttribute('focusable', 'false');
+});
+
+test('el rail colapsado conserva un ícono decorativo por cada entrada de navegación', async () => {
+  fijarAncho(1440);
+  render(<BarraLateral activeId="projects" accountName="Ana" groups={GRUPOS} showChangeProject={false} />);
+
+  fireEvent.click(screen.getByRole('button', { name: 'Colapsar menú' }));
+
+  for (const item of GRUPOS[0].items) {
+    const enlace = screen.getByRole('link', { name: item.label });
+    expect(enlace).toHaveAttribute('data-sidebar-icon', item.icon);
+    expect(enlace.querySelector(`.aia-icon--${item.icon} svg.aia-icon__glyph`)).not.toBeNull();
+  }
+});
+
+// R1.2-4: el manifiesto de `ShellNavigationService` usa estos nombres; cada uno debe conservar
+// el glifo que sirve `DesignSystemComponent::icon()` al shell PHP. Antes de esta prueba, el
+// React solo conocía cinco nombres y convertía los demás en el círculo de respaldo.
+const GRUPOS_CON_MANIFIESTO_COMPLETO = [
+  {
+    id: 'informacion',
+    label: 'Información',
+    items: [
+      { id: 'control-tower', label: 'Control Tower - Informes', href: '/bi/control-tower', icon: 'chart' },
+      { id: 'semanas-proyecto', label: 'Semanas del Proyecto', href: null, icon: 'calendar', action: true },
+      { id: 'profesionales', label: 'Profesionales', href: '/profesionales', icon: 'user' },
+      { id: 'subcontratistas', label: 'Subcontratistas', href: '/subcontratistas', icon: 'contract' },
+      { id: 'indicadores', label: 'Indicadores LPS', href: '/indicadores', icon: 'overview' },
+      { id: 'control-cambios', label: 'Control de Cambios', href: '/control-cambios', icon: 'integration' },
+    ],
+  },
+  {
+    id: 'obra',
+    label: 'Obra',
+    items: [
+      { id: 'programa-general', label: 'Programa General', href: '/programa-general', icon: 'program' },
+      { id: 'programacion-intermedia', label: 'Programación Intermedia', href: '/programacion-intermedia', icon: 'tasks' },
+      { id: 'programacion-semanal', label: 'Programación Semanal', href: '/programacion-semanal', icon: 'calendar' },
+      { id: 'actualizar-cronograma', label: 'Actualizar Cronograma', href: '/programa-general-actualizar', icon: 'sync' },
+    ],
+  },
+  {
+    id: 'compras',
+    label: 'Compras',
+    items: [
+      { id: 'plan-compras', label: 'Plan de Compras', href: '/plan-compras', icon: 'clipboard' },
+    ],
+  },
+] as const;
+
+const GLIFOS_LEGADO: Record<string, readonly string[]> = {
+  chart: ['path:d=M5 20V10M12 20V4M19 20v-7', 'path:d=M3 20h18'],
+  calendar: ['rect:height=15,rx=2,width=16,x=4,y=5', 'path:d=M8 3v4M16 3v4M4 10h16'],
+  user: ['circle:cx=12,cy=8,r=3', 'path:d=M5 20a7 7 0 0 1 14 0'],
+  contract: ['path:d=M6 3h9l3 3v15H6z', 'path:d=M15 3v4h3M9 12h6M9 16h6'],
+  overview: ['rect:height=6,rx=1,width=6,x=4,y=4', 'rect:height=6,rx=1,width=6,x=14,y=4', 'rect:height=6,rx=1,width=6,x=4,y=14', 'rect:height=6,rx=1,width=6,x=14,y=14'],
+  integration: ['circle:cx=7,cy=12,r=3', 'circle:cx=17,cy=7,r=3', 'circle:cx=17,cy=17,r=3', 'path:d=m9.5 10.5 5-2M9.5 13.5l5 2'],
+  program: ['path:d=M5 5h14v14H5z', 'path:d=M8 9h8M8 13h5M8 17h3'],
+  tasks: ['path:d=M5 6h14M5 12h14M5 18h14', 'path:d=m7 6 .01 0M7 12 .01 0M7 18 .01 0'],
+  sync: ['path:d=M20 12a8 8 0 1 1-2.34-5.66', 'path:d=M20 3v4h-4'],
+  clipboard: ['path:d=M8 5h8a2 2 0 0 1 2 2v13H6V7a2 2 0 0 1 2-2Z', 'path:d=M9 5a3 3 0 0 1 6 0M9 11h6M9 15h4'],
+};
+
+function firmaGlifo(svg: SVGSVGElement): string[] {
+  return Array.from(svg.children).map((elemento) => {
+    const atributos = Array.from(elemento.attributes)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((atributo) => `${atributo.name}=${atributo.value}`)
+      .join(',');
+    return `${elemento.tagName.toLowerCase()}:${atributos}`;
+  });
+}
+
+test('cada nombre emitido por ShellNavigationService conserva el glifo exacto del sidebar legado', () => {
+  fijarAncho(1440);
+  render(
+    <BarraLateral
+      activeId="programa-general"
+      accountName="Ana"
+      groups={GRUPOS_CON_MANIFIESTO_COMPLETO}
+      showChangeProject={false}
+    />,
+  );
+
+  for (const grupo of GRUPOS_CON_MANIFIESTO_COMPLETO) {
+    for (const item of grupo.items) {
+      const destino = item.href
+        ? screen.getByRole('link', { name: item.label })
+        : screen.getByRole('button', { name: item.label });
+      const svg = destino.querySelector(`.aia-icon--${item.icon} svg.aia-icon__glyph`);
+      expect(svg, `${item.id}: falta el SVG para ${item.icon}`).not.toBeNull();
+      expect(firmaGlifo(svg as SVGSVGElement), `${item.id}: debe igualar DesignSystemComponent::icon(${item.icon})`)
+        .toEqual(GLIFOS_LEGADO[item.icon]);
+      expect(svg?.querySelector('circle[cx="12"][cy="12"][r="7"]'), `${item.id}: no puede usar el respaldo genérico`)
+        .toBeNull();
+    }
+  }
 });
 
 // Bajo 1180px (modo autónomo, `flotante`), la marca se repite en la fila superior junto al

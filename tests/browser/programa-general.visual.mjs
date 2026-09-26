@@ -9,22 +9,16 @@ const MANIFEST = JSON.parse(readFileSync(
   'utf8',
 ));
 const ADMIN = { username: 'test.A', password: 'aia2026' };
-// D16 (spec temas 2026-08-28): el carril visual corre AMBOS temas. `E2E_THEME`
-// no elige el tema que se pinta —eso lo dice cada escenario— sino que subconjunto
-// corre esta invocacion, para que las dos patas de la matriz de CI midan la suya.
-// Sin la variable corren los dos, que es lo que quiere una corrida local.
-// OJO: `storeTheme` mas abajo NO materializa el tema claro en esta pagina.
-// Programa General carga `theme.js` (via `linksComunesHead2.js`), que fija
-// `data-aia-theme="dark"` a pelo sin leer `localStorage` — escribir
-// `aia-theme: light` y recargar no lo mueve. Es uno de los dos bloqueos de
-// producto documentados en `visual-ci-contract.test.mjs` que impiden generar
-// goldens claros hoy; los escenarios `light` de este manifiesto no existen
-// todavia por eso, no por un olvido de esta suite.
+// D16 (spec temas 2026-08-28): `E2E_THEME` solo selecciona los escenarios del
+// manifiesto. El tema se fija antes de montar React, para que el primer render
+// sea estable y no retrate una transición entre temas.
 const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(
   ({ theme }) => !process.env.E2E_THEME || theme === process.env.E2E_THEME,
 );
 
-// Filas fijas que cubren la escala de estado de Programa General.
+// Filas fijas que cubren la escala de estado de Programa General en el contrato
+// React. No imitan el DOM ni los adaptadores de Handsontable: el endpoint de
+// datos conserva el fixture y la prueba espera la tabla semántica React.
 //
 // El mock existe para que la captura no dependa del estado de la base ni del momento, y eso se
 // conserva. Lo que se corrige es que devolvia `data: []`: la grilla salia VACIA, asi que los
@@ -44,30 +38,34 @@ const FILAS_DE_ESTADO = [
   // (GeneralApiController::list:110): fuerza `Estado = 'Capítulo'`, `boton = 'No Boton'` y
   // `Ejecutado_Teorico = null`; `unidad` vacia sale como '%' y entonces `cantidad_ppto` se anula.
   // `Actividad` llega con `<b>` desde la base y `pgActividadRenderer` la pinta como HTML saneado.
-  { Id: '1', Consecutivo: 0, Titulo: 1, Actividad: '<b>Capitulo 1 - Estructura</b>', Estado: 'Capítulo', Ruta_Critica: null, Semanas_Inicio: 0, Fecha_Inicio: '2026-02-02', Fecha_Fin: '2026-06-12', unidad: '%', cantidad_ppto: null, Ejecutado_Teorico: null, EjecutadoDisplay: '', Estado_Restricciones: 0, boton: 'No Boton' },
-  { Id: 1, Consecutivo: 1, Titulo: 0, Actividad: 'Cimentacion eje 4', Estado: 'Terminada', Ruta_Critica: '0', Semanas_Inicio: 1, Fecha_Inicio: '2026-02-02', Fecha_Fin: '2026-02-20', unidad: 'm3', cantidad_ppto: 120, Ejecutado_Teorico: 120, EjecutadoDisplay: '100%', Estado_Restricciones: 'Liberada' },
-  { Id: 2, Consecutivo: 2, Titulo: 0, Actividad: 'Muros nivel 2', Estado: 'En curso', Ruta_Critica: '0', Semanas_Inicio: 2, Fecha_Inicio: '2026-03-02', Fecha_Fin: '2026-03-27', unidad: 'm2', cantidad_ppto: 340, Ejecutado_Teorico: 210, EjecutadoDisplay: '62%', Estado_Restricciones: 'Liberada' },
-  { Id: 3, Consecutivo: 3, Titulo: 0, Actividad: 'Redes hidrosanitarias', Estado: 'Actividad futura', Ruta_Critica: '0', Semanas_Inicio: 8, Fecha_Inicio: '2026-05-04', Fecha_Fin: '2026-06-12', unidad: 'ml', cantidad_ppto: 520, Ejecutado_Teorico: 0, EjecutadoDisplay: '0%', Estado_Restricciones: 'Pendiente' },
-  { Id: 4, Consecutivo: 4, Titulo: 0, Actividad: 'Instalacion electrica', Estado: 'Debe iniciar', Ruta_Critica: '0', Semanas_Inicio: 4, Fecha_Inicio: '2026-04-06', Fecha_Fin: '2026-05-15', unidad: 'ml', cantidad_ppto: 480, Ejecutado_Teorico: 0, EjecutadoDisplay: '0%', Estado_Restricciones: 'Pendiente' },
-  { Id: 5, Consecutivo: 5, Titulo: 0, Actividad: 'Losa nivel 3', Estado: 'Atrasada', Ruta_Critica: '0', Semanas_Inicio: 3, Fecha_Inicio: '2026-03-16', Fecha_Fin: '2026-04-10', unidad: 'm3', cantidad_ppto: 95, Ejecutado_Teorico: 60, EjecutadoDisplay: '17%', Estado_Restricciones: 'Pendiente' },
+  { unique_id: 100, Id: '1', Consecutivo_en_Programa: 0, Titulo: 1, Actividad: '<b>Capitulo 1 - Estructura</b>', Estado: 'Capítulo', Ruta_Critica: 0, Semanas_Inicio: 0, Fecha_Inicio: '2026-02-02', Fecha_Fin: '2026-06-12', unidad: '%', cantidad_ppto: null, Ejecutado_Teorico: null, Estado_Restricciones: '0' },
+  { unique_id: 1, Id: 1, Consecutivo_en_Programa: 1, Titulo: 0, Actividad: 'Cimentacion eje 4', Estado: 'Terminada', Ruta_Critica: 0, Semanas_Inicio: 1, Fecha_Inicio: '2026-02-02', Fecha_Fin: '2026-02-20', unidad: 'm3', cantidad_ppto: 120, Ejecutado: 1, Ejecutado_Teorico: 1, Estado_Restricciones: '100' },
+  { unique_id: 2, Id: 2, Consecutivo_en_Programa: 2, Titulo: 0, Actividad: 'Muros nivel 2', Estado: 'En Curso', Ruta_Critica: 0, Semanas_Inicio: 2, Fecha_Inicio: '2026-03-02', Fecha_Fin: '2026-03-27', unidad: 'm2', cantidad_ppto: 340, Ejecutado: 0.62, Ejecutado_Teorico: 0.8, Estado_Restricciones: '100' },
+  { unique_id: 3, Id: 3, Consecutivo_en_Programa: 3, Titulo: 0, Actividad: 'Redes hidrosanitarias', Estado: 'Actividad Futura', Ruta_Critica: 0, Semanas_Inicio: 8, Fecha_Inicio: '2026-05-04', Fecha_Fin: '2026-06-12', unidad: 'ml', cantidad_ppto: 520, Ejecutado: 0, Ejecutado_Teorico: 0, Estado_Restricciones: '0' },
+  { unique_id: 4, Id: 4, Consecutivo_en_Programa: 4, Titulo: 0, Actividad: 'Instalacion electrica', Estado: 'Debe Iniciar', Ruta_Critica: 0, Semanas_Inicio: 4, Fecha_Inicio: '2026-04-06', Fecha_Fin: '2026-05-15', unidad: 'ml', cantidad_ppto: 480, Ejecutado: 0, Ejecutado_Teorico: 0, Estado_Restricciones: '0' },
+  { unique_id: 5, Id: 5, Consecutivo_en_Programa: 5, Titulo: 0, Actividad: 'Losa nivel 3', Estado: 'Atrasada', Ruta_Critica: 0, Semanas_Inicio: 3, Fecha_Inicio: '2026-03-16', Fecha_Fin: '2026-04-10', unidad: 'm3', cantidad_ppto: 95, Ejecutado: 0.17, Ejecutado_Teorico: 0.6, Estado_Restricciones: '0' },
   // Ruta critica marcada: comparte estado con la anterior pero anade el realce de criticidad.
-  { Id: 6, Consecutivo: 6, Titulo: 0, Actividad: 'Fachada oriente', Estado: 'Atrasada', Ruta_Critica: '1', Semanas_Inicio: 3, Fecha_Inicio: '2026-03-16', Fecha_Fin: '2026-04-24', unidad: 'm2', cantidad_ppto: 260, Ejecutado_Teorico: 130, EjecutadoDisplay: '8%', Estado_Restricciones: 'Pendiente' },
+  { unique_id: 6, Id: 6, Consecutivo_en_Programa: 6, Titulo: 0, Actividad: 'Fachada oriente', Estado: 'Atrasada', Ruta_Critica: 1, Semanas_Inicio: 3, Fecha_Inicio: '2026-03-16', Fecha_Fin: '2026-04-24', unidad: 'm2', cantidad_ppto: 260, Ejecutado: 0.08, Ejecutado_Teorico: 0.5, Estado_Restricciones: '0' },
   // Deliberadamente SIN Consecutivo ni Id: es la unica via para provocar `sin-datos`.
-  { Titulo: 0, Actividad: 'Cubierta', Estado: '', Ruta_Critica: '0', Semanas_Inicio: null, Fecha_Inicio: '', Fecha_Fin: '', unidad: '', cantidad_ppto: null, Ejecutado_Teorico: null, EjecutadoDisplay: '', Estado_Restricciones: '' },
+  { unique_id: 7, Titulo: 0, Actividad: 'Cubierta', Estado: '', Ruta_Critica: 0, Semanas_Inicio: null, Fecha_Inicio: '', Fecha_Fin: '', unidad: '', cantidad_ppto: null, Ejecutado: null, Ejecutado_Teorico: null, Estado_Restricciones: '' },
 ];
 
+const CONTEXTO_REACT = {
+  proyecto: { id: 1, nombre: 'Da Porto', codigo: 'da_porto', tipo: 'Construccion' },
+  semana: { numero: 1, confirmada: false, esPasada: false },
+  permisos: { puedeVer: true, puedeEditar: true, puedeCorteXlsx: true, puedeLote: true, readDrawer: true, writeDrawer: true },
+  enlaces: { bi: '/bi/programa-general?project_id=1&semana=1' },
+  catalogos: { unidades: ['m3', 'm2', 'ml'], codigos: [], profesionales: [], subcontratistas: [] },
+  csrf_token: 'visual-fixture',
+  csrf_shell: 'visual-fixture',
+};
+
 async function mockDeterministicData(page) {
-  await page.route('**/api/general/restriction-config**', (route) => route.fulfill({
-    contentType: 'application/json', body: JSON.stringify({ success: false }),
-  }));
-  await page.route('**/api/general/codigos**', (route) => route.fulfill({
-    contentType: 'application/json', body: JSON.stringify({ success: true, data: [] }),
-  }));
-  await page.route('**/programa-general/filtros', (route) => route.fulfill({
-    contentType: 'application/json', body: JSON.stringify({ success: true, data: {} }),
+  await page.route('**/api/programa-general/context', (route) => route.fulfill({
+    contentType: 'application/json', body: JSON.stringify(CONTEXTO_REACT),
   }));
   await page.route('**/api/general/list**', (route) => route.fulfill({
-    contentType: 'application/json', body: JSON.stringify({ success: true, data: FILAS_DE_ESTADO }),
+    contentType: 'application/json', body: JSON.stringify(FILAS_DE_ESTADO),
   }));
   await page.route('**/api/general/update-batch**', (route) => route.fulfill({
     contentType: 'application/json', body: JSON.stringify({ respuesta: 'BIEN' }),
@@ -75,7 +73,11 @@ async function mockDeterministicData(page) {
 }
 
 async function storeTheme(page, theme) {
-  await page.evaluate((value) => localStorage.setItem('aia-theme', value), theme);
+  await page.addInitScript((value) => localStorage.setItem('aia-theme', value), theme);
+  await page.evaluate((value) => {
+    localStorage.setItem('aia-theme', value);
+    document.documentElement.setAttribute('data-aia-theme', value);
+  }, theme);
 }
 
 async function expectLegendContained(page) {
@@ -107,14 +109,13 @@ for (const scenario of VISUAL_SCENARIOS) {
       await page.setViewportSize(scenario.viewport);
       await storeTheme(page, scenario.theme);
       await page.reload({ waitUntil: 'domcontentloaded' });
-      await page.waitForFunction(() => Boolean(document.querySelector('#hot-container .handsontable')));
+      await expect(page.locator('table.programa-table-pro tbody tr.row-activity')).toHaveCount(7);
       await expect(page.locator('html')).toHaveAttribute('data-aia-theme', scenario.theme);
       await expectLegendContained(page);
       await page.evaluate(() => document.fonts.ready);
-      // The auto-update flow emits a short-lived success badge that can still be
-      // visible depending on runner timing. Wait for it to settle so the visual
-      // contract captures the stable toolbar state instead of a transient toast.
-      await expect(page.locator('#save-status')).toBeHidden({ timeout: 10000 });
+      // React anuncia el título del documento en una región `role=status` permanente.
+      // El único estado transitorio propio de la página es `.pro-toast`.
+      await expect(page.locator('.pro-toast')).toBeHidden({ timeout: 10000 });
       await expect(page).toHaveScreenshot(
         path.basename(scenario.golden),
         {

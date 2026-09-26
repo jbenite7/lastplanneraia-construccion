@@ -77,7 +77,7 @@ function verificarControlesDelShell() {
   expect(screen.getByRole('main')).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /saltar al contenido/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /programa general/i })).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: /colapsar menú/i })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /expandir menú/i })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /cambiar a tema (claro|oscuro)/i })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /cuenta · ana/i })).toBeInTheDocument();
 }

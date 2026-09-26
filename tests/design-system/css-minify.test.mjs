@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { minificar, quitarComentarios } from '../../scripts/css-minify.mjs';
+
+test('la CLI de verificación se ejecuta desde rutas con espacios', () => {
+  const script = fileURLToPath(new URL('../../scripts/css-minify.mjs', import.meta.url));
+  const result = spawnSync(process.execPath, [script, '--verificar'], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Todos los minificados corresponden a su fuente/);
+});
 
 // Los casos que romperían una expresión regular ingenua. No son hipotéticos:
 // `content` con barras y `url(data:...)` existen en las hojas de este repo, y un

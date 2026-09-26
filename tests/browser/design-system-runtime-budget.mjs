@@ -61,6 +61,21 @@ async function measureAssets(page, resources) {
   return assets;
 }
 
+async function selectFixtureWeek(page, week) {
+  const result = await page.evaluate(async (selectedWeek) => {
+    const csrfToken = document.querySelector('meta[name="lps-shell-csrf-token"]')?.content || '';
+    const response = await fetch('/context/week', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+      body: JSON.stringify({ semana: selectedWeek }),
+    });
+    return { status: response.status, payload: await response.json() };
+  }, week);
+  expect(result.status, JSON.stringify(result.payload)).toBe(200);
+  expect(result.payload.ok, JSON.stringify(result.payload)).toBe(true);
+}
+
 async function collectRuntimeSample(page, testInfo, project, runtimeContext) {
   expect(project, 'sanitized construction fixture is required').toBeTruthy();
 
@@ -101,25 +116,61 @@ async function collectRuntimeSample(page, testInfo, project, runtimeContext) {
   }, EXPECTED_THEME);
 
   await loginAndSelectProject(page, project, ADMIN);
+  // La semana 2 del fixture de Da Porto está vacía a propósito; medir la semana operativa.
+  await selectFixtureWeek(page, project.operationalWeek);
   await page.evaluate((theme) => localStorage.setItem('aia-theme', theme), EXPECTED_THEME);
   await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => Boolean(
-    window.PGHotModule?.getHotInstance?.()
-      || document.querySelector('#hot-container .ht_master.handsontable'),
-  ), null, { timeout: 45_000 });
+  await page.waitForSelector('table.programa-table-pro tbody tr.row-activity', { timeout: 45_000 });
 
   const initializationMs = round(await page.evaluate(() => performance.now()));
-  const filterButton = page.locator('#hot-container .ht_clone_top:visible .changeType:visible').first();
+  const rowsBeforeFilter = await page.locator('table.programa-table-pro tbody tr.row-activity').count();
+  const filterButton = page.locator('#pgLegend .pg-filter-chip:visible').first();
   await expect(filterButton).toBeVisible({ timeout: 15_000 });
-  const interactionStart = await page.evaluate(() => performance.now());
+  // Measure inside the page from the real pointer event through a paint opportunity.
+  // Playwright actionability and expect polling stay outside the product latency.
+  await filterButton.evaluate((button, previousRowCount) => {
+    const tbody = button.ownerDocument.querySelector('table.programa-table-pro tbody');
+    if (!tbody) throw new Error('Programa General activity rows are missing');
+
+    const probe = { startedAt: null, durationMs: null };
+    const observer = new MutationObserver(() => {
+      const isPressed = button.getAttribute('aria-pressed') === 'true';
+      const rowCount = tbody.querySelectorAll('tr.row-activity').length;
+      if (probe.startedAt === null || !isPressed || rowCount === previousRowCount) return;
+
+      observer.disconnect();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          probe.durationMs = performance.now() - probe.startedAt;
+        });
+      });
+    });
+
+    button.addEventListener('pointerdown', () => {
+      probe.startedAt = performance.now();
+    }, { capture: true, once: true });
+    observer.observe(button, { attributes: true, attributeFilter: ['aria-pressed'] });
+    observer.observe(tbody, { childList: true, subtree: true });
+    window.__pgRuntimeInteractionProbe = probe;
+  }, rowsBeforeFilter);
   await filterButton.click();
-  const filterMenu = page.locator('.htDropdownMenu:visible').first();
-  await expect(filterMenu).toBeVisible();
-  const handsontableInteractionMs = round(
-    await page.evaluate((startedAt) => performance.now() - startedAt, interactionStart),
+  await expect(filterButton).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(
+    () => page.locator('table.programa-table-pro tbody tr.row-activity').count(),
+  ).not.toBe(rowsBeforeFilter);
+  await expect.poll(
+    () => page.evaluate(
+      () => Number.isFinite(window.__pgRuntimeInteractionProbe?.durationMs),
+    ),
+  ).toBe(true);
+  const measuredInteractionMs = await page.evaluate(
+    () => window.__pgRuntimeInteractionProbe?.durationMs ?? null,
   );
-  await page.keyboard.press('Escape');
-  await expect(filterMenu).toBeHidden();
+  expect(Number.isFinite(measuredInteractionMs), 'filter interaction should be measured by the page').toBe(true);
+  expect(measuredInteractionMs).toBeGreaterThan(0);
+  const handsontableInteractionMs = round(measuredInteractionMs);
+  await filterButton.click();
+  await expect(filterButton).toHaveAttribute('aria-pressed', 'false');
 
   const browserState = await page.evaluate((expectedTheme) => {
     const resources = performance.getEntriesByType('resource').map((entry) => ({
@@ -198,7 +249,7 @@ async function collectRuntimeSample(page, testInfo, project, runtimeContext) {
       assetInventorySha256,
       duplicateRequests: duplicates,
       themeProbe: browserState.themeProbe,
-      interactionKind: 'column-filter-menu',
+      interactionKind: 'state-signal-filter-pointerdown-to-paint',
       node: process.version,
       playwrightProject: testInfo.project.name,
       runtime: {

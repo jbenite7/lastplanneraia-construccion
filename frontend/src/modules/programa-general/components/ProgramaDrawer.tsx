@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ActividadUI } from '../domain/modelo';
+import { ActividadUI, parsearTextoActividad, formatearFechaObra } from '../domain/modelo';
 import { calcularDesviacionFisica } from '../domain/validacion';
 import { obtenerConfigEstado } from '../domain/presentacionEstados';
 
@@ -44,7 +44,9 @@ export interface ProgramaDrawerProps {
   totalActividades: number;
   onCerrar: () => void;
   onGuardar: (datos: DatosGuardarActividad) => void;
+  onDirtyChange?: (dirty: boolean) => void;
   onNavigateSeq: (direccion: number) => void;
+  puedeEditar?: boolean;
 }
 
 interface RecursoLeanItem {
@@ -62,7 +64,9 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   totalActividades,
   onCerrar,
   onGuardar,
+  onDirtyChange,
   onNavigateSeq,
+  puedeEditar = true,
 }) => {
   const [fechaInicio, setFechaInicio] = useState(actividad.Fecha_Inicio || '');
   const [fechaFin, setFechaFin] = useState(actividad.Fecha_Fin || '');
@@ -73,6 +77,19 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   const [subcontratista, setSubcontratista] = useState(actividad.Sub_Contratista || '');
   const [observaciones, setObservaciones] = useState(actividad.Observaciones || '');
   const [sosDeclarado, setSosDeclarado] = useState(actividad.alerta_crisis === 1);
+
+  useEffect(() => {
+    onDirtyChange?.(
+      fechaInicio !== (actividad.Fecha_Inicio || '') ||
+      fechaFin !== (actividad.Fecha_Fin || '') ||
+      unidad !== (actividad.unidad || 'm³') ||
+      cantidadPpto !== (actividad.cantidad_ppto?.toString() || '') ||
+      avanceReal !== actividad.avanceRealPct.toString() ||
+      profesional !== (actividad.Responsable_AIA || '') ||
+      subcontratista !== (actividad.Sub_Contratista || '') ||
+      observaciones !== (actividad.Observaciones || '')
+    );
+  }, [actividad, fechaInicio, fechaFin, unidad, cantidadPpto, avanceReal, profesional, subcontratista, observaciones, onDirtyChange]);
 
   // Sincronizar estado cuando cambia la actividad seleccionada (navegación secuencial)
   useEffect(() => {
@@ -149,7 +166,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
         return;
       }
 
-      if ((e.metaKey || e.ctrlKey) && (e.key === 's' || e.key === 'S')) {
+      if (puedeEditar && (e.metaKey || e.ctrlKey) && (e.key === 's' || e.key === 'S')) {
         e.preventDefault();
         handleSave();
         return;
@@ -168,13 +185,14 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onCerrar, onNavigateSeq, handleSave]);
+  }, [onCerrar, onNavigateSeq, handleSave, puedeEditar]);
 
   const realRatio = (parseFloat(avanceReal) || 0) / 100;
   const teorRatio = actividad.avanceTeoricoPct / 100;
   const pptoNum = cantidadPpto !== '' ? parseFloat(cantidadPpto) : null;
   const desviacion = calcularDesviacionFisica(realRatio, teorRatio, pptoNum, unidad);
   const estadoCfg = obtenerConfigEstado(actividad.Estado);
+  const parsedAct = parsearTextoActividad(actividad.Actividad);
 
   // 7 Recursos Lean
   const recursosLean: RecursoLeanItem[] = [
@@ -243,7 +261,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
           <div className="drawer-pro-topline">
             <div className="drawer-breadcrumb">
               <i className="far fa-folder" aria-hidden="true"></i>
-              <span>{actividad.capituloNombre}</span> › Actividad <strong>{actividad.unique_id}</strong>
+              <span>{parsearTextoActividad(actividad.capituloNombre).titulo || actividad.capituloNombre}</span> › Actividad <strong>{actividad.unique_id}</strong>
             </div>
             <button
               type="button"
@@ -256,8 +274,13 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
           </div>
 
           <div className="drawer-title-row">
-            <code className="cell-code">{actividad.codigo_actividad || '-'}</code>
-            <h2 className="drawer-act-title">{actividad.Actividad}</h2>
+            <div className="drawer-title-group">
+              <h3 className="drawer-act-title">{parsedAct.titulo}</h3>
+              {parsedAct.subtitulo && (
+                <span className="drawer-act-subtitle">{parsedAct.subtitulo}</span>
+              )}
+            </div>
+            <span className="drawer-act-code cell-code">{actividad.codigo_actividad || '-'}</span>
           </div>
 
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '2px' }}>
@@ -322,8 +345,12 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                     type="date"
                     className="form-input-pro"
                     value={fechaInicio}
+                    disabled={!puedeEditar}
                     onChange={(e) => setFechaInicio(e.target.value)}
                   />
+                  <span className="drawer-date-formatted form-date-hint" style={{ fontSize: '11px', color: 'var(--ds-text-muted)', marginTop: '2px', display: 'block' }}>
+                    Formato obra: <strong>{formatearFechaObra(fechaInicio)}</strong>
+                  </span>
                 </div>
               </div>
               <div className="form-field-group">
@@ -336,15 +363,25 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                     type="date"
                     className="form-input-pro"
                     value={fechaFin}
+                    disabled={!puedeEditar}
                     onChange={(e) => setFechaFin(e.target.value)}
                   />
+                  <span className="drawer-date-formatted form-date-hint" style={{ fontSize: '11px', color: 'var(--ds-text-muted)', marginTop: '2px', display: 'block' }}>
+                    Formato obra: <strong>{formatearFechaObra(fechaFin)}</strong>
+                  </span>
                 </div>
               </div>
             </div>
+            {actividad.Semanas_Inicio !== undefined && actividad.Semanas_Inicio !== null && (
+              <div className="drawer-schedule-meta" style={{ fontSize: '11px', color: 'var(--ds-text-muted)', marginTop: '2px' }}>
+                <span>Semana contractual: <strong>Sem {actividad.Semanas_Inicio}</strong></span>
+              </div>
+            )}
             {actividad.plazoVencido && (
               <div
+                className="drawer-alert-overdue cell-alert cell-date-overdue date-overdue"
                 style={{
-                  color: 'var(--ds-state-danger-text)',
+                  color: 'var(--ds-state-danger-text, #ef4444)',
                   fontSize: '11px',
                   marginTop: '4px',
                   fontWeight: 600,
@@ -380,6 +417,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                 id="drawerSelectProfesional"
                 className="form-select-pro"
                 value={profesional}
+                disabled={!puedeEditar}
                 onChange={(e) => setProfesional(e.target.value)}
               >
                 <option value="">(Sin asignar · Definir en Lookahead)</option>
@@ -398,6 +436,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                 id="drawerSelectSubcontratista"
                 className="form-select-pro"
                 value={subcontratista}
+                disabled={!puedeEditar}
                 onChange={(e) => setSubcontratista(e.target.value)}
               >
                 <option value="">(Sin asignar · Definir en Lookahead)</option>
@@ -427,6 +466,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                   id="drawerSelectUnidad"
                   className="form-select-pro"
                   value={unidad}
+                  disabled={!puedeEditar}
                   onChange={(e) => {
                     const nuevaUnidad = e.target.value;
                     setUnidad(nuevaUnidad);
@@ -452,7 +492,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                   className="form-input-pro"
                   value={cantidadPpto}
                   onChange={(e) => setCantidadPpto(e.target.value)}
-                  disabled={unidad === '%'}
+                  disabled={!puedeEditar || unidad === '%'}
                 />
               </div>
             </div>
@@ -480,6 +520,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                   max={unidad === '%' ? '100' : undefined}
                   className="form-input-pro"
                   value={avanceReal}
+                  disabled={!puedeEditar}
                   onChange={(e) => setAvanceReal(e.target.value)}
                 />
               </div>
@@ -489,17 +530,17 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
             <div className="dual-gauge-box" style={{ marginTop: '10px' }}>
               <div className="dual-gauge-header">
                 <span className="gauge-metric-title">Desviación Física (Δ):</span>
-                <span className={`gauge-delta-val ${desviacion.esNegativo ? 'delta-neg' : 'delta-pos'}`}>
+                <span className={`gauge-delta-val ${desviacion.esNegativo ? 'delta-neg' : 'delta-ok delta-pos'}`}>
                   {desviacion.textoFormateado}
                 </span>
               </div>
-              <div className="dual-track">
+              <div className="dual-track micro-gauge-bar">
                 <div
                   className="dual-fill-teor"
                   style={{ width: `${Math.min(Math.max(actividad.avanceTeoricoPct, 0), 100)}%` }}
                 ></div>
                 <div
-                  className="dual-fill-real"
+                  className="dual-fill-real micro-gauge-fill"
                   style={{
                     width: `${Math.min(Math.max(parseFloat(avanceReal) || 0, 0), 100)}%`,
                     backgroundColor: desviacion.esNegativo ? 'var(--ds-state-danger-text)' : 'var(--aia-corporate)',
@@ -607,6 +648,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                 style={{ height: '54px', padding: '6px', resize: 'none' }}
                 placeholder="Escribir una nueva observación técnica..."
                 value={observaciones}
+                disabled={!puedeEditar}
                 onChange={(e) => setObservaciones(e.target.value)}
               ></textarea>
             </div>
@@ -615,6 +657,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
               type="button"
               className="btn-sos-trigger"
               onClick={() => setSosDeclarado(true)}
+              disabled={!puedeEditar}
             >
               <i className="fas fa-bell" aria-hidden="true"></i>{' '}
               {sosDeclarado || actividad.alerta_crisis === 1 ? 'Alerta SOS LPS Activa' : 'Declarar Crisis SOS LPS'}
@@ -627,9 +670,11 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
           <button type="button" className="btn-pro-cancel" onClick={onCerrar}>
             Descartar (Esc)
           </button>
-          <button type="button" className="btn-pro-save" onClick={handleSave}>
-            <i className="fas fa-check" aria-hidden="true"></i> Guardar Cambios (⌘S)
-          </button>
+          {puedeEditar && (
+            <button type="button" className="btn-pro-save" onClick={handleSave}>
+              <i className="fas fa-check" aria-hidden="true"></i> Guardar Cambios (⌘S)
+            </button>
+          )}
         </div>
       </aside>
     </>

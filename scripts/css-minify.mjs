@@ -19,7 +19,7 @@
 // **sólo si ese archivo existe** (`RewriteCond -f`). Si no se generó, se sirve el
 // original: el peor caso es «no ahorra», nunca «se rompe».
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, rmSync } from 'node:fs';
-import { join, extname, dirname, relative } from 'node:path';
+import { join, extname, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
@@ -125,7 +125,7 @@ export function desfasados(dirCss = CSS_DIR, dirDist = DIST_DIR) {
   return malos;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   const limpiar = process.argv.includes('--limpiar');
   if (process.argv.includes('--verificar')) {
     const malos = desfasados();

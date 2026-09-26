@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { ProgramaGeneralPage } from './ProgramaGeneralPage';
 
@@ -49,6 +49,7 @@ const mockContexto = {
   proyecto: { id: 1, nombre: 'Proyecto Prueba', codigo: 'PRU' },
   semana: { numero: 34, confirmada: false, esPasada: false },
   permisos: { puedeVer: true, puedeEditar: true, puedeCorteXlsx: true, puedeLote: true, readDrawer: true, writeDrawer: true },
+  enlaces: { bi: '/bi/programa-general?project_id=1&semana=34' },
   catalogos: {
     unidades: ['m³', '%'],
     codigos: ['EST-01'],
@@ -60,17 +61,29 @@ const mockContexto = {
 
 const mockGuardar = vi.fn().mockResolvedValue({ ok: true });
 const mockCorteXlsx = vi.fn().mockResolvedValue({ ok: true, url: 'http://localhost/corte.xlsx' });
+const mockActualizarEjecucion = vi.fn().mockResolvedValue({ respuesta: 'BIEN' });
+const mockObtenerActividades = vi.fn().mockResolvedValue(mockActividadesRaw);
 
 vi.mock('./api/programaGeneralApi', () => ({
   programaGeneralApi: () => ({
     obtenerContexto: vi.fn().mockResolvedValue(mockContexto),
-    obtenerActividades: vi.fn().mockResolvedValue(mockActividadesRaw),
+    obtenerActividades: mockObtenerActividades,
     guardarActividad: mockGuardar,
     generarCorteXlsx: mockCorteXlsx,
+    actualizarEjecucion: mockActualizarEjecucion,
   }),
 }));
 
 describe('ProgramaGeneralPage', () => {
+  it('espera contexto y lista completos antes de ofrecer recarga manual', async () => {
+    let resolverLista: ((value: typeof mockActividadesRaw) => void) | undefined;
+    mockObtenerActividades.mockImplementationOnce(() => new Promise((resolve) => { resolverLista = resolve; }));
+    render(<ProgramaGeneralPage />);
+    await waitFor(() => expect(resolverLista).toBeDefined());
+    expect(screen.queryByRole('button', { name: 'Recargar' })).not.toBeInTheDocument();
+    await act(async () => { resolverLista?.(mockActividadesRaw); });
+    expect(await screen.findByRole('button', { name: 'Recargar' })).toBeInTheDocument();
+  });
   it('monta la página mostrando el título, semana y grilla de actividades', async () => {
     render(<ProgramaGeneralPage />);
 
@@ -136,5 +149,91 @@ describe('ProgramaGeneralPage', () => {
       expect(mockGuardar).toHaveBeenCalled();
       expect(screen.getByText('Cambios guardados con éxito')).toBeInTheDocument();
     });
+  });
+
+  it('abre la leyenda y ejecuta la actualización autorizada con el contexto actual', async () => {
+    render(<ProgramaGeneralPage />);
+
+    await screen.findByText('Programa General');
+    fireEvent.click(screen.getByRole('button', { name: 'Leyenda' }));
+    expect(screen.getByRole('dialog', { name: /Guía Operativa/i })).toBeInTheDocument();
+    expect(screen.getByText(/Actividad Futura:/)).toBeInTheDocument();
+    expect(screen.getByText(/Sin Datos:/)).toBeInTheDocument();
+    expect(screen.getByText(/Con Alerta:/)).toBeInTheDocument();
+    expect(screen.getByText(/Fuera de Ventana:/)).toBeInTheDocument();
+    expect(screen.getByText(/R0-R1-R2\/3-R4\/6/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cerrar leyenda' })).toHaveFocus();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: /Guía Operativa/i })).not.toBeInTheDocument();
+
+    mockActualizarEjecucion.mockResolvedValueOnce({ respuesta: 'BIEN', actualizadas: 3, carryover_actualizadas: 2 });
+    fireEvent.click(screen.getByRole('button', { name: 'Actualizar Ejecución' }));
+    await waitFor(() => {
+      expect(mockActualizarEjecucion).toHaveBeenCalledWith({
+        semana: 34,
+        db: 'PRU',
+        csrf_token: 'csrf123',
+      });
+      expect(screen.getByText(/3 filas y 2 carryovers/)).toBeInTheDocument();
+    });
+  });
+
+  it('conserva la tabla y filtros durante una recarga fallida y ofrece reintentar', async () => {
+    render(<ProgramaGeneralPage />);
+    await screen.findByText('Programa General');
+    const search = screen.getByPlaceholderText(/Buscar actividad, código o responsable/i);
+    fireEvent.change(search, { target: { value: 'Excavación' } });
+    mockObtenerActividades.mockRejectedValueOnce(new Error('red caída'));
+    fireEvent.click(screen.getByRole('button', { name: 'Recargar' }));
+    await screen.findByText(/datos desactualizados/i);
+    expect(search).toHaveValue('Excavación');
+    expect(screen.getAllByText('Excavación mecánica de zapatas').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
+    await waitFor(() => expect(screen.queryByText(/datos desactualizados/i)).not.toBeInTheDocument());
+  });
+
+  it('cancela una recarga anterior y descarta su respuesta tardía', async () => {
+    render(<ProgramaGeneralPage />);
+    await screen.findByText('Programa General');
+    let resolverAnterior: ((value: typeof mockActividadesRaw) => void) | undefined;
+    let senalAnterior: AbortSignal | undefined;
+    mockObtenerActividades.mockImplementationOnce((_week, signal) => {
+      senalAnterior = signal;
+      return new Promise((resolve) => { resolverAnterior = resolve; });
+    }).mockResolvedValueOnce(mockActividadesRaw.map((row) => row.unique_id === 101 ? { ...row, Actividad: 'Versión nueva' } : row));
+    fireEvent.click(screen.getByRole('button', { name: 'Recargar' }));
+    await waitFor(() => expect(resolverAnterior).toBeDefined());
+    fireEvent.click(screen.getByRole('button', { name: 'Recargar' }));
+    expect(senalAnterior?.aborted).toBe(true);
+    expect(await screen.findAllByText('Versión nueva')).not.toHaveLength(0);
+    await act(async () => { resolverAnterior?.(mockActividadesRaw); });
+    await waitFor(() => expect(screen.queryByText('Excavación mecánica de zapatas')).not.toBeInTheDocument());
+  });
+
+  it('quita el aviso de datos desactualizados tras reconciliar un lote', async () => {
+    render(<ProgramaGeneralPage />);
+    await screen.findByText('Programa General');
+    mockObtenerActividades.mockRejectedValueOnce(new Error('red caída'));
+    fireEvent.click(screen.getByRole('button', { name: 'Recargar' }));
+    await screen.findByText(/datos desactualizados/i);
+    mockActualizarEjecucion.mockResolvedValueOnce({ respuesta: 'BIEN', actualizadas: 2, carryover_actualizadas: 1 });
+    fireEvent.click(screen.getByRole('button', { name: 'Actualizar Ejecución' }));
+    await waitFor(() => expect(screen.queryByText(/datos desactualizados/i)).not.toBeInTheDocument());
+    expect(screen.getByText(/2 filas y 1 carryovers/)).toBeInTheDocument();
+  });
+
+  it('confirma un borrador del Drawer antes de actualizar ejecución', async () => {
+    mockActualizarEjecucion.mockClear();
+    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    render(<ProgramaGeneralPage />);
+    fireEvent.click((await screen.findAllByText('Excavación mecánica de zapatas'))[0]);
+    fireEvent.change(screen.getByLabelText('Unidad', { exact: true }), { target: { value: '%' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Actualizar Ejecución' }));
+    expect(confirmar).toHaveBeenCalled();
+    expect(mockActualizarEjecucion).not.toHaveBeenCalled();
+    confirmar.mockReturnValue(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Actualizar Ejecución' }));
+    await waitFor(() => expect(mockActualizarEjecucion).toHaveBeenCalledTimes(1));
+    confirmar.mockRestore();
   });
 });

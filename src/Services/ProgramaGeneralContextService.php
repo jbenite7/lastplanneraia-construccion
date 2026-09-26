@@ -45,8 +45,9 @@ class ProgramaGeneralContextService
         $user = $scope->user();
         $role = $scope->role();
 
-        $projectName = (string) ($session['Proyecto_Proceso'] ?? 'Proyecto');
-        $area = (string) ($session['Area'] ?? 'Construccion');
+        $projectName = (string) ($session['Proyecto_Proceso'] ?? $session['proyecto'] ?? 'Proyecto');
+        $dbPrefix = (string) ($session['db'] ?? $session['dbPrefix'] ?? '');
+        $area = (string) ($session['Area'] ?? $session['area'] ?? 'Construccion');
         if ($area === '' || ($area !== 'Construccion' && $area !== 'Pre-Construccion')) {
             $area = 'Construccion';
         }
@@ -59,7 +60,9 @@ class ProgramaGeneralContextService
         $maxRow = $stmtMax ? $stmtMax->fetch(\PDO::FETCH_ASSOC) : null;
         $maxWeek = $maxRow ? (int) $maxRow['Semana'] : 0;
 
-        $currentWeek = isset($session['Semana']) ? (int) $session['Semana'] : $maxWeek;
+        $currentWeek = isset($session['Semana'])
+            ? (int) $session['Semana']
+            : (isset($session['semana']) ? (int) $session['semana'] : $maxWeek);
         if ($currentWeek <= 0 || $currentWeek > $maxWeek) {
             $currentWeek = $maxWeek;
         }
@@ -120,6 +123,7 @@ class ProgramaGeneralContextService
         // CSRF Tokens
         $csrfPrograma = $this->generateCsrf('programa_general');
         $csrfDrawer = $this->generateCsrf('lps_drawer');
+        $csrfShell = $this->generateCsrf('shell_api');
 
         // BI Link
         $biLink = $this->resolveBiLink('programa-general');
@@ -158,6 +162,7 @@ class ProgramaGeneralContextService
                 'id' => $projectId,
                 'name' => $projectName,
                 'area' => $area,
+                'dbPrefix' => $dbPrefix,
             ],
             'week' => [
                 'number' => $currentWeek,
@@ -168,6 +173,7 @@ class ProgramaGeneralContextService
             'csrf' => [
                 'programaGeneral' => $csrfPrograma,
                 'drawer' => $csrfDrawer,
+                'shell' => $csrfShell,
             ],
             'restrictionConfig' => $restrictionConfig,
             'links' => [

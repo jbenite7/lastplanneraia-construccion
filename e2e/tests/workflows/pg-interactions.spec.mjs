@@ -2,18 +2,17 @@ import { test, expect } from '@playwright/test';
 import { PROJECTS } from '../../../tests/browser/fixtures/projects.mjs';
 import { ProjectDbSnapshot, runSql } from '../../../tests/browser/support/dbSnapshot.mjs';
 import { installErrorCollectors } from '../../../tests/browser/support/assertions.mjs';
-import { changeWeek, loginAndSelectProject, logout, postFormJson, getJson } from '../../../tests/browser/support/session.mjs';
+import { loginAndSelectProject, logout, getJson } from '../../../tests/browser/support/session.mjs';
 import { generateFindings, attachAssertionCollector } from '../../support/findings.mjs';
-import { editCell, getCellValue, getRowCount, waitForRender } from '../../support/handsontable.mjs';
-import { PG_SELECTORS, COMMON_SELECTORS } from '../../support/moduleSelectors.mjs';
+import { abrirActividadPg, abrirLeyendaPg, contarFilasPg, editarCampoDrawerPg, esperarTablaPg, guardarDrawerPg, leerCampoFilaPg, postearActualizacionPgConCsrf } from '../../support/programa-general-react.mjs';
 
-const PROJECT_DA_PORTO = PROJECTS.find((p) => p.key === 'construction');
-const PROJECT_PC = PROJECTS.find((p) => p.key === 'pc');
-const PASSWORD = 'aia2026';
-const ADMIN = { username: 'test.A', password: PASSWORD };
-const RESIDENT = { username: 'test.R', password: PASSWORD };
-const SUBCONTRACTOR = { username: 'test.C', password: PASSWORD };
-const VIEWER = { username: 'test.V', password: PASSWORD };
+const PROJECT_DA_PORTO = PROJECTS.find((project) => project.key === 'construction');
+const PROJECT_JMC = PROJECTS.find((project) => project.key === 'jmc');
+const PROJECT_PC = PROJECTS.find((project) => project.key === 'pc');
+const ADMIN = { username: 'test.A', password: 'aia2026' };
+const RESIDENT = { username: 'test.R', password: 'aia2026' };
+const SUBCONTRACTOR = { username: 'test.C', password: 'aia2026' };
+const VIEWER = { username: 'test.V', password: 'aia2026' };
 const REQUIRE_ISOLATED_DB = process.env.E2E_REQUIRE_ISOLATED_DB === '1';
 
 if (REQUIRE_ISOLATED_DB) {
@@ -29,215 +28,118 @@ function scalar(sql) {
   try { return Number(runSql(sql).trim().split(/\s+/).pop() || 0); } catch { return 0; }
 }
 
-function postedUnit(response) {
-  return new URLSearchParams(response.request().postData() || '').get('unidad');
-}
-
-async function apiPost(page, url, body) {
-  const r = await postFormJson(page, url, body);
-  return { ok: r.ok && !r.payload.parseError, payload: r.payload };
-}
-
 async function apiGet(page, url) {
-  const r = await getJson(page, url);
-  return { ok: r.ok && !r.payload.parseError, payload: r.payload };
+  const result = await getJson(page, url);
+  return { ok: result.ok && !result.payload.parseError, payload: result.payload };
 }
 
-async function editableUnitRow(page) {
-  return page.evaluate(() => {
-    const hot = window.PGHotModule?.getHotInstance?.();
-    if (!hot) return null;
-    const physicalRow = hot.getSourceData().findIndex((row) => (
-      row && Number(row.Titulo) !== 1 && Number(row.unique_id) > 0
-    ));
-    if (physicalRow < 0) return null;
-    const row = hot.getSourceDataAtRow(physicalRow);
-    return {
-      visualRow: hot.toVisualRow(physicalRow),
-      uniqueId: Number(row.unique_id),
-      originalValue: String(row.unidad ?? row.Unidad ?? ''),
-      testValue: String(row.unidad ?? row.Unidad ?? '') === 'ml' ? 'm2' : 'ml',
-    };
+async function abrirSemanaPg(page, week) {
+  await page.goto('/programa-general');
+  await expect.poll(() => page.locator('meta[name="lps-shell-csrf-token"]').getAttribute('content')).toMatch(/\S+/);
+  const csrfToken = await page.locator('meta[name="lps-shell-csrf-token"]').getAttribute('content');
+  const response = await page.request.post('/context/week', {
+    headers: { 'X-CSRF-Token': csrfToken },
+    data: { semana: week },
   });
+  expect(response.ok(), `Seleccionar semana ${week}: ${await response.text()}`).toBe(true);
+  await page.goto('/programa-general');
+  await expect(page.locator('#semana_PHP')).toHaveValue(String(week));
 }
 
-/* ──────────────────────────────────────────────────────────────────────────────
-   Da Porto Admin — full PG workflow
-   ────────────────────────────────────────────────────────────────────────────── */
+async function escogerActividadConUnidad(page) {
+  await esperarTablaPg(page);
+  const row = page.locator('table.programa-table-pro tbody tr.row-activity').first();
+  const uniqueId = Number(await row.getAttribute('data-unique-id'));
+  expect(uniqueId, 'PG React must expose the activity unique_id').toBeGreaterThan(0);
+  await abrirActividadPg(page, uniqueId);
+  const originalValue = await page.getByLabel('Unidad', { exact: true }).inputValue();
+  await page.keyboard.press('Escape');
+  return { uniqueId, originalValue, testValue: originalValue === 'ml' ? 'm2' : 'ml' };
+}
+
+async function guardarUnidad(page, target, value) {
+  const response = page.waitForResponse((candidate) => (
+    candidate.url().includes('/api/general/update?')
+      && candidate.request().method() === 'POST'
+  ));
+  await abrirActividadPg(page, target.uniqueId);
+  await editarCampoDrawerPg(page, 'Unidad', value);
+  await guardarDrawerPg(page);
+  const payload = await (await response).json();
+  expect(payload.respuesta, 'GeneralApiController confirma el guardado').toBe('BIEN');
+  expect(payload.unidad, 'GeneralApiController devuelve la unidad persistida').toBe(value);
+  return payload;
+}
+
+async function activarTreceColumnas(page) {
+  const control = page.getByRole('button', { name: /13 Cols Reales/i });
+  if ((await control.getAttribute('aria-pressed')) !== 'true') await control.click();
+  await expect(control).toHaveAttribute('aria-pressed', 'true');
+}
+
 test.describe('PG interactions', () => {
-  test('Da Porto Admin: edit cell, leyenda, export CSV, LPS drawer', async ({ page }, testInfo) => {
-    test.skip(!PROJECT_DA_PORTO, 'Da Porto project required');
+  test('Da Porto Admin: persiste desde el Drawer, exporta CSV y abre LPS', async ({ page }, testInfo) => {
     const errors = installErrorCollectors(page);
     attachAssertionCollector(errors);
-    const findings = [];
     let snapshot;
     let beforeFingerprint;
-
     try {
       snapshot = new ProjectDbSnapshot(PROJECT_DA_PORTO).capture();
       beforeFingerprint = snapshot.fingerprint();
       await loginAndSelectProject(page, PROJECT_DA_PORTO, ADMIN);
-
-      /* ── navigate + render ── */
-      await changeWeek(page, 1, '/programa-general');
-      await waitForRender(page);
-      await page.waitForTimeout(1000);
-
-      const rowCount = await getRowCount(page);
-      findings.push(`PG rows (hot.countRows): ${rowCount}`);
-
-      // Fallback: count via DOM if hot returns 0
-      let actualRowCount = rowCount;
-      if (actualRowCount === 0) {
-        actualRowCount = await page.locator('.handsontable .htCore tbody tr, [role="treegrid"] [role="rowgroup"]:first-child [role="row"]').count();
-        findings.push(`PG rows (DOM fallback): ${actualRowCount}`);
-      }
-      expect(actualRowCount, 'PG must have rows').toBeGreaterThan(0);
-
-      const target = await editableUnitRow(page);
-      expect(target, 'PG needs an editable activity row').toBeTruthy();
-      findings.push(`Target unique_id: ${target.uniqueId}`);
-      const saveResponse = page.waitForResponse((response) => (
-        response.url().includes('/api/general/update?') &&
-        response.request().method() === 'POST' && postedUnit(response) === target.testValue
-      ));
-      await editCell(page, target.visualRow, 7, target.testValue);
-      const savePayload = await (await saveResponse).json();
-      expect(savePayload.respuesta).toBe('BIEN');
-      expect(savePayload.unidad).toBe(target.testValue);
-
-      // API verify
-      const apiRes = await apiGet(page, `/api/general/list?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`);
-      const apiRow = apiRes.payload.data?.find((row) => Number(row.unique_id) === target.uniqueId);
-      expect(apiRow?.unidad, 'API must return the edited unit').toBe(target.testValue);
-      findings.push(`API verify ${target.testValue}: OK`);
-
-      // DB verify
-      const dbCount = scalar(
-        `SELECT COUNT(*) FROM programa_consolidado WHERE project_id=${PROJECT_DA_PORTO.projectId} ` +
-        `AND unique_id=${target.uniqueId} AND unidad='${target.testValue}'`,
-      );
-      expect(dbCount, 'DB must persist the edited unit').toBe(1);
-      findings.push(`DB verify ${target.testValue}: OK`);
-
-      const uiValue = await getCellValue(page, target.visualRow, 7);
-      expect(uiValue, 'UI must show the edited unit').toBe(target.testValue);
-
-      /* ── restore original value ── */
-      const restoreResponse = page.waitForResponse((response) => (
-        response.url().includes('/api/general/update?') &&
-        response.request().method() === 'POST' && postedUnit(response) === target.originalValue
-      ));
-      await editCell(page, target.visualRow, 7, target.originalValue);
-      expect((await (await restoreResponse).json()).respuesta).toBe('BIEN');
-      expect(await getCellValue(page, target.visualRow, 7)).toBe(target.originalValue);
-
-      /* ── leyenda modal ── */
-      await page.click(PG_SELECTORS.buttons.leyenda);
-      await page.waitForTimeout(500);
-      const leyendaVisible = await page.locator(COMMON_SELECTORS.leyendaModal).first().isVisible().catch(() => false);
-      findings.push(`Leyenda content visible: ${leyendaVisible}`);
-      if (leyendaVisible) {
-        const closeBtn = page.locator(COMMON_SELECTORS.leyendaClose).first();
-        if (await closeBtn.isVisible().catch(() => false)) await closeBtn.click();
-        else await page.keyboard.press('Escape');
-      }
-
-      /* ── export CSV ── */
-      const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
-      await page.click(PG_SELECTORS.buttons.exportCSV);
-      const download = await downloadPromise;
-      expect(download, 'CSV download should not be empty').toBeTruthy();
-      findings.push(`CSV download: ${download.suggestedFilename()}`);
-
-      /* ── LPS Drawer ── */
-      const drawerBtn = page.locator(COMMON_SELECTORS.lpsDrawer);
-      if (await drawerBtn.isVisible().catch(() => false)) {
-        await drawerBtn.click();
-        const drawerDialog = page.locator(COMMON_SELECTORS.lpsDrawerDialog);
-        await expect(drawerDialog, 'LPS Drawer dialog should be visible').toBeVisible({ timeout: 5000 });
-        await page.keyboard.press('Escape');
-        findings.push('LPS Drawer: OK');
-      } else {
-        findings.push('LPS Drawer button not visible');
-      }
-
-      console.log('\n[PG Da Porto Admin] Findings:');
-      findings.forEach((f) => console.log(`  ${f}`));
-      errors.findings = findings;
+      await abrirSemanaPg(page, 1);
+      expect(await contarFilasPg(page), 'PG React must have activity rows').toBeGreaterThan(0);
+      const target = await escogerActividadConUnidad(page);
+      await guardarUnidad(page, target, target.testValue);
+      await page.reload();
+      await esperarTablaPg(page);
+      await activarTreceColumnas(page);
+      expect(await leerCampoFilaPg(page, target.uniqueId, 'UNIDAD')).toBe(target.testValue);
+      const api = await apiGet(page, `/api/general/list?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`);
+      const apiRow = api.payload.data?.find((row) => Number(row.unique_id) === target.uniqueId);
+      expect(apiRow?.unidad, 'UI → API persistence').toBe(target.testValue);
+      expect(scalar(`SELECT COUNT(*) FROM programa_consolidado WHERE project_id=${PROJECT_DA_PORTO.projectId} AND unique_id=${target.uniqueId} AND unidad='${target.testValue}'`), 'API → DB persistence').toBe(1);
+      const download = page.waitForEvent('download');
+      await page.getByRole('button', { name: 'CSV', exact: true }).click();
+      expect((await download).suggestedFilename()).toContain('programa_general');
+      await abrirActividadPg(page, target.uniqueId);
+      await expect(page.getByRole('dialog', { name: 'Editor Contextual LPS' })).toBeVisible();
+      await page.keyboard.press('Escape');
+      const restored = await guardarUnidad(page, target, target.originalValue);
+      expect(restored.respuesta).toBe('BIEN');
+      expect(restored.unidad).toBe(target.originalValue);
+      expect(await leerCampoFilaPg(page, target.uniqueId, 'UNIDAD')).toBe(target.originalValue);
     } finally {
       await logout(page).catch(() => {});
       if (snapshot) {
         snapshot.restore();
-        const afterFingerprint = snapshot.fingerprint();
-        expect(afterFingerprint).toBe(beforeFingerprint);
+        expect(snapshot.fingerprint()).toBe(beforeFingerprint);
         snapshot.dispose();
       }
     }
     testInfo._e2eErrors = errors;
   });
 
-  /* ──────────────────────────────────────────────────────────────────────────────
-     Da Porto Residente — key interactions (omit editing if no permission)
-     ────────────────────────────────────────────────────────────────────────────── */
-  test('Da Porto Residente: view PG, leyenda, export, LPS drawer', async ({ page }, testInfo) => {
-    test.skip(!PROJECT_DA_PORTO, 'Da Porto project required');
+  test('JMC Residente: persiste el campo permitido desde el Drawer en la semana vigente', async ({ page }, testInfo) => {
+    test.skip(!PROJECT_JMC, 'JMC project required');
     const errors = installErrorCollectors(page);
     attachAssertionCollector(errors);
-    const findings = [];
     let snapshot;
-
     try {
-      snapshot = new ProjectDbSnapshot(PROJECT_DA_PORTO).capture();
-      await loginAndSelectProject(page, PROJECT_DA_PORTO, RESIDENT);
-
-      await changeWeek(page, 1, '/programa-general');
-      await waitForRender(page);
-      await page.waitForTimeout(1000);
-
-      const rowCount = await getRowCount(page);
-      findings.push(`PG rows: ${rowCount}`);
-
-      // Test RBAC: try editing via API as different role
-      const apiRes = await apiGet(page, `/api/general/list?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`);
-      if (apiRes.ok && apiRes.payload.data?.length > 0) {
-        findings.push(`PG API access: ${apiRes.payload.data.length} rows visible`);
-      }
-
-      /* ── leyenda ── */
-      const leyendaBtn = page.locator(PG_SELECTORS.buttons.leyenda);
-      if (await leyendaBtn.isVisible().catch(() => false)) {
-        await leyendaBtn.click();
-        await page.waitForTimeout(500);
-        const vis = await page.locator(COMMON_SELECTORS.leyendaModal).first().isVisible().catch(() => false);
-        findings.push(`Leyenda visible: ${vis}`);
-        const closeBtn = page.locator(COMMON_SELECTORS.leyendaClose).first();
-        if (await closeBtn.isVisible().catch(() => false)) await closeBtn.click();
-        else await page.keyboard.press('Escape');
-      }
-
-      /* ── export CSV ── */
-      const exportBtn = page.locator(PG_SELECTORS.buttons.exportCSV);
-      if (await exportBtn.isVisible().catch(() => false)) {
-        const dlPromise = page.waitForEvent('download', { timeout: 10000 });
-        await exportBtn.click();
-        const dl = await dlPromise;
-        expect(dl, 'CSV download should fire').toBeTruthy();
-        findings.push(`CSV: ${dl.suggestedFilename()}`);
-      }
-
-      /* ── LPS Drawer ── */
-      const drawerBtn = page.locator(COMMON_SELECTORS.lpsDrawer);
-      if (await drawerBtn.isVisible().catch(() => false)) {
-        await drawerBtn.click();
-        await expect(page.locator(COMMON_SELECTORS.lpsDrawerDialog)).toBeVisible({ timeout: 5000 });
-        await page.keyboard.press('Escape');
-        findings.push('LPS Drawer: OK');
-      }
-
-      console.log('\n[PG Da Porto Residente] Findings:');
-      findings.forEach((f) => console.log(`  ${f}`));
-      errors.findings = findings;
+      snapshot = new ProjectDbSnapshot(PROJECT_JMC).capture();
+      await loginAndSelectProject(page, PROJECT_JMC, RESIDENT);
+      await abrirSemanaPg(page, PROJECT_JMC.operationalWeek);
+      expect(await contarFilasPg(page), 'Resident must see PG activities').toBeGreaterThan(0);
+      const target = await escogerActividadConUnidad(page);
+      await guardarUnidad(page, target, target.testValue);
+      await page.reload();
+      await esperarTablaPg(page);
+      await activarTreceColumnas(page);
+      expect(await leerCampoFilaPg(page, target.uniqueId, 'UNIDAD')).toBe(target.testValue);
+      const restored = await guardarUnidad(page, target, target.originalValue);
+      expect(restored.respuesta).toBe('BIEN');
+      expect(restored.unidad).toBe(target.originalValue);
+      expect(await leerCampoFilaPg(page, target.uniqueId, 'UNIDAD')).toBe(target.originalValue);
     } finally {
       await logout(page).catch(() => {});
       if (snapshot) { snapshot.restore(); snapshot.dispose(); }
@@ -245,134 +147,106 @@ test.describe('PG interactions', () => {
     testInfo._e2eErrors = errors;
   });
 
-  test('Da Porto read-only roles: visibility and manipulated writes', async ({ page }) => {
-    const roles = [
-      { credentials: SUBCONTRACTOR, canView: false },
-      { credentials: VIEWER, canView: true },
-    ];
-    for (const role of roles) {
-      await loginAndSelectProject(page, PROJECT_DA_PORTO, role.credentials);
-      const viewResponse = await page.goto('/programa-general');
-      expect(viewResponse.status()).toBe(200);
-      const listResponse = await getJson(
-        page,
-        `/api/general/list?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`,
-      );
-      expect(listResponse.status).toBe(role.canView ? 200 : 403);
-      if (role.canView) await waitForRender(page);
-      const forbiddenWrite = await postFormJson(
-        page,
-        `/api/general/update?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`,
-        { opcion: 'modificar', Id: '0', unidad: 'E2E_FORBIDDEN' },
-      );
-      expect(forbiddenWrite.status).toBe(403);
-      await logout(page);
-    }
-  });
-
-  /* ──────────────────────────────────────────────────────────────────────────────
-     Aeropuerto PC Admin — pre-construccion chips, edit, leyenda, export
-     ────────────────────────────────────────────────────────────────────────────── */
-  test('Aeropuerto PC Admin: chips, edit cell, leyenda, export', async ({ page }, testInfo) => {
-    test.skip(!PROJECT_PC, 'Aeropuerto PC project required');
-    const errors = installErrorCollectors(page);
-    attachAssertionCollector(errors);
-    const findings = [];
+  test('Da Porto read-only roles: UI and manipulated API writes remain denied', async ({ page }) => {
     let snapshot;
     let beforeFingerprint;
-
     try {
-      snapshot = new ProjectDbSnapshot(PROJECT_PC).capture();
+      snapshot = new ProjectDbSnapshot(PROJECT_DA_PORTO).capture();
       beforeFingerprint = snapshot.fingerprint();
-      await loginAndSelectProject(page, PROJECT_PC, ADMIN);
+      await loginAndSelectProject(page, PROJECT_DA_PORTO, ADMIN);
+      await abrirSemanaPg(page, 1);
+      const target = await escogerActividadConUnidad(page);
+      await logout(page);
 
-      await changeWeek(page, 1, '/programa-general');
-      await waitForRender(page);
+      await loginAndSelectProject(page, PROJECT_DA_PORTO, SUBCONTRACTOR);
+      expect((await page.goto('/programa-general')).status()).toBe(200);
+      const list = await getJson(page, `/api/general/list?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`);
+      expect(list.status).toBe(403);
+      await expect(page.getByRole('alert')).toBeVisible();
+      await logout(page);
 
-      const rowCount = await getRowCount(page);
-      expect(rowCount, 'PC PG must have rows').toBeGreaterThan(0);
-      findings.push(`PC PG rows: ${rowCount}`);
-
-      /* ── verify pre-construccion chip names ── */
-      for (const chipText of PG_SELECTORS.chips.preconstruccion) {
-        const chip = page.locator(`button:has-text("${chipText}"), span:has-text("${chipText}")`).first();
-        const visible = await chip.isVisible().catch(() => false);
-        findings.push(`Chip "${chipText}": ${visible ? 'visible' : 'not found'}`);
-      }
-
-      /* ── edit valid unit and verify the persistence boundary ── */
-      const target = await editableUnitRow(page);
-      expect(target, 'PC PG needs an editable activity row').toBeTruthy();
-      const saveResponse = page.waitForResponse((response) => (
-        response.url().includes('/api/general/update?') &&
-        response.request().method() === 'POST' && postedUnit(response) === target.testValue
-      ));
-      await editCell(page, target.visualRow, 7, target.testValue);
-      const savePayload = await (await saveResponse).json();
-      expect(savePayload.respuesta).toBe('BIEN');
-      expect(savePayload.unidad).toBe(target.testValue);
-
-      const uiVal = await getCellValue(page, target.visualRow, 7);
-      expect(uiVal, 'PC UI should show the valid edited unit').toBe(target.testValue);
-      findings.push(`PC UI verify: "${uiVal}"`);
-
-      // API
-      const apiRes = await apiGet(page, `/api/general/list?db=${PROJECT_PC.dbPrefix}&semana=1`);
-      const apiRow = apiRes.payload.data?.find((row) => Number(row.unique_id) === target.uniqueId);
-      expect(String(apiRow?.unidad ?? apiRow?.Unidad ?? ''), 'PC API must return the edited unit')
-        .toBe(target.testValue);
-      findings.push(`PC API verify ${target.testValue}: OK`);
-
-      // DB
-      const dbCount = scalar(
-        `SELECT COUNT(*) FROM programa_consolidado WHERE project_id=${PROJECT_PC.projectId} ` +
-        `AND unique_id=${target.uniqueId} AND unidad='${target.testValue}'`,
+      await loginAndSelectProject(page, PROJECT_DA_PORTO, VIEWER);
+      expect((await page.goto('/programa-general')).status()).toBe(200);
+      await abrirSemanaPg(page, 1);
+      await esperarTablaPg(page);
+      await abrirActividadPg(page, target.uniqueId);
+      const unit = page.getByLabel('Unidad', { exact: true });
+      const save = page.getByRole('button', { name: /Guardar Cambios/i });
+      expect((await unit.isDisabled()) || !(await save.isVisible().catch(() => false)), 'Viewer drawer must not permit editing').toBe(true);
+      const context = await apiGet(page, '/api/programa-general/context');
+      const csrfToken = context.payload?.data?.csrf?.programaGeneral;
+      expect(typeof csrfToken, 'El POST manipulado debe llevar el CSRF real de Programa General').toBe('string');
+      expect(csrfToken.length).toBeGreaterThan(0);
+      const denied = await postearActualizacionPgConCsrf(
+        page,
+        `/api/general/update?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`,
+        { unique_id: target.uniqueId, unidad: 'E2E_FORBIDDEN' },
+        csrfToken,
       );
-      expect(dbCount, 'PC DB must persist the edited unit').toBe(1);
-      findings.push(`PC DB verify ${target.testValue}: OK`);
-
-      /* ── restore ── */
-      const restoreResponse = page.waitForResponse((response) => (
-        response.url().includes('/api/general/update?') &&
-        response.request().method() === 'POST' && postedUnit(response) === target.originalValue
-      ));
-      await editCell(page, target.visualRow, 7, target.originalValue);
-      expect((await (await restoreResponse).json()).respuesta).toBe('BIEN');
-      expect(await getCellValue(page, target.visualRow, 7), 'PC value restored').toBe(target.originalValue);
-      findings.push('PC value restored');
-
-      /* ── leyenda ── */
-      await page.click(PG_SELECTORS.buttons.leyenda);
-      await expect(page.locator(COMMON_SELECTORS.leyendaModal), 'PC Leyenda visible')
-        .toBeVisible({ timeout: 5000 });
-      await page.click(COMMON_SELECTORS.leyendaClose);
-      findings.push('PC Leyenda: OK');
-
-      /* ── export CSV ── */
-      const dlP = page.waitForEvent('download', { timeout: 10000 });
-      await page.click(PG_SELECTORS.buttons.exportCSV);
-      const dl = await dlP;
-      expect(dl, 'PC CSV download should fire').toBeTruthy();
-      findings.push(`PC CSV: ${dl.suggestedFilename()}`);
-
-      console.log('\n[PG Aeropuerto PC Admin] Findings:');
-      findings.forEach((f) => console.log(`  ${f}`));
-      errors.findings = findings;
+      expect(denied.status, 'El permiso niega un POST manipulado con CSRF y unique_id válidos').toBe(403);
+      const deniedBatch = await postearActualizacionPgConCsrf(
+        page,
+        `/api/general/update-batch?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`,
+        { opcion: 'modificargrupo' },
+        csrfToken,
+      );
+      expect(deniedBatch.status, 'El permiso niega también el lote con CSRF válido').toBe(403);
+      await logout(page);
+      expect(snapshot.fingerprint(), 'Un POST denegado no modifica la base').toBe(beforeFingerprint);
     } finally {
       await logout(page).catch(() => {});
       if (snapshot) {
         snapshot.restore();
-        const afterFingerprint = snapshot.fingerprint();
-        expect(afterFingerprint).toBe(beforeFingerprint);
+        expect(snapshot.fingerprint()).toBe(beforeFingerprint);
+        snapshot.dispose();
+      }
+    }
+  });
+
+  test('Aeropuerto PC Admin: conserva chips, persistencia y CSV en React', async ({ page }, testInfo) => {
+    test.skip(!PROJECT_PC, 'Aeropuerto PC project required');
+    const errors = installErrorCollectors(page);
+    attachAssertionCollector(errors);
+    let snapshot;
+    let beforeFingerprint;
+    try {
+      snapshot = new ProjectDbSnapshot(PROJECT_PC).capture();
+      beforeFingerprint = snapshot.fingerprint();
+      await loginAndSelectProject(page, PROJECT_PC, ADMIN);
+      await abrirSemanaPg(page, PROJECT_PC.operationalWeek);
+      expect(await contarFilasPg(page)).toBeGreaterThan(0);
+      for (const label of ['Atrasada', 'Con Alerta', 'Debe Iniciar', 'En Curso']) await expect(page.getByRole('button', { name: new RegExp(label) }).first()).toBeVisible();
+      const target = await escogerActividadConUnidad(page);
+      await guardarUnidad(page, target, target.testValue);
+      await page.keyboard.press('Escape');
+      await activarTreceColumnas(page);
+      expect(await leerCampoFilaPg(page, target.uniqueId, 'UNIDAD')).toBe(target.testValue);
+      const api = await apiGet(page, `/api/general/list?db=${PROJECT_PC.dbPrefix}&semana=${PROJECT_PC.operationalWeek}`);
+      const apiRow = api.payload.data?.find((row) => Number(row.unique_id) === target.uniqueId);
+      expect(apiRow?.unidad, 'UI → API persistence in Aeropuerto PC').toBe(target.testValue);
+      const leyenda = await abrirLeyendaPg(page);
+      await page.keyboard.press('Escape');
+      await expect(leyenda).toBeHidden();
+      expect(scalar(`SELECT COUNT(*) FROM programa_consolidado WHERE project_id=${PROJECT_PC.projectId} AND Semana=${PROJECT_PC.operationalWeek} AND unique_id=${target.uniqueId} AND unidad='${target.testValue}'`)).toBe(1);
+      const download = page.waitForEvent('download');
+      await page.getByRole('button', { name: 'CSV', exact: true }).click();
+      expect((await download).suggestedFilename()).toContain('programa_general');
+      const restored = await guardarUnidad(page, target, target.originalValue);
+      expect(restored.respuesta).toBe('BIEN');
+      expect(restored.unidad).toBe(target.originalValue);
+      expect(await leerCampoFilaPg(page, target.uniqueId, 'UNIDAD')).toBe(target.originalValue);
+    } finally {
+      await logout(page).catch(() => {});
+      if (snapshot) {
+        snapshot.restore();
+        expect(snapshot.fingerprint()).toBe(beforeFingerprint);
         snapshot.dispose();
       }
     }
     testInfo._e2eErrors = errors;
   });
 
-  /* ── afterEach: generate findings.md per test ── */
-  test.afterEach(async ({ page }, testInfo) => {
-    const errs = testInfo._e2eErrors || { pageErrors: [], consoleErrors: [], serverErrors: [], assertionErrors: [] };
-    generateFindings(testInfo, errs);
+  test.afterEach(async ({}, testInfo) => {
+    generateFindings(testInfo, testInfo._e2eErrors || { pageErrors: [], consoleErrors: [], serverErrors: [], assertionErrors: [] });
   });
 });

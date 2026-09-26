@@ -7,13 +7,19 @@ export interface ProgramaToolbarProps {
   onOpenDrawer: () => void;
   onExportCsv: () => void;
   onDownloadCorteXlsx: () => void;
+  onOpenLegend: () => void;
+  onActualizarEjecucion: () => void;
+  onRecargar: () => void;
   puedeEditar?: boolean;
   puedeDescargarCorte?: boolean;
   puedeCorteXlsx?: boolean;
+  puedeLote?: boolean;
+  biUrl?: string | null;
   deshabilitado?: boolean;
   cargando?: boolean;
   exportandoCsv?: boolean;
   generandoCorte?: boolean;
+  actualizandoEjecucion?: boolean;
   drawerAbierto?: boolean;
   titulo?: string;
   className?: string;
@@ -26,13 +32,19 @@ export const ProgramaToolbar: React.FC<ProgramaToolbarProps> = ({
   onOpenDrawer,
   onExportCsv,
   onDownloadCorteXlsx,
+  onOpenLegend,
+  onActualizarEjecucion,
+  onRecargar,
   puedeEditar = true,
   puedeDescargarCorte,
   puedeCorteXlsx = true,
+  puedeLote = false,
+  biUrl = '/bi/programa-general',
   deshabilitado = false,
   cargando = false,
   exportandoCsv = false,
   generandoCorte = false,
+  actualizandoEjecucion = false,
   drawerAbierto = false,
   titulo = 'Programa General',
   className = '',
@@ -49,7 +61,7 @@ export const ProgramaToolbar: React.FC<ProgramaToolbarProps> = ({
     >
       <div className="toolbar-left">
         <h1 className="programa-title">{titulo}</h1>
-        <span className="badge-semana">Semana {semana} Vigente</span>
+        <span className="badge-live-week badge-semana">Semana {semana} Vigente</span>
       </div>
 
       <div className="toolbar-actions" role="group" aria-label="Acciones de Programa General">
@@ -90,6 +102,28 @@ export const ProgramaToolbar: React.FC<ProgramaToolbarProps> = ({
         <button
           type="button"
           className="btn-header-action"
+          onClick={onOpenLegend}
+          disabled={inactivo}
+        >
+          <i className="fas fa-circle-question" aria-hidden="true"></i> <span>Leyenda</span>
+        </button>
+
+        {puedeLote && (
+          <button
+            type="button"
+            className="btn-header-action btn-header-action--primary"
+            onClick={onActualizarEjecucion}
+            disabled={inactivo || actualizandoEjecucion}
+            aria-busy={actualizandoEjecucion}
+          >
+            <i className={`fas ${actualizandoEjecucion ? 'fa-spinner fa-spin' : 'fa-sync'}`} aria-hidden="true"></i>{' '}
+            <span>{actualizandoEjecucion ? 'Actualizando...' : 'Actualizar Ejecución'}</span>
+          </button>
+        )}
+
+        <button
+          type="button"
+          className="btn-header-action"
           onClick={onExportCsv}
           disabled={inactivo || exportandoCsv}
           aria-busy={exportandoCsv}
@@ -116,6 +150,21 @@ export const ProgramaToolbar: React.FC<ProgramaToolbarProps> = ({
           ></i>{' '}
           <span>{generandoCorte ? 'Generando Corte...' : 'Corte XLSX'}</span>
         </button>
+
+        <button
+          type="button"
+          className="btn-header-action"
+          onClick={onRecargar}
+          disabled={inactivo}
+        >
+          <i className="fas fa-rotate" aria-hidden="true"></i> <span>Recargar</span>
+        </button>
+
+        {biUrl && (
+          <a className="btn-header-action toolbar-bi-link" href={biUrl}>
+            <i className="fas fa-chart-line" aria-hidden="true"></i> <span>BI Programa</span>
+          </a>
+        )}
       </div>
     </header>
   );

@@ -62,6 +62,7 @@ test('a 390px (móvil) el drawer arranca cerrado con disparador visible y velo a
   expect(screen.getByRole('button', { name: /abrir menú de navegación/i })).toHaveAttribute('aria-expanded', 'false');
   expect(document.querySelector('.shell-menu-velo')).not.toBeInTheDocument();
   expect(screen.getByRole('navigation').closest('aside')).not.toHaveAttribute('data-shell-drawer-open');
+  expect(screen.getByRole('navigation').closest('aside')).toHaveAttribute('data-sidebar-state', 'collapsed');
 });
 
 // Tarea 9b, S04 (pedido de Felipe: «en celular y tablet, junto a Menú»). Con el drawer cerrado
@@ -136,32 +137,23 @@ test('a 768px (tablet) el disparador abre el drawer, pone el velo y marca data-s
   expect(document.body.style.overflow).toBe('hidden');
 });
 
-// Regresión ronda de arreglos 1 (hallazgo del coordinador, navegador real 390×844): con el
-// drawer "abierto" en el árbol de accesibilidad (`data-shell-drawer-open="true"`, `aria-expanded`
-// en el disparador), la pantalla se quedaba en negro — `shell-sidebar.css` seguía aplicando
-// `transform: translateX(-100%)` de la regla "cerrado" por delante de la regla "abierto", pese a
-// tener la misma especificidad y venir después en el archivo. jsdom no calcula cascada CSS real
-// (no habría detectado esto — es exactamente lo que el coordinador señaló), así que esta prueba
-// no verifica `getComputedStyle`: verifica el respaldo inline que `AppShell` aplica directo sobre
-// el nodo (`style.transform`), que es el mecanismo real de la corrección y sí es observable en
-// jsdom. Ver el comentario en `AppShell.tsx` junto al `useEffect` que lo aplica.
-test('el respaldo inline deja el aside visualmente en pantalla cuando el drawer abre (no solo el atributo)', async () => {
+// El CSS canónico resuelve el transform desde `data-shell-drawer-open`, sin un estilo inline
+// compensatorio en React. La comprobación de `getComputedStyle` se conserva en Playwright, donde
+// hay cascada real; jsdom fija aquí el contrato semántico que consume esa regla.
+test('el drawer expone el atributo que el CSS canónico usa para mostrar el aside', async () => {
   establecerAncho(768);
   const usuario = userEvent.setup();
   renderizar();
 
   const aside = screen.getByRole('navigation').closest('aside') as HTMLElement;
-  expect(aside.style.transform).toBe('');
-
   await usuario.click(screen.getByRole('button', { name: /abrir menú de navegación/i }));
 
   expect(aside).toHaveAttribute('data-shell-drawer-open', 'true');
-  expect(aside.style.transform).toBe('translateX(0)');
+  expect(aside.style.transform).toBe('');
 
   await usuario.click(document.querySelector('.shell-menu-velo') as HTMLElement);
 
   expect(aside).not.toHaveAttribute('data-shell-drawer-open');
-  expect(aside.style.transform).toBe('');
 });
 
 test('el respaldo inline no se aplica en escritorio: el rail persistente no lleva transform propio', () => {
@@ -221,7 +213,7 @@ test('a 1180px (desktop canónico) no hay disparador de drawer: el rail es persi
   renderizar();
 
   expect(screen.queryByRole('button', { name: /abrir menú de navegación/i })).not.toBeInTheDocument();
-  expect(screen.getByRole('navigation').closest('aside')).toHaveAttribute('data-sidebar-state', 'expanded');
+  expect(screen.getByRole('navigation').closest('aside')).toHaveAttribute('data-sidebar-state', 'collapsed');
 });
 
 test('en escritorio el botón de colapso alterna data-sidebar-state sin abrir ningún drawer', async () => {
@@ -229,11 +221,11 @@ test('en escritorio el botón de colapso alterna data-sidebar-state sin abrir ni
   const usuario = userEvent.setup();
   renderizar();
 
-  const alternador = screen.getByRole('button', { name: /colapsar menú/i });
+  const alternador = screen.getByRole('button', { name: /expandir menú/i });
   await usuario.click(alternador);
 
-  expect(screen.getByRole('navigation').closest('aside')).toHaveAttribute('data-sidebar-state', 'collapsed');
-  expect(screen.getByRole('button', { name: /expandir menú/i })).toBeInTheDocument();
+  expect(screen.getByRole('navigation').closest('aside')).toHaveAttribute('data-sidebar-state', 'expanded');
+  expect(screen.getByRole('button', { name: /colapsar menú/i })).toBeInTheDocument();
 });
 
 test('redimensionar de móvil a escritorio cierra el drawer que quedó abierto', async () => {

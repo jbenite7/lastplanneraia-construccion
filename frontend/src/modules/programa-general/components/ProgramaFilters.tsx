@@ -86,7 +86,7 @@ export const ProgramaFilters: React.FC<ProgramaFiltersProps> = ({
         {(totalVisibles !== undefined || avanceMacroPct !== undefined) && (
           <div className="signals-stats" aria-label="Estadísticas de actividades visibles">
             {totalVisibles !== undefined && (
-              <span>
+              <span className="stat-pill">
                 Actividades visibles:{' '}
                 <strong>
                   {totalVisibles}
@@ -95,7 +95,7 @@ export const ProgramaFilters: React.FC<ProgramaFiltersProps> = ({
               </span>
             )}
             {avanceMacroPct !== undefined && avanceMacroPct !== null && (
-              <span>
+              <span className="stat-pill stat-avance">
                 Avance macro obra: <strong>{avanceMacroPct}%</strong>
               </span>
             )}

@@ -17,11 +17,11 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 505 |
-| en progreso | 7 |
+| hecha | 513 |
+| en progreso | 8 |
 | pendiente | 159 |
-| sin señal | 173 |
-| descartada | 41 |
+| sin señal | 175 |
+| descartada | 48 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
 
@@ -462,6 +462,18 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - hecha · 6 · Frontend — Drawer Contextual LPS (440px) y Edición de Actividad
   - hecha · 7 · Frontend — Página Orquestadora, Integración de Shell y Rutas
   - hecha · 8 · Verificación Visual Playwright y Cierre E2E
+- **S05 ronda 1.2 — Programa General y shell React a la par del legado** (vigente): 8 de 11 hechas · `2026-09-24-s05-ronda-1-2-paridad-legado.md`
+  - sin señal · 0 · Worktree, base y línea de partida medida
+  - hecha · 1 · Puerta de desarrollo sin el respaldo por posición (V5, H10)
+  - hecha · 2 · El contador cuenta tareas, no capítulos (H3)
+  - hecha · 3 · El módulo deja de redefinir tokens globales (H12)
+  - hecha · 4 · Tabla sin desbordamiento y con «Actividad» completa (R1.2-1, R1.2-2, H2)
+  - sin señal · 5 · Scroll vertical real en la tabla (R1.2-3, H1)
+  - hecha · 6 · Riel del shell React como el del legado (R1.2-4, H4, H5, H14)
+  - hecha · 7 · La semana sale del riel a la barra de contexto (R1.2-4, H14)
+  - hecha · 8 · Pruebas de CI contra el DOM React, sin rebajarlas (H6, H7, V1, V2, V3)
+  - hecha · 9 · Capturas de referencia candidatas — PARA hasta el visto de Felipe (H8)
+  - en progreso · 10 · Verificación final, evidencia e informe
 
 ### S06 — Actualizar Cronograma en React (vigente)
 
@@ -860,6 +872,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 - **Calificación y Registro de TNP en Semanas Confirmadas** (cerrado): 4 de 4 hechas · `2026-09-24-calificacion-tnp-semana-confirmada.md`
 
+### S05-PARIDAD-VISUAL — Elevación Estética y Paridad 1:1 de Programa General en React (derogada)
+
+- **S05-PARIDAD-VISUAL: Paridad Visual 1:1 de Programa General en React** (derogada): 0 de 7 hechas · `2026-09-24-s05-paridad-visual-programa-general.md`
+
 ### Sin spec
 
 - **Sidebar canónico del laboratorio** (cerrado): 0 de 0 hechas · `2026-07-20-sidebar-canonico-laboratorio.md`
@@ -896,6 +912,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 8 · Dos propuestas para Felipe, que no se aplican
 - **Errores de `/api/auth/*` alineados con el esquema del cliente** (cerrado): 1 de 1 hechas · `2026-09-17-errores-api-auth-contrato.md`
 - **Errores de `/api/lps/*` alineados con el esquema del cliente** (cerrado): 1 de 1 hechas · `2026-09-17-errores-api-lps-contrato.md`
+- **Informe de sprint S05 ronda 1.2** (abierto): 0 de 0 hechas · `2026-09-24-s05-ronda-1-2-informe.md`
 - goal abierto · Goal — BI Control Tower / Programa General (Radar y Cronograma) · `goals/bi-control-tower-gemini/goal.md`
 - goal abierto · Núcleo y gobernanza del Design System AIA · `goals/design-system-nucleo-gobernanza/goal.md`
 - goal abierto · organizar-la-casa · `goals/organizar-la-casa/goal.md`

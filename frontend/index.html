@@ -13,10 +13,12 @@
           document.documentElement.classList.add('aia-theme-dark');
         }
       } catch (error) {}
+      if (location.pathname === '/programa-general' || location.pathname === '/app/programa-general') {
+        document.body ? document.body.classList.add('pg-page') : document.addEventListener('DOMContentLoaded', function() { if (document.body) document.body.classList.add('pg-page'); });
+      }
     </script>
     <link rel="stylesheet" href="/css/tokens.css" />
     <link rel="stylesheet" href="/css/aia-design-system.css" />
-    <link rel="stylesheet" href="/css/design-system/theme-claro.css" />
     <link rel="stylesheet" href="/css/auth-react.css" />
     <link rel="stylesheet" href="/css/project-selector-react.css" />
   </head>

@@ -27,7 +27,7 @@ async function apiList(page, project, url, body = null) {
 }
 
 async function smokeHandsontable(page, url) {
-  await expectUsablePage(page, url, ['.handsontable', '.htCore', 'body']);
+  await expectUsablePage(page, url, ['.handsontable', '.htCore', '.programa-table-pro', '.programa-general-container', 'body']);
 }
 
 export const moduleFlows = {
@@ -328,7 +328,7 @@ export async function runModuleFlow(page, project, moduleName) {
 }
 
 export async function validateProjectShell(page, project) {
-  await expectUsablePage(page, '/programa-general', ['.handsontable', 'body']);
+  await expectUsablePage(page, '/programa-general', ['.handsontable', '.programa-table-pro', '.programa-general-container', 'body']);
   await assertProjectContext(page, project);
   await assertNavbarForProject(page, project);
   await assertRestrictionConfig(page, project);

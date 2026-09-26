@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizarActividades } from './modelo';
+import { normalizarActividades, parsearTextoActividad, formatearFechaObra, formatearCantidadPresupuesto } from './modelo';
 import { FilaActividadPg } from '../../../lib/api/esquemas/programa-general';
 
 describe('Dominio S05: modelo y normalizacion de actividades', () => {
@@ -135,3 +135,56 @@ describe('Dominio S05: modelo y normalizacion de actividades', () => {
     expect(normalizadas[0].esCapitulo).toBe(false);
   });
 });
+
+describe('parsearTextoActividad', () => {
+  it('separa titulo y subtitulo cuando contiene tags <small> y <b>', () => {
+    const raw = '<b>LOCALIZACIÓN Y REPLANTEO, </b> <small>[Capítulo: PRELIMINARES, DAPORTO TORRE 3]</small>';
+    const resultado = parsearTextoActividad(raw);
+    expect(resultado.titulo).toBe('LOCALIZACIÓN Y REPLANTEO');
+    expect(resultado.subtitulo).toBe('PRELIMINARES, DAPORTO TORRE 3');
+  });
+
+  it('limpia tags <b> en nombres de capitulo simples', () => {
+    const raw = '<b>DAPORTO TORRE 3</b>';
+    const resultado = parsearTextoActividad(raw);
+    expect(resultado.titulo).toBe('DAPORTO TORRE 3');
+    expect(resultado.subtitulo).toBeNull();
+  });
+
+  it('devuelve el texto limpio si no tiene etiquetas HTML', () => {
+    const raw = 'Excavación mecánica de zapatas eje A-C';
+    const resultado = parsearTextoActividad(raw);
+    expect(resultado.titulo).toBe('Excavación mecánica de zapatas eje A-C');
+    expect(resultado.subtitulo).toBeNull();
+  });
+
+  it('tolera strings vacíos o nulos sin romperse', () => {
+    expect(parsearTextoActividad('')).toEqual({ titulo: '', subtitulo: null });
+    expect(parsearTextoActividad('   ')).toEqual({ titulo: '', subtitulo: null });
+  });
+});
+
+describe('formatearFechaObra', () => {
+  it('formatea YYYY-MM-DD a DD/MM/AAAA', () => {
+    expect(formatearFechaObra('2026-08-10')).toBe('10/08/2026');
+    expect(formatearFechaObra('2026-12-31')).toBe('31/12/2026');
+  });
+
+  it('devuelve guion para valores vacios o nulos', () => {
+    expect(formatearFechaObra(null)).toBe('-');
+    expect(formatearFechaObra(undefined)).toBe('-');
+    expect(formatearFechaObra('')).toBe('-');
+  });
+});
+
+describe('formatearCantidadPresupuesto', () => {
+  it('combina cantidad con 1 decimal y unidad', () => {
+    expect(formatearCantidadPresupuesto(450, 'm³')).toBe('450.0 m³');
+    expect(formatearCantidadPresupuesto(12.345, 'ml')).toBe('12.3 ml');
+  });
+
+  it('devuelve guion si no hay cantidad', () => {
+    expect(formatearCantidadPresupuesto(null, 'm³')).toBe('-');
+  });
+});
+

@@ -26,13 +26,19 @@ export interface GuardarActividadPayload {
   csrf_token: string;
 }
 
+export interface ActualizarEjecucionPayload {
+  semana: number;
+  db: string;
+  csrf_token: string;
+}
+
 export interface ClienteHttpPg {
-  get: <T>(url: string, schema: z.ZodType<T, any, any>) => Promise<T>;
+  get: <T>(url: string, schema: z.ZodType<T, any, any>, signal?: AbortSignal) => Promise<T>;
   postForm: <T>(url: string, data: Record<string, unknown>, schema?: z.ZodType<T, any, any>, headers?: Record<string, string>) => Promise<T>;
 }
 
 const defaultCliente: ClienteHttpPg = {
-  get: <T>(url: string, schema: z.ZodType<T, any, any>) => pedir(url, schema),
+  get: <T>(url: string, schema: z.ZodType<T, any, any>, signal?: AbortSignal) => pedir(url, schema, { signal }),
   postForm: async <T>(
     url: string,
     data: Record<string, unknown>,
@@ -64,14 +70,15 @@ export const esquemaListaActividadesPg: z.ZodType<{ data: FilaActividadPg[] }> =
 
 export function programaGeneralApi(cliente: ClienteHttpPg = defaultCliente) {
   return {
-    async obtenerContexto(): Promise<ContextoPg> {
-      return cliente.get('/api/programa-general/context', esquemaContextoPg);
+    async obtenerContexto(signal?: AbortSignal): Promise<ContextoPg> {
+      return cliente.get('/api/programa-general/context', esquemaContextoPg, signal);
     },
 
-    async obtenerActividades(semana: number): Promise<FilaActividadPg[]> {
+    async obtenerActividades(semana: number, signal?: AbortSignal): Promise<FilaActividadPg[]> {
       const response = await cliente.get<{ data: FilaActividadPg[] }>(
         `/api/general/list?semana=${semana}`,
-        esquemaListaActividadesPg
+        esquemaListaActividadesPg,
+        signal
       );
       return response.data;
     },
@@ -105,6 +112,18 @@ export function programaGeneralApi(cliente: ClienteHttpPg = defaultCliente) {
         '/reportes/corte-programacion',
         { semana },
         esquemaRespuestaCortePg
+      );
+    },
+
+    async actualizarEjecucion(payload: ActualizarEjecucionPayload): Promise<RespuestaUpdatePg> {
+      const params = new URLSearchParams({ db: payload.db, semana: String(payload.semana) });
+      return cliente.postForm<RespuestaUpdatePg>(
+        `/api/general/update-batch?${params.toString()}`,
+        {
+          csrf_token: payload.csrf_token,
+        },
+        esquemaRespuestaUpdatePg,
+        { 'X-CSRF-Token': payload.csrf_token }
       );
     },
   };

@@ -1,5 +1,10 @@
 import React from 'react';
-import { ActividadUI } from '../domain/modelo';
+import {
+  ActividadUI,
+  parsearTextoActividad,
+  formatearFechaObra,
+  formatearCantidadPresupuesto,
+} from '../domain/modelo';
 import { obtenerConfigEstado } from '../domain/presentacionEstados';
 
 export interface ProgramaTableProps {
@@ -9,6 +14,12 @@ export interface ProgramaTableProps {
   modo13Cols?: boolean;
   className?: string;
 }
+
+const COLUMNAS_8 = ['id', 'codigo', 'actividad', 'inicio', 'fin', 'ppto', 'avance', 'estado'] as const;
+const COLUMNAS_13 = [
+  'id', 'codigo', 'actividad', 'rc', 'inicio', 'sem', 'fin',
+  'cantidad', 'unidad', 'real', 'teorico', 'restricciones', 'estado',
+] as const;
 
 export function formatearRestricciones(val?: string | number | null): string {
   if (val === null || val === undefined || val === '') return '-';
@@ -36,48 +47,65 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
       aria-label="Cronograma de Actividades"
     >
       <table className="programa-table-pro lps-dense-table" aria-label="Cronograma de Actividades">
+        <colgroup>
+          {(modo13Cols ? COLUMNAS_13 : COLUMNAS_8).map((clave) => (
+            <col key={clave} className={`pg-col-${clave}`} />
+          ))}
+        </colgroup>
         <thead>
           {modo13Cols ? (
             <tr>
-              <th style={{ width: '40px', textAlign: 'center' }}>ID</th>
-              <th style={{ width: '65px' }}>CÓDIGO</th>
+              <th>ID</th>
+              <th aria-label="CÓDIGO" title="CÓDIGO">CÓD.</th>
               <th>ACTIVIDAD</th>
-              <th style={{ width: '45px', textAlign: 'center' }}>RC</th>
-              <th style={{ width: '85px' }}>F. INICIO</th>
-              <th style={{ width: '80px', textAlign: 'center' }}>SEM. INICIO</th>
-              <th style={{ width: '85px' }}>F. FIN</th>
-              <th style={{ width: '95px', textAlign: 'right' }}>CANTIDAD PPTO</th>
-              <th style={{ width: '50px', textAlign: 'center' }}>UNIDAD</th>
-              <th style={{ width: '80px', textAlign: 'right' }}>AVANCE REAL</th>
-              <th style={{ width: '80px', textAlign: 'right' }}>AVANCE TEÓR</th>
-              <th style={{ width: '95px', textAlign: 'right' }}>LIB. RESTRICCIONES</th>
-              <th style={{ width: '100px', textAlign: 'center' }}>ESTADO</th>
+              <th>RC</th>
+              <th>F. INICIO</th>
+              <th aria-label="SEM. INICIO" title="SEM. INICIO">SEM. INI.</th>
+              <th>F. FIN</th>
+              <th aria-label="CANTIDAD PPTO" title="CANTIDAD PPTO">CANT.</th>
+              <th aria-label="UNIDAD" title="UNIDAD">UND.</th>
+              <th aria-label="AVANCE REAL" title="AVANCE REAL">AV. REAL</th>
+              <th aria-label="AVANCE TEÓR" title="AVANCE TEÓR">AV. TEÓR</th>
+              <th aria-label="LIB. RESTRICCIONES" title="LIB. RESTRICCIONES">RESTR. LIB.</th>
+              <th>ESTADO</th>
             </tr>
           ) : (
             <tr>
-              <th style={{ width: '42px', textAlign: 'center' }}>ID</th>
-              <th style={{ width: '68px' }}>CÓDIGO</th>
+              <th>ID</th>
+              <th aria-label="CÓDIGO" title="CÓDIGO">CÓD.</th>
               <th>ACTIVIDAD</th>
-              <th style={{ width: '85px' }}>F. INICIO</th>
-              <th style={{ width: '85px' }}>F. FIN</th>
-              <th style={{ width: '95px', textAlign: 'right' }}>PPTO TOTAL</th>
-              <th style={{ width: '150px' }}>AVANCE (REAL / TEÓR)</th>
-              <th style={{ width: '100px', textAlign: 'center' }}>ESTADO</th>
+              <th>F. INICIO</th>
+              <th>F. FIN</th>
+              <th>PPTO TOTAL</th>
+              <th aria-label="AVANCE (REAL / TEÓR)" title="AVANCE (REAL / TEÓR)">AV. REAL / TEÓR</th>
+              <th>ESTADO</th>
             </tr>
           )}
         </thead>
         <tbody>
           {actividades.map((act) => {
             if (act.esCapitulo) {
+              const parsedCap = parsearTextoActividad(act.Actividad);
               return (
                 <tr key={`cap-${act.unique_id}`} className="row-chapter chapter-heading-row">
-                  <td colSpan={modo13Cols ? 13 : 8}>
+                  <td colSpan={(modo13Cols ? COLUMNAS_13 : COLUMNAS_8).length}>
                     <div className="chapter-cell-content">
                       <span className="chapter-icon">
                         <i className="far fa-folder" aria-hidden="true"></i>
                       </span>
-                      <strong className="chapter-title">{act.Actividad}</strong>
-                      <span className="chapter-badge">Capítulo</span>
+                      <strong className="chapter-title">{parsedCap.titulo}</strong>
+                      <span className="chapter-badge chapter-badge-count">Capítulo</span>
+                      {act.avanceRealPct !== undefined && act.avanceRealPct !== null && act.avanceRealPct > 0 && (
+                        <div className="chapter-progress">
+                          <span>Avance {act.avanceRealPct}%</span>
+                          <div className="mini-progress-track">
+                            <div
+                              className="mini-progress-fill"
+                              style={{ width: `${Math.min(Math.max(act.avanceRealPct, 0), 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -86,14 +114,12 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
 
             const isSelected = actividadSeleccionadaId === act.unique_id;
             const estadoCfg = obtenerConfigEstado(act.Estado);
-            const pptoStr =
-              act.cantidad_ppto !== null && act.cantidad_ppto !== undefined
-                ? `${act.cantidad_ppto.toFixed(1)} ${act.unidad ?? ''}`.trim()
-                : '-';
+            const parsed = parsearTextoActividad(act.Actividad);
+            const pptoStr = formatearCantidadPresupuesto(act.cantidad_ppto, act.unidad);
 
             const cantPptoStr =
               act.cantidad_ppto !== null && act.cantidad_ppto !== undefined
-                ? act.cantidad_ppto.toFixed(1)
+                ? Number(act.cantidad_ppto).toFixed(1)
                 : '-';
 
             const handleKeyDown = (e: React.KeyboardEvent<HTMLTableRowElement>) => {
@@ -106,6 +132,7 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
             return (
               <tr
                 key={act.unique_id}
+                data-unique-id={act.unique_id}
                 className={`row-activity data-row ${isSelected ? 'active-editing' : ''}`.trim()}
                 onClick={() => onSelectActividad(act.unique_id)}
                 tabIndex={0}
@@ -123,7 +150,12 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
                     </td>
                     <td>
                       <div className="activity-cell-name cell-activity">
-                        <span className="activity-title">{act.Actividad}</span>
+                        <div className="activity-title-group">
+                          <span className="activity-title">{parsed.titulo}</span>
+                          {parsed.subtitulo && (
+                            <span className="activity-subtitle">{parsed.subtitulo}</span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td style={{ textAlign: 'center' }}>
@@ -135,14 +167,18 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
                         <span style={{ color: 'var(--ds-text-muted)' }}>No</span>
                       )}
                     </td>
-                    <td className="cell-date">{act.Fecha_Inicio ?? '-'}</td>
+                    <td className="cell-date"><span className="cell-date-value">{formatearFechaObra(act.Fecha_Inicio)}</span></td>
                     <td className="cell-date" style={{ textAlign: 'center' }}>
-                      {act.Semanas_Inicio !== null && act.Semanas_Inicio !== undefined
-                        ? `Sem ${act.Semanas_Inicio}`
-                        : '-'}
+                      <span className="cell-date-value">
+                        {act.Semanas_Inicio !== null && act.Semanas_Inicio !== undefined
+                          ? `Sem ${act.Semanas_Inicio}`
+                          : '-'}
+                      </span>
                     </td>
                     <td className="cell-date">
-                      <span>{act.Fecha_Fin ?? '-'}</span>
+                      <span className={act.plazoVencido ? 'cell-date-overdue' : undefined}>
+                        <span className="cell-date-value">{formatearFechaObra(act.Fecha_Fin)}</span>
+                      </span>
                       {act.plazoVencido && (
                         <span
                           className="cell-alert cell-date-overdue"
@@ -159,10 +195,10 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
                       {act.unidad || '-'}
                     </td>
                     <td style={{ textAlign: 'right' }}>
-                      <strong className="avance-real">{act.avanceRealPct.toFixed(1)}%</strong>
+                      <strong className="avance-real avance-real-val">{act.avanceRealPct.toFixed(1)}%</strong>
                     </td>
                     <td style={{ textAlign: 'right', color: 'var(--ds-text-muted)' }}>
-                      {act.avanceTeoricoPct.toFixed(1)}%
+                      <span className="avance-teor-val">{act.avanceTeoricoPct.toFixed(1)}%</span>
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       {formatearRestricciones(act.Estado_Restricciones)}
@@ -187,7 +223,12 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
                     </td>
                     <td>
                       <div className="activity-cell-name cell-activity">
-                        <span className="activity-title">{act.Actividad}</span>
+                        <div className="activity-title-group">
+                          <span className="activity-title">{parsed.titulo}</span>
+                          {parsed.subtitulo && (
+                            <span className="activity-subtitle">{parsed.subtitulo}</span>
+                          )}
+                        </div>
                         {act.esRutaCritica && (
                           <span className="badge-rc badge-rc-pill" title="Ruta Crítica">
                             RC
@@ -195,9 +236,11 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
                         )}
                       </div>
                     </td>
-                    <td className="cell-date">{act.Fecha_Inicio ?? '-'}</td>
+                    <td className="cell-date"><span className="cell-date-value">{formatearFechaObra(act.Fecha_Inicio)}</span></td>
                     <td className="cell-date">
-                      <span>{act.Fecha_Fin ?? '-'}</span>
+                      <span className={act.plazoVencido ? 'cell-date-overdue' : undefined}>
+                        <span className="cell-date-value">{formatearFechaObra(act.Fecha_Fin)}</span>
+                      </span>
                       {act.plazoVencido && (
                         <span
                           className="cell-alert cell-date-overdue"
@@ -213,11 +256,11 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
                     <td className="cell-avance">
                       <div className="cell-avance-dual">
                         <div className="avance-numbers avance-text-box">
-                          <strong className="avance-real">{act.avanceRealPct.toFixed(1)}%</strong>
-                          <span className="avance-teor"> / {act.avanceTeoricoPct.toFixed(1)}%</span>
+                          <strong className="avance-real avance-real-val">{act.avanceRealPct.toFixed(1)}%</strong>
+                          <span className="avance-teor avance-teor-val"> / {act.avanceTeoricoPct.toFixed(1)}%</span>
                           <span
                             className={`avance-delta avance-delta-badge ${
-                              act.deltaPct < 0 ? 'delta-neg' : 'delta-pos'
+                              act.deltaPct < 0 ? 'delta-neg' : 'delta-ok delta-pos'
                             }`}
                           >
                             {act.deltaTexto}

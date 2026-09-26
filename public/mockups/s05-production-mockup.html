@@ -1,0 +1,2372 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S05 Programa General — Calidad de Producción AIA Last Planner</title>
+  
+  <!-- Tipografías Canónicas de DESIGN.md -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* ==========================================================================
+       TOKENS OFICIALES AIA LAST PLANNER (DESIGN.md & tokens.css)
+       ========================================================================== */
+    :root {
+      /* Tema Operativo: DARK CANÓNICO */
+      --ds-bg-canvas: #0b100d;
+      --ds-bg-page: #111a15;
+      --ds-surface-card: #1c241f;
+      --ds-surface-raised: #233029;
+      --ds-surface-glass: rgba(28, 36, 31, 0.85);
+      --ds-surface-well: #101613;
+      
+      --ds-border-subtle: rgba(221, 239, 230, 0.12);
+      --ds-border-strong: rgba(221, 239, 230, 0.24);
+      --ds-focus-ring: #2caa9f;
+      
+      --ds-text-primary: #f7faf8;
+      --ds-text-secondary: #c7d4cc;
+      --ds-text-muted: #829288;
+      
+      --aia-corporate: #1a5633;
+      --aia-corporate-on-dark: #6c9077;
+      --aia-brand-green-light: #8cb4a1;
+      --aia-construction: #b55211;
+      
+      /* Canal de Matiz Canónico de Estado (DESIGN.md) */
+      --ds-state-amber-bg: #3a3a0f;
+      --ds-state-amber-text: #f2e79c;
+      --ds-state-amber-border: #615f19;
+      
+      --ds-state-orange-bg: #452a0d;
+      --ds-state-orange-text: #fcd34d;
+      --ds-state-orange-border: #784717;
+      
+      --ds-state-green-bg: #173d26;
+      --ds-state-green-text: #b7e8c6;
+      --ds-state-green-border: #2a613f;
+      
+      --ds-state-blue-bg: #17334f;
+      --ds-state-blue-text: #bbdcfb;
+      --ds-state-blue-border: #2a527c;
+      
+      --ds-state-red-bg: #431414;
+      --ds-state-red-text: #ffcdc8;
+      --ds-state-red-border: #6e2020;
+      
+      --ds-state-neutral-bg: #2b2f2d;
+      --ds-state-neutral-text: #d1d5db;
+      --ds-state-neutral-border: #444a47;
+      
+      --ds-state-teal-bg: #134841;
+      --ds-state-teal-text: #99f6e4;
+      --ds-state-teal-border: #1f6d63;
+      
+      --ds-state-violet-bg: #33204a;
+      --ds-state-violet-text: #e9d5ff;
+      --ds-state-violet-border: #56357d;
+      
+      /* Tipografías */
+      --font-display: 'Montserrat', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+      --radius-full: 9999px;
+    }
+
+    [data-theme="light"] {
+      --ds-bg-canvas: #f4f6f5;
+      --ds-bg-page: #f8faf9;
+      --ds-surface-card: #ffffff;
+      --ds-surface-raised: #f1f5f3;
+      --ds-surface-glass: rgba(255, 255, 255, 0.9);
+      --ds-surface-well: #ffffff;
+      
+      --ds-border-subtle: rgba(0, 0, 0, 0.08);
+      --ds-border-strong: rgba(0, 0, 0, 0.16);
+      --ds-focus-ring: #00877d;
+      
+      --ds-text-primary: #141c18;
+      --ds-text-secondary: #4a5c52;
+      --ds-text-muted: #718278;
+      
+      --aia-corporate: #1a5633;
+      --aia-corporate-on-dark: #1a5633;
+      --aia-brand-green-light: #256f43;
+      
+      --ds-state-amber-bg: #fffbeb;
+      --ds-state-amber-text: #92400e;
+      --ds-state-amber-border: #fde68a;
+      
+      --ds-state-orange-bg: #fff7ed;
+      --ds-state-orange-text: #9a3412;
+      --ds-state-orange-border: #fed7aa;
+      
+      --ds-state-green-bg: #f0fdf4;
+      --ds-state-green-text: #166534;
+      --ds-state-green-border: #bbf7d0;
+      
+      --ds-state-blue-bg: #eff6ff;
+      --ds-state-blue-text: #1e40af;
+      --ds-state-blue-border: #bfdbfe;
+      
+      --ds-state-red-bg: #fef2f2;
+      --ds-state-red-text: #991b1b;
+      --ds-state-red-border: #fecaca;
+      
+      --ds-state-neutral-bg: #f3f4f6;
+      --ds-state-neutral-text: #374151;
+      --ds-state-neutral-border: #e5e7eb;
+      
+      --ds-state-teal-bg: #f0fdfa;
+      --ds-state-teal-text: #115e59;
+      --ds-state-teal-border: #99f6e4;
+      
+      --ds-state-violet-bg: #faf5ff;
+      --ds-state-violet-text: #6b21a8;
+      --ds-state-violet-border: #e9d5ff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background-color: var(--ds-bg-canvas);
+      color: var(--ds-text-primary);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ==========================================================================
+       LAYOUT SHELL: SIDEBAR & MAIN
+       ========================================================================== */
+    .app-sidebar {
+      width: 216px;
+      min-width: 216px;
+      background: var(--ds-bg-page);
+      border-right: 1px solid var(--ds-border-subtle);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      user-select: none;
+    }
+
+    .brand-area {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--ds-border-subtle);
+    }
+    .brand-mark {
+      width: 26px;
+      height: 26px;
+      background: var(--aia-corporate);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 13px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      color: var(--ds-text-primary);
+    }
+
+    .project-card {
+      padding: 10px 14px;
+      background: var(--ds-surface-card);
+      margin: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--ds-border-subtle);
+    }
+    .project-name {
+      font-family: var(--font-display);
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--ds-text-primary);
+    }
+    .project-meta {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ds-text-muted);
+      margin-top: 2px;
+    }
+    .week-badge-select {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--ds-bg-page);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--ds-border-subtle);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--aia-corporate-on-dark);
+    }
+    .week-badge-select i { font-size: 10px; }
+
+    .nav-group {
+      flex: 1;
+      padding: 8px 10px;
+      overflow-y: auto;
+    }
+    .nav-label {
+      font-family: var(--font-display);
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--ds-text-muted);
+      padding: 10px 8px 4px 8px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ds-text-secondary);
+      text-decoration: none;
+      transition: all 0.15s ease;
+      margin-bottom: 2px;
+    }
+    .nav-item:hover {
+      background: var(--ds-surface-card);
+      color: var(--ds-text-primary);
+    }
+    .nav-item.active {
+      background: var(--aia-corporate);
+      color: white;
+      font-weight: 600;
+    }
+    .nav-item i { width: 14px; text-align: center; font-size: 12px; }
+
+    .sidebar-footer {
+      padding: 12px 14px;
+      border-top: 1px solid var(--ds-border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--ds-text-muted);
+    }
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: var(--ds-text-primary);
+    }
+    .user-avatar {
+      width: 20px;
+      height: 20px;
+      border-radius: var(--radius-full);
+      background: var(--ds-surface-raised);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    /* ==========================================================================
+       MAIN APP AREA
+       ========================================================================== */
+    .app-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--ds-bg-canvas);
+      position: relative;
+    }
+
+    /* Header Bar */
+    .top-header {
+      height: 52px;
+      background: var(--ds-bg-page);
+      border-bottom: 1px solid var(--ds-border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      z-index: 10;
+    }
+    .top-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      color: var(--ds-text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge-live-week {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      background: rgba(26, 86, 51, 0.2);
+      color: var(--aia-corporate-on-dark);
+      border: 1px solid rgba(26, 86, 51, 0.4);
+      padding: 2px 7px;
+      border-radius: var(--radius-sm);
+    }
+
+    .top-header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .control-pill-group {
+      display: flex;
+      background: var(--ds-surface-card);
+      border: 1px solid var(--ds-border-strong);
+      border-radius: var(--radius-md);
+      padding: 2px;
+      gap: 2px;
+    }
+    .btn-toggle-pill {
+      background: transparent;
+      border: none;
+      color: var(--ds-text-muted);
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-toggle-pill:hover {
+      color: var(--ds-text-primary);
+    }
+    .btn-toggle-pill.active {
+      background: var(--ds-surface-raised);
+      color: var(--ds-text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .btn-header-action {
+      background: var(--ds-surface-card);
+      border: 1px solid var(--ds-border-subtle);
+      color: var(--ds-text-secondary);
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-header-action:hover {
+      background: var(--ds-surface-raised);
+      color: var(--ds-text-primary);
+      border-color: var(--ds-border-strong);
+    }
+    .btn-drawer-trigger {
+      background: var(--aia-corporate);
+      color: white;
+      border: none;
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: background 0.15s ease;
+    }
+    .btn-drawer-trigger:hover {
+      background: var(--aia-brand-green-light);
+      color: #0b100d;
+    }
+
+    /* ==========================================================================
+       BARRA DE SEÑALES & CHIPS CANÓNICOS (DESIGN.md)
+       ========================================================================== */
+    .signals-bar {
+      padding: 10px 18px 12px 18px;
+      background: var(--ds-bg-page);
+      border-bottom: 1px solid var(--ds-border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .signals-search-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .search-input-wrapper {
+      position: relative;
+      width: 290px;
+    }
+    .search-input-wrapper i {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      color: var(--ds-text-muted);
+    }
+    .search-input {
+      width: 100%;
+      height: 28px;
+      background: var(--ds-surface-card);
+      border: 1px solid var(--ds-border-strong);
+      border-radius: var(--radius-md);
+      color: var(--ds-text-primary);
+      font-size: 11.5px;
+      padding: 0 45px 0 28px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .search-input:focus {
+      border-color: var(--ds-focus-ring);
+      box-shadow: 0 0 0 1px var(--ds-focus-ring);
+    }
+    .search-kbd {
+      position: absolute;
+      right: 7px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--ds-text-muted);
+      background: var(--ds-surface-raised);
+      padding: 1px 4px;
+      border-radius: 3px;
+      border: 1px solid var(--ds-border-subtle);
+    }
+
+    .signals-stats {
+      font-size: 11px;
+      color: var(--ds-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .signals-stats strong { color: var(--ds-text-primary); }
+
+    /* Los 8 Chips Canónicos con Pulido de Producción */
+    .state-chips-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .state-chip-btn {
+      height: 26px;
+      padding: 0 9px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      white-space: nowrap;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+    .state-chip-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .state-chip-btn:active {
+      transform: translateY(0);
+    }
+    .chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: var(--radius-full);
+    }
+    .chip-count {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      padding: 1px 5px;
+      border-radius: var(--radius-full);
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    /* Asignación de Paleta Canónica DESIGN.md a Chips */
+    .chip-amber {
+      background: var(--ds-state-amber-bg);
+      color: var(--ds-state-amber-text);
+      border-color: var(--ds-state-amber-border);
+    }
+    .chip-amber .chip-dot { background: var(--ds-state-amber-text); box-shadow: 0 0 6px var(--ds-state-amber-text); }
+
+    .chip-orange {
+      background: var(--ds-state-orange-bg);
+      color: var(--ds-state-orange-text);
+      border-color: var(--ds-state-orange-border);
+    }
+    .chip-orange .chip-dot { background: var(--ds-state-orange-text); }
+
+    .chip-green-future {
+      background: var(--ds-state-green-bg);
+      color: var(--ds-state-green-text);
+      border-color: var(--ds-state-green-border);
+    }
+    .chip-green-future .chip-dot { background: var(--ds-state-green-text); }
+
+    .chip-blue {
+      background: var(--ds-state-blue-bg);
+      color: var(--ds-state-blue-text);
+      border-color: var(--ds-state-blue-border);
+    }
+    .chip-blue .chip-dot { background: var(--ds-state-blue-text); }
+
+    .chip-red {
+      background: var(--ds-state-red-bg);
+      color: var(--ds-state-red-text);
+      border-color: var(--ds-state-red-border);
+    }
+    .chip-red .chip-dot { background: var(--ds-state-red-text); box-shadow: 0 0 6px var(--ds-state-red-text); }
+
+    .chip-neutral {
+      background: var(--ds-state-neutral-bg);
+      color: var(--ds-state-neutral-text);
+      border-color: var(--ds-state-neutral-border);
+    }
+    .chip-neutral .chip-dot { background: var(--ds-state-neutral-text); }
+
+    .chip-teal {
+      background: var(--ds-state-teal-bg);
+      color: var(--ds-state-teal-text);
+      border-color: var(--ds-state-teal-border);
+    }
+    .chip-teal .chip-dot { background: var(--ds-state-teal-text); }
+
+    .chip-violet {
+      background: var(--ds-state-violet-bg);
+      color: var(--ds-state-violet-text);
+      border-color: var(--ds-state-violet-border);
+    }
+    .chip-violet .chip-dot { background: var(--ds-state-violet-text); }
+
+    /* ==========================================================================
+       TABLA ALTA DENSIDAD (8 COLUMNAS ESENCIALES O 13 COLUMNAS REALES)
+       ========================================================================== */
+    .table-viewport {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: auto;
+      position: relative;
+    }
+    .lps-dense-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: left;
+    }
+    .lps-dense-table th {
+      position: sticky;
+      top: 0;
+      background: var(--ds-surface-card);
+      border-bottom: 1px solid var(--ds-border-strong);
+      padding: 7px 10px;
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--ds-text-secondary);
+      user-select: none;
+      z-index: 5;
+    }
+    .lps-dense-table th.text-center { text-align: center; }
+    .lps-dense-table th.text-right { text-align: right; }
+    
+    .col-sort-icon {
+      font-size: 9px;
+      color: var(--ds-text-muted);
+      margin-left: 3px;
+    }
+
+    /* Filas y Capítulos */
+    .chapter-heading-row td {
+      background: var(--ds-surface-raised);
+      border-top: 1px solid var(--ds-border-subtle);
+      border-bottom: 1px solid var(--ds-border-strong);
+      padding: 6px 12px;
+      font-family: var(--font-display);
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--aia-corporate-on-dark);
+      cursor: pointer;
+    }
+    .chapter-badge-count {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      background: rgba(0,0,0,0.25);
+      margin-left: 8px;
+      color: var(--ds-text-secondary);
+    }
+    .chapter-progress {
+      float: right;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--ds-text-secondary);
+    }
+    .mini-progress-track {
+      width: 70px;
+      height: 5px;
+      background: rgba(255,255,255,0.1);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .mini-progress-fill {
+      height: 100%;
+      background: var(--aia-corporate);
+    }
+
+    .data-row {
+      border-bottom: 1px solid var(--ds-border-subtle);
+      transition: background-color 0.12s ease;
+      cursor: pointer;
+    }
+    .data-row td {
+      padding: 6px 10px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .data-row:hover {
+      background: rgba(255, 255, 255, 0.04) !important;
+    }
+    .data-row.active-editing {
+      background: rgba(44, 170, 159, 0.08) !important;
+      outline: 1px solid var(--ds-focus-ring);
+      outline-offset: -1px;
+    }
+
+    /* Coloreado Semántico Sutil por Estado en Filas */
+    .row-atrasada {
+      background: rgba(67, 20, 20, 0.12);
+      border-left: 3.5px solid #ef4444;
+    }
+    .row-con-alerta {
+      background: rgba(58, 58, 15, 0.14);
+      border-left: 3.5px solid #f59e0b;
+    }
+    .row-debe-iniciar {
+      background: rgba(69, 42, 13, 0.12);
+      border-left: 3.5px solid #f97316;
+    }
+    .row-en-curso {
+      background: rgba(23, 51, 79, 0.12);
+      border-left: 3.5px solid #3b82f6;
+    }
+    .row-actividad-futura {
+      background: rgba(23, 61, 38, 0.10);
+      border-left: 3.5px solid #10b981;
+    }
+    .row-terminada {
+      background: rgba(43, 47, 45, 0.12);
+      border-left: 3.5px solid #6b7280;
+    }
+    .row-fuera-de-ventana {
+      background: rgba(19, 72, 65, 0.12);
+      border-left: 3.5px solid #14b8a6;
+    }
+    .row-sin-datos {
+      background: rgba(51, 32, 74, 0.12);
+      border-left: 3.5px solid #a855f7;
+    }
+
+    /* Celdas & Badges */
+    .cell-id {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--ds-text-muted);
+      text-align: center;
+    }
+    .cell-code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ds-text-primary);
+      background: var(--ds-surface-raised);
+      padding: 1px 5px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--ds-border-subtle);
+      display: inline-block;
+    }
+    .cell-activity {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .activity-title {
+      font-weight: 500;
+      color: var(--ds-text-primary);
+    }
+    .badge-rc-pill {
+      font-family: var(--font-display);
+      font-size: 8.5px;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+    .btn-cell-comment {
+      background: transparent;
+      border: none;
+      color: var(--ds-text-muted);
+      cursor: pointer;
+      font-size: 11px;
+      padding: 1px 4px;
+      border-radius: 3px;
+      transition: color 0.15s;
+    }
+    .btn-cell-comment.has-notes {
+      color: #38bdf8;
+    }
+    .cell-date {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ds-text-secondary);
+    }
+    .cell-date-overdue {
+      color: #f87171;
+      font-weight: 700;
+    }
+    
+    /* Celda Presupuesto con Unidad Integrada */
+    .cell-ppto {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      text-align: right;
+    }
+    .ppto-val { font-weight: 600; color: var(--ds-text-primary); }
+    .ppto-unit {
+      font-size: 10px;
+      color: var(--ds-text-muted);
+      margin-left: 2px;
+    }
+
+    /* Celda Avance Dual con Micro-Gauge */
+    .cell-avance {
+      text-align: right;
+    }
+    .avance-text-box {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 4px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+    }
+    .avance-real-val { font-weight: 700; color: var(--ds-text-primary); }
+    .avance-teor-val { font-size: 10px; color: var(--ds-text-muted); }
+    .avance-delta-badge {
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 0 4px;
+      border-radius: 3px;
+    }
+    .delta-neg { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .delta-ok { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    
+    .micro-gauge-bar {
+      height: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-full);
+      margin-top: 3px;
+      position: relative;
+      overflow: hidden;
+    }
+    .micro-gauge-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+    }
+
+    /* Status Chip en Tabla */
+    .status-cell-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-body);
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      white-space: nowrap;
+    }
+
+    /* Ocultamiento Racionalizado (Modo 8 Columnas vs 13 Columnas) */
+    body.mode-rationalized .col-sem-inicio,
+    body.mode-rationalized .col-rc-standalone,
+    body.mode-rationalized .col-unidad-standalone,
+    body.mode-rationalized .col-teorico-standalone,
+    body.mode-rationalized .col-restr-standalone {
+      display: none !important;
+    }
+    body:not(.mode-rationalized) .unit-integrated,
+    body:not(.mode-rationalized) .teorico-integrated {
+      display: none !important;
+    }
+
+    /* ==========================================================================
+       DRAWER CONTEXTUAL LPS DE PRODUCCIÓN (440px)
+       ========================================================================== */
+    .drawer-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(3px);
+      z-index: 100;
+      display: none;
+      animation: fadeIn 0.2s ease-out;
+    }
+    .drawer-backdrop.active { display: block; }
+
+    .drawer-panel-pro {
+      position: fixed;
+      top: 0;
+      right: -480px;
+      width: 440px;
+      height: 100vh;
+      background: var(--ds-bg-page);
+      border-left: 1px solid var(--ds-border-strong);
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+      z-index: 101;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .drawer-panel-pro.active { right: 0; }
+
+    /* Drawer Header */
+    .drawer-pro-header {
+      padding: 14px 18px;
+      background: var(--ds-surface-card);
+      border-bottom: 1px solid var(--ds-border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .drawer-pro-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .drawer-breadcrumb {
+      font-family: var(--font-display);
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--ds-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .drawer-breadcrumb span { color: var(--aia-corporate-on-dark); }
+    .drawer-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--ds-text-muted);
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      transition: all 0.15s;
+    }
+    .drawer-close-btn:hover {
+      background: var(--ds-surface-raised);
+      color: var(--ds-text-primary);
+    }
+    .drawer-title-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .drawer-act-title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--ds-text-primary);
+      flex: 1;
+    }
+
+    /* Sub-barra de Navegación Secuencial */
+    .drawer-seq-nav {
+      padding: 6px 18px;
+      background: var(--ds-surface-raised);
+      border-bottom: 1px solid var(--ds-border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+    .seq-indicator {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ds-text-muted);
+    }
+    .seq-btn-group {
+      display: flex;
+      gap: 4px;
+    }
+    .seq-btn {
+      background: var(--ds-surface-card);
+      border: 1px solid var(--ds-border-subtle);
+      color: var(--ds-text-secondary);
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .seq-btn:hover {
+      background: var(--ds-bg-canvas);
+      color: var(--ds-text-primary);
+    }
+    .seq-key {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      opacity: 0.6;
+    }
+
+    /* Drawer Scroll Body */
+    .drawer-pro-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .pro-section {
+      background: var(--ds-surface-card);
+      border: 1px solid var(--ds-border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .pro-section-title {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--ds-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .pro-section-title i {
+      color: var(--aia-corporate-on-dark);
+      margin-right: 5px;
+    }
+    
+    .badge-optional-pill {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      background: rgba(148, 163, 184, 0.15);
+      color: var(--ds-text-muted);
+      border: 1px solid var(--ds-border-subtle);
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .pro-help-callout {
+      background: rgba(44, 170, 159, 0.08);
+      border-left: 3px solid var(--ds-focus-ring);
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      line-height: 1.4;
+      color: var(--ds-text-secondary);
+      display: flex;
+      gap: 8px;
+    }
+    .pro-help-callout i {
+      color: var(--ds-focus-ring);
+      margin-top: 2px;
+      font-size: 12px;
+    }
+
+    .form-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .form-field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-label {
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--ds-text-muted);
+    }
+    .form-input-pro,
+    .form-select-pro {
+      height: 30px;
+      background: var(--ds-bg-page);
+      border: 1px solid var(--ds-border-strong);
+      border-radius: var(--radius-sm);
+      color: var(--ds-text-primary);
+      font-family: var(--font-body);
+      font-size: 11.5px;
+      padding: 0 8px;
+      outline: none;
+      transition: all 0.15s ease;
+      width: 100%;
+    }
+    .form-input-pro:focus,
+    .form-select-pro:focus {
+      border-color: var(--ds-focus-ring);
+      box-shadow: 0 0 0 1px var(--ds-focus-ring);
+    }
+    .form-input-date-wrap {
+      position: relative;
+    }
+    .form-input-date-wrap i {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      color: var(--ds-text-muted);
+      pointer-events: none;
+    }
+
+    /* Dual Gauge Avance Físico */
+    .dual-gauge-box {
+      background: var(--ds-surface-raised);
+      border: 1px solid var(--ds-border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+    }
+    .dual-gauge-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .gauge-metric-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ds-text-secondary);
+    }
+    .gauge-delta-val {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .dual-track {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-full);
+      position: relative;
+      overflow: hidden;
+    }
+    .dual-fill-teor {
+      position: absolute;
+      top: 0; bottom: 0; left: 0;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-full);
+    }
+    .dual-fill-real {
+      position: absolute;
+      top: 0; bottom: 0; left: 0;
+      border-radius: var(--radius-full);
+    }
+
+    /* Matriz de los 7 Recursos Lean */
+    .lean-matrix-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .lean-resource-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      background: var(--ds-surface-raised);
+      border: 1px solid var(--ds-border-subtle);
+      font-size: 11px;
+      transition: background 0.12s ease;
+    }
+    .lean-res-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .lean-res-name {
+      font-weight: 600;
+      color: var(--ds-text-primary);
+    }
+    .lean-res-detail {
+      color: var(--ds-text-muted);
+      font-size: 10.5px;
+    }
+    .lean-pill {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+    .pill-liberado { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .pill-gestion { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .pill-bloqueado { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+    /* Bitácora Timeline & Botón SOS */
+    .timeline-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 100px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .timeline-item {
+      padding: 6px 8px;
+      background: var(--ds-surface-raised);
+      border-left: 2px solid var(--aia-corporate);
+      border-radius: 2px;
+      font-size: 10.5px;
+    }
+    .timeline-meta {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--ds-text-muted);
+      margin-bottom: 2px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .timeline-text {
+      color: var(--ds-text-secondary);
+      line-height: 1.35;
+    }
+    .btn-sos-trigger {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-sos-trigger:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+    }
+
+    /* Drawer Footer */
+    .drawer-pro-footer {
+      padding: 12px 18px;
+      background: var(--ds-surface-card);
+      border-top: 1px solid var(--ds-border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .btn-pro-cancel {
+      background: transparent;
+      border: 1px solid var(--ds-border-strong);
+      color: var(--ds-text-muted);
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-pro-cancel:hover {
+      color: var(--ds-text-primary);
+      background: var(--ds-surface-raised);
+    }
+    .btn-pro-save {
+      background: var(--aia-corporate);
+      border: none;
+      color: white;
+      font-family: var(--font-display);
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 6px 16px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: all 0.15s;
+    }
+    .btn-pro-save:hover {
+      background: var(--aia-brand-green-light);
+      color: #0b100d;
+    }
+
+    /* Toast Flotante */
+    .pro-toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #10b981;
+      color: #06281a;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      animation: slideUp 0.2s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="mode-rationalized">
+
+  <!-- SIDEBAR CANÓNICO -->
+  <aside class="app-sidebar">
+    <div class="brand-area">
+      <div class="brand-mark">A</div>
+      <div class="brand-title">AIA Last Planner</div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-name" title="Optimización Aeropuerto JMC">Optimización Aeropuerto JMC</div>
+      <div class="project-meta">Contrato: #OP-JMC-2026</div>
+      <div class="week-badge-select">
+        <i class="far fa-calendar-check"></i>
+        <span>Sem 33 (18 ago – 24 ago)</span>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">LPS Macro</div>
+      <a href="#" class="nav-item active"><i class="fas fa-calendar-alt"></i> Programa General</a>
+      <a href="#" class="nav-item"><i class="fas fa-layer-group"></i> Lookahead 6 Semanas</a>
+      <a href="#" class="nav-item"><i class="fas fa-tasks"></i> Plan Semanal (PPC)</a>
+
+      <div class="nav-label" style="margin-top: 8px;">Gestión de Obra</div>
+      <a href="#" class="nav-item"><i class="fas fa-shield-alt"></i> Restricciones</a>
+      <a href="#" class="nav-item"><i class="fas fa-shopping-cart"></i> Plan de Compras v2</a>
+      <a href="#" class="nav-item"><i class="fas fa-hard-hat"></i> Subcontratistas</a>
+      <a href="#" class="nav-item"><i class="fas fa-chart-line"></i> Control Tower & BI</a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="user-avatar">FB</div>
+        <span>Felipe Benítez (A)</span>
+      </div>
+      <i class="fas fa-shield-alt" style="color:var(--aia-corporate-on-dark);" title="Rol A · Administrador"></i>
+    </div>
+  </aside>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="app-main">
+    
+    <!-- HEADER BAR -->
+    <header class="top-header">
+      <div class="top-header-left">
+        <h1 class="page-title">
+          Programa General
+          <span class="badge-live-week">Semana 33 Vigente</span>
+        </h1>
+      </div>
+
+      <div class="top-header-right">
+        <!-- Toggle: 8 Cols Esenciales vs 13 Cols Reales -->
+        <div class="control-pill-group" role="group" aria-label="Visualización de columnas">
+          <button type="button" class="btn-toggle-pill active" id="btn-mode-8" onclick="setColumnsMode('rational')">
+            <i class="fas fa-compress-arrows-alt"></i> 8 Cols Esenciales
+          </button>
+          <button type="button" class="btn-toggle-pill" id="btn-mode-13" onclick="setColumnsMode('reality')">
+            <i class="fas fa-table"></i> 13 Cols Reales
+          </button>
+        </div>
+
+        <!-- Botón Apertura Drawer Adoptado -->
+        <button type="button" class="btn-drawer-trigger" onclick="abrirDrawer(101)" title="Abrir Drawer Contextual LPS (Atajo Enter)">
+          <i class="fas fa-columns"></i> Drawer LPS
+        </button>
+
+        <!-- Toggle Tema -->
+        <button type="button" class="btn-header-action" onclick="toggleTheme()" title="Alternar Tema Claro / Oscuro">
+          <i class="fas fa-adjust"></i> Tema
+        </button>
+
+        <button type="button" class="btn-header-action" title="Exportar reporte CSV con las 13 columnas completas">
+          <i class="fas fa-file-csv"></i> CSV
+        </button>
+      </div>
+    </header>
+
+    <!-- BARRA DE SEÑALES & CHIPS CANÓNICOS -->
+    <section class="signals-bar" aria-label="Señales operativas y filtros por estado">
+      <div class="signals-search-row">
+        <div class="search-input-wrapper">
+          <i class="fas fa-search"></i>
+          <input type="text" class="search-input" placeholder="Buscar actividad, código o responsable..." aria-label="Buscar actividad">
+          <span class="search-kbd">⌘K</span>
+        </div>
+        <div class="signals-stats">
+          <span>Actividades visibles: <strong>22 de 22</strong></span>
+          <span>Avance macro obra: <strong style="color:var(--aia-corporate-on-dark);">38.4%</strong></span>
+        </div>
+      </div>
+
+      <!-- Los 8 Chips Canónicos (DESIGN.md) -->
+      <div class="state-chips-container" role="group" aria-label="Filtro rápido por estado operativo">
+        <button type="button" class="state-chip-btn chip-red" title="Atrasada: Actividades cuya fecha fin ya venció y no están al 100%">
+          <span class="chip-dot"></span>
+          <span>Atrasada</span>
+          <span class="chip-count">2</span>
+        </button>
+        <button type="button" class="state-chip-btn chip-amber" title="Con Alerta: En ventana con restricciones pendientes">
+          <span class="chip-dot"></span>
+          <span>Con Alerta</span>
+          <span class="chip-count">2</span>
+        </button>
+        <button type="button" class="state-chip-btn chip-orange" title="Debe Iniciar: Programada para arrancar en la semana activa">
+          <span class="chip-dot"></span>
+          <span>Debe Iniciar</span>
+          <span class="chip-count">2</span>
+        </button>
+        <button type="button" class="state-chip-btn chip-blue" title="En Curso: En ejecución física dentro de plazo">
+          <span class="chip-dot"></span>
+          <span>En Curso</span>
+          <span class="chip-count">11</span>
+        </button>
+        <button type="button" class="state-chip-btn chip-green-future" title="Actividad Futura: Programada para semanas posteriores">
+          <span class="chip-dot"></span>
+          <span>Actividad Futura</span>
+          <span class="chip-count">3</span>
+        </button>
+        <button type="button" class="state-chip-btn chip-neutral" title="Terminada: Al 100% de ejecución">
+          <span class="chip-dot"></span>
+          <span>Terminada</span>
+          <span class="chip-count">1</span>
+        </button>
+        <button type="button" class="state-chip-btn chip-teal" title="Fuera de Ventana: Más allá de 6 semanas">
+          <span class="chip-dot"></span>
+          <span>Fuera de Ventana</span>
+          <span class="chip-count">1</span>
+        </button>
+        <button type="button" class="state-chip-btn chip-violet" title="Sin Datos: Sin fechas contractuales válidas">
+          <span class="chip-dot"></span>
+          <span>Sin Datos</span>
+          <span class="chip-count">1</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- TABLA ALTA DENSIDAD -->
+    <div class="table-viewport">
+      <table class="lps-dense-table" aria-label="Programa General">
+        <thead>
+          <tr>
+            <th style="width: 32px;" class="text-center">Id</th>
+            <th style="width: 58px;">Código</th>
+            <th style="min-width: 280px;">Actividad <i class="fas fa-sort col-sort-icon"></i></th>
+            <th style="width: 55px;" class="text-center col-sem-inicio">Sem.</th>
+            <th style="width: 72px;">F. Inicio</th>
+            <th style="width: 72px;">F. Fin</th>
+            <th style="width: 40px;" class="text-center col-rc-standalone">RC</th>
+            <th style="width: 42px;" class="text-center col-unidad-standalone">Und</th>
+            <th style="width: 85px;" class="text-right col-ppto-header"><span id="th-ppto-label">Ppto Total</span></th>
+            <th style="width: 55px;" class="text-right col-teorico-standalone">Teór</th>
+            <th style="width: 145px;" class="text-right col-avance-header"><span id="th-avance-label">Avance (Real / Teór)</span></th>
+            <th style="width: 90px;" class="text-center">Estado <i class="fas fa-sort col-sort-icon"></i></th>
+            <th style="width: 50px;" class="text-right col-restr-standalone">Restr</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- CAPÍTULO 1 -->
+          <tr class="chapter-heading-row">
+            <td colspan="13">
+              <i class="fas fa-folder-open" style="margin-right: 6px;"></i>
+              1. CIMENTACIÓN Y ESTRUCTURA
+              <span class="chapter-badge-count">8 actividades</span>
+              <div class="chapter-progress">
+                <span>Avance 45%</span>
+                <div class="mini-progress-track"><div class="mini-progress-fill" style="width: 45%;"></div></div>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Fila 1: Atrasada -->
+          <tr class="data-row row-atrasada active-editing" onclick="abrirDrawer(101)">
+            <td class="cell-id">101</td>
+            <td><code class="cell-code">EST-01</code></td>
+            <td>
+              <div class="cell-activity">
+                <span class="activity-title">Excavación mecánica de zapatas eje A-C</span>
+                <span class="badge-rc-pill">RC</span>
+                <button class="btn-cell-comment has-notes" title="3 notas en bitácora"><i class="fas fa-comment-dots"></i></button>
+              </div>
+            </td>
+            <td class="text-center col-sem-inicio cell-date">Sem 33</td>
+            <td class="cell-date">10/08/2026</td>
+            <td class="cell-date"><span class="cell-date-overdue">20/08/2026 ⚠️</span></td>
+            <td class="text-center col-rc-standalone"><span class="badge-rc-pill">RC</span></td>
+            <td class="text-center col-unidad-standalone" style="color:var(--ds-text-muted);">m³</td>
+            <td class="cell-ppto">
+              <span class="ppto-val">450.0</span><span class="ppto-unit unit-integrated">m³</span>
+            </td>
+            <td class="text-right col-teorico-standalone" style="font-family:var(--font-mono); color:var(--ds-text-muted);">50.0%</td>
+            <td class="cell-avance">
+              <div class="avance-text-box">
+                <span class="avance-real-val" style="color:#f87171;">25.0%</span>
+                <span class="avance-teor-val teorico-integrated">/ 50.0%</span>
+                <span class="avance-delta-badge delta-neg teorico-integrated">-25%</span>
+              </div>
+              <div class="micro-gauge-bar teorico-integrated">
+                <div class="micro-gauge-fill" style="width: 25%; background: #f87171;"></div>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="status-cell-badge chip-red"><span class="chip-dot"></span>Atrasada</span>
+            </td>
+            <td class="text-right col-restr-standalone" style="font-family:var(--font-mono); color:#f87171;">66%</td>
+          </tr>
+
+          <!-- Fila 2: Con Alerta -->
+          <tr class="data-row row-con-alerta" onclick="abrirDrawer(102)">
+            <td class="cell-id">102</td>
+            <td><code class="cell-code">EST-02</code></td>
+            <td>
+              <div class="cell-activity">
+                <span class="activity-title">Armado de acero para zapatas y vigas</span>
+                <button class="btn-cell-comment" title="Notas de obra"><i class="far fa-comment"></i></button>
+              </div>
+            </td>
+            <td class="text-center col-sem-inicio cell-date">Sem 34</td>
+            <td class="cell-date">18/08/2026</td>
+            <td class="cell-date">28/08/2026</td>
+            <td class="text-center col-rc-standalone" style="color:var(--ds-text-muted);">No</td>
+            <td class="text-center col-unidad-standalone" style="color:var(--ds-text-muted);">ton</td>
+            <td class="cell-ppto">
+              <span class="ppto-val">12.5</span><span class="ppto-unit unit-integrated">ton</span>
+            </td>
+            <td class="text-right col-teorico-standalone" style="font-family:var(--font-mono); color:var(--ds-text-muted);">40.0%</td>
+            <td class="cell-avance">
+              <div class="avance-text-box">
+                <span class="avance-real-val">40.0%</span>
+                <span class="avance-teor-val teorico-integrated">/ 40.0%</span>
+                <span class="avance-delta-badge delta-ok teorico-integrated">0%</span>
+              </div>
+              <div class="micro-gauge-bar teorico-integrated">
+                <div class="micro-gauge-fill" style="width: 40%; background: #fbbf24;"></div>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="status-cell-badge chip-amber"><span class="chip-dot"></span>Con Alerta</span>
+            </td>
+            <td class="text-right col-restr-standalone" style="font-family:var(--font-mono);">100%</td>
+          </tr>
+
+          <!-- Fila 3: Debe Iniciar -->
+          <tr class="data-row row-debe-iniciar" onclick="abrirDrawer(103)">
+            <td class="cell-id">103</td>
+            <td><code class="cell-code">EST-03</code></td>
+            <td>
+              <div class="cell-activity">
+                <span class="activity-title">Vaciado de concreto zapatas f'c=3000 psi</span>
+                <span class="badge-rc-pill">RC</span>
+                <button class="btn-cell-comment"><i class="far fa-comment"></i></button>
+              </div>
+            </td>
+            <td class="text-center col-sem-inicio cell-date">Sem 34</td>
+            <td class="cell-date">24/08/2026</td>
+            <td class="cell-date">29/08/2026</td>
+            <td class="text-center col-rc-standalone"><span class="badge-rc-pill">RC</span></td>
+            <td class="text-center col-unidad-standalone" style="color:var(--ds-text-muted);">m³</td>
+            <td class="cell-ppto">
+              <span class="ppto-val">180.0</span><span class="ppto-unit unit-integrated">m³</span>
+            </td>
+            <td class="text-right col-teorico-standalone" style="font-family:var(--font-mono); color:var(--ds-text-muted);">10.0%</td>
+            <td class="cell-avance">
+              <div class="avance-text-box">
+                <span class="avance-real-val" style="color:#f97316;">0.0%</span>
+                <span class="avance-teor-val teorico-integrated">/ 10.0%</span>
+                <span class="avance-delta-badge delta-neg teorico-integrated">-10%</span>
+              </div>
+              <div class="micro-gauge-bar teorico-integrated">
+                <div class="micro-gauge-fill" style="width: 0%; background: #f97316;"></div>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="status-cell-badge chip-orange"><span class="chip-dot"></span>Debe Iniciar</span>
+            </td>
+            <td class="text-right col-restr-standalone" style="font-family:var(--font-mono); color:#fbbf24;">80%</td>
+          </tr>
+
+          <!-- Fila 4: En Curso -->
+          <tr class="data-row row-en-curso" onclick="abrirDrawer(104)">
+            <td class="cell-id">104</td>
+            <td><code class="cell-code">EST-04</code></td>
+            <td>
+              <div class="cell-activity">
+                <span class="activity-title">Desencofrado y curado químico zapatas</span>
+                <button class="btn-cell-comment"><i class="far fa-comment"></i></button>
+              </div>
+            </td>
+            <td class="text-center col-sem-inicio cell-date">Sem 34</td>
+            <td class="cell-date">25/08/2026</td>
+            <td class="cell-date">30/08/2026</td>
+            <td class="text-center col-rc-standalone" style="color:var(--ds-text-muted);">No</td>
+            <td class="text-center col-unidad-standalone" style="color:var(--ds-text-muted);">m²</td>
+            <td class="cell-ppto">
+              <span class="ppto-val">180.0</span><span class="ppto-unit unit-integrated">m²</span>
+            </td>
+            <td class="text-right col-teorico-standalone" style="font-family:var(--font-mono); color:var(--ds-text-muted);">15.0%</td>
+            <td class="cell-avance">
+              <div class="avance-text-box">
+                <span class="avance-real-val">15.0%</span>
+                <span class="avance-teor-val teorico-integrated">/ 15.0%</span>
+                <span class="avance-delta-badge delta-ok teorico-integrated">0%</span>
+              </div>
+              <div class="micro-gauge-bar teorico-integrated">
+                <div class="micro-gauge-fill" style="width: 15%; background: #3b82f6;"></div>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="status-cell-badge chip-blue"><span class="chip-dot"></span>En Curso</span>
+            </td>
+            <td class="text-right col-restr-standalone" style="font-family:var(--font-mono);">100%</td>
+          </tr>
+
+          <!-- Fila 5: En Curso con Desviación Positiva -->
+          <tr class="data-row row-en-curso" onclick="abrirDrawer(105)">
+            <td class="cell-id">105</td>
+            <td><code class="cell-code">EST-05</code></td>
+            <td>
+              <div class="cell-activity">
+                <span class="activity-title">Relleno compactado con material de sitio</span>
+                <button class="btn-cell-comment"><i class="far fa-comment"></i></button>
+              </div>
+            </td>
+            <td class="text-center col-sem-inicio cell-date">Sem 33</td>
+            <td class="cell-date">22/08/2026</td>
+            <td class="cell-date">31/08/2026</td>
+            <td class="text-center col-rc-standalone" style="color:var(--ds-text-muted);">No</td>
+            <td class="text-center col-unidad-standalone" style="color:var(--ds-text-muted);">m³</td>
+            <td class="cell-ppto">
+              <span class="ppto-val">320.0</span><span class="ppto-unit unit-integrated">m³</span>
+            </td>
+            <td class="text-right col-teorico-standalone" style="font-family:var(--font-mono); color:var(--ds-text-muted);">25.0%</td>
+            <td class="cell-avance">
+              <div class="avance-text-box">
+                <span class="avance-real-val">30.0%</span>
+                <span class="avance-teor-val teorico-integrated">/ 25.0%</span>
+                <span class="avance-delta-badge delta-ok teorico-integrated">+5%</span>
+              </div>
+              <div class="micro-gauge-bar teorico-integrated">
+                <div class="micro-gauge-fill" style="width: 30%; background: #34d399;"></div>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="status-cell-badge chip-blue"><span class="chip-dot"></span>En Curso</span>
+            </td>
+            <td class="text-right col-restr-standalone" style="font-family:var(--font-mono);">100%</td>
+          </tr>
+
+          <!-- Fila 6: En Curso RC -->
+          <tr class="data-row row-en-curso" onclick="abrirDrawer(106)">
+            <td class="cell-id">106</td>
+            <td><code class="cell-code">EST-06</code></td>
+            <td>
+              <div class="cell-activity">
+                <span class="activity-title">Instalación de columnas piso 1 metálicas</span>
+                <span class="badge-rc-pill">RC</span>
+                <button class="btn-cell-comment"><i class="far fa-comment"></i></button>
+              </div>
+            </td>
+            <td class="text-center col-sem-inicio cell-date">Sem 33</td>
+            <td class="cell-date">15/08/2026</td>
+            <td class="cell-date">28/08/2026</td>
+            <td class="text-center col-rc-standalone"><span class="badge-rc-pill">RC</span></td>
+            <td class="text-center col-unidad-standalone" style="color:var(--ds-text-muted);">ton</td>
+            <td class="cell-ppto">
+              <span class="ppto-val">8.4</span><span class="ppto-unit unit-integrated">ton</span>
+            </td>
+            <td class="text-right col-teorico-standalone" style="font-family:var(--font-mono); color:var(--ds-text-muted);">60.0%</td>
+            <td class="cell-avance">
+              <div class="avance-text-box">
+                <span class="avance-real-val">60.0%</span>
+                <span class="avance-teor-val teorico-integrated">/ 60.0%</span>
+                <span class="avance-delta-badge delta-ok teorico-integrated">0%</span>
+              </div>
+              <div class="micro-gauge-bar teorico-integrated">
+                <div class="micro-gauge-fill" style="width: 60%; background: #3b82f6;"></div>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="status-cell-badge chip-blue"><span class="chip-dot"></span>En Curso</span>
+            </td>
+            <td class="text-right col-restr-standalone" style="font-family:var(--font-mono);">100%</td>
+          </tr>
+
+          <!-- Fila 7: Actividad Futura -->
+          <tr class="data-row row-actividad-futura" onclick="abrirDrawer(107)">
+            <td class="cell-id">107</td>
+            <td><code class="cell-code">EST-07</code></td>
+            <td>
+              <div class="cell-activity">
+                <span class="activity-title">Vaciado de losa contrapiso e=15cm</span>
+                <button class="btn-cell-comment"><i class="far fa-comment"></i></button>
+              </div>
+            </td>
+            <td class="text-center col-sem-inicio cell-date">Sem 35</td>
+            <td class="cell-date">01/09/2026</td>
+            <td class="cell-date">15/09/2026</td>
+            <td class="text-center col-rc-standalone" style="color:var(--ds-text-muted);">No</td>
+            <td class="text-center col-unidad-standalone" style="color:var(--ds-text-muted);">m²</td>
+            <td class="cell-ppto">
+              <span class="ppto-val">520.0</span><span class="ppto-unit unit-integrated">m²</span>
+            </td>
+            <td class="text-right col-teorico-standalone" style="font-family:var(--font-mono); color:var(--ds-text-muted);">0.0%</td>
+            <td class="cell-avance">
+              <div class="avance-text-box">
+                <span class="avance-real-val">0.0%</span>
+                <span class="avance-teor-val teorico-integrated">/ 0.0%</span>
+                <span class="avance-delta-badge delta-ok teorico-integrated">0%</span>
+              </div>
+              <div class="micro-gauge-bar teorico-integrated">
+                <div class="micro-gauge-fill" style="width: 0%; background: #10b981;"></div>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="status-cell-badge chip-green-future"><span class="chip-dot"></span>Futura</span>
+            </td>
+            <td class="text-right col-restr-standalone" style="font-family:var(--font-mono); color:#fbbf24;">40%</td>
+          </tr>
+
+          <!-- Fila 8: Terminada -->
+          <tr class="data-row row-terminada" onclick="abrirDrawer(108)">
+            <td class="cell-id">108</td>
+            <td><code class="cell-code">EST-08</code></td>
+            <td>
+              <div class="cell-activity">
+                <span class="activity-title" style="color:var(--ds-text-muted); text-decoration:line-through;">Replanteo topográfico de cimentación</span>
+                <button class="btn-cell-comment"><i class="far fa-comment"></i></button>
+              </div>
+            </td>
+            <td class="text-center col-sem-inicio cell-date">Sem 31</td>
+            <td class="cell-date">01/08/2026</td>
+            <td class="cell-date">08/08/2026</td>
+            <td class="text-center col-rc-standalone" style="color:var(--ds-text-muted);">No</td>
+            <td class="text-center col-unidad-standalone" style="color:var(--ds-text-muted);">glb</td>
+            <td class="cell-ppto">
+              <span class="ppto-val">1.0</span><span class="ppto-unit unit-integrated">glb</span>
+            </td>
+            <td class="text-right col-teorico-standalone" style="font-family:var(--font-mono); color:var(--ds-text-muted);">100%</td>
+            <td class="cell-avance">
+              <div class="avance-text-box">
+                <span class="avance-real-val">100%</span>
+                <span class="avance-teor-val teorico-integrated">/ 100%</span>
+                <span class="avance-delta-badge delta-ok teorico-integrated">0%</span>
+              </div>
+              <div class="micro-gauge-bar teorico-integrated">
+                <div class="micro-gauge-fill" style="width: 100%; background: #6b7280;"></div>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="status-cell-badge chip-neutral"><span class="chip-dot"></span>Terminada</span>
+            </td>
+            <td class="text-right col-restr-standalone" style="font-family:var(--font-mono);">100%</td>
+          </tr>
+
+          <!-- CAPÍTULO 2 -->
+          <tr class="chapter-heading-row">
+            <td colspan="13">
+              <i class="fas fa-folder-open" style="margin-right: 6px;"></i>
+              2. MAMPOSTERÍA Y FACHADAS
+              <span class="chapter-badge-count">7 actividades</span>
+              <div class="chapter-progress">
+                <span>Avance 22%</span>
+                <div class="mini-progress-track"><div class="mini-progress-fill" style="width: 22%;"></div></div>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Fila 9: En Curso -->
+          <tr class="data-row row-en-curso" onclick="abrirDrawer(201)">
+            <td class="cell-id">201</td>
+            <td><code class="cell-code">MAM-01</code></td>
+            <td>
+              <div class="cell-activity">
+                <span class="activity-title">Levantamiento de muros en bloque concreto piso 1</span>
+                <button class="btn-cell-comment"><i class="far fa-comment"></i></button>
+              </div>
+            </td>
+            <td class="text-center col-sem-inicio cell-date">Sem 33</td>
+            <td class="cell-date">18/08/2026</td>
+            <td class="cell-date">05/09/2026</td>
+            <td class="text-center col-rc-standalone" style="color:var(--ds-text-muted);">No</td>
+            <td class="text-center col-unidad-standalone" style="color:var(--ds-text-muted);">m²</td>
+            <td class="cell-ppto">
+              <span class="ppto-val">680.0</span><span class="ppto-unit unit-integrated">m²</span>
+            </td>
+            <td class="text-right col-teorico-standalone" style="font-family:var(--font-mono); color:var(--ds-text-muted);">45.0%</td>
+            <td class="cell-avance">
+              <div class="avance-text-box">
+                <span class="avance-real-val">45.0%</span>
+                <span class="avance-teor-val teorico-integrated">/ 45.0%</span>
+                <span class="avance-delta-badge delta-ok teorico-integrated">0%</span>
+              </div>
+              <div class="micro-gauge-bar teorico-integrated">
+                <div class="micro-gauge-fill" style="width: 45%; background: #3b82f6;"></div>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="status-cell-badge chip-blue"><span class="chip-dot"></span>En Curso</span>
+            </td>
+            <td class="text-right col-restr-standalone" style="font-family:var(--font-mono);">100%</td>
+          </tr>
+
+          <!-- Fila 10: Con Alerta en Fachada -->
+          <tr class="data-row row-con-alerta" onclick="abrirDrawer(203)">
+            <td class="cell-id">203</td>
+            <td><code class="cell-code">MAM-03</code></td>
+            <td>
+              <div class="cell-activity">
+                <span class="activity-title">Muros perimetrales de contención sótano 1</span>
+                <span class="badge-rc-pill">RC</span>
+                <button class="btn-cell-comment has-notes"><i class="fas fa-comment-dots"></i></button>
+              </div>
+            </td>
+            <td class="text-center col-sem-inicio cell-date">Sem 32</td>
+            <td class="cell-date">10/08/2026</td>
+            <td class="cell-date">28/08/2026</td>
+            <td class="text-center col-rc-standalone"><span class="badge-rc-pill">RC</span></td>
+            <td class="text-center col-unidad-standalone" style="color:var(--ds-text-muted);">m²</td>
+            <td class="cell-ppto">
+              <span class="ppto-val">210.0</span><span class="ppto-unit unit-integrated">m²</span>
+            </td>
+            <td class="text-right col-teorico-standalone" style="font-family:var(--font-mono); color:var(--ds-text-muted);">70.0%</td>
+            <td class="cell-avance">
+              <div class="avance-text-box">
+                <span class="avance-real-val">70.0%</span>
+                <span class="avance-teor-val teorico-integrated">/ 70.0%</span>
+                <span class="avance-delta-badge delta-ok teorico-integrated">0%</span>
+              </div>
+              <div class="micro-gauge-bar teorico-integrated">
+                <div class="micro-gauge-fill" style="width: 70%; background: #fbbf24;"></div>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="status-cell-badge chip-amber"><span class="chip-dot"></span>Con Alerta</span>
+            </td>
+            <td class="text-right col-restr-standalone" style="font-family:var(--font-mono); color:#f87171;">50%</td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ==========================================================================
+         DRAWER CONTEXTUAL LPS DE PRODUCCIÓN (440px)
+         ========================================================================== -->
+    <div class="drawer-backdrop" id="drawerBackdrop" onclick="cerrarDrawer()"></div>
+    
+    <aside class="drawer-panel-pro" id="lpsDrawerPro" aria-label="Editor Contextual LPS de Actividad" role="dialog" aria-modal="true">
+      
+      <!-- Drawer Header -->
+      <div class="drawer-pro-header">
+        <div class="drawer-pro-topline">
+          <div class="drawer-breadcrumb">
+            <i class="far fa-folder"></i>
+            <span id="drawerBreadcrumbChapter">1. Cimentación</span> › Actividad <strong id="drawerMetaId" style="color:var(--ds-text-primary);">101</strong>
+          </div>
+          <button type="button" class="drawer-close-btn" onclick="cerrarDrawer()" aria-label="Cerrar panel (Esc)">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="drawer-title-row">
+          <code class="cell-code" id="drawerBadgeCode" style="font-size:12px; padding:2px 7px;">EST-01</code>
+          <h2 class="drawer-act-title" id="drawerActTitle">Excavación mecánica de zapatas eje A-C</h2>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
+          <span class="status-cell-badge chip-red" id="drawerStatusBadge"><span class="chip-dot"></span>Atrasada</span>
+          <span class="badge-rc-pill" id="drawerRcBadge">RC · Ruta Crítica</span>
+        </div>
+      </div>
+
+      <!-- Barra de Navegación Secuencial -->
+      <div class="drawer-seq-nav">
+        <span class="seq-indicator" id="drawerSeqIndicator">Actividad 1 de 22</span>
+        <div class="seq-btn-group">
+          <button type="button" class="seq-btn" onclick="navigateSeq(-1)" title="Actividad Anterior (Atajo: [)">
+            <i class="fas fa-chevron-left"></i> Anterior <span class="seq-key">[</span>
+          </button>
+          <button type="button" class="seq-btn" onclick="navigateSeq(1)" title="Actividad Siguiente (Atajo: ])">
+            Siguiente <span class="seq-key">]</span> <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Drawer Body -->
+      <div class="drawer-pro-body">
+        
+        <!-- SECCIÓN 1: Plazos Contractuales -->
+        <div class="pro-section">
+          <div class="pro-section-title">
+            <span><i class="far fa-calendar-alt"></i> Plazos y Cronograma</span>
+            <span class="badge-optional-pill" id="drawerSemanaLabel">Sem 33 (hace 1 sem)</span>
+          </div>
+
+          <div class="form-grid-2col">
+            <div class="form-field-group">
+              <label class="form-label" for="drawerInputInicio">Fecha Inicio</label>
+              <div class="form-input-date-wrap">
+                <input type="text" class="form-input-pro" id="drawerInputInicio" value="10/08/2026">
+                <i class="far fa-calendar"></i>
+              </div>
+            </div>
+            <div class="form-field-group">
+              <label class="form-label" for="drawerInputFin">Fecha Fin</label>
+              <div class="form-input-date-wrap">
+                <input type="text" class="form-input-pro" id="drawerInputFin" value="20/08/2026">
+                <i class="far fa-calendar"></i>
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size:11px; color:var(--ds-text-muted); display:flex; justify-content:space-between; margin-top:2px;">
+            <span>Duración: <strong id="drawerDuracionLabel" style="color:var(--ds-text-primary);">10 días contractuales</strong></span>
+            <span style="color:#f87171; font-weight:600;"><i class="fas fa-exclamation-triangle"></i> Plazo vencido hace 3 días</span>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: Responsables & Asignaciones (Opcional en S05 · Cascada a Lookahead S07) -->
+        <div class="pro-section">
+          <div class="pro-section-title">
+            <span><i class="fas fa-user-hard-hat"></i> Responsables & Asignaciones</span>
+            <span class="badge-optional-pill">Opcional en S05</span>
+          </div>
+
+          <div class="pro-help-callout">
+            <i class="fas fa-info-circle"></i>
+            <div>
+              Opcional en Programa General. Si se asigna, viaja prellenado automáticamente a <strong>Programación Intermedia (Lookahead)</strong>, donde asignar un responsable es <strong>obligatorio</strong> para comprometer la actividad.
+            </div>
+          </div>
+
+          <div class="form-field-group">
+            <label class="form-label" for="drawerSelectProfesional">Profesional AIA Responsable</label>
+            <select class="form-select-pro" id="drawerSelectProfesional">
+              <option value="1" selected>👤 Ing. Carlos Restrepo (Residente Estructuras)</option>
+              <option value="2">👤 Ing. María Paula Gómez (Directora Obra)</option>
+              <option value="3">👤 Arq. Juan David Muñoz (Coordinador BIM)</option>
+              <option value="4">👤 Ing. Laura Restrepo (Instalaciones)</option>
+              <option value="">(Sin asignar · Definir en Lookahead)</option>
+            </select>
+          </div>
+
+          <div class="form-field-group">
+            <label class="form-label" for="drawerSelectSubcontratista">Empresa Subcontratista</label>
+            <select class="form-select-pro" id="drawerSelectSubcontratista">
+              <option value="1" selected>🏢 Excavaciones del Norte S.A.S.</option>
+              <option value="2">🏢 Aceros de Colombia</option>
+              <option value="3">🏢 Concretos Argos S.A.</option>
+              <option value="4">🏢 Topografía Integral</option>
+              <option value="5">🏢 Instalaciones Hidráulicas del Norte</option>
+              <option value="">(Sin asignar · Definir en Lookahead)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 3: Presupuesto & Avance Físico -->
+        <div class="pro-section">
+          <div class="pro-section-title">
+            <span><i class="fas fa-cubes"></i> Presupuesto y Avance Físico</span>
+          </div>
+
+          <div class="form-grid-2col">
+            <div class="form-field-group">
+              <label class="form-label" for="drawerSelectUnidad">Unidad Medida</label>
+              <select class="form-select-pro" id="drawerSelectUnidad">
+                <option value="m³" selected>m³ (Metros cúbicos)</option>
+                <option value="ton">ton (Toneladas)</option>
+                <option value="m²">m² (Metros cuadrados)</option>
+                <option value="ml">ml (Metros lineales)</option>
+                <option value="%">% (Porcentaje)</option>
+              </select>
+            </div>
+            <div class="form-field-group">
+              <label class="form-label" for="drawerInputPpto">Cantidad PPTO</label>
+              <input type="text" class="form-input-pro" id="drawerInputPpto" value="450.0">
+            </div>
+          </div>
+
+          <div class="form-grid-2col">
+            <div class="form-field-group">
+              <label class="form-label">Avance Teórico Servidor</label>
+              <input type="text" class="form-input-pro" id="drawerTeoricoDisplay" value="50.0%" disabled style="opacity:0.65; cursor:not-allowed;">
+            </div>
+            <div class="form-field-group">
+              <label class="form-label" for="drawerInputReal">Avance Real Reportado</label>
+              <input type="text" class="form-input-pro" id="drawerInputReal" value="25.0%" style="font-weight:700; color:#f87171;">
+            </div>
+          </div>
+
+          <!-- Dual Gauge de Producción -->
+          <div class="dual-gauge-box">
+            <div class="dual-gauge-header">
+              <span class="gauge-metric-title">Desviación Física (Δ):</span>
+              <span class="gauge-delta-val" style="color:#f87171;" id="drawerDeltaLabel">-25.0% (-112.5 m³)</span>
+            </div>
+            <div class="dual-track">
+              <div class="dual-fill-teor" id="drawerGaugeTeor" style="width: 50%;"></div>
+              <div class="dual-fill-real" id="drawerGaugeReal" style="width: 25%; background:#f87171;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--ds-text-muted); margin-top:4px;">
+              <span>0%</span>
+              <span style="color:var(--ds-text-secondary);">Meta teórica: 50%</span>
+              <span>100%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 4: Matriz de los 7 Recursos Lean (LPS) -->
+        <div class="pro-section">
+          <div class="pro-section-title">
+            <span><i class="fas fa-shield-alt"></i> Restricciones Lean (Liberación: 66%)</span>
+            <span class="badge-optional-pill" style="color:#f87171; background:rgba(239,68,68,0.15);">1 Bloqueante</span>
+          </div>
+
+          <div class="lean-matrix-list">
+            <div class="lean-resource-card">
+              <div class="lean-res-left">
+                <i class="fas fa-users" style="color:#34d399; font-size:11px;"></i>
+                <div>
+                  <div class="lean-res-name">Mano de Obra</div>
+                  <div class="lean-res-detail">Cuadrilla excavación disponible (6 operarios)</div>
+                </div>
+              </div>
+              <span class="lean-pill pill-liberado">Liberado</span>
+            </div>
+
+            <div class="lean-resource-card">
+              <div class="lean-res-left">
+                <i class="fas fa-truck-loading" style="color:#34d399; font-size:11px;"></i>
+                <div>
+                  <div class="lean-res-name">Materiales</div>
+                  <div class="lean-res-detail">Sin insumos críticos requeridos</div>
+                </div>
+              </div>
+              <span class="lean-pill pill-liberado">Liberado</span>
+            </div>
+
+            <div class="lean-resource-card" style="background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.25);">
+              <div class="lean-res-left">
+                <i class="fas fa-tractor" style="color:#f87171; font-size:11px;"></i>
+                <div>
+                  <div class="lean-res-name" style="color:#f87171;">Equipos & Maquinaria</div>
+                  <div class="lean-res-detail" style="color:var(--ds-text-primary);">Falta retroexcavadora de oruga 320</div>
+                </div>
+              </div>
+              <span class="lean-pill pill-bloqueado">Bloqueante</span>
+            </div>
+
+            <div class="lean-resource-card">
+              <div class="lean-res-left">
+                <i class="fas fa-drafting-compass" style="color:#34d399; font-size:11px;"></i>
+                <div>
+                  <div class="lean-res-name">Diseño & Planos</div>
+                  <div class="lean-res-detail">Planos estructurales R0 aprobados</div>
+                </div>
+              </div>
+              <span class="lean-pill pill-liberado">Liberado</span>
+            </div>
+
+            <div class="lean-resource-card">
+              <div class="lean-res-left">
+                <i class="fas fa-project-diagram" style="color:#34d399; font-size:11px;"></i>
+                <div>
+                  <div class="lean-res-name">Predecesoras</div>
+                  <div class="lean-res-detail">Replanteo topográfico completado al 100%</div>
+                </div>
+              </div>
+              <span class="lean-pill pill-liberado">Liberado</span>
+            </div>
+
+            <div class="lean-resource-card" style="background:rgba(245,158,11,0.06); border-color:rgba(245,158,11,0.25);">
+              <div class="lean-res-left">
+                <i class="fas fa-hard-hat" style="color:#fbbf24; font-size:11px;"></i>
+                <div>
+                  <div class="lean-res-name">Seguridad & Espacio</div>
+                  <div class="lean-res-detail">Línea de vida pendiente en talud norte</div>
+                </div>
+              </div>
+              <span class="lean-pill pill-gestion">En gestión</span>
+            </div>
+
+            <div class="lean-resource-card">
+              <div class="lean-res-left">
+                <i class="fas fa-file-contract" style="color:#34d399; font-size:11px;"></i>
+                <div>
+                  <div class="lean-res-name">Permisos</div>
+                  <div class="lean-res-detail">Permiso de movimiento de tierras vigente</div>
+                </div>
+              </div>
+              <span class="lean-pill pill-liberado">Liberado</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 5: Bitácora de Campo & SOS LPS -->
+        <div class="pro-section">
+          <div class="pro-section-title">
+            <span><i class="fas fa-comment-dots"></i> Bitácora de Campo & SOS</span>
+            <span class="badge-optional-pill">2 entradas</span>
+          </div>
+
+          <div class="timeline-feed">
+            <div class="timeline-item">
+              <div class="timeline-meta">
+                <span>Ing. Carlos Restrepo</span>
+                <span>18/08/2026 15:40</span>
+              </div>
+              <div class="timeline-text">
+                Lluvia torrencial en la tarde suspendió labores de excavación. Se requiere bomba achique.
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-meta">
+                <span>Interventoría AIA</span>
+                <span>19/08/2026 09:10</span>
+              </div>
+              <div class="timeline-text">
+                Bomba instalada. Se reinicia excavación en zapatas Z-01 y Z-02.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-field-group">
+            <textarea class="form-input-pro" style="height:48px; padding:6px; resize:none;" placeholder="Escribir una nueva observación técnica..."></textarea>
+          </div>
+
+          <button type="button" class="btn-sos-trigger" onclick="alert('Alerta SOS LPS enviada a la Dirección de Obra')">
+            <i class="fas fa-bell"></i> Declarar Crisis SOS LPS
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Drawer Footer Fijo -->
+      <div class="drawer-pro-footer">
+        <button type="button" class="btn-pro-cancel" onclick="cerrarDrawer()">Descartar (Esc)</button>
+        <button type="button" class="btn-pro-save" onclick="guardarCambiosPro()">
+          <i class="fas fa-check"></i> Guardar Cambios (⌘S)
+        </button>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- NOTIFICACIÓN TOAST PRO -->
+  <div id="proToast" class="pro-toast">
+    <i class="fas fa-check-circle" style="font-size: 15px;"></i>
+    <span id="proToastMsg">Cambios guardados con éxito</span>
+  </div>
+
+  <!-- JAVASCRIPT INTERACTIVO -->
+  <script>
+    const actividadesProDb = [
+      {
+        id: 101, codigo: 'EST-01', titulo: 'Excavación mecánica de zapatas eje A-C',
+        capitulo: '1. Cimentación', estado: 'Atrasada', chipClase: 'chip-red', rc: true,
+        und: 'm³', ppto: '450.0', teorico: '50.0%', real: '25.0%', delta: '-25.0% (-112.5 m³)',
+        gaugeTeor: '50%', gaugeReal: '25%', gaugeColor: '#f87171',
+        inicio: '10/08/2026', fin: '20/08/2026', duracion: '10 días contractuales', sem: 'Sem 33 (hace 1 sem)',
+        prof: '1', subc: '1', restrPct: '66%'
+      },
+      {
+        id: 102, codigo: 'EST-02', titulo: 'Armado de acero para zapatas y vigas',
+        capitulo: '1. Cimentación', estado: 'Con Alerta', chipClase: 'chip-amber', rc: false,
+        und: 'ton', ppto: '12.5', teorico: '40.0%', real: '40.0%', delta: '0.0% (Al día)',
+        gaugeTeor: '40%', gaugeReal: '40%', gaugeColor: '#fbbf24',
+        inicio: '18/08/2026', fin: '28/08/2026', duracion: '10 días contractuales', sem: 'Sem 34 (esta sem)',
+        prof: '1', subc: '2', restrPct: '100%'
+      },
+      {
+        id: 103, codigo: 'EST-03', titulo: 'Vaciado de concreto zapatas f\'c=3000 psi',
+        capitulo: '1. Cimentación', estado: 'Debe Iniciar', chipClase: 'chip-orange', rc: true,
+        und: 'm³', ppto: '180.0', teorico: '10.0%', real: '0.0%', delta: '-10.0% (-18.0 m³)',
+        gaugeTeor: '10%', gaugeReal: '0%', gaugeColor: '#f97316',
+        inicio: '24/08/2026', fin: '29/08/2026', duracion: '5 días contractuales', sem: 'Sem 34 (esta sem)',
+        prof: '2', subc: '3', restrPct: '80%'
+      },
+      {
+        id: 104, codigo: 'EST-04', titulo: 'Desencofrado y curado químico zapatas',
+        capitulo: '1. Cimentación', estado: 'En Curso', chipClase: 'chip-blue', rc: false,
+        und: 'm²', ppto: '180.0', teorico: '15.0%', real: '15.0%', delta: '0.0% (Al día)',
+        gaugeTeor: '15%', gaugeReal: '15%', gaugeColor: '#3b82f6',
+        inicio: '25/08/2026', fin: '30/08/2026', duracion: '5 días contractuales', sem: 'Sem 34 (esta sem)',
+        prof: '1', subc: '1', restrPct: '100%'
+      },
+      {
+        id: 105, codigo: 'EST-05', titulo: 'Relleno compactado con material de sitio',
+        capitulo: '1. Cimentación', estado: 'En Curso', chipClase: 'chip-blue', rc: false,
+        und: 'm³', ppto: '320.0', teorico: '25.0%', real: '30.0%', delta: '+5.0% (+16.0 m³)',
+        gaugeTeor: '25%', gaugeReal: '30%', gaugeColor: '#34d399',
+        inicio: '22/08/2026', fin: '31/08/2026', duracion: '9 días contractuales', sem: 'Sem 33 (hace 1 sem)',
+        prof: '3', subc: '1', restrPct: '100%'
+      },
+      {
+        id: 106, codigo: 'EST-06', titulo: 'Instalación de columnas piso 1 metálicas',
+        capitulo: '1. Cimentación', estado: 'En Curso', chipClase: 'chip-blue', rc: true,
+        und: 'ton', ppto: '8.4', teorico: '60.0%', real: '60.0%', delta: '0.0% (Al día)',
+        gaugeTeor: '60%', gaugeReal: '60%', gaugeColor: '#3b82f6',
+        inicio: '15/08/2026', fin: '28/08/2026', duracion: '13 días contractuales', sem: 'Sem 33 (hace 1 sem)',
+        prof: '1', subc: '2', restrPct: '100%'
+      },
+      {
+        id: 107, codigo: 'EST-07', titulo: 'Vaciado de losa contrapiso e=15cm',
+        capitulo: '1. Cimentación', estado: 'Actividad Futura', chipClase: 'chip-green-future', rc: false,
+        und: 'm²', ppto: '520.0', teorico: '0.0%', real: '0.0%', delta: '0.0% (Futura)',
+        gaugeTeor: '0%', gaugeReal: '0%', gaugeColor: '#10b981',
+        inicio: '01/09/2026', fin: '15/09/2026', duracion: '14 días contractuales', sem: 'Sem 35 (en 1 sem)',
+        prof: '', subc: '', restrPct: '40%'
+      },
+      {
+        id: 108, codigo: 'EST-08', titulo: 'Replanteo topográfico de cimentación',
+        capitulo: '1. Cimentación', estado: 'Terminada', chipClase: 'chip-neutral', rc: false,
+        und: 'glb', ppto: '1.0', teorico: '100%', real: '100%', delta: '0.0% (Terminada)',
+        gaugeTeor: '100%', gaugeReal: '100%', gaugeColor: '#6b7280',
+        inicio: '01/08/2026', fin: '08/08/2026', duracion: '7 días contractuales', sem: 'Sem 31 (cerrada)',
+        prof: '3', subc: '4', restrPct: '100%'
+      },
+      {
+        id: 201, codigo: 'MAM-01', titulo: 'Levantamiento de muros en bloque concreto piso 1',
+        capitulo: '2. Mampostería', estado: 'En Curso', chipClase: 'chip-blue', rc: false,
+        und: 'm²', ppto: '680.0', teorico: '45.0%', real: '45.0%', delta: '0.0% (Al día)',
+        gaugeTeor: '45%', gaugeReal: '45%', gaugeColor: '#3b82f6',
+        inicio: '18/08/2026', fin: '05/09/2026', duracion: '18 días contractuales', sem: 'Sem 33 (hace 1 sem)',
+        prof: '1', subc: '1', restrPct: '100%'
+      },
+      {
+        id: 203, codigo: 'MAM-03', titulo: 'Muros perimetrales de contención sótano 1',
+        capitulo: '2. Mampostería', estado: 'Con Alerta', chipClase: 'chip-amber', rc: true,
+        und: 'm²', ppto: '210.0', teorico: '70.0%', real: '70.0%', delta: '0.0% (Al día)',
+        gaugeTeor: '70%', gaugeReal: '70%', gaugeColor: '#fbbf24',
+        inicio: '10/08/2026', fin: '28/08/2026', duracion: '18 días contractuales', sem: 'Sem 32 (hace 2 sem)',
+        prof: '2', subc: '2', restrPct: '50%'
+      }
+    ];
+
+    let currentIndex = 0;
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const cur = html.getAttribute('data-theme') || 'dark';
+      html.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+    }
+
+    function setColumnsMode(mode) {
+      const btn8 = document.getElementById('btn-mode-8');
+      const btn13 = document.getElementById('btn-mode-13');
+      const pptoLabel = document.getElementById('th-ppto-label');
+      const avanceLabel = document.getElementById('th-avance-label');
+      if (mode === 'rational') {
+        document.body.classList.add('mode-rationalized');
+        btn8.classList.add('active');
+        btn13.classList.remove('active');
+        if (pptoLabel) pptoLabel.innerText = 'Ppto Total';
+        if (avanceLabel) avanceLabel.innerText = 'Avance (Real / Teór)';
+      } else {
+        document.body.classList.remove('mode-rationalized');
+        btn13.classList.add('active');
+        btn8.classList.remove('active');
+        if (pptoLabel) pptoLabel.innerText = 'Ppto';
+        if (avanceLabel) avanceLabel.innerText = 'Real';
+      }
+    }
+
+    function abrirDrawer(id) {
+      const idx = actividadesProDb.findIndex(a => a.id === id);
+      if (idx !== -1) {
+        currentIndex = idx;
+      }
+      renderDrawer();
+      document.getElementById('drawerBackdrop').classList.add('active');
+      document.getElementById('lpsDrawerPro').classList.add('active');
+      
+      // Marcar fila activa
+      document.querySelectorAll('.data-row').forEach(r => r.classList.remove('active-editing'));
+      const activeRow = document.querySelector(`.data-row[onclick*="${id}"]`);
+      if (activeRow) activeRow.classList.add('active-editing');
+    }
+
+    function renderDrawer() {
+      const act = actividadesProDb[currentIndex] || actividadesProDb[0];
+      
+      document.getElementById('drawerMetaId').innerText = act.id;
+      document.getElementById('drawerBreadcrumbChapter').innerText = act.capitulo;
+      document.getElementById('drawerBadgeCode').innerText = act.codigo;
+      document.getElementById('drawerActTitle').innerText = act.titulo;
+      document.getElementById('drawerSeqIndicator').innerText = `Actividad ${currentIndex + 1} de ${actividadesProDb.length}`;
+
+      const statusBadge = document.getElementById('drawerStatusBadge');
+      statusBadge.className = `status-cell-badge ${act.chipClase}`;
+      statusBadge.innerHTML = `<span class="chip-dot"></span>${act.estado}`;
+
+      const rcBadge = document.getElementById('drawerRcBadge');
+      if (rcBadge) {
+        rcBadge.style.display = act.rc ? 'inline-block' : 'none';
+      }
+
+      document.getElementById('drawerSemanaLabel').innerText = act.sem;
+      document.getElementById('drawerInputInicio').value = act.inicio;
+      document.getElementById('drawerInputFin').value = act.fin;
+      document.getElementById('drawerDuracionLabel').innerText = act.duracion;
+
+      document.getElementById('drawerSelectProfesional').value = act.prof || "";
+      document.getElementById('drawerSelectSubcontratista').value = act.subc || "";
+      document.getElementById('drawerSelectUnidad').value = act.und;
+      document.getElementById('drawerInputPpto').value = act.ppto;
+      document.getElementById('drawerTeoricoDisplay').value = act.teorico;
+      document.getElementById('drawerInputReal').value = act.real;
+
+      document.getElementById('drawerDeltaLabel').innerText = act.delta;
+      document.getElementById('drawerGaugeTeor').style.width = act.gaugeTeor;
+      const realGauge = document.getElementById('drawerGaugeReal');
+      realGauge.style.width = act.gaugeReal;
+      realGauge.style.background = act.gaugeColor;
+    }
+
+    function navigateSeq(dir) {
+      currentIndex = (currentIndex + dir + actividadesProDb.length) % actividadesProDb.length;
+      renderDrawer();
+      const currentId = actividadesProDb[currentIndex].id;
+      document.querySelectorAll('.data-row').forEach(r => r.classList.remove('active-editing'));
+      const activeRow = document.querySelector(`.data-row[onclick*="${currentId}"]`);
+      if (activeRow) activeRow.classList.add('active-editing');
+    }
+
+    function guardarCambiosPro() {
+      const act = actividadesProDb[currentIndex] || actividadesProDb[0];
+      mostrarToast(`✓ Actividad ${act.codigo} guardada exitosamente (reprogramada_por_usuario = 1)`);
+    }
+
+    function mostrarToast(msg) {
+      const toast = document.getElementById('proToast');
+      const text = document.getElementById('proToastMsg');
+      text.innerText = msg;
+      toast.style.display = 'flex';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2500);
+    }
+
+    function cerrarDrawer() {
+      document.getElementById('drawerBackdrop').classList.remove('active');
+      document.getElementById('lpsDrawerPro').classList.remove('active');
+    }
+
+    // Atajos de teclado para productividad
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        cerrarDrawer();
+      } else if (e.key === '[' && document.getElementById('lpsDrawerPro').classList.contains('active')) {
+        navigateSeq(-1);
+      } else if (e.key === ']' && document.getElementById('lpsDrawerPro').classList.contains('active')) {
+        navigateSeq(1);
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        if (document.getElementById('lpsDrawerPro').classList.contains('active')) {
+          e.preventDefault();
+          guardarCambiosPro();
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

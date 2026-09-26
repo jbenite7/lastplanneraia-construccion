@@ -75,3 +75,26 @@ test('axe serio/crítico en cero con el drawer móvil abierto (390×844, oscuro)
 
   expect(hallazgos, JSON.stringify(hallazgos, null, 2)).toEqual([]);
 });
+
+for (const tema of ['dark', 'light']) {
+  test(`[390×844 · ${tema}] el drawer abierto queda sobre el velo y conserva un punto pulsable real`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await interceptarYEntrar(page, tema);
+
+    await page.getByRole('button', { name: /abrir menú de navegación/i }).click();
+    const aside = page.getByRole('navigation').locator('xpath=ancestor::aside');
+    await expect(aside).toHaveAttribute('data-shell-drawer-open', 'true');
+
+    const item = aside.getByRole('link', { name: 'Programa General' });
+    const caja = await item.boundingBox();
+    expect(caja, 'el enlace del drawer no tiene caja real').not.toBeNull();
+    expect(caja.width, 'el enlace del drawer no tiene ancho pulsable').toBeGreaterThan(0);
+    expect(caja.height, 'el enlace del drawer no tiene alto pulsable').toBeGreaterThan(0);
+
+    const puntoPerteneceAlItem = await page.evaluate(
+      ([x, y]) => document.elementFromPoint(x, y)?.closest('[data-destination-id="programa-general"]') !== null,
+      [caja.x + caja.width / 2, caja.y + caja.height / 2],
+    );
+    expect(puntoPerteneceAlItem).toBe(true);
+  });
+}

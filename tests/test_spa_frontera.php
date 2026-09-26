@@ -77,7 +77,7 @@ comprobarMatrizSpa([
 
 // --- El resto del sitio PHP no migrado sigue intacto. ---
 comprobarMatrizSpa([
-    ['GET', '/programa-general', false],
+    ['GET', '/lookahead', false],
     ['GET', '/plan-compras', false],
     ['GET', '/dashboard', false],
 ]);
@@ -318,6 +318,16 @@ function comprobarRollbackConservandoElPhpS04(): void
         echo "FALLO: S04 — POST '/proyectos' no debe servirlo la SPA\n";
         $fallos++;
     }
+}
+
+// --- S05: el corte de '/programa-general' en SpaRouter ---
+if (!SpaRouter::sirveLaSpa('/programa-general') || !SpaRouter::sirveLaSpa('/programa-general', 'HEAD')) {
+    echo "FALLO: S05 — el mapa real de producción debe servir GET/HEAD '/programa-general' desde la SPA\n";
+    $fallos++;
+}
+if (SpaRouter::sirveLaSpa('/programa-general', 'POST')) {
+    echo "FALLO: S05 — POST '/programa-general' no debe servirlo la SPA\n";
+    $fallos++;
 }
 
 echo $fallos === 0 ? "OK: frontera SPA/PHP\n" : "{$fallos} fallo(s)\n";

@@ -1,8 +1,13 @@
 import React from 'react';
 import { ConteosSenales } from '../domain/filtros';
 
+export type ConteosSenalesProps = ConteosSenales & {
+  fueraVentana?: number;
+  sinDatos?: number;
+};
+
 export interface ProgramaSignalsBarProps {
-  conteos: ConteosSenales;
+  conteos: ConteosSenalesProps;
   estadoFiltro: string | null;
   onSelectEstado: (estado: string | null) => void;
   className?: string;
@@ -11,6 +16,7 @@ export interface ProgramaSignalsBarProps {
 
 interface ChipItem {
   label: string;
+  filterKey: string;
   count: number;
   color: string;
   className: string;
@@ -27,6 +33,7 @@ export const ProgramaSignalsBar: React.FC<ProgramaSignalsBarProps> = ({
   const chips: ChipItem[] = [
     {
       label: 'Atrasada',
+      filterKey: 'atrasada',
       count: conteos.atrasadas,
       color: 'var(--ds-color-state-critical-text)',
       className: 'chip-red',
@@ -34,6 +41,7 @@ export const ProgramaSignalsBar: React.FC<ProgramaSignalsBarProps> = ({
     },
     {
       label: 'Con Alerta',
+      filterKey: 'con-alerta-restricciones',
       count: conteos.conAlerta,
       color: 'var(--ds-color-state-warning-text)',
       className: 'chip-amber',
@@ -41,6 +49,7 @@ export const ProgramaSignalsBar: React.FC<ProgramaSignalsBarProps> = ({
     },
     {
       label: 'Debe Iniciar',
+      filterKey: 'debe-iniciar',
       count: conteos.debeIniciar,
       color: 'var(--ds-state-solid-orange)',
       className: 'chip-orange',
@@ -48,6 +57,7 @@ export const ProgramaSignalsBar: React.FC<ProgramaSignalsBarProps> = ({
     },
     {
       label: 'En Curso',
+      filterKey: 'en-curso',
       count: conteos.enCurso,
       color: 'var(--ds-color-state-info-text)',
       className: 'chip-blue',
@@ -55,6 +65,7 @@ export const ProgramaSignalsBar: React.FC<ProgramaSignalsBarProps> = ({
     },
     {
       label: 'Actividad Futura',
+      filterKey: 'actividad-futura',
       count: conteos.futuras,
       color: 'var(--ds-color-state-success-text)',
       className: 'chip-green-future',
@@ -62,10 +73,27 @@ export const ProgramaSignalsBar: React.FC<ProgramaSignalsBarProps> = ({
     },
     {
       label: 'Terminada',
+      filterKey: 'terminada',
       count: conteos.terminadas,
-      color: 'var(--ds-text-muted)',
+      color: 'var(--ds-state-solid-neutral)',
       className: 'chip-neutral',
       title: 'Terminada: Al 100% de ejecución',
+    },
+    {
+      label: 'Fuera de Ventana',
+      filterKey: 'fuera-de-ventana',
+      count: conteos.fueraVentana ?? 0,
+      color: 'var(--ds-state-solid-teal)',
+      className: 'chip-teal',
+      title: 'Fuera de Ventana: Más allá de 6 semanas',
+    },
+    {
+      label: 'Sin Datos',
+      filterKey: 'sin-datos',
+      count: conteos.sinDatos ?? 0,
+      color: 'var(--ds-state-solid-violet)',
+      className: 'chip-violet',
+      title: 'Sin Datos: Sin fechas contractuales válidas',
     },
   ];
 
@@ -77,6 +105,7 @@ export const ProgramaSignalsBar: React.FC<ProgramaSignalsBarProps> = ({
     >
       {children}
       <div
+        id="pgLegend"
         className="signals-chips-row state-chips-container"
         role="group"
         aria-label="Filtro rápido por estado operativo"
@@ -87,18 +116,19 @@ export const ProgramaSignalsBar: React.FC<ProgramaSignalsBarProps> = ({
             <button
               key={c.label}
               type="button"
-              className={`signal-chip state-chip-btn ${c.className} ${isActive ? 'active' : ''}`.trim()}
+              data-filter={c.filterKey}
+              className={`signal-chip state-chip-btn pg-filter-chip ${c.className} ${isActive ? 'active' : ''}`.trim()}
               onClick={() => onSelectEstado(isActive ? null : c.label)}
               aria-pressed={isActive}
               title={c.title}
             >
               <span
-                className="signal-dot chip-dot"
+                className="signal-dot chip-dot indicator"
                 style={{ backgroundColor: c.color }}
                 aria-hidden="true"
               />
               <span className="signal-label">{c.label}</span>
-              <span className="signal-count chip-count">{c.count}</span>
+              <span className="signal-count chip-count monospace">{c.count}</span>
             </button>
           );
         })}

@@ -90,6 +90,31 @@ describe('programaGeneralApi & esquemas', () => {
     }
   });
 
+  it('conserva la URL BI autorizada y llama la actualización masiva con CSRF', async () => {
+    const parsed = esquemaContextoPg.safeParse({
+      project: { id: 1, name: 'Proyecto Prueba', dbPrefix: 'prueba' },
+      week: { number: 33, max: 33, confirmed: 0 },
+      actions: { runBatch: true },
+      csrf: { programaGeneral: 'token123' },
+      links: { bi: '/bi/programa-general?project_id=1&semana=33' },
+      catalogos: {},
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.enlaces.bi).toBe('/bi/programa-general?project_id=1&semana=33');
+    }
+
+    const mockCliente = { get: vi.fn(), postForm: vi.fn().mockResolvedValue({ respuesta: 'BIEN' }) };
+    const api = programaGeneralApi(mockCliente as any);
+    await api.actualizarEjecucion({ semana: 33, db: 'prueba', csrf_token: 'token123' });
+    expect(mockCliente.postForm).toHaveBeenCalledWith(
+      '/api/general/update-batch?db=prueba&semana=33',
+      { csrf_token: 'token123' },
+      esquemaRespuestaUpdatePg,
+      { 'X-CSRF-Token': 'token123' }
+    );
+  });
+
   it('valida la respuesta real de ReportController para corte XLSX', async () => {
     const mockCliente = {
       get: vi.fn(),

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { PROJECTS } from './fixtures/projects.mjs';
-import { loginAndSelectProject } from './support/session.mjs';
+import { changeWeek, loginAndSelectProject } from './support/session.mjs';
 import { scanAccessibility } from './support/accessibility.mjs';
 
 const VIEWPORTS = [
@@ -26,14 +26,18 @@ for (const viewport of VIEWPORTS) {
       }, theme);
       await page.setViewportSize(viewport);
       await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
-      await page.waitForFunction(() => Boolean(document.querySelector('#hot-container .handsontable')));
+      // Da Porto tiene la semana 2 vacía a propósito; este gate necesita renglones reales
+      // para medir la tabla y axe, así que selecciona la semana operativa del fixture.
+      await page.waitForSelector('meta[name="lps-shell-csrf-token"]', { state: 'attached' });
+      await changeWeek(page, PROJECTS[0].operationalWeek, '/programa-general');
+      await page.waitForSelector('table.programa-table-pro tbody tr.row-activity');
       await page.waitForTimeout(500);
 
-      await expect(page.locator('body.aia-shell')).toBeVisible();
-      await expect(page.locator('main.aia-page')).toBeVisible();
-      await expect(page.locator('.aia-action-group')).toBeVisible();
-      await expect(page.locator('.aia-filter-form')).toBeVisible();
-      await expect(page.locator('#hot-container.aia-grid-shell')).toBeAttached();
+      await expect(page.locator('body.pg-page')).toBeVisible();
+      await expect(page.locator('main#contenido')).toBeVisible();
+      await expect(page.locator('.programa-toolbar')).toBeVisible();
+      await expect(page.locator('.programa-filters-section')).toBeVisible();
+      await expect(page.locator('table.programa-table-pro')).toBeAttached();
 
       const state = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -67,8 +71,8 @@ for (const viewport of VIEWPORTS) {
             return box.left >= boundary.left - 1 && box.right <= boundary.right + 1;
           });
         })(),
-        gridVisible: !document.querySelector('#hot-container')?.hidden,
-        cardsVisible: !document.querySelector('#mobile-card-view')?.hidden,
+        gridVisible: Boolean(document.querySelector('table.programa-table-pro')),
+        cardsVisible: Boolean(document.querySelector('.programa-cards')),
         theme: document.documentElement.dataset.aiaTheme,
       }));
       expect(state.overflow).toBeLessThanOrEqual(1);

@@ -75,6 +75,25 @@ describe('ProgramaTable', () => {
     },
   ];
 
+  it('declara ocho columnas en colgroup sin anchos inline', () => {
+    const { container } = render(
+      <ProgramaTable actividades={[]} actividadSeleccionadaId={null} onSelectActividad={vi.fn()} />,
+    );
+    expect([...container.querySelectorAll('colgroup col')].map((col) => col.className)).toEqual([
+      'pg-col-id', 'pg-col-codigo', 'pg-col-actividad', 'pg-col-inicio',
+      'pg-col-fin', 'pg-col-ppto', 'pg-col-avance', 'pg-col-estado',
+    ]);
+    container.querySelectorAll<HTMLTableCellElement>('thead th').forEach((th) => expect(th.style.width).toBe(''));
+  });
+
+  it('declara trece columnas en colgroup en modo completo', () => {
+    const { container } = render(
+      <ProgramaTable actividades={[]} actividadSeleccionadaId={null} onSelectActividad={vi.fn()} modo13Cols />,
+    );
+    expect(container.querySelectorAll('colgroup col')).toHaveLength(13);
+    expect(container.querySelectorAll('thead th')).toHaveLength(13);
+  });
+
   it('renderiza las 8 columnas requeridas por defecto y celdas combinadas', () => {
     render(
       <ProgramaTable
@@ -86,12 +105,12 @@ describe('ProgramaTable', () => {
 
     // Encabezados de 8 columnas
     expect(screen.getByText('ID')).toBeInTheDocument();
-    expect(screen.getByText('CÓDIGO')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'CÓDIGO' })).toHaveTextContent('CÓD.');
     expect(screen.getByText('ACTIVIDAD')).toBeInTheDocument();
     expect(screen.getByText('F. INICIO')).toBeInTheDocument();
     expect(screen.getByText('F. FIN')).toBeInTheDocument();
     expect(screen.getByText('PPTO TOTAL')).toBeInTheDocument();
-    expect(screen.getByText('AVANCE (REAL / TEÓR)')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'AVANCE (REAL / TEÓR)' })).toHaveTextContent('AV. REAL / TEÓR');
     expect(screen.getByText('ESTADO')).toBeInTheDocument();
 
     // Datos combinados en 8 columnas
@@ -202,17 +221,17 @@ describe('ProgramaTable', () => {
 
     // 13 columnas individuales
     expect(screen.getByText('ID')).toBeInTheDocument();
-    expect(screen.getByText('CÓDIGO')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'CÓDIGO' })).toHaveTextContent('CÓD.');
     expect(screen.getByText('ACTIVIDAD')).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'RC' })).toBeInTheDocument();
     expect(screen.getByText('F. INICIO')).toBeInTheDocument();
-    expect(screen.getByText('SEM. INICIO')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'SEM. INICIO' })).toHaveTextContent('SEM. INI.');
     expect(screen.getByText('F. FIN')).toBeInTheDocument();
-    expect(screen.getByText('CANTIDAD PPTO')).toBeInTheDocument();
-    expect(screen.getByText('UNIDAD')).toBeInTheDocument();
-    expect(screen.getByText('AVANCE REAL')).toBeInTheDocument();
-    expect(screen.getByText('AVANCE TEÓR')).toBeInTheDocument();
-    expect(screen.getByText('LIB. RESTRICCIONES')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'CANTIDAD PPTO' })).toHaveTextContent('CANT.');
+    expect(screen.getByRole('columnheader', { name: 'UNIDAD' })).toHaveTextContent('UND.');
+    expect(screen.getByRole('columnheader', { name: 'AVANCE REAL' })).toHaveTextContent('AV. REAL');
+    expect(screen.getByRole('columnheader', { name: 'AVANCE TEÓR' })).toHaveTextContent('AV. TEÓR');
+    expect(screen.getByRole('columnheader', { name: 'LIB. RESTRICCIONES' })).toHaveTextContent('RESTR. LIB.');
     expect(screen.getByText('ESTADO')).toBeInTheDocument();
 
     // Capítulo con colSpan={13}
@@ -241,5 +260,196 @@ describe('ProgramaTable', () => {
     const alertIcon = screen.getByTitle('Plazo vencido hace 3 días');
     expect(alertIcon).toBeInTheDocument();
     expect(alertIcon.textContent).toContain('⚠️');
+  });
+
+  it('renderiza actividades con tags HTML sanitizados mostrando titulo y subtitulo', () => {
+    const acts = [
+      {
+        unique_id: 101,
+        id_proyecto: 1,
+        Titulo: 0,
+        Actividad: '<b>LOCALIZACIÓN Y REPLANTEO, </b> <small>[Capítulo: PRELIMINARES, DAPORTO TORRE 3]</small>',
+        codigo_actividad: 'ACT-101',
+        esCapitulo: false,
+        capituloNombre: 'PRELIMINARES',
+        Fecha_Inicio: '2026-08-10',
+        Fecha_Fin: '2026-08-20',
+        cantidad_ppto: 100,
+        unidad: 'ml',
+        avanceRealPct: 50,
+        avanceTeoricoPct: 60,
+        deltaPct: -10,
+        deltaTexto: '-10.0%',
+        esRutaCritica: true,
+        plazoVencido: true,
+        diasVencimiento: 4,
+        Estado: 'Atrasada',
+      } as any,
+    ];
+
+    render(
+      <ProgramaTable
+        actividades={acts}
+        actividadSeleccionadaId={null}
+        onSelectActividad={vi.fn()}
+        modo13Cols={false}
+      />
+    );
+
+    expect(screen.queryByText(/<b>/)).toBeNull();
+    expect(screen.queryByText(/<small>/)).toBeNull();
+    expect(screen.getByText('LOCALIZACIÓN Y REPLANTEO')).toBeInTheDocument();
+    expect(screen.getByText('PRELIMINARES, DAPORTO TORRE 3')).toBeInTheDocument();
+    expect(screen.getByText('10/08/2026')).toBeInTheDocument();
+    expect(screen.getByText('20/08/2026')).toBeInTheDocument();
+  });
+
+  it('renderiza capitulos con titulo limpio sin tags <b>', () => {
+    const acts = [
+      {
+        unique_id: 1,
+        id_proyecto: 1,
+        Titulo: 1,
+        Actividad: '<b>DAPORTO TORRE 3</b>',
+        esCapitulo: true,
+        capituloNombre: 'DAPORTO TORRE 3',
+        avanceRealPct: 0,
+        avanceTeoricoPct: 0,
+        deltaPct: 0,
+        deltaTexto: '-',
+        esRutaCritica: false,
+        plazoVencido: false,
+        diasVencimiento: 0,
+        Estado: 'En Curso',
+      } as any,
+    ];
+
+    render(
+      <ProgramaTable
+        actividades={acts}
+        actividadSeleccionadaId={null}
+        onSelectActividad={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByText(/<b>/)).toBeNull();
+    expect(screen.getByText('DAPORTO TORRE 3')).toBeInTheDocument();
+  });
+
+  it('renderiza capitulos con mini barra de avance si avanceRealPct > 0', () => {
+    const acts = [
+      {
+        unique_id: 2,
+        id_proyecto: 1,
+        Titulo: 1,
+        Actividad: 'ESTRUCTURA',
+        esCapitulo: true,
+        capituloNombre: 'ESTRUCTURA',
+        avanceRealPct: 45,
+        avanceTeoricoPct: 50,
+        deltaPct: -5,
+        deltaTexto: '-5%',
+        esRutaCritica: false,
+        plazoVencido: false,
+        diasVencimiento: 0,
+        Estado: 'En Curso',
+      } as any,
+    ];
+
+    render(
+      <ProgramaTable
+        actividades={acts}
+        actividadSeleccionadaId={null}
+        onSelectActividad={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Avance 45%')).toBeInTheDocument();
+  });
+
+  it('renderiza celdas duales con clases delta-neg y delta-ok', () => {
+    const acts = [
+      {
+        unique_id: 201,
+        codigo_actividad: 'ACT-NEG',
+        Actividad: 'Actividad Atrasada',
+        esCapitulo: false,
+        Fecha_Inicio: '2026-08-01',
+        Fecha_Fin: '2026-08-10',
+        avanceRealPct: 20,
+        avanceTeoricoPct: 40,
+        deltaPct: -20,
+        deltaTexto: '-20%',
+        Estado: 'Atrasada',
+      } as any,
+      {
+        unique_id: 202,
+        codigo_actividad: 'ACT-OK',
+        Actividad: 'Actividad Al Dia',
+        esCapitulo: false,
+        Fecha_Inicio: '2026-08-01',
+        Fecha_Fin: '2026-08-10',
+        avanceRealPct: 40,
+        avanceTeoricoPct: 40,
+        deltaPct: 0,
+        deltaTexto: '0%',
+        Estado: 'En Curso',
+      } as any,
+    ];
+
+    render(
+      <ProgramaTable
+        actividades={acts}
+        actividadSeleccionadaId={null}
+        onSelectActividad={vi.fn()}
+        modo13Cols={false}
+      />
+    );
+
+    const deltaNeg = screen.getByText('-20%');
+    expect(deltaNeg.className).toContain('delta-neg');
+
+    const deltaOk = screen.getByText('0%');
+    expect(deltaOk.className).toContain('delta-ok');
+  });
+
+  it('renderiza fechas formateadas y subtitulo en modo 13 columnas', () => {
+    const acts = [
+      {
+        unique_id: 301,
+        codigo_actividad: 'ACT-301',
+        Actividad: 'CONCRETO DE LIMPIEZA <small>[Cap: ESTRUCTURAS]</small>',
+        esCapitulo: false,
+        Fecha_Inicio: '2026-09-01',
+        Fecha_Fin: '2026-09-05',
+        Semanas_Inicio: 35,
+        cantidad_ppto: 50,
+        unidad: 'm²',
+        avanceRealPct: 100,
+        avanceTeoricoPct: 100,
+        deltaPct: 0,
+        deltaTexto: '0%',
+        esRutaCritica: true,
+        plazoVencido: false,
+        diasVencimiento: 0,
+        Estado: 'Terminada',
+        Estado_Restricciones: '1',
+      } as any,
+    ];
+
+    render(
+      <ProgramaTable
+        actividades={acts}
+        actividadSeleccionadaId={null}
+        onSelectActividad={vi.fn()}
+        modo13Cols={true}
+      />
+    );
+
+    expect(screen.getByText('CONCRETO DE LIMPIEZA')).toBeInTheDocument();
+    expect(screen.getByText(/ESTRUCTURAS/)).toBeInTheDocument();
+    expect(screen.getByText('01/09/2026')).toBeInTheDocument();
+    expect(screen.getByText('05/09/2026')).toBeInTheDocument();
+    expect(screen.getByText('Sem 35')).toBeInTheDocument();
   });
 });

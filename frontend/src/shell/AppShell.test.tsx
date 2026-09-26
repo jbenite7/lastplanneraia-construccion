@@ -38,6 +38,16 @@ function establecerAncho(ancho: number) {
   window.dispatchEvent(new Event('resize'));
 }
 
+function crearAlmacenamientoMemoria() {
+  const valores = new Map<string, string>();
+  return {
+    clear: () => valores.clear(),
+    getItem: (clave: string) => valores.get(clave) ?? null,
+    removeItem: (clave: string) => valores.delete(clave),
+    setItem: (clave: string, valor: string) => valores.set(clave, valor),
+  };
+}
+
 function renderizarConRuta(
   sesion: ArranqueAutenticado,
   recargar = vi.fn().mockResolvedValue(undefined),
@@ -59,6 +69,7 @@ const anchoOriginal = window.innerWidth;
 
 beforeEach(() => {
   establecerAncho(1440);
+  vi.stubGlobal('localStorage', crearAlmacenamientoMemoria());
 });
 
 afterEach(() => {
@@ -89,8 +100,8 @@ test('marca la única entrada activa con aria-current', () => {
 test('muestra el proyecto y la semana activos', () => {
   renderizarConRuta(sesionLista());
 
-  expect(screen.getByText('Da Porto')).toBeInTheDocument();
-  expect(screen.getAllByText(/semana 6/i).length).toBeGreaterThan(0);
+  expect(document.querySelector('#shellContextBar #ctxProyecto')).toHaveTextContent('Da Porto');
+  expect(document.querySelector('#shellContextBar #ctxSemanaTexto')).toHaveTextContent('Semana 6');
 });
 
 test('el menú de cuenta abre y ofrece cambiar proyecto y cerrar sesión', async () => {
@@ -112,4 +123,21 @@ test('no duplica el shell: una sola aside de navegación en el árbol', () => {
 
   expect(container.querySelectorAll('aside.aia-navigation--sidebar')).toHaveLength(1);
   expect(container.querySelectorAll('main')).toHaveLength(1);
+});
+
+test('arranca con el riel colapsado si no hay estado guardado', () => {
+  localStorage.removeItem('aia-sidebar-state');
+  const { container } = renderizarConRuta(sesionLista());
+
+  expect(container.querySelector('aside#app-shell-nav')).toHaveAttribute('data-sidebar-state', 'collapsed');
+});
+
+test('guarda el nuevo estado del riel al alternarlo', async () => {
+  const usuario = userEvent.setup();
+  localStorage.removeItem('aia-sidebar-state');
+  renderizarConRuta(sesionLista());
+
+  await usuario.click(screen.getByRole('button', { name: /expandir menú|colapsar menú/i }));
+
+  expect(localStorage.getItem('aia-sidebar-state')).toBe('expanded');
 });

@@ -113,4 +113,22 @@ describe('ProgramaFilters', () => {
     expect(screen.getByText(/Avance macro obra:/i)).toBeInTheDocument();
     expect(screen.getByText('38.4%')).toBeInTheDocument();
   });
+
+  it('renderiza contadores en pildoras separadas con clase stat-pill', () => {
+    render(
+      <ProgramaFilters
+        busqueda=""
+        onBusquedaChange={vi.fn()}
+        totalVisibles={282}
+        totalTotal={324}
+        avanceMacroPct={2.9}
+      />
+    );
+    const pillVisibles = screen.getByText(/Actividades visibles:/i).closest('.stat-pill');
+    const pillAvance = screen.getByText(/Avance macro obra:/i).closest('.stat-pill');
+    expect(pillVisibles).not.toBeNull();
+    expect(pillAvance).not.toBeNull();
+    expect(pillVisibles).toHaveClass('stat-pill');
+    expect(pillAvance).toHaveClass('stat-avance');
+  });
 });

@@ -45,6 +45,9 @@ export const esquemaContextoPgBase = z.object({
     readDrawer: z.boolean(),
     writeDrawer: z.boolean(),
   }),
+  enlaces: z.object({
+    bi: z.string().nullable().default(null),
+  }).default({ bi: null }),
   catalogos: z.object({
     unidades: z.array(z.string()).default([]),
     codigos: z.array(z.string()).default([]),
@@ -60,6 +63,7 @@ export const esquemaContextoPgBase = z.object({
     })).default([]),
   }),
   csrf_token: z.string(),
+  csrf_shell: z.string().optional(),
 });
 
 export const esquemaContextoPg = z.preprocess((val: unknown) => {
@@ -82,7 +86,7 @@ export const esquemaContextoPg = z.preprocess((val: unknown) => {
       proyecto: {
         id: Number(proj.id ?? 0),
         nombre: String(proj.name ?? ''),
-        codigo: String(proj.name ?? ''),
+        codigo: String(proj.dbPrefix ?? proj.codigo ?? proj.db ?? proj.name ?? ''),
         tipo: proj.area ? String(proj.area) : undefined,
       },
       semana: {
@@ -98,6 +102,11 @@ export const esquemaContextoPg = z.preprocess((val: unknown) => {
         readDrawer: Boolean(act.readDrawer ?? false),
         writeDrawer: Boolean(act.writeDrawer ?? false),
       },
+      enlaces: {
+        bi: typeof (obj.links as Record<string, unknown> | undefined)?.bi === 'string'
+          ? (obj.links as Record<string, unknown>).bi as string
+          : null,
+      },
       catalogos: {
         unidades: Array.isArray(cat.unidades) ? cat.unidades : ['m³', 'm²', 'ml', 'kg', 'ton', 'und', 'gl', 'mes', '%'],
         codigos: Array.isArray(cat.codigos) ? cat.codigos : [],
@@ -105,6 +114,7 @@ export const esquemaContextoPg = z.preprocess((val: unknown) => {
         subcontratistas: Array.isArray(cat.subcontratistas) ? cat.subcontratistas : [],
       },
       csrf_token: typeof csrf.programaGeneral === 'string' ? csrf.programaGeneral : String(obj.csrf_token ?? ''),
+      csrf_shell: typeof csrf.shell === 'string' ? csrf.shell : undefined,
     };
   }
   return obj;
@@ -122,6 +132,8 @@ export const esquemaRespuestaUpdatePg = z.preprocess((val: unknown) => {
   respuesta: z.string().optional(),
   estado: z.string().optional(),
   Semana_Inicio: z.coerce.number().optional(),
+  actualizadas: z.coerce.number().optional(),
+  carryover_actualizadas: z.coerce.number().optional(),
 }));
 
 export type RespuestaUpdatePg = z.infer<typeof esquemaRespuestaUpdatePg>;
