@@ -1,14 +1,14 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: derogada
 id: S05-PARIDAD-VISUAL
 fecha: 2026-09-24
 superficie: programa-general
 rutas: ["/programa-general", "/app/programa-general"]
 depende_de: [S05, T01, T02]
 version: 1.0
-areas: [frontend, design-system, ux]
+areas: [lps, design-system]
 fuente: "auditoría visual de public/mockups/s05-production-mockup.html, live-docker en http://localhost:8081/programa-general, SpaRouter.php, ProgramaTable.tsx y programa-general.css, 2026-09-24"
 resumen: "Elevación estética y paridad visual 1:1 de Programa General en React contra el mockup de producción aprobado (public/mockups/s05-production-mockup.html), corte canónico de /programa-general en SpaRouter, parseo de texto HTML legado en actividades, formateo de fechas y estilización canónica de chips de señales, tabla de 8 columnas y Drawer LPS."
 ---

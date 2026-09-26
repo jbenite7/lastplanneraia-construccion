@@ -1,9 +1,9 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: derogada
 fecha: 2026-09-24
-areas: [frontend, design-system, ux]
+areas: [lps, design-system]
 fuente: docs/superpowers/plans/2026-09-24-s05-paridad-visual-programa-general.md
 resumen: Plan de implementación para alcanzar paridad visual y operativa 1:1 de Programa General en React contra el mockup de producción aprobado.
 ---

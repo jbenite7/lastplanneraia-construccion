@@ -1,12 +1,12 @@
 ---
 capa: fuente
 tipo: plan
-estado: aprobado
+estado: vigente
 aprobado_por: felipe
 aprobado_el: 2026-09-24
 sello: "ninguno — /aprobar no está instalado en la sesión donde se aprobó; visto dado en el chat"
 fecha: 2026-09-24
-areas: [lps, design-system, shell]
+areas: [lps, design-system, arquitectura]
 ejecutor: codex
 spec: docs/superpowers/specs/2026-08-30-s05-programa-general-react-design.md
 spec_seccion: "Enmienda del 2026-09-24 (ronda 1.2)"

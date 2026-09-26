@@ -17,11 +17,11 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 520 |
+| hecha | 513 |
 | en progreso | 8 |
 | pendiente | 159 |
 | sin señal | 175 |
-| descartada | 41 |
+| descartada | 48 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
 
@@ -462,7 +462,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - hecha · 6 · Frontend — Drawer Contextual LPS (440px) y Edición de Actividad
   - hecha · 7 · Frontend — Página Orquestadora, Integración de Shell y Rutas
   - hecha · 8 · Verificación Visual Playwright y Cierre E2E
-- **S05 ronda 1.2 — Programa General y shell React a la par del legado** (aprobado): 8 de 11 hechas · `2026-09-24-s05-ronda-1-2-paridad-legado.md`
+- **S05 ronda 1.2 — Programa General y shell React a la par del legado** (vigente): 8 de 11 hechas · `2026-09-24-s05-ronda-1-2-paridad-legado.md`
   - sin señal · 0 · Worktree, base y línea de partida medida
   - hecha · 1 · Puerta de desarrollo sin el respaldo por posición (V5, H10)
   - hecha · 2 · El contador cuenta tareas, no capítulos (H3)
@@ -872,16 +872,9 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 - **Calificación y Registro de TNP en Semanas Confirmadas** (cerrado): 4 de 4 hechas · `2026-09-24-calificacion-tnp-semana-confirmada.md`
 
-### S05-PARIDAD-VISUAL — Elevación Estética y Paridad 1:1 de Programa General en React (vigente)
+### S05-PARIDAD-VISUAL — Elevación Estética y Paridad 1:1 de Programa General en React (derogada)
 
-- **S05-PARIDAD-VISUAL: Paridad Visual 1:1 de Programa General en React** (vigente): 7 de 7 hechas · `2026-09-24-s05-paridad-visual-programa-general.md`
-  - hecha · 1 · Backend PHP — Corte Canónico de `/programa-general` en `SpaRouter` y Verificación de Frontera
-  - hecha · 2 · Frontend Dominio — Sanitizador y Parser Semántico de Actividades y Formateo Canónico de Fechas
-  - hecha · 3 · Frontend Toolbar y Filtros — Separación de Estadísticas, Badges Canónicos y Buscador 1:1
-  - hecha · 4 · Frontend Tabla — Integración de Jerarquía de Actividades Sanitizadas, Capítulos con Avance Mini, Celdas Duales y Formato de Fechas
-  - hecha · 5 · Frontend Drawer LPS — Título Sanitizado, Alertas de Plazo Vencido y Paridad Estética de Controles
-  - hecha · 6 · Frontend CSS — Traslado de Reglas de Producción de `s05-production-mockup.html` a `programa-general.css` (@layer module)
-  - hecha · 7 · Verificación Integral — Playwright E2E contra Docker Real y Capturas de Paridad 1:1
+- **S05-PARIDAD-VISUAL: Paridad Visual 1:1 de Programa General en React** (derogada): 0 de 7 hechas · `2026-09-24-s05-paridad-visual-programa-general.md`
 
 ### Sin spec
 
@@ -936,7 +929,6 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - cerrado_sin_archivos · `plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas.md`: dice «plan cerrado»; git dice «1 de 2 archivos que mandaba crear no existieron nunca en ninguna rama: docs/design-system/manifests/dashboard.json»
 - cerrado_sin_archivos · `plans/2026-08-30-s01-login-react.md`: dice «plan cerrado»; git dice «3 de 26 archivos que mandaba crear no existieron nunca en ninguna rama: frontend/src/lib/api/frontera.test.ts, frontend/src/lib/api/esquemas/sesion.test.ts, src/Controllers/Core/SpaHostController.php»
 - parece_cerrado · `plans/2026-09-23-s05-programa-general-react.md`: dice «plan vigente»; git dice «las 8 tareas con señal están hechas según git»
-- parece_cerrado · `plans/2026-09-24-s05-paridad-visual-programa-general.md`: dice «plan vigente»; git dice «las 7 tareas con señal están hechas según git»
 - spec_cerrado_plan_vivo · `specs/2026-07-23-a16-comparativo-versiones-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-07-22-roadmap-pdc-v2.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-03-reparto-trabajo-pendiente-design.md`: dice «spec derogada»; git dice «1 plan suyo sigue vivo: 2026-08-03-usabilidad-altas-y-medias.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-11-plan-cierre-hasta-produccion-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-11-cierre-hasta-produccion.md»
