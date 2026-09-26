@@ -4,7 +4,7 @@ tipo: plan
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-09-24-s05-ronda-1-2-informe.md
 resumen: Informe de sprint S05 ronda 1.2
-fecha: 2026-09-25
+fecha: 2026-09-26
 sprint: S05 ronda 1.2
 ejecutor: codex
 rama: codex/s05-ronda-1-2
@@ -49,22 +49,24 @@ estado: abierto
 
 ## Verificación local
 
+Resultados de la corrección del 26 de septiembre sobre `ad01da321af32e619905bb70f6d5a32c6a50aff1`.
+
 | Comando o gate | Resultado |
 | --- | --- |
 | `npm --prefix frontend run typecheck` | RC 0 |
-| `npm --prefix frontend run test` | RC 0 · 73 archivos, 941 pruebas |
+| `npm --prefix frontend run test` | RC 0 · 73 archivos, 942 pruebas |
 | `npm run test:design-system:static` | RC 0 · ocho secciones |
 | `npm --prefix frontend run build` | RC 0 |
 | `npm run css:minify:check` | RC 0 |
 | `docker compose exec -T app php scripts/run-php-tests.php --nivel=http` en stack CI aislado | RC 0 · 117 seleccionadas, 115 aprobadas, 2 omisiones propias; PHPUnit 299 pruebas, 752 aserciones |
 | `docker compose exec -T app vendor/bin/phpstan analyse src admin/src --memory-limit=1G` en stack CI aislado | RC 0 · 221 rutas, cero errores |
-| Playwright PG, shell, visualizador y runtime a11y | RC 0 · 32/32 |
+| Playwright PG, shell, visualizador y runtime a11y | RC 0 · 34/34; incluye ocho casos de layout y dos del punto Terminada |
 | `npm run test:a11y:pilot` | RC 0 · 2/2 |
 | `npm run test:hue:pilot` | RC 0 · 1/1 |
 | E2E `pg-interactions.spec.mjs` en stack CI aislado | RC 0 · 4/4, restauración verificada |
-| `full-app-flow.spec.mjs` en stack CI aislado | RC 0 · 30/30; cada escenario emitió recibo de restauración de base y archivos |
-| `npm run test:runtime-budget:measure` y `npm run test:runtime-budget:check` | RC 0 ambos · tres muestras ligadas a `c68330f6`; CSS gzip 128963 B, JS gzip 134709 B, solicitudes duplicadas 0, flashes 0, inicialización 320,4 ms, interacción 135,5 ms; baseline 0.5.0 → medición 1.1.0 |
-| `programa-general.visual.mjs` contra referencias previas | RC 1 esperado · 78187 px distintos a 1180×820 y 86953 px a 1440×900; referencia nueva sin aprobación |
+| `full-app-flow.spec.mjs` en stack CI aislado | RC 0 · 30/30; treinta recibos con huellas de base y archivos idénticas antes/después |
+| `npm run test:runtime-budget:measure` y comprobación con `design-system-runtime-budget.mjs check` | RC 0 ambos · tres muestras ligadas a `ad01da32`; CSS gzip 128965 B, JS gzip 135001 B, solicitudes duplicadas 0, flashes 0, inicialización 134,6 ms, interacción 242,6 ms; baseline 0.5.0 → medición 1.1.0 |
+| `programa-general.visual.mjs` contra referencias previas | RC 1 · 77847 px distintos a 1180×820 y 86644 px a 1440×900; gate visual pendiente del visto, referencias intactas |
 | `npm run test:wiki` | RC 1 · sus pruebas unitarias pasaron; el lint estricto detecta 14 metadatos inválidos en cuatro documentos ajenos a esta ronda y en el propio plan sellado. El informe nuevo ya pasó su validación de frontmatter. No se alteraron esos contratos. |
 
 La suite PHP y los E2E de mutación se ejecutaron sobre base CI aislada. No se alteraron datos de la base de desarrollo compartida en esta reanudación.
@@ -73,7 +75,17 @@ La suite PHP y los E2E de mutación se ejecutaron sobre base CI aislada. No se a
 
 Se recorrieron `/programa-general` y `/app/programa-general`, en claro y oscuro y con riel colapsado y expandido: **8/8 combinaciones** a 1180×820 sin desbordamiento horizontal del documento, con el chip de semana visible. Son las rutas que montan `AppShell` en `frontend/src/shell/rutas.tsx`; las demás rutas de ese archivo son acceso o selección de proyecto.
 
-Las catorce capturas finales de `docs/superpowers/evidence/s05-ronda-1-2/` cubren, en ambos temas: ocho columnas, trece columnas, última fila, riel colapsado, riel expandido, menú de semana y Drawer. Se regeneraron tras el último cambio de código `c68330f6`; las diferencias con la tanda anterior son de 6 a 457 píxeles por imagen.
+Las catorce capturas finales de `docs/superpowers/evidence/s05-ronda-1-2/` cubren, en ambos temas: ocho columnas, trece columnas, última fila, riel colapsado, riel expandido, menú de semana y Drawer. Se regeneraron tras el último cambio de código `ad01da321af32e619905bb70f6d5a32c6a50aff1`. Las dos rutas React volvieron a pasar sus ocho combinaciones, sin errores JavaScript.
+
+## Corrección de la ronda 3 · 26 de septiembre
+
+- Se añadió el glifo SVG exacto del legado para `user`, `contract`, `integration`, `tasks`, `sync` y `clipboard`. La prueba unitaria dio RED con el círculo de respaldo en Profesionales y GREEN con el glifo propio. La prueba de navegador también dio RED con el build anterior y GREEN 4/4: compara por destino la ruta, el nombre y cada elemento/atributo SVG contra el legado vivo, y rechaza el respaldo genérico.
+- Las fechas tienen columnas de 5 rem y padding horizontal real de 5 px. Se redistribuyeron 24 px de columnas auxiliares para conservar Actividad con al menos 160 px en 13 columnas y riel abierto. La matriz de ocho casos verifica cero overflow, cero recortes, Actividad ≥280/160 px y separación entre textos de fecha vecinos ≥8 px; en 13 columnas mide Inicio→Sem→Fin, en 8 Inicio→Fin. La primera ampliación de fechas produjo RED por Actividad de 139 px; tras redistribuir, GREEN 8/8.
+- Terminada usaba el token inexistente `--ds-text-muted`; ahora usa el neutral canónico `--ds-state-solid-neutral` en señal y Estado. Prueba unitaria RED/GREEN y prueba de navegador GREEN 2/2 con puntos de tamaño positivo y color opaco en ambos temas.
+- Las candidatas se tomaron en una salida nueva tras el commit `ad01da32`. Se comprobaron los hashes de JS/CSS servidos contra los archivos del commit antes y después. `goldens-candidatas/manifest.json` registra SHA, fecha y huellas anteriores/nuevas: candidata 1180×820 `0edee1430380d645d5d82d1dee9da1327fedf2afe42ed5d397332f5c28ef40ad`; 1440×900 `3173fb85a137991dbb10377fc34930d6c81687e05a6e24655311c09567c5c111`. Ambas son distintas de la tanda rechazada.
+- El mismo manifiesto enumera las catorce capturas vivas, con SHA-256, fecha de captura y `sourceRef`; sus archivos en el repo se compararon con las salidas originales de la captura antes de registrar la huella.
+- La revisión independiente de código no encontró otros hallazgos. Su hallazgo sobre evidencia antigua quedó resuelto tras comprobar el manifiesto, assets y ambas candidatas, más 13 columnas: glifos propios, fechas separadas y puntos Terminada visibles. Veredicto final de esta corrección: sin hallazgos accionables; aprobación de referencias pendiente.
+- Docker Desktop se recuperó mediante su comando de reinicio tras un error de arranque. Para las capturas vivas se montó temporalmente el `.env` local de solo lectura: el enlace absoluto del worktree no se resolvía dentro del contenedor. Se devolvió el montaje de `app` a la raíz compartida y se retiró ese bind temporal. Los E2E de mutación usaron exclusivamente la base CI aislada.
 
 ## Revisión y pendientes
 
@@ -82,7 +94,7 @@ Las catorce capturas finales de `docs/superpowers/evidence/s05-ronda-1-2/` cubre
 - Revisión adicional del selector de semana para runtime y de la deduplicación CSS: «sin hallazgos».
 - Revisión independiente de seguridad: se amplió la prueba a la negación real del lote y a restauración en `finally`; último veredicto sin hallazgos accionables.
 - El lint de wiki estricto queda rojo por metadatos anteriores a este informe en planes y specs fuera del alcance. Cambiar el frontmatter del plan S05 sellado invalidaría su huella; se deja registrado para el cierre con Felipe.
-- **BLOCKED · tarea 9:** Felipe rechazó las capturas iniciales. Las seis imágenes de referencia, candidata y diferencia en dos tamaños están en `docs/superpowers/evidence/s05-ronda-1-2/goldens-candidatas/`, regeneradas desde `c68330f6`. Se solicitó un nuevo visto sobre las candidatas posteriores a R1.2-5. Hasta obtenerlo, no se modifican los goldens ni se considera verde el gate visual.
+- **BLOCKED · tarea 9:** Felipe rechazó las tandas anteriores, de nuevo el 26 de septiembre. Las seis imágenes de referencia, candidata y diferencia en dos tamaños están en `docs/superpowers/evidence/s05-ronda-1-2/goldens-candidatas/`, regeneradas desde `ad01da32`, junto con manifiesto y comparación HTML. Hasta obtener un visto explícito sobre esta tanda, no se modifican los goldens ni se considera verde el gate visual.
 - No se hizo push, merge a `main` ni despliegue, según el alcance aprobado del sprint.
 
 ## Condición de hecho para un PR futuro
