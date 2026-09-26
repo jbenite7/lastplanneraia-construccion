@@ -53,7 +53,7 @@ describe('ProgramaSignalsBar', () => {
       'var(--ds-state-solid-orange)',
       'var(--ds-color-state-info-text)',
       'var(--ds-color-state-success-text)',
-      'var(--ds-text-muted)',
+      'var(--ds-state-solid-neutral)',
       'var(--ds-state-solid-teal)',
       'var(--ds-state-solid-violet)',
     ];

@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { arranqueAutenticadoConProyecto, CSRF_TOKEN } from './support/project-selector-react-fixtures.mjs';
+import { BASE_URL } from './fixtures/projects.mjs';
 
 /**
  * S05 Programa General React E2E & Visual Verification Spec.
@@ -130,6 +131,27 @@ const MOCK_ACTIVIDADES = [
     unidad: 'm³',
     Responsable_AIA: null,
     Sub_Contratista: null,
+    Observaciones: null,
+    alerta_crisis: 0,
+  },
+  {
+    unique_id: 104,
+    Consecutivo_en_Programa: 'EST-04',
+    codigo_actividad: 'EST-04',
+    Actividad: 'Curado final de concreto',
+    Titulo: 0,
+    Fecha_Inicio: '2026-08-05',
+    Fecha_Fin: '2026-08-12',
+    Ruta_Critica: 0,
+    Ejecutado: 1,
+    Ejecutado_Teorico: 1,
+    Estado: 'Terminada',
+    Semanas_Inicio: 31,
+    Estado_Restricciones: '100%',
+    cantidad_ppto: 12,
+    unidad: 'm³',
+    Responsable_AIA: 'Ing. Carlos Restrepo',
+    Sub_Contratista: 'Aceros & Concretos de Colombia',
     Observaciones: null,
     alerta_crisis: 0,
   },
@@ -323,6 +345,32 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
     await expect(tabla.getByText('Colocación de acero de refuerzo zapatas')).toBeVisible();
     await expect(tabla.getByText('Excavación mecánica de zapatas eje A-C')).not.toBeVisible();
   });
+
+  for (const tema of ['light', 'dark']) {
+    test(`muestra el punto neutral de Terminada en señales y Estado · ${tema}`, async ({ page }) => {
+      await page.addInitScript((temaInicial) => localStorage.setItem('aia-theme', temaInicial), tema);
+      await page.goto('/programa-general');
+
+      const chipTerminada = page.locator('.signal-chip', { hasText: 'Terminada' });
+      const puntoSenal = chipTerminada.locator('.signal-dot');
+      const puntoEstado = page
+        .locator('.programa-table-pro .status-cell-badge', { hasText: 'Terminada' })
+        .locator('.status-dot');
+      await expect(puntoSenal).toBeVisible();
+      await expect(puntoEstado).toBeVisible();
+
+      for (const punto of [puntoSenal, puntoEstado]) {
+        const estilo = await punto.evaluate((elemento) => {
+          const css = getComputedStyle(elemento);
+          const color = css.backgroundColor.match(/[\d.]+/g)?.map(Number) ?? [];
+          return { ancho: elemento.getBoundingClientRect().width, alto: elemento.getBoundingClientRect().height, alpha: color[3] ?? 1 };
+        });
+        expect(estilo.ancho).toBeGreaterThan(0);
+        expect(estilo.alto).toBeGreaterThan(0);
+        expect(estilo.alpha).toBeGreaterThan(0);
+      }
+    });
+  }
 });
 
 test.describe('Ronda 1.2 — layout de la tabla', () => {
@@ -335,8 +383,8 @@ test.describe('Ronda 1.2 — layout de la tabla', () => {
             localStorage.setItem('aia-theme', t);
             localStorage.setItem('aia-sidebar-state', r);
           }, [tema, riel]);
-          await page.goto('http://localhost:8081/dev/entrar?u=test.A&p=' + encodeURIComponent('Da Porto'));
-          await page.goto('http://localhost:8081/programa-general');
+          await page.goto(`${BASE_URL}/dev/entrar?u=test.A&p=${encodeURIComponent('Da Porto')}`);
+          await page.goto(`${BASE_URL}/programa-general`);
           await page.locator('table.programa-table-pro tbody tr.row-activity').first().waitFor();
           if (modo === '13') await page.getByRole('button', { name: /13 Cols/i }).click();
 
@@ -362,6 +410,13 @@ test.describe('Ronda 1.2 — layout de la tabla', () => {
                 return estilo.whiteSpace !== 'nowrap' || celda.scrollHeight > celda.clientHeight + 1;
               }).length,
               compactasRecortadas: compactas.filter((celda) => celda.scrollWidth > celda.clientWidth + 1).length,
+              separacionFechas: (() => {
+                const primeraFila = tabla.querySelector('tbody tr.row-activity');
+                const valores = [...primeraFila.querySelectorAll('.cell-date-value')];
+                if (valores.length < 2) return null;
+                const cajas = valores.map((valor) => valor.getBoundingClientRect());
+                return Math.min(...cajas.slice(1).map((caja, indice) => caja.left - cajas[indice].right));
+              })(),
             };
           });
           expect(medidas.tablaAncho).toBeLessThanOrEqual(medidas.vistaAncho);
@@ -370,6 +425,7 @@ test.describe('Ronda 1.2 — layout de la tabla', () => {
           expect(medidas.compactasConSalto).toBe(0);
           expect(medidas.compactasRecortadas).toBe(0);
           expect(medidas.anchoActividad).toBeGreaterThanOrEqual(modo === '8' ? 280 : 160);
+          expect(medidas.separacionFechas).toBeGreaterThanOrEqual(8);
         });
       }
     }
@@ -378,8 +434,8 @@ test.describe('Ronda 1.2 — layout de la tabla', () => {
 
 test('Ronda 1.2 — el scroll vertical de la tabla alcanza la última fila', async ({ page }) => {
   await page.setViewportSize({ width: 1180, height: 820 });
-  await page.goto('http://localhost:8081/dev/entrar?u=test.A&p=' + encodeURIComponent('Da Porto'));
-  await page.goto('http://localhost:8081/programa-general');
+  await page.goto(`${BASE_URL}/dev/entrar?u=test.A&p=${encodeURIComponent('Da Porto')}`);
+  await page.goto(`${BASE_URL}/programa-general`);
   const filas = page.locator('table.programa-table-pro tbody tr');
   await filas.first().waitFor();
   const vista = page.locator('.table-wrapper-pro');
@@ -405,16 +461,16 @@ test('Ronda 1.2 — el scroll vertical de la tabla alcanza la última fila', asy
 test.describe('S05 Programa General React — Servidor Real Docker', () => {
   test('abre Programa General canónico en 1180x820 sin scroll horizontal autenticado vía Dev Door', async ({ page }) => {
     await page.setViewportSize({ width: 1180, height: 820 });
-    await page.goto('http://localhost:8081/dev/entrar?u=test.A&p=' + encodeURIComponent('Da Porto'));
+    await page.goto(`${BASE_URL}/dev/entrar?u=test.A&p=${encodeURIComponent('Da Porto')}`);
     await page.waitForLoadState('networkidle');
 
     // Navegar directamente a la ruta canónica de primer nivel /programa-general (sin /app y sin redirección a PHP legado ni 404)
-    await page.goto('http://localhost:8081/programa-general');
+    await page.goto(`${BASE_URL}/programa-general`);
     await page.waitForSelector('.programa-general-container', { timeout: 15000 });
     await page.waitForSelector('.programa-table-pro', { timeout: 15000 });
 
     // 1. Comprobar que carga el título de Programa General y no hubo redirección
-    expect(page.url()).toBe('http://localhost:8081/programa-general');
+    expect(page.url()).toBe(`${BASE_URL}/programa-general`);
     await expect(page.getByRole('heading', { level: 1, name: 'Programa General' })).toBeVisible({ timeout: 15000 });
 
     // 2. Comprobar que no hay scroll horizontal en 1180px

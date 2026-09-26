@@ -17,7 +17,7 @@ export function obtenerConfigEstado(estado: string | null | undefined): EstadoBa
     case 'Actividad Futura':
       return { claseChip: 'chip-green-future', colorDot: 'var(--ds-color-state-success-text)', texto: 'Futura' };
     case 'Terminada':
-      return { claseChip: 'chip-neutral', colorDot: 'var(--ds-text-muted)', texto: 'Terminada' };
+      return { claseChip: 'chip-neutral', colorDot: 'var(--ds-state-solid-neutral)', texto: 'Terminada' };
     case 'Fuera de Ventana':
       return { claseChip: 'chip-teal', colorDot: 'var(--ds-state-solid-teal)', texto: 'Fuera de Ventana' };
     default:

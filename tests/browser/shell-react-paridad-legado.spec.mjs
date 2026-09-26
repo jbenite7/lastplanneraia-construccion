@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { BASE_URL } from './fixtures/projects.mjs';
 
-const ENTRAR = 'http://localhost:8081/dev/entrar?u=test.A&p=' + encodeURIComponent('Da Porto');
+const ENTRAR = BASE_URL + '/dev/entrar?u=test.A&p=' + encodeURIComponent('Da Porto');
 
 async function medirRiel(page, ruta) {
   await page.goto(ruta);
@@ -22,8 +23,15 @@ async function medirRiel(page, ruta) {
         const icono = nodo.querySelector('.aia-icon, i');
         const rect = icono?.getBoundingClientRect();
         const estilo = icono ? getComputedStyle(icono) : null;
+        const svg = icono?.querySelector('svg.aia-icon__glyph');
         return {
           id: nodo.getAttribute('data-destination-id'),
+          ruta: nodo.getAttribute('href'),
+          nombre: [...(icono?.classList ?? [])].find((clase) => clase.startsWith('aia-icon--')),
+          glifo: [...(svg?.children ?? [])].map((parte) => `${parte.tagName.toLowerCase()}:` +
+            [...parte.attributes].sort((a, b) => a.name.localeCompare(b.name))
+              .map((atributo) => `${atributo.name}=${atributo.value}`).join(',')),
+          respaldo: Boolean(svg?.querySelector('circle[cx="12"][cy="12"][r="7"]')),
           visible: Boolean(rect && rect.width > 0 && rect.height > 0
             && estilo?.display !== 'none' && estilo?.visibility !== 'hidden'),
         };
@@ -40,14 +48,22 @@ for (const tema of ['light', 'dark']) {
     await page.goto(ENTRAR);
     await page.evaluate(() => localStorage.removeItem('aia-sidebar-state'));
 
-    const legado = await medirRiel(page, 'http://localhost:8081/programacion-semanal');
-    const react = await medirRiel(page, 'http://localhost:8081/programa-general');
+    const legado = await medirRiel(page, BASE_URL + '/programacion-semanal');
+    const react = await medirRiel(page, BASE_URL + '/programa-general');
 
     expect(legado.estado).toBe('collapsed');
     expect(react.estado).toBe('collapsed');
     expect(Math.abs(react.ancho - legado.ancho)).toBeLessThanOrEqual(2);
     expect(legado.iconos.every((icono) => icono.visible)).toBe(true);
     expect(react.iconos.every((icono) => icono.visible)).toBe(true);
+    expect(react.iconos.map(({ id }) => id)).toEqual(legado.iconos.map(({ id }) => id));
+    for (const esperado of legado.iconos) {
+      const actual = react.iconos.find(({ id }) => id === esperado.id);
+      expect(actual.ruta, esperado.id).toBe(esperado.ruta);
+      expect(actual.nombre, esperado.id).toBe(esperado.nombre);
+      expect(actual.glifo, `${esperado.id}: glifo del legado`).toEqual(esperado.glifo);
+      expect(actual.respaldo, `${esperado.id}: respaldo genérico`).toBe(false);
+    }
     // Las opciones de semana ya no pertenecen al riel React (R1.2-4), y tema/cuenta son
     // controles propios del host. La paridad verificable del riel son sus destinos emitidos por
     // el servidor; se excluye solo la entrada activa que difiere entre las dos rutas comparadas.
@@ -59,9 +75,9 @@ for (const tema of ['light', 'dark']) {
 test('el estado del riel se comparte entre legado y React', async ({ page }) => {
   await page.setViewportSize({ width: 1180, height: 820 });
   await page.goto(ENTRAR);
-  await page.goto('http://localhost:8081/programacion-semanal');
+  await page.goto(BASE_URL + '/programacion-semanal');
   await page.evaluate(() => localStorage.setItem('aia-sidebar-state', 'expanded'));
-  await page.goto('http://localhost:8081/programa-general');
+  await page.goto(BASE_URL + '/programa-general');
 
   await expect(page.locator('aside.aia-navigation--sidebar')).toHaveAttribute('data-sidebar-state', 'expanded');
 });
@@ -69,7 +85,7 @@ test('el estado del riel se comparte entre legado y React', async ({ page }) => 
 test('la semana vive en la barra de contexto, como en el legado', async ({ page }) => {
   await page.setViewportSize({ width: 1180, height: 820 });
   await page.goto(ENTRAR);
-  await page.goto('http://localhost:8081/programa-general');
+  await page.goto(BASE_URL + '/programa-general');
 
   await expect(page.locator('aside.aia-navigation--sidebar select')).toHaveCount(0);
   await expect(page.locator('aside.aia-navigation--sidebar .aia-sidebar__week')).toHaveCount(0);

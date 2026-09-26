@@ -75,7 +75,7 @@ export const ProgramaSignalsBar: React.FC<ProgramaSignalsBarProps> = ({
       label: 'Terminada',
       filterKey: 'terminada',
       count: conteos.terminadas,
-      color: 'var(--ds-text-muted)',
+      color: 'var(--ds-state-solid-neutral)',
       className: 'chip-neutral',
       title: 'Terminada: Al 100% de ejecución',
     },

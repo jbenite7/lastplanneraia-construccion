@@ -40,7 +40,7 @@ describe('Dominio S05: presentacion de estados canonicos', () => {
   it('retorna configuracion canónica para Terminada', () => {
     const config = obtenerConfigEstado('Terminada');
     expect(config.claseChip).toBe('chip-neutral');
-    expect(config.colorDot).toBe('var(--ds-text-muted)');
+    expect(config.colorDot).toBe('var(--ds-state-solid-neutral)');
     expect(config.texto).toBe('Terminada');
   });
 

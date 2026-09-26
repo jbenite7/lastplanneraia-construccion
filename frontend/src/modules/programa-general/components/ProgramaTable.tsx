@@ -167,15 +167,17 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
                         <span style={{ color: 'var(--ds-text-muted)' }}>No</span>
                       )}
                     </td>
-                    <td className="cell-date">{formatearFechaObra(act.Fecha_Inicio)}</td>
+                    <td className="cell-date"><span className="cell-date-value">{formatearFechaObra(act.Fecha_Inicio)}</span></td>
                     <td className="cell-date" style={{ textAlign: 'center' }}>
-                      {act.Semanas_Inicio !== null && act.Semanas_Inicio !== undefined
-                        ? `Sem ${act.Semanas_Inicio}`
-                        : '-'}
+                      <span className="cell-date-value">
+                        {act.Semanas_Inicio !== null && act.Semanas_Inicio !== undefined
+                          ? `Sem ${act.Semanas_Inicio}`
+                          : '-'}
+                      </span>
                     </td>
                     <td className="cell-date">
                       <span className={act.plazoVencido ? 'cell-date-overdue' : undefined}>
-                        {formatearFechaObra(act.Fecha_Fin)}
+                        <span className="cell-date-value">{formatearFechaObra(act.Fecha_Fin)}</span>
                       </span>
                       {act.plazoVencido && (
                         <span
@@ -234,10 +236,10 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
                         )}
                       </div>
                     </td>
-                    <td className="cell-date">{formatearFechaObra(act.Fecha_Inicio)}</td>
+                    <td className="cell-date"><span className="cell-date-value">{formatearFechaObra(act.Fecha_Inicio)}</span></td>
                     <td className="cell-date">
                       <span className={act.plazoVencido ? 'cell-date-overdue' : undefined}>
-                        {formatearFechaObra(act.Fecha_Fin)}
+                        <span className="cell-date-value">{formatearFechaObra(act.Fecha_Fin)}</span>
                       </span>
                       {act.plazoVencido && (
                         <span
