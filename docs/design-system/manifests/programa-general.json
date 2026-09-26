@@ -86,7 +86,7 @@
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/linux/programa-general-dark-1180x820.png",
-          "sha256": "3a221b6438b7e271dd8d968080772723f68f1ae35f6cc378437e5abc67544083"
+          "sha256": "6db27b79f689897770c965df2fa234b986dbb3fcfa6db2f765072411ba97defa"
         }
       }
     },
@@ -108,7 +108,7 @@
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/linux/programa-general-dark-1440x900.png",
-          "sha256": "a1347594e53b6b04f3a1d98771a598efa86ccc9c4b8bd560a369fea0466f6041"
+          "sha256": "0ca1d0e8d28e9e1ec521db741520e67f1c4641bb595c8698a8849b721fe19e9a"
         }
       }
     }
