@@ -134,6 +134,15 @@ Hay rojos que ya estaban ahí. Lee primero:
 - [[regla-inalcanzable-parece-regla-sin-probar]] — antes de saltar una prueba por falta de un
   caso, averigua quién lo impide: si es el propio producto, la regla está muerta en esa vista.
 
+## Matriz local antes del push
+
+Para cambios de shell o de un módulo migrado, ejecuta los grupos completos de laboratorio,
+piloto y persistencia/RBAC en claro y oscuro, siguiendo el orden y el entorno que declara
+.github/workflows/ci.yml:433-446, 481-515. Usa la base aislada de CI para persistencia/RBAC
+(E2E_REQUIRE_ISOLATED_DB=1). Una prueba enfocada o el gate estático verde no demuestra que el
+laboratorio haya corrido: en la ronda 1.2 se omitió localmente y el primer CI encontró
+G_LABORATORY_GATES en rojo (docs/superpowers/plans/2026-09-24-s05-ronda-1-2-informe.md:119).
+
 ## Regla de fondo
 
 No se regeneran snapshots ni baselines para forzar un verde, y un cambio visual requiere

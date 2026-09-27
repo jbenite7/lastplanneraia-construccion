@@ -40,5 +40,16 @@ cambio en el diseño del gate, con plan y revisión propios — decisión del us
 no colarlo dentro de otro frente. Mientras tanto, cada re-aprobación de las métricas de tiempo
 depende de una corrida de CI.
 
+## Cambio de método: cambio de métrica
+
+En S05 ronda 1.2, el valor cercano a 260 ms y el de aproximadamente 30 ms describían intervalos
+distintos. El collector actual mide desde el pointerdown real hasta dos requestAnimationFrame
+después del cambio visible de estado y filas; la espera de Playwright y el polling quedan fuera
+del intervalo (tests/browser/design-system-runtime-budget.mjs:129-165). Si cambia el método,
+documenta la definición y compara valores obtenidos con la misma medición; conserva el tope
+aprobado y las aserciones funcionales. El cambio quedó en 9f3cd27b y la espera de disponibilidad
+fuera del intervalo en b9c472be
+(docs/superpowers/plans/2026-09-24-s05-ronda-1-2-informe.md:121-122).
+
 Ver también [[exec-en-contenedor-vivo-corre-el-repo-ajeno]], que mordió en la misma sesión por otro
 lado, y [[aislar-stack-docker-por-worktree]].

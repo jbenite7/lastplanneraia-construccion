@@ -9,6 +9,16 @@ fuente: memoria-claude
 origen: lps-aia-visual-baselines-estado-real
 resumen: Un recibo visual verde vale solo para la plataforma que lo midió; medir el delta contra el árbol limpio antes de culpar a tu cambio. states-feedback se compara desde el 2026-09-16
 ---
+## Goldens Linux tras un fallo de CI
+
+Cuando una referencia Linux necesita actualización, obtén la captura del artefacto de la
+corrida de CI que reveló el fallo y valida su hash contra el manifiesto. No captures el golden
+Linux en macOS: el render de plataforma es distinto. Planifica la descarga antes de relanzar CI
+para evitar una vuelta extra; cualquier cambio visual sigue sujeto a aprobación explícita.
+En S05 ronda 1.2, las referencias Linux salieron del artefacto 36266496659 y se incorporaron
+después de la aprobación (docs/superpowers/plans/2026-09-24-s05-ronda-1-2-informe.md:115,120;
+D-GAC-4).
+
 Medido el 2026-07-27 sobre `main`. Antes de aceptar que un cambio de CSS rompió una baseline visual, revierte tu archivo y vuelve a correr: casi siempre el rojo es previo.
 
 

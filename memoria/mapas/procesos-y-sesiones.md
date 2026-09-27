@@ -46,6 +46,7 @@ trabajo ajeno puede romper un verde propio sin tocar tu diff, y quien hizo el tr
 - [[autoria-por-coincidencia-de-hora]] — la hora de actividad no prueba autoría.
 - [[el-tipo-de-una-fuente-lo-dedujo-un-script]] — un metadato puesto por defecto parece un dato y no lo es.
 - [[path-with-space-esm-guard-noop]] — el repo vive en una ruta con espacio.
+- [[ventanas-compartidas-de-codex-cruzan-sesiones]] — contrasta la transcripción antes de atribuir mensajes o avances en la app compartida.
 
 ## El área, en una tabla
 
