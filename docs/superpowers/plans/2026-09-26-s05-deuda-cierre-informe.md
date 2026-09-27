@@ -69,7 +69,27 @@ Las pruebas de persistencia tocaron solo las bases efímeras del workflow CI; su
 
 La revisión independiente de contexto limpio no encontró hallazgos accionables de código, regresión, seguridad ni cumplimiento frente a la spec v1.1 y el plan. No quedaron correcciones pendientes. No se regeneraron snapshots ni baselines.
 
-Condición declarada para el PR antes de su primer CI: las 13 variables de estado G_* del paso «Summarize gate results» deben ser success tanto para light como para dark; se leerán sus tablas directamente, no el color del job. Se registrará aquí la corrida y sus valores tras abrir el PR.
+La condición quedó declarada en el cuerpo del PR antes del primer CI: las 13 variables de estado G_* del paso «Summarize gate results» deben ser `success` tanto para light como para dark. La tabla se leyó directamente en el resumen de la corrida, no desde el color del job.
+
+PR #63: https://github.com/jbenite7/lastplanneraia-construccion/pull/63. Corrida `36298043036`, verificada sobre `3aeb68c0256f03bdf7364db984fec40dba32af1c`: duración total 15m20s; `design-system-static` y ambas patas runtime terminaron en éxito.
+
+| Variable G_* | Light | Dark |
+| --- | --- | --- |
+| G_PHPSTAN_BASELINE | success | success |
+| G_PHPSTAN_PDC | success | success |
+| G_RUNTIME_GRANTS | success | success |
+| G_PHP_SUITE | success | success |
+| G_PHP_ADMIN_DB | success | success |
+| G_FULL_APP_FLOW | success | success |
+| G_SEMANAL_ROLES_PHASES | success | success |
+| G_RUNTIME_BUDGET_MEASURE | success | success |
+| G_RUNTIME_BUDGET_CHECK | success | success |
+| G_LABORATORY_GATES | success | success |
+| G_PILOT_LAB_GATES | success | success |
+| G_KEYBOARD_REFLOW_EVIDENCE | success | success |
+| G_PG_PERSISTENCE_RBAC | success | success |
+
+La actualización de este informe dispara una segunda corrida sobre el SHA final; sus resultados se comprobarán antes del cierre.
 
 ## BLOCKED
 
