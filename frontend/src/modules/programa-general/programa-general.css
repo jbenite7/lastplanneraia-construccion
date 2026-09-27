@@ -644,12 +644,12 @@
   .programa-table-pro .pg-col-ppto { width: 6rem; }
   .programa-table-pro .pg-col-avance { width: 8rem; }
   .programa-table-pro .pg-col-estado { width: 7.25rem; }
-  .programa-table-pro .pg-col-rc { width: 2.5rem; }
-  .programa-table-pro .pg-col-sem { width: 3.625rem; }
-  .programa-table-pro .pg-col-cantidad { width: 3.5rem; }
-  .programa-table-pro .pg-col-unidad { width: 2.75rem; }
+  .programa-table-pro .pg-col-rc { width: 2.25rem; }
+  .programa-table-pro .pg-col-sem { width: 5.25rem; }
+  .programa-table-pro .pg-col-cantidad { width: 3rem; }
+  .programa-table-pro .pg-col-unidad { width: 2.5rem; }
   .programa-table-pro .pg-col-real,
-  .programa-table-pro .pg-col-teorico { width: 3.75rem; }
+  .programa-table-pro .pg-col-teorico { width: 3.5rem; }
   .programa-table-pro .pg-col-restricciones { width: 4rem; }
 
   .programa-table-pro thead {
