@@ -925,6 +925,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - **Errores de `/api/auth/*` alineados con el esquema del cliente** (cerrado): 1 de 1 hechas · `2026-09-17-errores-api-auth-contrato.md`
 - **Errores de `/api/lps/*` alineados con el esquema del cliente** (cerrado): 1 de 1 hechas · `2026-09-17-errores-api-lps-contrato.md`
 - **Informe de sprint S05 ronda 1.2** (abierto): 0 de 0 hechas · `2026-09-24-s05-ronda-1-2-informe.md`
+- **Informe de sprint S05-DEUDA** (abierto): 0 de 0 hechas · `2026-09-26-s05-deuda-cierre-informe.md`
 - goal abierto · Goal — BI Control Tower / Programa General (Radar y Cronograma) · `goals/bi-control-tower-gemini/goal.md`
 - goal abierto · Núcleo y gobernanza del Design System AIA · `goals/design-system-nucleo-gobernanza/goal.md`
 - goal abierto · organizar-la-casa · `goals/organizar-la-casa/goal.md`
