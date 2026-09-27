@@ -19,8 +19,8 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 |---|---|
 | hecha | 513 |
 | en progreso | 8 |
-| pendiente | 159 |
-| sin señal | 175 |
+| pendiente | 160 |
+| sin señal | 182 |
 | descartada | 48 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -875,6 +875,18 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 ### S05-PARIDAD-VISUAL — Elevación Estética y Paridad 1:1 de Programa General en React (derogada)
 
 - **S05-PARIDAD-VISUAL: Paridad Visual 1:1 de Programa General en React** (derogada): 0 de 7 hechas · `2026-09-24-s05-paridad-visual-programa-general.md`
+
+### S05-DEUDA · S05 — Deuda del cierre de la ronda 1.2 (abierto)
+
+- **S05 — Deuda del cierre de la ronda 1.2** (abierto): 0 de 8 hechas · `2026-09-26-s05-deuda-cierre.md`
+  - sin señal · 0 · Worktree y línea de partida
+  - sin señal · 1 · Prueba del tinte crítico con valor fijo en oscuro (deuda 1)
+  - sin señal · 2 · Contraste de los íconos inactivos del riel en tema claro (deuda 2)
+  - pendiente · 3 · Columna de inicio relativo y CSV con el número crudo (deuda 3)
+  - sin señal · 4 · Áreas válidas en los documentos del frente TNP (deuda 4)
+  - sin señal · 5 · Pase de veracidad de la wiki (deuda 5)
+  - sin señal · 6 · Ingest de los aprendizajes de la ronda 1.2
+  - sin señal · 7 · Verificación final, revisión e informe
 
 ### Sin spec
 
