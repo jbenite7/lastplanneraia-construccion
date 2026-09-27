@@ -8,6 +8,9 @@ superficie: programa-general
 rutas: ["/programa-general"]
 depende_de: [S05]
 version: 1.0
+aprobado_por: felipe
+aprobado_el: 2026-09-26
+sello: "ninguno — aprobada en el chat de Claude; /aprobar no está instalado en esa sesión"
 areas: [lps, design-system, qa, proceso]
 fuente: "cierre de la ronda 1.2 de S05 (PR #61, merge d6995213), informe docs/superpowers/plans/2026-09-24-s05-ronda-1-2-informe.md y auditoría de Claude, 2026-09-26"
 resumen: "Tarea corta de limpieza tras la ronda 1.2 de S05: cinco deudas del cierre, a ejecutar por Codex después del reinicio de su uso el 2026-09-30."
@@ -15,9 +18,9 @@ resumen: "Tarea corta de limpieza tras la ronda 1.2 de S05: cinco deudas del cie
 
 # S05 — Deuda del cierre de la ronda 1.2
 
-> **Estado:** propuesta, sin aprobar. Decisión de Felipe del 2026-09-26: las cinco deudas del cierre
-> van juntas en una tarea corta que ejecuta Codex después del reinicio semanal de su uso
-> (2026-09-30). Esta spec no autoriza nada hasta el visto de Felipe.
+> **Estado:** **aprobada por Felipe en el chat el 2026-09-26**, sin sello (`/aprobar` no está
+> instalado en la sesión donde se escribió). Las cinco deudas van juntas en una tarea corta que
+> ejecuta Codex después del reinicio semanal de su uso (2026-09-30). Sigue el plan (paso 03).
 
 ## Por qué existe
 
@@ -77,4 +80,4 @@ toca código, las 13 variables `G_*` en verde en ambos temas en el PR.
 
 ## Decisiones abiertas
 
-- Aprobación de esta spec y fecha de ejecución (no antes del 2026-09-30).
+- Fecha de ejecución: no antes del 2026-09-30.
