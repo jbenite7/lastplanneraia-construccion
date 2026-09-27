@@ -7,7 +7,7 @@ fecha: 2026-09-26
 superficie: programa-general
 rutas: ["/programa-general"]
 depende_de: [S05]
-version: 1.0
+version: 1.1
 aprobado_por: felipe
 aprobado_el: 2026-09-26
 sello: "ninguno — aprobada en el chat de Claude; /aprobar no está instalado en esa sesión"
@@ -41,11 +41,20 @@ condición, pero que no deben perderse.
    comparar primero con el riel del legado en claro; si el legado se ve igual, es herencia del
    design system y va a su propio frente; si no, igualar al legado. Medir contraste (3:1 para íconos
    no textuales, WCAG 1.4.11).
-3. **Semanas negativas en la vista de 13 columnas.** La columna «Sem. ini.» muestra valores como
-   «Sem -9» para actividades que empiezan antes de la semana 1 del proyecto. **Decidido por Felipe
-   (2026-09-26):** se muestra «Antes de S1», con la fecha real de inicio en el título (al pasar el
-   cursor). No se inventa un número de semana. El CSV conserva el número crudo (por ejemplo `-9`),
-   porque es un archivo para análisis (Felipe, 2026-09-26).
+3. **La columna «Sem. ini.» de la vista de 13 columnas se entiende mal.** *(Corregido el 2026-09-26,
+   ronda 1.1.)* La versión 1.0 decía que «Sem -9» eran actividades anteriores a la semana 1 del
+   proyecto, y sobre esa premisa Felipe eligió «Antes de S1». **La premisa era falsa:** el valor es
+   un desfase respecto de la semana vigente, no un número de semana. Lo calcula
+   `pg_calculate_week_offset(Fecha_Inicio, inicio de la semana programada)`
+   (`src/Legacy/modificar_sem_estado.php:50`) y lo interpreta `public/js/modules/programa_general/hot.js:680-700`
+   (negativo: ya debió empezar; 0: empieza esta semana; 7 o más: futura). «Sem -9» significa
+   «empezó hace 9 semanas».
+   **Decidido por Felipe (2026-09-26), con la premisa corregida:** texto relativo. La celda muestra
+   «Hace N sem» para valores negativos, «Esta sem» para 0 y «En N sem» para positivos, con la fecha
+   real de inicio en el título (al pasar el cursor). El encabezado pasa de «Sem. ini.» a
+   «Inicio rel.». Sin valor, la celda sigue mostrando «–». El CSV conserva el número crudo
+   (`-9`, `0`, `3`), incluido el `0`, que hoy se pierde porque el código lo trata como vacío
+   (`exportarCsv.ts:57`).
 4. **Áreas inválidas del frente TNP en la wiki.** `docs/superpowers/specs/2026-09-24-calificacion-tnp-semana-confirmada-design.md`
    y `docs/superpowers/plans/2026-09-24-calificacion-tnp-semana-confirmada.md` declaran áreas fuera
    de la lista cerrada (`programacion_semanal`, `tnp`, `backend`, `frontend`). **Arreglo:** usar
