@@ -89,7 +89,7 @@ PR #63: https://github.com/jbenite7/lastplanneraia-construccion/pull/63. Corrida
 | G_KEYBOARD_REFLOW_EVIDENCE | success | success |
 | G_PG_PERSISTENCE_RBAC | success | success |
 
-La actualización de este informe dispara una segunda corrida sobre el SHA final; sus resultados se comprobarán antes del cierre.
+La segunda corrida del PR, `36298947981`, verificó el commit `a14a6d6c9a7977fa7cfd5422219449988ae8cce5` y terminó en éxito (16m12s). Las 13 variables volvieron a ser `success` en light y dark. Este apunte genera un commit documental nuevo; la corrida de CI sobre esa nueva cabeza se comprobará directamente en el PR antes del cierre.
 
 ## BLOCKED
 
