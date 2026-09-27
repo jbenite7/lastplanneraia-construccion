@@ -5,6 +5,9 @@ estado: abierto
 fecha: 2026-09-26
 areas: [lps, design-system, qa, proceso]
 ejecutor: codex
+aprobado_por: felipe
+aprobado_el: 2026-09-26
+sello: "ninguno — aprobado en el chat de Claude; /aprobar no está instalado en esa sesión"
 spec: docs/superpowers/specs/2026-09-26-s05-deuda-cierre-design.md
 fuente: docs/superpowers/plans/2026-09-26-s05-deuda-cierre.md
 resumen: "Plan corto para la deuda del cierre de S05 ronda 1.2: prueba del tinte crítico con valor fijo, contraste de los íconos del riel en claro, columna de inicio relativo, áreas del frente TNP, pase de veracidad e ingest en la wiki."
@@ -33,7 +36,7 @@ Felipe el 2026-09-26). Léela entera antes de la tarea 0; el punto 3 se corrigi�
 
 ## Restricciones globales
 
-- **No antes del 2026-09-30** (reinicio semanal del uso de Codex).
+- **Felipe lo aprobó el 2026-09-26 para ejecutar de inmediato** (sustituye la fecha del 2026-09-30).
 - Worktree propio desde `origin/main`; nunca el checkout principal. `.env` enlazado, no copiado.
 - **Ninguna prueba se debilita, ningún umbral se sube.** Si una aserción no se puede conservar,
   `BLOCKED` con la razón.
