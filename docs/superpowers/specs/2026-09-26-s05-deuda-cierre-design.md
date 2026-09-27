@@ -41,7 +41,8 @@ condición, pero que no deben perderse.
 3. **Semanas negativas en la vista de 13 columnas.** La columna «Sem. ini.» muestra valores como
    «Sem -9» para actividades que empiezan antes de la semana 1 del proyecto. **Decidido por Felipe
    (2026-09-26):** se muestra «Antes de S1», con la fecha real de inicio en el título (al pasar el
-   cursor). No se inventa un número de semana. Qué hace el CSV con esas semanas queda abierto.
+   cursor). No se inventa un número de semana. El CSV conserva el número crudo (por ejemplo `-9`),
+   porque es un archivo para análisis (Felipe, 2026-09-26).
 4. **Áreas inválidas del frente TNP en la wiki.** `docs/superpowers/specs/2026-09-24-calificacion-tnp-semana-confirmada-design.md`
    y `docs/superpowers/plans/2026-09-24-calificacion-tnp-semana-confirmada.md` declaran áreas fuera
    de la lista cerrada (`programacion_semanal`, `tnp`, `backend`, `frontend`). **Arreglo:** usar
@@ -76,5 +77,4 @@ toca código, las 13 variables `G_*` en verde en ambos temas en el PR.
 
 ## Decisiones abiertas
 
-- Punto 3: qué muestra el CSV para las semanas previas a S1 (la pantalla ya está decidida).
 - Aprobación de esta spec y fecha de ejecución (no antes del 2026-09-30).
