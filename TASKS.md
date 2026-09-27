@@ -876,6 +876,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 - **S05-PARIDAD-VISUAL: Paridad Visual 1:1 de Programa General en React** (derogada): 0 de 7 hechas · `2026-09-24-s05-paridad-visual-programa-general.md`
 
+### S05-DEUDA · S05 — Deuda del cierre de la ronda 1.2 (abierto)
+
+- Sin plan todavía.
+
 ### Sin spec
 
 - **Sidebar canónico del laboratorio** (cerrado): 0 de 0 hechas · `2026-07-20-sidebar-canonico-laboratorio.md`
