@@ -66,7 +66,7 @@ Si la sesión parece caerse durante QA en navegador, antes de diagnosticar lee
 servidor solo exigía una capacidad de edición genérica —que el Residente tiene—, y que el log
 escribía siempre «reabierta por Admin». `6dcec299` (2026-08-10) lo cerró extrayendo
 `SemanalReabrirPolicy`, que decide en el servidor antes de mutar
-(`src/Controllers/Api/SemanalApiController.php:1003`). Se conserva por la lección: el cliente puede
+(`src/Controllers/Api/SemanalApiController.php:1005-1009`). Se conserva por la lección: el cliente puede
 esconder, solo el servidor puede impedir.
 
 [[logout-no-limpia-la-sesion-pendiente-de-clave]] — la sesión a medias del cambio obligatorio de

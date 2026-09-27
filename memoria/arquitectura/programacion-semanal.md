@@ -19,7 +19,15 @@ mide si el equipo cumple lo que promete. Antes de tocarla conviene conocer [[sub
 
 Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
-Desde la propia vista, tres píldoras cambian de pestaña sin salir del módulo: `CNP` lleva a
+Las filas TNP tienen reglas propias: en semanas confirmadas no quedan bajo el bloqueo de edición
+de planificación que aplica a filas normales; omiten la exigencia de compromiso positivo y la
+validación de causa CNC por avance parcial, y no alimentan PAC ni P_Completado
+(src/Controllers/Api/SemanalApiController.php:310-346). En cliente, una fila TNP no exige
+asignados previos para capturar avance real (public/js/modules/programacion_semanal/hot.js:3083-3088);
+el servidor sí exige que contratista y responsable enviados estén presentes
+(src/Controllers/Api/SemanalApiController.php:321-324).
+
+Desde la propia vista, tres píldoras cambian de pestaña sin salir del módulo: CNP lleva a
 `/programacion-semanal/cnp` ([[submodulo-cnp]], causas por las que algo no entró a la semana),
 `CNC` a `/programacion-semanal/cnc` ([[submodulo-cnc]], causas por las que algo no se cumplió) y
 `CIC` a `/programacion-semanal/cic` ([[submodulo-cic]], la calificación de contratistas).

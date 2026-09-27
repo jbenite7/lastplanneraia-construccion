@@ -17,11 +17,11 @@ cierra en producción.
 
 **Dónde encaja.** Fuera de los dos flujos de negocio: es infraestructura de la aplicación.
 
-**Quién pinta cada pantalla (verificado el 2026-09-17, actualizado el 2026-09-21).** La tabla
+**Quién pinta cada pantalla (verificado el 2026-09-17, actualizado el 2026-09-26).** La tabla
 generada de abajo lista lo que registra el router, y para varias rutas **no es lo que se sirve**:
 los `GET`/`HEAD` de `/`, `/login`, `/password/forgot` y `/password/reset` los intercepta antes
 `SpaRouter::sirveLaSpa()` (`RUTAS_EXACTAS_MIGRADAS`, `src/Core/SpaRouter.php:18`) y los pinta el
-shell React con `SpaHostRenderer::render()` (`public/index.php:403-406`), sin llegar a
+shell React con `SpaHostRenderer::render()` (`public/index.php:416-424`), sin llegar a
 `LoginController::index`. `/login` se cortó el 2026-09-01 (`36b7df22`, S01), `/password/forgot` el
 2026-09-16 (S02, PR #43) —que además retiró `views/auth/password-forgot.view.php` y el
 `POST /password/forgot` legado: la recuperación va por `POST /api/auth/password/forgot` →

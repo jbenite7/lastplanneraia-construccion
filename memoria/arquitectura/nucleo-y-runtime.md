@@ -19,19 +19,19 @@ tocar algo aquí, ten claro que un cambio afecta a toda la app, no a un módulo 
 
 ## Navegación desde el shell
 
-Todos los módulos activos comparten el mismo `views/partials/shell_sidebar.php`. Se organiza en
-tres grupos. El grupo **Información** lleva a `Control Tower - Informes` ([[torre-de-control-bi]]),
-a `Semanas del Proyecto` (abre un flyout con la lista de semanas — ver [[legado]] para las rutas de
-crear y eliminar semana), a `Profesionales`, `Subcontratistas`, `Indicadores LPS` y
-`Control de Cambios`. El grupo **Obra** lleva a `Programa General`, `Programación Intermedia`,
-`Programación Semanal` y `Actualizar Cronograma`; en los tres primeros, pasar el mouse sobre el
-ítem abre un flyout con las semanas de ese módulo, y elegir una semana **cambia la semana activa y
-redirige al propio módulo** — no es un enlace fijo, depende del contexto que guarda este módulo. El
-grupo **Compras** solo lleva a `Plan de Compras` (la isla React, ver [[plan-de-compras]]). El menú
-de usuario ofrece `Cambiar proyecto` (hacia [[selector-de-proyectos]]) y `Cerrar sesión`.
+Las rutas PHP legadas que conservan el panel usan `views/partials/shell_sidebar.php`. Las rutas
+migradas a React usan AppShell y NavegacionLateral (frontend/src/shell/AppShell.tsx:65-72,
+NavegacionLateral.tsx:39-79); el selector de proyectos (frontend/src/shell/rutas.tsx:290-296) y
+Programa General (rutas.tsx:450-451) ya entran por esa SPA. No
+asumas que todo módulo activo comparte el sidebar PHP ni su comportamiento de flyouts. En el shell
+legado, el grupo **Información** lleva a Control Tower - Informes ([[torre-de-control-bi]]), a
+Semanas del Proyecto (ver [[legado]] para crear y eliminar semana), Profesionales,
+Subcontratistas, Indicadores LPS y Control de Cambios; **Obra** lleva a Programa General,
+Programación Intermedia, Programación Semanal y Actualizar Cronograma; **Compras** lleva a Plan de
+Compras ([[plan-de-compras]]). El menú de usuario ofrece cambiar proyecto y cerrar sesión.
 
 Ver [[arquitectura]] para el mapa completo y [[navbar-css-consumidor-vivo]] para las trampas del
-CSS que consume este shell.
+CSS que consume el shell legado.
 
 ## Inventario
 

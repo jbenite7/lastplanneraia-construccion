@@ -42,7 +42,9 @@ comportamiento del producto, no solo trampa de QA— están en
 
 ## Tablas
 
-Los módulos LPS usan Handsontable. La altura de `#hot-container` la resuelve JavaScript, no CSS:
+Programación Intermedia y Semanal usan Handsontable; Programa General se sirve hoy en React con
+tabla de 8 o 13 columnas y tarjetas responsivas (`frontend/src/modules/programa-general/components/ProgramaTable.tsx:19-23`, `ProgramaGeneralPage.tsx:340-350`). La altura de
+`#hot-container` en las grillas que aún usan Handsontable la resuelve JavaScript, no CSS:
 `calc(100vh - Npx)` sobre ese contenedor es siempre incorrecto — [[hot-container-height-ownership]].
 
 ## Reabrir semana
@@ -50,7 +52,7 @@ Los módulos LPS usan Handsontable. La altura de `#hot-container` la resuelve Ja
 **La regla la aplica el servidor**, y es la que el producto quiere:
 `SemanalReabrirPolicy::allows($role, $fechaInicioSemana)` guarda dentro de
 `SemanalApiController::reabrir()` y responde 403 antes de mutar nada
-(`src/Controllers/Api/SemanalApiController.php:1003-1004`). Reabren Admin y Director siempre; el
+(`src/Controllers/Api/SemanalApiController.php:1005-1009`). Reabren Admin y Director siempre; el
 Residente solo hasta el fin del día de inicio de la semana; cualquier otro rol, nunca.
 
 **Corregido el 2026-08-18.** Aquí decía en presente que cliente y servidor no aplicaban la misma
@@ -64,7 +66,8 @@ caso es la lección: el cliente puede esconder, solo el servidor puede impedir.
 ## En móvil no hay grilla
 
 Por debajo de **1180 px** Semanal e Intermedia no pintan Handsontable: pintan tarjetas, y la tablet
-entra en ese lado del umbral. Las dos comparten forma —cinco elementos visibles y un desplegable
+entra en ese lado del umbral. Programa General muestra sus tarjetas por debajo de 768 px
+(frontend/src/modules/programa-general/programa-general.css:1696-1712; ProgramaGeneralPage.tsx:347-350). Las dos comparten forma —cinco elementos visibles y un desplegable
 nombrado por su contenido— y difieren en qué se edita: Semanal el compromiso, en la cara visible;
 Intermedia las siete restricciones, dentro del desplegable. El modelo y sus porqués están en
 [[tarjeta-movil-e2-bis]]; por qué hubo que decidirlo dos veces, en

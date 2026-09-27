@@ -38,21 +38,33 @@ devuelve).
 
   | Nivel | Necesita | Cuántos | Lo corre el CI |
   |---|---|---|---|
-  | `puro` | PHP y autoload | 33 | sí, job estático |
-  | `db` | base con el esquema del fixture | 60 | sí, job runtime |
-  | `http` | además la aplicación viva | 10 | sí, job runtime |
-  | `datos-proyecto` | datos o evidencia que el CI no tiene | 36 | no |
-  | `admin-db` | admin efímero que puede crear tablas | 2 | sí, paso `php-admin-db` |
+  | `puro` | PHP y autoload | 43 | sí, job estático |
+  | `db` | base con el esquema del fixture | 59 | sí, job runtime |
+  | `http` | además la aplicación viva | 15 | sí, job runtime |
+  | `datos-proyecto` | datos o evidencia que el CI no tiene | 41 | no |
+  | `admin-db` | admin efímero que puede crear tablas | 1 | sí, paso `php-admin-db` |
 
-**Estas cifras caducan solas y ya lo hicieron cuatro veces** — el universo pasó de 126 a 96, a 99,
-a 101, a 117 (2026-08-24) y a **139 `tests/test_*.php` más 17 clases PHPUnit el 2026-09-03 sobre
-`093e0d44`** (el desglose por `grep` de arriba suma 141 porque el runner solo lee la primera
-`@requiere` de las 40 primeras líneas y `grep` cuenta todas). No las copies: re-mídelas.
+**Conteo actual medido el 2026-09-26:** 159 scripts `tests/test_*.php` y 32 clases PHPUnit; la tabla
+reparte los scripts por su primera etiqueta `@requiere` leída en las 40 primeras líneas. Como
+historia, el universo pasó por 126, 96, 99, 101, 117 (2026-08-24) y 139 scripts más 17 clases
+PHPUnit el 2026-09-03 sobre `093e0d44`. Estas cifras caducan: vuelve a medirlas antes de usarlas.
 
 ```bash
 ls -1 tests/test_*.php | wc -l
 ls -1 tests/unit/*Test.php | wc -l
-for n in puro db http datos-proyecto admin-db; do echo -n "$n: "; grep -l "@requiere: $n" tests/test_*.php | wc -l; done
+python3 - <<'PY'
+from pathlib import Path
+levels = {name: 0 for name in ("puro", "db", "http", "datos-proyecto", "admin-db")}
+for path in Path("tests").glob("test_*.php"):
+    for line in path.read_text(errors="replace").splitlines()[:40]:
+        if "@requiere:" in line:
+            level = line.split("@requiere:", 1)[1].strip()
+            if level in levels:
+                levels[level] += 1
+            break
+for name, count in levels.items():
+    print(f"{name}: {count}")
+PY
 ```
 
   ```bash
