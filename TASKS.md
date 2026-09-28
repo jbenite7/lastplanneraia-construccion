@@ -1348,7 +1348,14 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   que servía `main` (`1fb4c341`), con la puerta de servicio (`test.R`, `PDC Sandbox E2E`), y **no
   hay 500**: (1) entrar directo a `/programa-general` tras la puerta responde 200; (2) forzando el
   estado del bug —`POST /context/clear-week`, que dejó `{"ok":true,"week":null}`— y entrando de nuevo,
-  responde 200 y la pantalla **se repone sola en «Semana 4»** con su tabla cargada. Sobre las dos
+  responde 200 y no hay 500, **pero la pantalla queda degradada (corrección del mismo día, tras verla en
+  el navegador: la primera versión de esta frase decía «se repone sola con su tabla cargada» y era
+  inexacta, porque solo comprobé que existiera un elemento tabla, no que tuviera filas ni cabecera)**:
+  muestra «Semana 4 Vigente» **sin la barra verde de cabecera ni el selector de semana**, y sigue así
+  tras recargar, o sea, la sesión no recupera la semana y el usuario no tiene el selector a mano. La
+  tabla vacía («0 de 0») **es dato, no fallo**: poniendo la semana 4 a mano por el camino normal también
+  sale con 0 actividades (el proyecto solo tiene las semanas 1 y 4). **Queda abierto y sin causa
+  atribuida**: por qué la semana repuesta no llega a la sesión ni a la cabecera. Sobre las dos
   hipótesis del encuadre de Felipe: **(a) se descarta tal como estaba planteada**: la puerta de
   servicio (`DevDoorController`) pasa hoy por `ProjectAccessService`, que fija la semana con
   `ProjectLandingService::resolve()`. **(b) sí existe un camino real que deja la sesión sin semana,
@@ -1364,7 +1371,21 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   reprodujo con el helper `login()`/`selectProject()` de Playwright del spec original. Si el 500
   reaparece, este ítem se reabre. **Pregunta de producto que queda**: la invariante «siempre debe
   haber una semana» no se impone a nivel de sesión, porque `clear-week` existe a propósito; hoy
-  la sostiene cada pantalla al reponerla. Es de Felipe decidir si eso basta.
+  la sostiene cada pantalla al reponerla. Es de Felipe decidir si eso basta. **Actualización: la
+  pregunta de arriba se contesta peor de lo que parecía, ver el pendiente siguiente.**
+- [ ] **Tras «quitar semana», Programa General carga pero sin la barra verde de cabecera ni el selector
+  de semana, y no se arregla al recargar (2026-09-28).** Visto en el navegador, en un Apache efímero sobre
+  `main`, con la puerta de servicio (`test.R`, `PDC Sandbox E2E`): (1) con la semana puesta (semana 1) la
+  pantalla trae la barra verde con el breadcrumb y el selector; (2) tras `POST /context/clear-week` y
+  entrar a `/programa-general` muestra «Semana 4 Vigente» **sin barra ni selector**; (3) recargando otra
+  vez sigue igual; (4) poniendo la semana 4 a mano por `POST /context/week` la barra y el selector
+  vuelven. **No hay 500 y no hay pérdida de datos**; es una pantalla degradada en la que el usuario no
+  tiene a mano el selector para volver a elegir semana. **Causa sin atribuir**: el controlador
+  (`ProgramaGeneralController`, ~líneas 196-212) escribe la semana repuesta en `$_SESSION['semana']`, y
+  aun así la sesión parece no recuperarla; no se investigó más. **Falta**: saber si se llega a este estado
+  por un camino real (quién llama a `clear-week` además del botón: `public/js/core/ContextManager.js:81`),
+  y si las otras pantallas que dependen de la semana quedan igual (solo se vio esta y se verificó el estado
+  HTTP en las demás, no la cabecera). Decisión de producto pendiente de Felipe: qué debe ver el usuario.
 - [x] **La rama "sin sesión" de `NotificationController::getUnread()`/`::markAsRead()` era código
   muerto por esta puerta — retirada en T02 Tarea 9 (2026-08-31).** Ambos métodos comprobaban
   `$_SESSION['usuario']` y, si faltaba, respondían `403 {"error":"No autorizado"}` — pero
