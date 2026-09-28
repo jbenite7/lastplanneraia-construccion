@@ -607,8 +607,12 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                   </li>
                 ))}
               </ul>
+            ) : restricciones ? (
+              <p className="drawer-empty-note">Esta actividad no registra valores de restricciones.</p>
             ) : (
-              <p className="drawer-empty-note">Sin restricciones registradas para esta actividad.</p>
+              <p className="drawer-empty-note">
+                Catálogo de restricciones no disponible: no se pueden mostrar los recursos de liberación.
+              </p>
             )}
           </div>
 

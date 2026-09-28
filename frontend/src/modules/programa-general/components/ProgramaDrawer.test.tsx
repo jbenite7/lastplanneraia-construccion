@@ -127,10 +127,10 @@ describe('ProgramaDrawer Contextual LPS', () => {
     expect(screen.queryByText(/Liberado$/)).toBeNull();
   });
 
-  it('sin dato de restricciones lo dice en vez de afirmar recursos liberados', () => {
+  it('sin catálogo de restricciones no afirma nada sobre la fila: dice que el catálogo no está disponible', () => {
     render(
       <ProgramaDrawer
-        actividad={mockAct}
+        actividad={{ ...mockAct, D_y_E: '100%' }}
         catalogos={catalogos}
         indiceActual={1}
         totalActividades={10}
@@ -140,8 +140,31 @@ describe('ProgramaDrawer Contextual LPS', () => {
       />
     );
     expect(screen.queryByRole('list', { name: /Recursos de liberación/i })).toBeNull();
-    expect(screen.getByText(/Sin restricciones registradas/i)).toBeInTheDocument();
+    expect(screen.getByText(/Catálogo de restricciones no disponible/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Sin restricciones registradas/i)).toBeNull();
     expect(screen.queryByText('Mano de Obra')).toBeNull();
+  });
+
+  it('con catálogo y sin datos en la fila dice que la fila no registra restricciones', () => {
+    render(
+      <ProgramaDrawer
+        actividad={mockAct}
+        catalogos={catalogos}
+        restricciones={{
+          area: 'Construccion',
+          restrictions: [{ key: 'D_y_E', label: 'D y E', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] }],
+          hardRestrictions: ['D_y_E'],
+          softRestrictions: [],
+        }}
+        indiceActual={1}
+        totalActividades={10}
+        onCerrar={vi.fn()}
+        onGuardar={vi.fn()}
+        onNavigateSeq={vi.fn()}
+      />
+    );
+    expect(screen.getByText(/Esta actividad no registra valores de restricciones/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Catálogo de restricciones no disponible/i)).toBeNull();
   });
 
   it('no ofrece escribir observaciones: el guardado no las lleva y el legado nunca las editó', () => {
