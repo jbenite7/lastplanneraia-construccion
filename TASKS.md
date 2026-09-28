@@ -2118,15 +2118,22 @@ estado por defecto mientras Felipe no reparta.
   Alto riesgo. Arreglado en `accionCriticasAtrasadas()` para los tres scorecards que lo muestran
   (overview, programa-general y curva-s), con `tests/test_bi_criticas_atrasadas_estado.php` (nivel
   `puro`, visto rojo antes del arreglo y verde después).
-- [ ] **El estado de los demás KPI de BI tampoco depende del valor: mismo patrón que «Críticas
-  atrasadas», sin arreglar y sin regla de negocio decidida.** Verificado el 2026-09-28 ejecutando
-  `kpi()`: (a) la acción «Medio» produce estado «OK», así que un `Medio` calculado —desviación entre 0
-  y −5 pp, PAC entre 60 y 80, `ControlTowerService` líneas ~819, ~845 y ~907— **nunca se muestra como
-  Medio**; (b) «Compromisos en riesgo» (acción fija «Revisar») y «PDC en riesgo» («Revisar compras»)
-  salen **siempre «Medio»**, y «Bloqueadas», «Restricciones no listas» («Liberar»), «Contratistas en
-  alerta» («Intervenir») y «¿Qué hacer?» salen **siempre «OK»**, sea cual sea el valor. Arreglarlo
-  cambia lo que ve el usuario en todos los tableros y necesita los umbrales de Felipe por indicador;
-  la causa común es que `kpi()` lee el texto de la acción en vez del valor.
+- [x] 2026-09-28 — **El estado de los demás KPI de BI tampoco dependía del valor: mismo patrón que
+  «Críticas atrasadas». ARREGLADO con las reglas de Felipe del mismo día.** Verificado ejecutando
+  `kpi()`: (a) la acción «Medio» producía estado «OK», así que un `Medio` calculado —desviación entre 0
+  y −5 pp, PAC entre 60 y 80, desviación de la curva S— **nunca se mostraba como Medio**; (b)
+  «Compromisos en riesgo» («Revisar») y «PDC en riesgo» («Revisar compras») salían **siempre «Medio»**, y
+  «Bloqueadas», «Restricciones no listas» («Liberar») y «Contratistas en alerta» («Intervenir») **siempre
+  «OK»**, sea cual fuera el valor. **Reglas decididas:** conteos de cosas malas, 0 = verde y 1 o más =
+  amarillo (`kpiConteo()`); el Medio calculado se ve amarillo (`kpi()` reconoce la acción «Medio»); solo
+  «Críticas atrasadas» sube a rojo. Cubierto por `tests/test_bi_alertas_conteo_y_medio.php` (nivel
+  `puro`, visto rojo con 13 fallos y verde después). **Efecto medido en la base de DESARROLLO, 25
+  proyectos con más datos:** «Bloqueadas» pasa a amarillo en **24 de 25** (casi todos tienen alguna
+  restricción dura bloqueada: con la regla «1 o más» puede volverse ruido, y habría que mirar umbrales si
+  es así en producción); «Compromisos en riesgo» pasa de amarillo fijo a verde en **25 de 25**;
+  «Contratistas en alerta» amarillo en 4; «Desviación vs plan» muestra Medio en 3 que antes salían
+  verdes. **Fuera de alcance, sin tocar:** «¿Qué hacer?», «¿Podemos?» y «¿Se hará?» son conteos
+  informativos, no de cosas malas, y siguen sin semáforo. **No medido:** producción.
 
 - [ ] **Ficha de trampa pendiente: «el guard que valida su declaración, no su efecto».** Es la
   tercera vez que se mide la misma familia en este repo —hermana de
