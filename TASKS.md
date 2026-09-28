@@ -17,10 +17,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 514 |
-| en progreso | 8 |
-| pendiente | 159 |
-| sin señal | 182 |
+| hecha | 557 |
+| en progreso | 4 |
+| pendiente | 154 |
+| sin señal | 148 |
 | descartada | 48 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -145,34 +145,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### Reparto del trabajo pendiente tras el saneamiento del goal de tablas (derogada)
 
-- **Usabilidad: altas y medias** (vigente): 7 de 27 hechas · `2026-08-03-usabilidad-altas-y-medias.md`
-  - sin señal · 1 · Tildes en los chips de estado del PDC (H-28)
-  - hecha · 2 · Retirar la unidad cruda «count» de los KPI de BI (H-29)
-  - sin señal · 3 · Desambiguar las columnas homónimas de control de cambios (H-30)
-  - sin señal · 4 · Estado vacío de control de cambios (H-02)
-  - hecha · 5 · Componente compartido de estado vacío para Handsontable
-  - hecha · 6 · Estado vacío de la malla semanal (H-01)
-  - sin señal · 7 · Estado vacío del PDC (H-04)
-  - pendiente · 8 · La tarjeta «Resumen Ejecutivo» deja de mostrar «--» (H-05)
-  - hecha · 9 · Labels y `autocomplete` en el acceso de admin (H-33)
-  - hecha · 10 · Label del correo en la recuperación de admin (H-35)
-  - en progreso · 11 · El error de JS de escalamientos deja de fallar en silencio (H-26)
-  - en progreso · 12 · Contraste del chip de BI (H-34)
-  - sin señal · 13 · Objetivo de «Quitar filtro» y contador de filtros (H-36, H-25)
-  - sin señal · 14 · Verificación de fase F3
-  - sin señal · 15 · Cabeceras del PDC legibles y distinguibles (H-07)
-  - sin señal · 16 · Filtros legibles en control de cambios (H-08)
-  - sin señal · 17 · Botones de la barra semanal sin truncar (H-09)
-  - sin señal · 18 · Cabeceras del programa general (H-10)
-  - sin señal · 19 · El rail «CONCURRENCIA LPS» deja de tapar controles (H-12, H-13)
-  - sin señal · 20 · Verificación de fase F4
-  - sin señal · 21 · Las pestañas de BI dejan de ocultar módulos (H-16)
-  - pendiente · 22 · El tour de plan de compras deja de taparse a sí mismo (H-17, H-20)
-  - en progreso · 23 · Encabezado de página en las seis superficies que no lo tienen (H-19)
-  - hecha · 24 · Los dos proyectos dejan de ser indistinguibles (H-21)
-  - hecha · 25 · Devolver el shell a escalamientos (H-18) — CON FRENO
-  - sin señal · 26 · Dar salida a control de cambios (H-38)
-  - sin señal · 27 · Verificación de fase F5 y cierre del goal
+- **Usabilidad: altas y medias** (cerrado): 27 de 27 hechas · `2026-08-03-usabilidad-altas-y-medias.md`
 
 ### Saneamiento de las deudas abiertas del goal de usabilidad (cerrado)
 
@@ -241,23 +214,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### Plan de cierre hasta producción (cerrado)
 
-- **Plan de cierre hasta producción** (vigente): 0 de 16 hechas · `2026-08-11-cierre-hasta-produccion.md`
-  - sin señal · 1 · Cambiar la aserción, y verla rechazar lo que debe
-  - sin señal · 2 · Comprobar que el static pasa entero, no solo esta prueba
-  - sin señal · 2b · El segundo rojo — la regex de los chips quedó vieja (`D-GAC-2`)
-  - sin señal · 2c · El tercer y último rojo — `!important` como forma, no como resultado (`D-GAC-3`)
-  - sin señal · 3 · Verlo verde en CI de verdad, y entregar
-  - sin señal · 1 · Comprobar que el workflow corre verde hoy, antes de tocarlo
-  - sin señal · 2 · Enchufar `full-app-flow` al job de runtime
-  - sin señal · 3 · Enchufar `runtime-budgets` al mismo job
-  - sin señal · 4 · Ver los dos gates fallar, y solo después verlos pasar
-  - sin señal · 5 · Actualizar los recibos y entregar
-  - sin señal · 1 · Censar los diez vivos y verificar los dos fantasmas
-  - sin señal · 2 · Añadir el campo al esquema, y verlo rechazar
-  - sin señal · 3 · Rellenar la superficie de los doce y hacerla cumplir en el gate
-  - sin señal · 4 · Cerrar `D-CEF-1` y entregar
-  - sin señal · 1 · Preparar y respaldar
-  - sin señal · 2 · Publicar
+- **Plan de cierre hasta producción** (cerrado): 16 de 16 hechas · `2026-08-11-cierre-hasta-produccion.md`
 
 ### Fijar la semana en la prueba visual de Programación Intermedia (cerrado)
 
@@ -285,12 +242,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### Espacio de la cuenta de SiteGround: dejar de guardar lo que git ya guarda (cerrado)
 
-- **Espacio de la cuenta de SiteGround** (vigente): 1 de 5 hechas · `2026-08-18-espacio-cuenta-siteground.md`
-  - pendiente · 1 · Frente D: basura suelta en producción
-  - en progreso · 2 · Frente A: archivar los binarios de QA fuera de git
-  - sin señal · 3 · Frente B: el tar de pre-deploy guarda lo irremplazable
-  - sin señal · 4 · Frente C: clon shallow en pruebas
-  - hecha · 5 · Cierre: verificar, publicar y anotar
+- **Espacio de la cuenta de SiteGround** (cerrado): 5 de 5 hechas · `2026-08-18-espacio-cuenta-siteground.md`
 
 ### Wiki v2 — visual, etiquetada, misma metodología (cerrado)
 
@@ -315,14 +267,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### La línea base contractual deja de deducirse (cerrado)
 
-- **Línea base contractual** (vigente): 4 de 7 hechas · `2026-08-19-linea-base-contractual.md`
-  - hecha · 1 · el servicio que lee y siembra la línea base
-  - hecha · 2 · el cronograma lee la línea base declarada
-  - pendiente · 3 · el gráfico dice de quién es la fecha
-  - hecha · 4 · sembrar al consolidar la primera semana
-  - pendiente · 5 · migración de una vez para lo ya cargado
-  - hecha · 6 · auditoría del PDC, con evidencia
-  - sin señal · 7 · cerrar contra el CI, que es la condición de hecho
+- **Línea base contractual** (cerrado): 7 de 7 hechas · `2026-08-19-linea-base-contractual.md`
 
 ### Organizar la casa — el repo y sus sesiones (cerrado)
 
@@ -940,15 +885,13 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - cerrado_sin_archivos · `plans/2026-08-03-cierre-dark-mode-fases-0-3.md`: dice «plan cerrado»; git dice «1 de 5 archivos que mandaba crear no existieron nunca en ninguna rama: admin/src/Core/DevDoor.php»
 - cerrado_sin_archivos · `plans/2026-08-04-biblia-t4-soporte.md`: dice «plan cerrado»; git dice «5 de 7 archivos que mandaba crear no existieron nunca en ninguna rama: docs/flujos/soporte-contratos-y-actividades.md, docs/flujos/soporte-subcontratistas.md, docs/flujos/soporte-profesionales.md…»
 - cerrado_sin_archivos · `plans/2026-08-04-biblia-t5-lectura.md`: dice «plan cerrado»; git dice «2 de 4 archivos que mandaba crear no existieron nunca en ninguna rama: docs/flujos/lectura-indicadores.md, docs/flujos/lectura-torre-de-control.md»
+- cerrado_sin_archivos · `plans/2026-08-18-espacio-cuenta-siteground.md`: dice «plan cerrado»; git dice «1 de 2 archivos que mandaba crear no existieron nunca en ninguna rama: /Volumes/Crucial X6/Developer/lps-aia-evidencia/»
+- cerrado_sin_archivos · `plans/2026-08-19-linea-base-contractual.md`: dice «plan cerrado»; git dice «3 de 8 archivos que mandaba crear no existieron nunca en ninguna rama: tests/test_linea_base_rotulo.php, scripts/sembrar-linea-base-contractual.php, tests/test_linea_base_migracion_dry_run.php»
 - cerrado_sin_archivos · `plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas.md`: dice «plan cerrado»; git dice «1 de 2 archivos que mandaba crear no existieron nunca en ninguna rama: docs/design-system/manifests/dashboard.json»
 - cerrado_sin_archivos · `plans/2026-08-30-s01-login-react.md`: dice «plan cerrado»; git dice «3 de 26 archivos que mandaba crear no existieron nunca en ninguna rama: frontend/src/lib/api/frontera.test.ts, frontend/src/lib/api/esquemas/sesion.test.ts, src/Controllers/Core/SpaHostController.php»
 - parece_cerrado · `plans/2026-09-23-s05-programa-general-react.md`: dice «plan vigente»; git dice «las 8 tareas con señal están hechas según git»
 - parece_cerrado · `plans/2026-09-26-s05-deuda-cierre.md`: dice «plan abierto»; git dice «las 1 tareas con señal están hechas según git; 7 sin señal»
 - spec_cerrado_plan_vivo · `specs/2026-07-23-a16-comparativo-versiones-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-07-22-roadmap-pdc-v2.md»
-- spec_cerrado_plan_vivo · `specs/2026-08-03-reparto-trabajo-pendiente-design.md`: dice «spec derogada»; git dice «1 plan suyo sigue vivo: 2026-08-03-usabilidad-altas-y-medias.md»
-- spec_cerrado_plan_vivo · `specs/2026-08-11-plan-cierre-hasta-produccion-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-11-cierre-hasta-produccion.md»
-- spec_cerrado_plan_vivo · `specs/2026-08-18-espacio-cuenta-siteground-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-18-espacio-cuenta-siteground.md»
-- spec_cerrado_plan_vivo · `specs/2026-08-19-linea-base-contractual-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-19-linea-base-contractual.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-19-runtime-budgets-al-ci-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-19-runtime-budgets-al-ci.md»
 - spec_vivo_planes_cerrados · `specs/2026-08-26-v0-del-producto-design.md`: dice «spec vigente»; git dice «sus 2 planes están cerrados o derogados»
 - spec_vivo_planes_cerrados · `specs/2026-08-28-migracion-react-typescript-design.md`: dice «spec vigente»; git dice «sus 1 planes están cerrados o derogados»
@@ -2167,6 +2110,51 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+**Lo que siguió vivo al cerrar cuatro planes huérfanos, 2026-09-28.** Los planes se cerraron porque
+sus specs ya estaban cerradas o derogadas (decisión de la sesión de infraestructura por delegación de
+Felipe, no de Felipe); lo que seguía abierto pasa aquí. Responsable y fecha: pendiente, en todos.
+Ninguno se comprobó en el navegador: la evidencia es código y `git log` sobre `46eb29a4`.
+
+- [ ] 2026-09-28 — **El chip de BI no cumple contraste (H-34).** `public/css/bi-control-tower.css:202`
+  pinta el texto de `.bi-chip` con `var(--ds-color-brand-aqua)` y su excepción sigue en
+  `docs/design-system/state-token-exceptions.json`. El color que proponía el plan se midió solo en
+  oscuro; desde el 2026-08-28 los dos temas son contractuales, así que hay que medir en los dos antes
+  de elegir. Tarea 12 de `docs/superpowers/plans/2026-08-03-usabilidad-altas-y-medias.md`.
+- [ ] 2026-09-28 — **«Quitar filtro» mide 20 px y el contador de filtros de BI se desfasa (H-36,
+  H-25).** `bi-control-tower.css:218-219` fija el botón en `1.25rem`, y `#bi-filter-count` solo se
+  recalcula con eventos del cajón, no al pintar los chips. Tarea 13 del mismo plan.
+- [ ] 2026-09-28 — **Los filtros de Control de Cambios no se leen (H-08).** `.cc-filter-80`
+  (`public/css/styles.css:2120`) no tiene ancho mínimo por contenido, y el filtro de Costo Directo se
+  ve bajo otra columna aunque filtra la correcta. **Decidir antes si va en PHP o dentro de S15**
+  (`docs/superpowers/plans/2026-08-30-s15-control-cambios-react.md`). Tarea 16 del mismo plan.
+- [ ] 2026-09-28 — **Las pestañas de BI esconden módulos (H-16).** `views/bi/_nav.php:6` sigue con
+  `overflow-x-auto whitespace-nowrap`; `539aaf68` solo añadió un degradado en el borde, y el plan
+  descartaba el desplazamiento como solución. Tarea 21 del mismo plan.
+- [ ] 2026-09-28 — **El recorrido del Plan de Compras se tapa a sí mismo (H-17, H-20).**
+  `pdc-app/src/components/Recorrido.tsx` no cambió desde antes de la auditoría y «Omitir» sigue
+  primero y sin estilo discreto. Tarea 22 del mismo plan.
+- [ ] 2026-09-28 — **Control de Cambios no tiene cómo crear una solicitud (H-38).** El backend de alta
+  existe (`src/Controllers/Api/ControlCambiosApiController.php:71`, `opcion=nuevo`) y la vista no
+  tiene botón; su estado vacío lleva texto provisional (C-33) que depende de esto. **Decidir antes si
+  va en PHP o dentro de S15.** Tarea 26 del mismo plan.
+- [ ] 2026-09-28 — **El gráfico no dice de quién es la fecha contractual.** No existe
+  `contractual_finish_scope` ni `tests/test_linea_base_rotulo.php`; «Fin contractual» sale sin rótulo
+  (`views/bi/control-tower.php:356`). Y la definición de la métrica contradice la spec:
+  `src/Services/ControlTowerService.php:1955` y `src/Services/Bi/MetricDictionaryService.php:424`
+  dicen «del alcance filtrado», cuando bajo filtro la fecha es siempre la del proyecto. Tarea 3 de
+  `docs/superpowers/plans/2026-08-19-linea-base-contractual.md`.
+- [ ] 2026-09-28 — **La siembra de la línea base contractual falta en producción.**
+  `database/migrations/20260819_sembrar_linea_base_contractual.sql` ya corrió en dev y está en el
+  paquete de «Pendiente de decisión: despliegue a producción», donde quien lo anotó dejó escrito
+  «la primera no la revisé»; en
+  pruebas no está claro si se aplicó. Siembra «cuándo empezamos a registrar», no la fecha del
+  contrato (lo dice su cabecera). **Requiere revisión previa, `/visto-prod` de Felipe, y dry-run,
+  respaldo verificable y gate según `docs/global-tables-architecture.md`.** Tarea 5 del mismo plan.
+- [ ] 2026-09-28 — **El Plan de Compras no conserva la línea base al recalcular.** La auditoría de
+  la Tarea 6 concluye que `PlanFechasService::calcular()` «NO CONSERVA la línea base»
+  (`docs/superpowers/evidencia/2026-08-19-auditoria-linea-base-pdc.md:275`), con evidencia de código y
+  sin verificación con datos. No se encontró dónde se escaló. Hallazgo del mismo plan.
+
 - [ ] 2026-09-01 — **El sistema de diseño valida escritorio en un ancho que su propio token llama
   tablet.** `--ds-breakpoint-desktop` vale `1200px` (`public/css/tokens.css:731`), pero `DESIGN.md`,
   `AGENTS.md` y `docs/design-system/README.md` declaran **1180×820 como viewport canónico de
@@ -2526,8 +2514,10 @@ estado por defecto mientras Felipe no reparta.
   necesita el contenedor. Afecta config global, no solo este repo.
 - [ ] **Fusionar contenido solapado de `AGENTS.md` / `GEMINI.md` / `CLAUDE.md`** con lo que ahora
   vive en [[README]] y [[ROADMAP]]. No se tocó su contenido en el bootstrap, solo se enlazó.
-- [ ] **Plan espacio SiteGround** — tareas 1–5 de
-  `docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground.md`.
+- [x] 2026-09-28 — **Plan espacio SiteGround** — tareas 1–5 de
+  `docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground.md`. Cerrado: los cuatro frentes
+  estaban resueltos desde el 2026-08-24 (C descartado por su propia verificación). Evidencia en el
+  `## Cierre` del plan.
 - [ ] **Dropdown PS sobre selector de semana** — diagnóstico del stacking en
   `/programacion-semanal`, con `systematic-debugging`.
 - [ ] **Backlog Fase 7-10** (notificaciones por rol, QA sistemático, despliegue gradual, shared
@@ -2937,7 +2927,7 @@ está cableando dos de esos mismos gates, y **MO-F4** quiere cambiarles la matri
 ## Frentes en espera (no arrancan hasta cerrar el bloque 0)
 
 - [[goals/contadores-cero/goal|contadores-cero]] — visto concedido; localizar rama, re-verificar, publicar.
-- **Plan espacio SiteGround** — tareas 1–5 de `docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground.md`.
+- ~~**Plan espacio SiteGround**~~ — cerrado el 2026-09-28; ver el `## Cierre` de `docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground.md`.
 - **Dropdown PS sobre selector de semana** — diagnóstico (`systematic-debugging`) del stacking en `/programacion-semanal`.
 - **Higiene de coordinación** — sesiones zombi, `cas-log.*` de la raíz, triaje de goals.
 

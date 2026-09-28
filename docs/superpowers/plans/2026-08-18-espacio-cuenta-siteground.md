@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-18
 areas: [deploy]
 fuente: docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground.md
@@ -551,10 +551,44 @@ Esperado: ni `ahead` ni `behind`.
 
 ---
 
-## Estado verificado — sigue vigente
+## Estado verificado — cerrado
 
-Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+Verificado contra el código y el historial de git el 2026-09-28. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
 
-**Qué falta:** no hay acceso al servidor; commit 0a79d905 «espacio-cuenta-siteground NO cierra». Tareas 1-5 sin ejecutar
+**Evidencia:** los cuatro frentes quedaron resueltos entre el 2026-08-18 y el 2026-08-24 (A en `c7c37198`, B en `6f4edd72`, D medido ya ejecutado en producción según `1a3372f6`, C ejecutado y descartado por su propia verificación en `751d3a69`), y la spec de origen está `cerrado` desde `751d3a69`. Detalle en `## Cierre`.
+
+Historia: el 2026-08-25 esta sección decía «sigue vigente» apoyada en `0a79d905` («no hay acceso al servidor»), una premisa que `1a3372f6` ya había desmentido el día anterior.
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
+
+## Cierre
+
+**Fecha:** 2026-09-28. **Lo cierra:** la sesión de infraestructura, por delegación de Felipe del
+2026-09-28 para barrer los planes abiertos cuya spec ya está cerrada o derogada. Es decisión de esa
+sesión, no de Felipe.
+
+**Por qué se cierra:** la spec de origen,
+`docs/superpowers/specs/2026-08-18-espacio-cuenta-siteground-design.md`, está `cerrado` desde
+`751d3a69` (2026-08-24), con los cuatro frentes resueltos. El plan se quedó en `vigente` porque nadie
+volvió a él, no porque le faltara trabajo.
+
+**Qué quedó hecho, con evidencia** (las casillas `- [ ]` no se marcan retroactivamente, `AGENTS.md`
+§Verificación):
+
+| Tarea | Resultado | Evidencia |
+|---|---|---|
+| 1 · Frente D, basura suelta en producción | hecha | `1a3372f6` (2026-08-24): medido en el servidor, los cuatro archivos fuera del webroot, cero dumps en el home y `2026_MASTER_FUSION.sql` movido a `~/backups/`, no borrado. Quién lo ejecutó no se determinó. **No se volvió a medir el 2026-09-28**: este cierre no toca producción |
+| 2 · Frente A, binarios de QA fuera de git | hecha | `c7c37198`; hoy `git ls-files docs/qa/evidence` da 0 `.zip` y 0 `.webm`, y existe `docs/qa/evidence/ARCHIVO.md`. El archivo externo `lps-aia-evidencia/` vive fuera del repositorio a propósito, por eso el tablero lo marca `cerrado_sin_archivos`: git no puede verlo |
+| 3 · Frente B, el tar guarda lo irremplazable | hecha | `6f4edd72`; `docs/siteground-deploy-routine.md:79-101` trae el `.manifest.txt` y las exclusiones |
+| 5 · Cierre: verificar, publicar y anotar | hecha | spec cerrada y publicada en `751d3a69`; ingest en `memoria/log.md:147` (2026-08-18) y `:181-182` (2026-08-24) |
+
+**Qué se descarta:**
+
+- **Tarea 4 · Frente C, clon shallow en pruebas.** Se ejecutó el 2026-08-24 con autorización de
+  Felipe y su propia verificación lo rechazó: `git pull --ff-only` devolvió `rc=128` y el `.git` no
+  bajó ni un byte. Revertido con `git fetch --unshallow` y servidor verificado sano (`751d3a69`).
+  Por eso la nota «Clones shallow» que el Paso 6 mandaba añadir a la rutina **no existe y no debe
+  añadirse**.
+
+**Qué pasa a `TASKS.md`:** nada; no queda trabajo vivo en este plan. La entrada suelta «Plan espacio
+SiteGround — tareas 1–5» de `TASKS.md` se cierra con puntero a esta sección.

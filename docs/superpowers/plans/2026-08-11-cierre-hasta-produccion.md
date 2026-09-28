@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-11
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-11-cierre-hasta-produccion.md
@@ -1010,10 +1010,53 @@ del shell, unificar los vocabularios de estado, y la regla de no cerrar sin habe
 
 ---
 
-## Estado verificado — sigue vigente
+## Estado verificado — cerrado
 
-Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+Verificado contra el código y el historial de git el 2026-09-28. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
 
-**Qué falta:** F-0, F-AB y F-C cerrados con SHA y corridas; F-E parcial: «PRUEBAS desplegado, PRODUCCION no». La condicion de hecho del plan exige produccion
+**Evidencia:** F-0, F-AB y F-C cerrados con SHA y corridas (sus secciones de cierre, arriba); lo que F-AB dejó en rojo lo cerró el plan P2 (`closeout-evidence.json` con 9 de 9 gates `passed`); y el trabajo de las tres fases llegó a producción con el release del 2026-08-12 (`1aa7c694` → `939b7928`), del que los tres SHA publicados son ancestros. Detalle en `## Cierre`.
+
+Historia: el 2026-08-25 esta sección decía «sigue vigente» porque F-E solo había llegado a pruebas; el despliegue a producción que lo completaba ya había ocurrido el 2026-08-12 y lo registra `memoria/referencias/produccion-deploy.md:27-32`.
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
+
+## Cierre
+
+**Fecha:** 2026-09-28. **Lo cierra:** la sesión de infraestructura, por delegación de Felipe del
+2026-09-28 para barrer los planes abiertos cuya spec ya está cerrada o derogada. Es decisión de esa
+sesión, no de Felipe.
+
+**Por qué se cierra:** la spec de origen,
+`docs/superpowers/specs/2026-08-11-plan-cierre-hasta-produccion-design.md`, está `cerrado`. El
+tablero de `TASKS.md` contaba las 16 tareas «sin señal» porque se leía de las casillas; las casillas
+no son evidencia (`AGENTS.md` §Verificación) y no se marcan retroactivamente.
+
+**Qué quedó hecho, con evidencia** (los SHA se comprobaron ancestros de `origin/main` con
+`git branch -r --contains`):
+
+| Fase · tareas | Resultado | Evidencia |
+|---|---|---|
+| F-0 · 1, 2, 2b, 2c, 3 | hechas | cambio en `b10a3298`, publicado en `65c44435`; corrida `31561660136` con `design-system-static` en `success` («Cierre de F-0», arriba) |
+| F-AB · 1, 2, 3, 4 | hechas | publicado en `0b2cb1f8`, corrida `31563364701` con `full-app-flow` en `success` por primera vez; mutación en rojo en la corrida `31591828197` |
+| F-AB · 5 (actualizar los recibos) | hecha por otra vía | quedó parcial el 2026-08-12 por `D-GAC-5`; `D-GAC-4` y `D-GAC-5` están resueltas en `docs/decisiones-pendientes.md` y el plan `2026-08-24-p2-ci-en-verde-y-presupuestos.md` dejó `docs/design-system/closeout-evidence.json` con 9 `passed` y 0 `blocked` (medido hoy con `grep -c`) |
+| F-C · 1, 2, 3, 4 | hechas | publicado en `5095762d` («Cierre de F-C», arriba) |
+| F-E · 1 (preparar y respaldar) | hecha | pruebas: respaldos del 2026-08-12 en el «Cierre parcial de F-E»; producción: tar y respaldo verificado del 2026-08-12, `memoria/referencias/produccion-deploy.md:19-38` |
+| F-E · 2 (publicar) | hecha | pruebas en `5a337f3e`; producción de `1aa7c694` a `939b7928` el 2026-08-12. `git merge-base --is-ancestor` confirma que `65c44435`, `0b2cb1f8` y `5095762d` están dentro de `939b7928` |
+
+**Condición de hecho del plan, punto por punto:** (1) 9 de 9 gates `passed`; (2) en
+`docs/decisiones-pendientes.md` la única línea `` Estado:** `abierta` `` es la de la plantilla
+(`:58`); (3) el trabajo está en producción desde el 2026-08-12; (4) las tres fases vivas tienen su
+cierre anotado.
+
+**Qué se descarta:**
+
+- **El humo funcional autenticado del release del 2026-08-12.** Se hizo bajo mantenimiento, por rutas
+  exentas (`memoria/referencias/produccion-deploy.md:47-54`), y el «Cierre parcial de F-E» ya decía
+  que lo que una persona ve dentro no estaba comprobado. Se descarta porque ese release ya no es el
+  que corre: hubo despliegues posteriores a producción (los del 2026-08-20, con Home en 200,
+  `php_errorlog` sin líneas nuevas y el interruptor del Control Tower medido en vivo,
+  `memoria/log.md:170` y `:175`). Comprobarlo hoy mediría otro código.
+
+**Qué pasa a `TASKS.md`:** nada nuevo. El despliegue a producción de lo que hay hoy en `main` ya
+tiene su entrada propia («Pendiente de decisión: despliegue a producción») y necesita autorización
+de Felipe, como siempre.
