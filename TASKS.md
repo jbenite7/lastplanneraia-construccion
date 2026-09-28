@@ -2064,9 +2064,16 @@ estado por defecto mientras Felipe no reparta.
   ficha propia y, sobre todo, arreglo del disparador** — vive en el harness, no en este repo, así que
   el arreglo se propone, no se aplica.
 
-- [ ] **`test_bi_programa_general_chart_values.php` imprime `FAIL` y sale con `RC=0`.** No propaga su
-  propio fallo, así que un runner que solo mire el código de salida lo da por bueno. Detectado al
-  cerrar P1 el 2026-08-24. Familia de [[memoria/trampas/el-codigo-de-salida-se-pierde-en-la-tuberia]].
+- [x] 2026-09-28 — **`test_bi_programa_general_chart_values.php` imprime `FAIL` y sale con `RC=0`: era
+  una falsa alarma, no una tarea.** El test **sí propaga su fallo**: sus dos caminos que imprimen
+  `FAIL` (`tests/test_bi_programa_general_chart_values.php:1947` y `:2282`) terminan en `exit(1)`, y
+  ese `exit(1)` está desde el commit `3a139499` (2026-07-15), **antes** de que se anotara el
+  pendiente (2026-08-24). Lo más probable es que el `RC=0` de aquel día fuera el de una tubería y no
+  el del test, que es justo la familia que enlaza
+  [[memoria/trampas/el-codigo-de-salida-se-pierde-en-la-tuberia]]. No se reprodujo el `RC=0` porque
+  la corrida original no quedó registrada; **no se comprobó ejecutando el test**, sino leyendo su
+  código, y el CI de `main` (`1fb4c341`) lo da en `pasa`. Cierra la sesión de software e
+  infraestructura; nada que arreglar en el test.
 - [ ] **30 proyectos sin cronograma consolidado** — medido al verificar `linea-base-contractual`: no
   es deuda de la migración, que es correcta, sino un hueco de datos. Los 30 sin línea base no tienen
   **ni una fila** en `programa_consolidado`. Cerrarlo es decisión de negocio.
