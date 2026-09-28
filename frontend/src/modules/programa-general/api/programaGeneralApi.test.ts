@@ -150,4 +150,75 @@ describe('programaGeneralApi & esquemas', () => {
       expect(parsed.data.permisos.writeDrawer).toBe(false);
     }
   });
+
+  it('conserva el token CSRF del cajón LPS (clave lps_drawer), distinto del de guardado', () => {
+    const parsed = esquemaContextoPg.safeParse({
+      project: { id: 1, name: 'Proyecto Prueba', dbPrefix: 'prueba' },
+      week: { number: 33, max: 33, confirmed: 0 },
+      actions: { writeDrawer: true },
+      csrf: { programaGeneral: 'token-pg', drawer: 'token-drawer', shell: 'token-shell' },
+      catalogos: {},
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.csrf_token).toBe('token-pg');
+      expect(parsed.data.csrf_drawer).toBe('token-drawer');
+      expect(parsed.data.permisos.writeDrawer).toBe(true);
+    }
+  });
+
+  it('declara SOS contra /api/lps/crisis/register con modulo PG, consecutivo = unique_id y el token del cajón', async () => {
+    const fetchFalso = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      respuesta: 'OK',
+      ok: true,
+      mensaje: 'Alerta registrada',
+      data: { alertId: 9, wasActive: false },
+      target: { kind: 'activity', activityId: 101, module: 'PG', week: 33 },
+      meta: { requestId: 'x' },
+    }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchFalso);
+    try {
+      const api = programaGeneralApi({ get: vi.fn(), postForm: vi.fn() } as any);
+      const res = await api.declararSos({ unique_id: 101, csrfToken: 'token-drawer' });
+      expect(res.data).toEqual({ alertId: 9, wasActive: false });
+      const [ruta, opciones] = fetchFalso.mock.calls[0];
+      expect(String(ruta)).toBe('/api/lps/crisis/register');
+      const cuerpo = opciones.body as URLSearchParams;
+      expect(cuerpo.get('modulo')).toBe('PG');
+      expect(cuerpo.get('consecutivo')).toBe('101');
+      expect(cuerpo.get('trigger')).toBe('MANUAL');
+      expect(cuerpo.get('_csrf_token')).toBe('token-drawer');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('conserva en la fila los campos de restricción y en el contexto el catálogo de restricciones', () => {
+    const fila = esquemaFilaActividadPg.parse({
+      unique_id: 7, Actividad: 'X', Titulo: 0,
+      D_y_E: '100%', Materiales: 0.5, MdeO: null, Equipos: 'N/A',
+      restriccion_pc_1: '50%',
+    });
+    expect(fila).toMatchObject({ D_y_E: '100%', Materiales: '0.5', MdeO: null, Equipos: 'N/A', restriccion_pc_1: '50%' });
+
+    const parsed = esquemaContextoPg.safeParse({
+      project: { id: 1, name: 'P', dbPrefix: 'p', area: 'Construccion' },
+      week: { number: 33, max: 33, confirmed: 0 },
+      actions: {},
+      csrf: { programaGeneral: 't' },
+      restrictionConfig: {
+        area: 'Construccion',
+        restrictions: [{ key: 'D_y_E', label: 'D y E', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] }],
+        hardRestrictions: ['D_y_E'],
+        softRestrictions: [],
+      },
+      catalogos: {},
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.restricciones?.restrictions[0]).toEqual(
+        { key: 'D_y_E', label: 'D y E', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] },
+      );
+    }
+  });
 });

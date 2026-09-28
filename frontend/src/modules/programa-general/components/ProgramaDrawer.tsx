@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ActividadUI, parsearTextoActividad, formatearFechaObra } from '../domain/modelo';
 import { calcularDesviacionFisica } from '../domain/validacion';
 import { obtenerConfigEstado } from '../domain/presentacionEstados';
+import { recursosConDato, type ConfigRestriccionesPg } from '../domain/recursos';
 
 export interface CatalogoProfesional {
   id: number;
@@ -33,13 +34,14 @@ export interface DatosGuardarActividad {
   codigo_actividad?: string | null;
   Responsable_AIA: string;
   Sub_Contratista: string;
-  Observaciones?: string | null;
   [key: string]: unknown;
 }
 
 export interface ProgramaDrawerProps {
   actividad: ActividadUI;
   catalogos: CatalogosPg;
+  /** Catálogo de restricciones del contexto; sin él no se muestra ningún recurso. */
+  restricciones?: ConfigRestriccionesPg | null;
   indiceActual: number;
   totalActividades: number;
   onCerrar: () => void;
@@ -47,19 +49,21 @@ export interface ProgramaDrawerProps {
   onDirtyChange?: (dirty: boolean) => void;
   onNavigateSeq: (direccion: number) => void;
   puedeEditar?: boolean;
+  /** `permisos.writeDrawer` (`lps.programacion_semanal.editar`): el mismo que exige el backend del SOS. */
+  puedeDeclararSos?: boolean;
+  /** Registra la crisis en el servidor; resuelve con el mensaje del servidor o rechaza con su error. */
+  onDeclararSos?: (uniqueId: number) => Promise<string>;
 }
 
-interface RecursoLeanItem {
-  id: string;
-  nombre: string;
-  icono: string;
-  detalle: string;
-  estado: 'Liberado' | 'En gestión' | 'Bloqueante';
-}
+const SELECTOR_ENFOCABLES =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+type EstadoSos = { fase: 'enviando' } | { fase: 'ok' | 'error'; texto: string };
 
 export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   actividad,
   catalogos,
+  restricciones = null,
   indiceActual,
   totalActividades,
   onCerrar,
@@ -67,6 +71,8 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   onDirtyChange,
   onNavigateSeq,
   puedeEditar = true,
+  puedeDeclararSos = false,
+  onDeclararSos,
 }) => {
   const [fechaInicio, setFechaInicio] = useState(actividad.Fecha_Inicio || '');
   const [fechaFin, setFechaFin] = useState(actividad.Fecha_Fin || '');
@@ -75,24 +81,33 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   const [avanceReal, setAvanceReal] = useState(actividad.avanceRealPct.toString());
   const [profesional, setProfesional] = useState(actividad.Responsable_AIA || '');
   const [subcontratista, setSubcontratista] = useState(actividad.Sub_Contratista || '');
-  const [observaciones, setObservaciones] = useState(actividad.Observaciones || '');
-  const [sosDeclarado, setSosDeclarado] = useState(actividad.alerta_crisis === 1);
+  // Estado del SOS atado al id de la actividad que lo disparó: al navegar, la nueva no lo hereda.
+  const [sosPorActividad, setSosPorActividad] = useState<Record<number, EstadoSos>>({});
+  const sos = sosPorActividad[actividad.unique_id];
+  const sosEnviando = sos?.fase === 'enviando';
+  const sosMensaje = sos?.fase === 'ok' ? sos.texto : null;
+  const sosError = sos?.fase === 'error' ? sos.texto : null;
+
+  // Actividad con la que se cargaron los campos. Al navegar con [ ] la prop cambia un render antes
+  // de que el efecto de sincronización recargue los campos; comparar contra `actividad` en ese
+  // render intermedio daba un borrador fantasma (y un Esc rápido pedía confirmar sin cambios).
+  const [base, setBase] = useState(actividad);
+  const dirty =
+    fechaInicio !== (base.Fecha_Inicio || '') ||
+    fechaFin !== (base.Fecha_Fin || '') ||
+    unidad !== (base.unidad || 'm³') ||
+    cantidadPpto !== (base.cantidad_ppto?.toString() || '') ||
+    avanceReal !== base.avanceRealPct.toString() ||
+    profesional !== (base.Responsable_AIA || '') ||
+    subcontratista !== (base.Sub_Contratista || '');
 
   useEffect(() => {
-    onDirtyChange?.(
-      fechaInicio !== (actividad.Fecha_Inicio || '') ||
-      fechaFin !== (actividad.Fecha_Fin || '') ||
-      unidad !== (actividad.unidad || 'm³') ||
-      cantidadPpto !== (actividad.cantidad_ppto?.toString() || '') ||
-      avanceReal !== actividad.avanceRealPct.toString() ||
-      profesional !== (actividad.Responsable_AIA || '') ||
-      subcontratista !== (actividad.Sub_Contratista || '') ||
-      observaciones !== (actividad.Observaciones || '')
-    );
-  }, [actividad, fechaInicio, fechaFin, unidad, cantidadPpto, avanceReal, profesional, subcontratista, observaciones, onDirtyChange]);
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
 
   // Sincronizar estado cuando cambia la actividad seleccionada (navegación secuencial)
   useEffect(() => {
+    setBase(actividad);
     setFechaInicio(actividad.Fecha_Inicio || '');
     setFechaFin(actividad.Fecha_Fin || '');
     setUnidad(actividad.unidad || 'm³');
@@ -100,9 +115,13 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
     setAvanceReal(actividad.avanceRealPct.toString());
     setProfesional(actividad.Responsable_AIA || '');
     setSubcontratista(actividad.Sub_Contratista || '');
-    setObservaciones(actividad.Observaciones || '');
-    setSosDeclarado(actividad.alerta_crisis === 1);
   }, [actividad]);
+
+  // Al abrir, el foco entra al cajón (el retorno a la fila de origen lo gestiona la página).
+  const panelRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    panelRef.current?.focus();
+  }, []);
 
   // Mantener referencia al estado actual para atajos de teclado sin closures obsoletos
   const stateRef = useRef({
@@ -113,8 +132,8 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
     avanceReal,
     profesional,
     subcontratista,
-    observaciones,
-    actividad,
+    actividad: base,
+    dirty,
   });
 
   useEffect(() => {
@@ -126,8 +145,8 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
       avanceReal,
       profesional,
       subcontratista,
-      observaciones,
-      actividad,
+      actividad: base,
+      dirty,
     };
   });
 
@@ -148,9 +167,45 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
       codigo_actividad: cur.actividad.codigo_actividad,
       Responsable_AIA: cur.profesional,
       Sub_Contratista: cur.subcontratista,
-      Observaciones: cur.observaciones || null,
     });
   }, [onGuardar]);
+
+  /**
+   * Cierre accidental (Esc, velo, X): con cambios sin guardar pide confirmación antes de
+   * descartarlos. «Descartar» es la intención explícita y cierra directo.
+   */
+  const solicitarCierre = useCallback(() => {
+    if (stateRef.current.dirty && !window.confirm('Hay cambios sin guardar en esta actividad. ¿Descartarlos y cerrar?')) {
+      return;
+    }
+    onCerrar();
+  }, [onCerrar]);
+
+  /** Pasar a otra actividad recarga los campos: con cambios sin guardar se confirma antes. */
+  const solicitarNavegacion = useCallback((direccion: number) => {
+    if (stateRef.current.dirty && !window.confirm('Hay cambios sin guardar en esta actividad. ¿Descartarlos y pasar a otra actividad?')) {
+      return;
+    }
+    onNavigateSeq(direccion);
+  }, [onNavigateSeq]);
+
+  const alertaActiva = actividad.alerta_crisis === 1;
+
+  const handleDeclararSos = async () => {
+    if (!onDeclararSos || !puedeDeclararSos || sosEnviando || alertaActiva) return;
+    // Tras registrar, la página recarga la fila y el cajón se resincroniza: lo editado se perdería.
+    if (stateRef.current.dirty && !window.confirm('Hay cambios sin guardar en esta actividad. Declarar la crisis recarga la actividad y los descarta. ¿Continuar?')) {
+      return;
+    }
+    const id = actividad.unique_id;
+    const fijar = (estado: EstadoSos) => setSosPorActividad((previo) => ({ ...previo, [id]: estado }));
+    fijar({ fase: 'enviando' });
+    try {
+      fijar({ fase: 'ok', texto: await onDeclararSos(id) });
+    } catch (err: unknown) {
+      fijar({ fase: 'error', texto: err instanceof Error ? err.message : 'No se pudo registrar la crisis SOS.' });
+    }
+  };
 
   // Atajos de teclado: [, ], Esc, ⌘S / Ctrl+S
   useEffect(() => {
@@ -162,7 +217,30 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
 
       if (e.key === 'Escape') {
         e.preventDefault();
-        onCerrar();
+        solicitarCierre();
+        return;
+      }
+
+      // Trampa de foco (el cajón es aria-modal): Tab no sale a la página, donde «Recargar» u otra
+      // fila descartarían el borrador. Mismo patrón que `CajonContextualLps`.
+      if (e.key === 'Tab') {
+        const panel = panelRef.current;
+        if (!panel) return;
+        const enfocables = panel.querySelectorAll<HTMLElement>(SELECTOR_ENFOCABLES);
+        if (enfocables.length === 0) return;
+        const primero = enfocables[0];
+        const ultimo = enfocables[enfocables.length - 1];
+        const activo = document.activeElement;
+        if (!panel.contains(activo)) {
+          e.preventDefault();
+          primero.focus();
+        } else if (e.shiftKey && (activo === primero || activo === panel)) {
+          e.preventDefault();
+          ultimo.focus();
+        } else if (!e.shiftKey && activo === ultimo) {
+          e.preventDefault();
+          primero.focus();
+        }
         return;
       }
 
@@ -175,17 +253,17 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
       if (!isFormField) {
         if (e.key === '[') {
           e.preventDefault();
-          onNavigateSeq(-1);
+          solicitarNavegacion(-1);
         } else if (e.key === ']') {
           e.preventDefault();
-          onNavigateSeq(1);
+          solicitarNavegacion(1);
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onCerrar, onNavigateSeq, handleSave, puedeEditar]);
+  }, [solicitarCierre, solicitarNavegacion, handleSave, puedeEditar]);
 
   const realRatio = (parseFloat(avanceReal) || 0) / 100;
   const teorRatio = actividad.avanceTeoricoPct / 100;
@@ -194,63 +272,16 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   const estadoCfg = obtenerConfigEstado(actividad.Estado);
   const parsedAct = parsearTextoActividad(actividad.Actividad);
 
-  // 7 Recursos Lean
-  const recursosLean: RecursoLeanItem[] = [
-    {
-      id: 'mo',
-      nombre: 'Mano de Obra',
-      icono: 'fas fa-users',
-      detalle: 'Cuadrilla de ejecución disponible en obra',
-      estado: 'Liberado',
-    },
-    {
-      id: 'maq',
-      nombre: 'Maquinaria',
-      icono: 'fas fa-tractor',
-      detalle: 'Equipos y maquinaria requerida para el tajo',
-      estado: actividad.alerta_crisis === 1 ? 'Bloqueante' : 'Liberado',
-    },
-    {
-      id: 'mat',
-      nombre: 'Materiales',
-      icono: 'fas fa-truck-loading',
-      detalle: 'Insumos verificados y disponibles en bodega',
-      estado: 'Liberado',
-    },
-    {
-      id: 'info',
-      nombre: 'Información',
-      icono: 'fas fa-drafting-compass',
-      detalle: 'Planos estructurales y especificaciones vigentes',
-      estado: 'Liberado',
-    },
-    {
-      id: 'prev',
-      nombre: 'Condiciones Previas',
-      icono: 'fas fa-project-diagram',
-      detalle: 'Prerrequisitos y actividades predecesoras al 100%',
-      estado: 'Liberado',
-    },
-    {
-      id: 'seg',
-      nombre: 'Seguridad',
-      icono: 'fas fa-hard-hat',
-      detalle: 'Protocolos SST y condiciones de espacio liberadas',
-      estado: 'Liberado',
-    },
-    {
-      id: 'ext',
-      nombre: 'Externos',
-      icono: 'fas fa-file-contract',
-      detalle: 'Permisos de obra, licencias y trámites al día',
-      estado: 'Liberado',
-    },
-  ];
+  const recursos = recursosConDato(actividad as unknown as Record<string, unknown>, restricciones);
+  const ETIQUETA_ESTADO_RECURSO = { liberada: 'Liberada', pendiente: 'Pendiente', 'no-aplica': 'No aplica' } as const;
+  const CLASE_ESTADO_RECURSO = { liberada: 'pill-liberado', pendiente: 'pill-gestion', 'no-aplica': 'pill-no-aplica' } as const;
 
   return (
     <>
-      <div className="drawer-backdrop active" onClick={onCerrar} aria-hidden="true" />
+      <div className="drawer-backdrop active" onClick={solicitarCierre} aria-hidden="true" />
       <aside
+        ref={panelRef}
+        tabIndex={-1}
         className="drawer-panel-pro active"
         role="dialog"
         aria-modal="true"
@@ -266,7 +297,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
             <button
               type="button"
               className="drawer-close-btn"
-              onClick={onCerrar}
+              onClick={solicitarCierre}
               aria-label="Cerrar panel (Esc)"
             >
               <i className="fas fa-times" aria-hidden="true"></i>
@@ -308,7 +339,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
             <button
               type="button"
               className="seq-btn"
-              onClick={() => onNavigateSeq(-1)}
+              onClick={() => solicitarNavegacion(-1)}
               title="Actividad Anterior (Atajo: [)"
             >
               <i className="fas fa-chevron-left" aria-hidden="true"></i> Anterior <span className="seq-key">[</span>
@@ -316,7 +347,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
             <button
               type="button"
               className="seq-btn"
-              onClick={() => onNavigateSeq(1)}
+              onClick={() => solicitarNavegacion(1)}
               title="Actividad Siguiente (Atajo: ])"
             >
               Siguiente <span className="seq-key">]</span> <i className="fas fa-chevron-right" aria-hidden="true"></i>
@@ -348,7 +379,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                     disabled={!puedeEditar}
                     onChange={(e) => setFechaInicio(e.target.value)}
                   />
-                  <span className="drawer-date-formatted form-date-hint" style={{ fontSize: '11px', color: 'var(--ds-text-muted)', marginTop: '2px', display: 'block' }}>
+                  <span className="drawer-date-formatted form-date-hint">
                     Formato obra: <strong>{formatearFechaObra(fechaInicio)}</strong>
                   </span>
                 </div>
@@ -366,26 +397,20 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                     disabled={!puedeEditar}
                     onChange={(e) => setFechaFin(e.target.value)}
                   />
-                  <span className="drawer-date-formatted form-date-hint" style={{ fontSize: '11px', color: 'var(--ds-text-muted)', marginTop: '2px', display: 'block' }}>
+                  <span className="drawer-date-formatted form-date-hint">
                     Formato obra: <strong>{formatearFechaObra(fechaFin)}</strong>
                   </span>
                 </div>
               </div>
             </div>
             {actividad.Semanas_Inicio !== undefined && actividad.Semanas_Inicio !== null && (
-              <div className="drawer-schedule-meta" style={{ fontSize: '11px', color: 'var(--ds-text-muted)', marginTop: '2px' }}>
+              <div className="drawer-schedule-meta">
                 <span>Semana contractual: <strong>Sem {actividad.Semanas_Inicio}</strong></span>
               </div>
             )}
             {actividad.plazoVencido && (
               <div
                 className="drawer-alert-overdue cell-alert cell-date-overdue date-overdue"
-                style={{
-                  color: 'var(--ds-state-danger-text, #ef4444)',
-                  fontSize: '11px',
-                  marginTop: '4px',
-                  fontWeight: 600,
-                }}
               >
                 ⚠️ Plazo vencido hace {actividad.diasVencimiento} días
               </div>
@@ -499,8 +524,9 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
 
             <div className="form-grid-2col" style={{ marginTop: '8px' }}>
               <div className="form-field-group">
-                <label className="form-label">Avance Teórico Servidor</label>
+                <label className="form-label" htmlFor="drawerInputTeorico">Avance Teórico Servidor</label>
                 <input
+                  id="drawerInputTeorico"
                   type="text"
                   className="form-input-pro"
                   value={`${actividad.avanceTeoricoPct.toFixed(1)}%`}
@@ -540,22 +566,11 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                   style={{ width: `${Math.min(Math.max(actividad.avanceTeoricoPct, 0), 100)}%` }}
                 ></div>
                 <div
-                  className="dual-fill-real micro-gauge-fill"
-                  style={{
-                    width: `${Math.min(Math.max(parseFloat(avanceReal) || 0, 0), 100)}%`,
-                    backgroundColor: desviacion.esNegativo ? 'var(--ds-state-danger-text)' : 'var(--aia-corporate)',
-                  }}
+                  className={`dual-fill-real micro-gauge-fill${desviacion.esNegativo ? ' dual-fill-real--atraso' : ''}`}
+                  style={{ width: `${Math.min(Math.max(parseFloat(avanceReal) || 0, 0), 100)}%` }}
                 ></div>
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  fontSize: '10px',
-                  color: 'var(--ds-text-muted)',
-                  marginTop: '4px',
-                }}
-              >
+              <div className="dual-gauge-scale">
                 <span>0%</span>
                 <span>Meta teórica: {actividad.avanceTeoricoPct.toFixed(1)}%</span>
                 <span>100%</span>
@@ -563,53 +578,42 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
             </div>
           </div>
 
-          {/* SECCIÓN 4: Matriz de los 7 Recursos Lean */}
+          {/* SECCIÓN 4: Recursos de liberación con dato real en la fila */}
           <div className="pro-section">
             <div className="pro-section-title">
               <span className="pro-section-title-label">
                 <i className="fas fa-shield-alt" aria-hidden="true"></i>{' '}
-                <span>Matriz de los 7 Recursos Lean</span>
+                <span id="drawerRecursosTitulo">Recursos de liberación</span>
               </span>
-              <span className="badge-optional-pill">
-                {actividad.Estado_Restricciones ? `Liberación: ${actividad.Estado_Restricciones}` : '7 Recursos'}
-              </span>
+              {actividad.Estado_Restricciones && (
+                <span className="badge-optional-pill">Liberación: {actividad.Estado_Restricciones}</span>
+              )}
             </div>
-            <div className="lean-matrix-list">
-              {recursosLean.map((rec) => (
-                <div key={rec.id} className="lean-resource-card">
-                  <div className="lean-res-left">
-                    <i
-                      className={rec.icono}
-                      aria-hidden="true"
-                      style={{
-                        fontSize: '11px',
-                        color:
-                          rec.estado === 'Bloqueante'
-                            ? 'var(--ds-state-danger-text)'
-                            : rec.estado === 'En gestión'
-                            ? 'var(--ds-color-state-warning-text)'
-                            : 'var(--ds-color-state-success-text)',
-                      }}
-                    ></i>
-                    <div>
-                      <div className="lean-res-name">{rec.nombre}</div>
-                      <div className="lean-res-detail">{rec.detalle}</div>
+            {recursos.length > 0 ? (
+              <ul className="lean-matrix-list" aria-labelledby="drawerRecursosTitulo">
+                {recursos.map((rec) => (
+                  <li key={rec.key} className="lean-resource-card">
+                    <div className="lean-res-left">
+                      <div>
+                        <div className="lean-res-name">{rec.label}</div>
+                        <div className="lean-res-detail">
+                          {rec.valor} · {rec.dura ? 'Restricción dura' : 'Restricción blanda'}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <span
-                    className={`lean-pill ${
-                      rec.estado === 'Bloqueante'
-                        ? 'pill-bloqueado'
-                        : rec.estado === 'En gestión'
-                        ? 'pill-gestion'
-                        : 'pill-liberado'
-                    }`}
-                  >
-                    {rec.estado}
-                  </span>
-                </div>
-              ))}
-            </div>
+                    <span className={`lean-pill ${CLASE_ESTADO_RECURSO[rec.estado]}`}>
+                      {ETIQUETA_ESTADO_RECURSO[rec.estado]}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : restricciones ? (
+              <p className="drawer-empty-note">Esta actividad no registra valores de restricciones.</p>
+            ) : (
+              <p className="drawer-empty-note">
+                Catálogo de restricciones no disponible: no se pueden mostrar los recursos de liberación.
+              </p>
+            )}
           </div>
 
           {/* SECCIÓN 5: Bitácora SOS */}
@@ -626,42 +630,32 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
               {actividad.Observaciones ? (
                 <div className="timeline-item">
                   <div className="timeline-meta">
-                    <span>{actividad.Responsable_AIA || 'AIA'}</span>
-                    <span>Observación guardada</span>
+                    <span>Observación registrada (solo lectura)</span>
                   </div>
                   <div className="timeline-text">{actividad.Observaciones}</div>
                 </div>
               ) : (
-                <div className="timeline-item" style={{ fontStyle: 'italic', color: 'var(--ds-text-muted)' }}>
+                <div className="timeline-item timeline-item--vacio">
                   Sin observaciones previas registradas.
                 </div>
               )}
             </div>
 
-            <div className="form-field-group">
-              <label className="form-label" htmlFor="drawerObservaciones">
-                Nueva Observación Técnica
-              </label>
-              <textarea
-                id="drawerObservaciones"
-                className="form-input-pro"
-                style={{ height: '54px', padding: '6px', resize: 'none' }}
-                placeholder="Escribir una nueva observación técnica..."
-                value={observaciones}
-                disabled={!puedeEditar}
-                onChange={(e) => setObservaciones(e.target.value)}
-              ></textarea>
-            </div>
-
             <button
               type="button"
               className="btn-sos-trigger"
-              onClick={() => setSosDeclarado(true)}
-              disabled={!puedeEditar}
+              onClick={() => { void handleDeclararSos(); }}
+              disabled={!puedeDeclararSos || !onDeclararSos || sosEnviando || alertaActiva}
             >
               <i className="fas fa-bell" aria-hidden="true"></i>{' '}
-              {sosDeclarado || actividad.alerta_crisis === 1 ? 'Alerta SOS LPS Activa' : 'Declarar Crisis SOS LPS'}
+              {alertaActiva ? 'Alerta SOS LPS Activa' : sosEnviando ? 'Registrando crisis SOS…' : 'Declarar Crisis SOS LPS'}
             </button>
+            {sosMensaje && (
+              <p className="drawer-sos-feedback" role="status">{sosMensaje}</p>
+            )}
+            {sosError && (
+              <p className="drawer-sos-feedback drawer-sos-feedback--error" role="alert">{sosError}</p>
+            )}
           </div>
         </div>
 

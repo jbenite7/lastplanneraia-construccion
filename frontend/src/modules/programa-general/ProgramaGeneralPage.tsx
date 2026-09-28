@@ -4,6 +4,7 @@ import { ContextoPg } from '../../lib/api/esquemas/programa-general';
 import { ActividadUI, normalizarActividades } from './domain/modelo';
 import { calcularConteosSenales, contarTareasVisibles, filtrarActividades } from './domain/filtros';
 import { generarContenidoCsv13Cols, dispararDescargaCsv } from './domain/exportarCsv';
+import { mensajeErrorSos } from './domain/erroresSos';
 import { ProgramaToolbar } from './components/ProgramaToolbar';
 import { ProgramaSignalsBar } from './components/ProgramaSignalsBar';
 import { ProgramaFilters } from './components/ProgramaFilters';
@@ -28,6 +29,9 @@ export const ProgramaGeneralPage: React.FC = () => {
   const [leyendaAbierta, setLeyendaAbierta] = useState(false);
   const [borradorDrawer, setBorradorDrawer] = useState(false);
   const cierreLeyendaRef = useRef<HTMLButtonElement>(null);
+  // Lo que abrió el cajón (fila, tarjeta o botón de la barra) y la actividad con que abrió, para
+  // devolverle el foco al cerrar; si ese nodo ya no está en el DOM, se busca la fila por id.
+  const origenCajonRef = useRef<{ elemento: HTMLElement | null; id: number } | null>(null);
   const origenLeyendaRef = useRef<HTMLElement | null>(null);
   const recargaControllerRef = useRef<AbortController | null>(null);
 
@@ -117,6 +121,7 @@ export const ProgramaGeneralPage: React.FC = () => {
   }, [api]);
 
   const handleRecargar = useCallback(async () => {
+    if (borradorDrawer && !window.confirm('Hay cambios sin guardar en el Drawer. ¿Recargar Programa General y descartar el borrador?')) return;
     recargaControllerRef.current?.abort();
     const controller = new AbortController();
     recargaControllerRef.current = controller;
@@ -133,7 +138,7 @@ export const ProgramaGeneralPage: React.FC = () => {
         setCargando(false);
       }
     }
-  }, [cargarDatos]);
+  }, [borradorDrawer, cargarDatos]);
 
   const handleActualizarEjecucion = useCallback(async () => {
     if (!contexto || !contexto.permisos.puedeLote) return;
@@ -170,6 +175,27 @@ export const ProgramaGeneralPage: React.FC = () => {
   const actividadSeleccionada = useMemo(() => {
     return actividades.find((a) => a.unique_id === actividadSeleccionadaId) || null;
   }, [actividades, actividadSeleccionadaId]);
+
+  const abrirCajon = useCallback((id: number) => {
+    if (actividadSeleccionadaId === null) {
+      origenCajonRef.current = {
+        elemento: document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null,
+        id,
+      };
+    }
+    setBorradorDrawer(false);
+    setActividadSeleccionadaId(id);
+  }, [actividadSeleccionadaId]);
+
+  useEffect(() => {
+    if (actividadSeleccionadaId !== null || !origenCajonRef.current) return;
+    const { elemento, id } = origenCajonRef.current;
+    origenCajonRef.current = null;
+    const destino = elemento && elemento.isConnected
+      ? elemento
+      : document.querySelector<HTMLElement>(`[data-unique-id="${id}"]`);
+    destino?.focus();
+  }, [actividadSeleccionadaId]);
 
   const handleNavigateSeq = useCallback(
     (direccion: number) => {
@@ -215,6 +241,26 @@ export const ProgramaGeneralPage: React.FC = () => {
       alert(`Error al guardar: ${msg}`);
     }
   };
+
+  const handleDeclararSos = useCallback(async (uniqueId: number): Promise<string> => {
+    if (!contexto) throw new Error('Contexto de Programa General no disponible.');
+    if (!contexto.csrf_drawer) throw new Error('Falta el token de seguridad del cajón LPS. Recarga la página.');
+    let respuesta: Awaited<ReturnType<typeof api.declararSos>>;
+    try {
+      respuesta = await api.declararSos({ unique_id: uniqueId, csrfToken: contexto.csrf_drawer });
+    } catch (err: unknown) {
+      throw new Error(mensajeErrorSos(err));
+    }
+    const mensaje = respuesta.data.wasActive ? `La alerta ya estaba activa. ${respuesta.mensaje}` : respuesta.mensaje;
+    // El estado de la alerta sale del servidor (programa_consolidado.alerta_crisis), no se supone.
+    try {
+      const raw = await api.obtenerActividades(contexto.semana.numero);
+      setActividades(normalizarActividades(raw, contexto.semana.numero));
+    } catch {
+      return `${mensaje} No se pudo recargar el estado de la actividad: usa Recargar.`;
+    }
+    return mensaje;
+  }, [api, contexto]);
 
   const handleExportCsv = useCallback(() => {
     if (!contexto) return;
@@ -290,8 +336,7 @@ export const ProgramaGeneralPage: React.FC = () => {
         onToggleColumnas={() => setModo13Cols(!modo13Cols)}
         onOpenDrawer={() => {
           if (tareasOperativas.length > 0) {
-            setBorradorDrawer(false);
-            setActividadSeleccionadaId(tareasOperativas[0].unique_id);
+            abrirCajon(tareasOperativas[0].unique_id);
           }
         }}
         onExportCsv={handleExportCsv}
@@ -341,12 +386,12 @@ export const ProgramaGeneralPage: React.FC = () => {
         <ProgramaTable
           actividades={actividadesFiltradas}
           actividadSeleccionadaId={actividadSeleccionadaId}
-          onSelectActividad={(id) => { setBorradorDrawer(false); setActividadSeleccionadaId(id); }}
+          onSelectActividad={abrirCajon}
           modo13Cols={modo13Cols}
         />
         <ProgramaCards
           actividades={actividadesFiltradas}
-          onSelectActividad={(id) => { setBorradorDrawer(false); setActividadSeleccionadaId(id); }}
+          onSelectActividad={abrirCajon}
         />
       </div>
 
@@ -354,6 +399,7 @@ export const ProgramaGeneralPage: React.FC = () => {
         <ProgramaDrawer
           actividad={actividadSeleccionada}
           catalogos={contexto.catalogos}
+          restricciones={contexto.restricciones ?? null}
           indiceActual={indiceActualDrawer > 0 ? indiceActualDrawer : 1}
           totalActividades={tareasOperativas.length}
           onCerrar={() => { setBorradorDrawer(false); setActividadSeleccionadaId(null); }}
@@ -361,6 +407,8 @@ export const ProgramaGeneralPage: React.FC = () => {
           onDirtyChange={setBorradorDrawer}
           onNavigateSeq={handleNavigateSeq}
           puedeEditar={contexto.permisos.puedeEditar && !actualizandoEjecucion}
+          puedeDeclararSos={contexto.permisos.writeDrawer && Boolean(contexto.csrf_drawer)}
+          onDeclararSos={handleDeclararSos}
         />
       )}
 

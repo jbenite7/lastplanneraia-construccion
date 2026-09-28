@@ -9,6 +9,7 @@ import {
   esquemaRespuestaCortePg,
 } from '../../../lib/api/esquemas/programa-general';
 import { pedir } from '../../../lib/api/cliente';
+import { registrarCrisis, type RespuestaRegistrarCrisis } from '../../../shared/lps/api/crisis';
 import { z } from 'zod';
 
 export interface GuardarActividadPayload {
@@ -30,6 +31,12 @@ export interface ActualizarEjecucionPayload {
   semana: number;
   db: string;
   csrf_token: string;
+}
+
+export interface DeclararSosPayload {
+  unique_id: number;
+  /** Token de la clave `lps_drawer` (`contexto.csrf_drawer`); los de guardado o del shell dan 403. */
+  csrfToken: string;
 }
 
 export interface ClienteHttpPg {
@@ -113,6 +120,19 @@ export function programaGeneralApi(cliente: ClienteHttpPg = defaultCliente) {
         { semana },
         esquemaRespuestaCortePg
       );
+    },
+
+    /**
+     * Registra la crisis SOS de una actividad de Programa General por la pasarela de T02
+     * (`LpsLegacyGeneralActivityAdapter`: `consecutivo` = `unique_id`, `modulo=PG`). Trigger
+     * `MANUAL`: es una declaración a mano desde el cajón, no un escalamiento por nivel.
+     */
+    async declararSos(payload: DeclararSosPayload): Promise<RespuestaRegistrarCrisis> {
+      return registrarCrisis({
+        trigger: 'MANUAL',
+        csrfToken: payload.csrfToken,
+        target: { consecutivo: payload.unique_id, modulo: 'PG' },
+      });
     },
 
     async actualizarEjecucion(payload: ActualizarEjecucionPayload): Promise<RespuestaUpdatePg> {

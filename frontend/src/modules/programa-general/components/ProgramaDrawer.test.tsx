@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { ProgramaDrawer } from './ProgramaDrawer';
 import { ActividadUI } from '../domain/modelo';
@@ -89,11 +89,23 @@ describe('ProgramaDrawer Contextual LPS', () => {
     expect(onNav).toHaveBeenCalledWith(-1);
   });
 
-  it('muestra la Matriz de los 7 Recursos Lean con estados de liberación', () => {
+  it('muestra solo los recursos de liberación con dato real, con etiqueta y estado del catálogo', () => {
+    const restricciones = {
+      area: 'Construccion',
+      restrictions: [
+        { key: 'D_y_E', label: 'D y E', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] },
+        { key: 'Materiales', label: 'Materiales', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] },
+        { key: 'MdeO', label: 'M de O', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] },
+        { key: 'Equipos', label: 'Equipos', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] },
+      ],
+      hardRestrictions: ['D_y_E', 'Materiales', 'MdeO', 'Equipos'],
+      softRestrictions: [],
+    };
     render(
       <ProgramaDrawer
-        actividad={mockAct}
+        actividad={{ ...mockAct, D_y_E: '100%', Materiales: '0%', MdeO: null, Equipos: undefined }}
         catalogos={catalogos}
+        restricciones={restricciones}
         indiceActual={1}
         totalActividades={10}
         onCerrar={vi.fn()}
@@ -102,20 +114,23 @@ describe('ProgramaDrawer Contextual LPS', () => {
       />
     );
 
-    expect(screen.getByText(/7 Recursos Lean/i)).toBeInTheDocument();
-    expect(screen.getByText('Mano de Obra')).toBeInTheDocument();
-    expect(screen.getByText('Maquinaria')).toBeInTheDocument();
-    expect(screen.getByText('Materiales')).toBeInTheDocument();
-    expect(screen.getByText('Información')).toBeInTheDocument();
-    expect(screen.getByText('Condiciones Previas')).toBeInTheDocument();
-    expect(screen.getByText('Seguridad')).toBeInTheDocument();
-    expect(screen.getByText('Externos')).toBeInTheDocument();
+    const lista = screen.getByRole('list', { name: /Recursos de liberación/i });
+    const items = Array.from(lista.querySelectorAll('li')).map((li) => li.textContent);
+    expect(items).toHaveLength(2);
+    expect(items[0]).toMatch(/D y E.*100%.*Liberada/);
+    expect(items[1]).toMatch(/Materiales.*0%.*Pendiente/);
+    // Recursos sin fuente en la fila no se muestran, ni los inventados de antes.
+    expect(screen.queryByText('M de O')).toBeNull();
+    expect(screen.queryByText('Equipos')).toBeNull();
+    expect(screen.queryByText('Seguridad')).toBeNull();
+    expect(screen.queryByText('Externos')).toBeNull();
+    expect(screen.queryByText(/Liberado$/)).toBeNull();
   });
 
-  it('muestra la sección de Bitácora SOS y permite escribir notas técnicas', () => {
+  it('sin catálogo de restricciones no afirma nada sobre la fila: dice que el catálogo no está disponible', () => {
     render(
       <ProgramaDrawer
-        actividad={mockAct}
+        actividad={{ ...mockAct, D_y_E: '100%' }}
         catalogos={catalogos}
         indiceActual={1}
         totalActividades={10}
@@ -124,10 +139,61 @@ describe('ProgramaDrawer Contextual LPS', () => {
         onNavigateSeq={vi.fn()}
       />
     );
+    expect(screen.queryByRole('list', { name: /Recursos de liberación/i })).toBeNull();
+    expect(screen.getByText(/Catálogo de restricciones no disponible/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Sin restricciones registradas/i)).toBeNull();
+    expect(screen.queryByText('Mano de Obra')).toBeNull();
+  });
 
-    expect(screen.getByText(/Bitácora SOS/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Escribir una nueva observación técnica/i)).toBeInTheDocument();
-    expect(screen.getByText(/Declarar Crisis SOS LPS/i)).toBeInTheDocument();
+  it('con catálogo y sin datos en la fila dice que la fila no registra restricciones', () => {
+    render(
+      <ProgramaDrawer
+        actividad={mockAct}
+        catalogos={catalogos}
+        restricciones={{
+          area: 'Construccion',
+          restrictions: [{ key: 'D_y_E', label: 'D y E', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] }],
+          hardRestrictions: ['D_y_E'],
+          softRestrictions: [],
+        }}
+        indiceActual={1}
+        totalActividades={10}
+        onCerrar={vi.fn()}
+        onGuardar={vi.fn()}
+        onNavigateSeq={vi.fn()}
+      />
+    );
+    expect(screen.getByText(/Esta actividad no registra valores de restricciones/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Catálogo de restricciones no disponible/i)).toBeNull();
+  });
+
+  it('no ofrece escribir observaciones: el guardado no las lleva y el legado nunca las editó', () => {
+    const onGuardar = vi.fn();
+    render(
+      <ProgramaDrawer
+        actividad={mockAct}
+        catalogos={catalogos}
+        indiceActual={1}
+        totalActividades={10}
+        onCerrar={vi.fn()}
+        onGuardar={onGuardar}
+        onNavigateSeq={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByPlaceholderText(/nueva observación/i)).toBeNull();
+    expect(screen.queryByLabelText(/Nueva Observación/i)).toBeNull();
+    expect(document.querySelector('textarea')).toBeNull();
+    // La observación registrada en la fila se ve, en solo lectura y sin autor inventado.
+    const observacion = screen.getByText('Lluvia suspendió labores el 18/08.');
+    expect(observacion).toBeInTheDocument();
+    const entrada = observacion.closest('.timeline-item') as HTMLElement;
+    expect(entrada).not.toHaveTextContent('Ing. Carlos Restrepo');
+    expect(entrada.querySelector('.timeline-meta')).toHaveTextContent(/^Observación registrada \(solo lectura\)$/);
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar Cambios/i }));
+    expect(onGuardar).toHaveBeenCalledTimes(1);
+    expect(onGuardar.mock.calls[0][0]).not.toHaveProperty('Observaciones');
   });
 
   it('deshabilita Cantidad PPTO cuando la unidad seleccionada es %', () => {
@@ -201,8 +267,8 @@ describe('ProgramaDrawer Contextual LPS', () => {
       />
     );
 
-    const textarea = screen.getByPlaceholderText(/Escribir una nueva observación técnica/i);
-    fireEvent.keyDown(textarea, { key: ']' });
+    const campo = screen.getByLabelText(/Avance Real/i);
+    fireEvent.keyDown(campo, { key: ']' });
     expect(onNav).not.toHaveBeenCalled();
   });
 
@@ -371,5 +437,338 @@ describe('ProgramaDrawer Contextual LPS', () => {
     const deltaOk = container.querySelector('.gauge-delta-val')!;
     expect(deltaOk).not.toBeNull();
     expect(deltaOk.className).toContain('delta-ok');
+  });
+
+  describe('SOS real', () => {
+    it('llama al servidor y no cambia el rótulo por su cuenta: el estado llega con la fila recargada', async () => {
+      let resolver: ((m: string) => void) | undefined;
+      const onDeclararSos = vi.fn(() => new Promise<string>((r) => { resolver = r; }));
+      render(
+        <ProgramaDrawer
+          actividad={mockAct}
+          catalogos={catalogos}
+          indiceActual={1}
+          totalActividades={10}
+          onCerrar={vi.fn()}
+          onGuardar={vi.fn()}
+          onNavigateSeq={vi.fn()}
+          puedeDeclararSos
+          onDeclararSos={onDeclararSos}
+        />
+      );
+
+      const boton = screen.getByRole('button', { name: /Declarar Crisis SOS/i });
+      fireEvent.click(boton);
+      expect(onDeclararSos).toHaveBeenCalledWith(101);
+      // Mientras vuela: deshabilitado y sin rótulo de alerta activa inventado.
+      expect(screen.getByRole('button', { name: /Registrando/i })).toBeDisabled();
+      expect(screen.queryByText(/Alerta SOS LPS Activa/i)).toBeNull();
+
+      await act(async () => { resolver?.('Alerta registrada'); });
+      expect(screen.getByRole('status')).toHaveTextContent('Alerta registrada');
+      // El prop no cambió (el servidor aún no devolvió la fila recargada): sigue sin declararse activa.
+      expect(screen.queryByText(/Alerta SOS LPS Activa/i)).toBeNull();
+    });
+
+    it('con cambios sin guardar pide confirmación antes del SOS, porque la recarga los descarta', () => {
+      const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const onDeclararSos = vi.fn().mockResolvedValue('Alerta registrada');
+      render(
+        <ProgramaDrawer
+          actividad={mockAct}
+          catalogos={catalogos}
+          indiceActual={1}
+          totalActividades={10}
+          onCerrar={vi.fn()}
+          onGuardar={vi.fn()}
+          onNavigateSeq={vi.fn()}
+          puedeDeclararSos
+          onDeclararSos={onDeclararSos}
+        />
+      );
+      fireEvent.change(screen.getByLabelText(/Avance Real/i), { target: { value: '40' } });
+      fireEvent.click(screen.getByRole('button', { name: /Declarar Crisis SOS/i }));
+      expect(confirmar).toHaveBeenCalledTimes(1);
+      expect(onDeclararSos).not.toHaveBeenCalled();
+      confirmar.mockReturnValue(true);
+      fireEvent.click(screen.getByRole('button', { name: /Declarar Crisis SOS/i }));
+      expect(onDeclararSos).toHaveBeenCalledWith(101);
+      confirmar.mockRestore();
+    });
+
+    it('un SOS en vuelo no deja su estado en la actividad a la que se navegó', async () => {
+      let resolver: ((m: string) => void) | undefined;
+      const onDeclararSos = vi.fn(() => new Promise<string>((r) => { resolver = r; }));
+      const props = {
+        catalogos, indiceActual: 1, totalActividades: 10, onCerrar: vi.fn(), onGuardar: vi.fn(),
+        onNavigateSeq: vi.fn(), puedeDeclararSos: true, onDeclararSos,
+      };
+      const otra: ActividadUI = { ...mockAct, unique_id: 102, Actividad: 'Acero de refuerzo', Observaciones: null };
+      const { rerender } = render(<ProgramaDrawer actividad={mockAct} {...props} />);
+      fireEvent.click(screen.getByRole('button', { name: /Declarar Crisis SOS/i }));
+      expect(screen.getByRole('button', { name: /Registrando/i })).toBeDisabled();
+
+      rerender(<ProgramaDrawer actividad={otra} {...props} />);
+      expect(screen.getByRole('button', { name: /Declarar Crisis SOS/i })).toBeEnabled();
+      await act(async () => { resolver?.('Alerta registrada'); });
+      expect(screen.queryByText('Alerta registrada')).toBeNull();
+
+      // De vuelta en la actividad que lo disparó, el resultado sí se ve.
+      rerender(<ProgramaDrawer actividad={mockAct} {...props} />);
+      expect(screen.getByRole('status')).toHaveTextContent('Alerta registrada');
+    });
+
+    it('muestra el error del servidor y no declara nada', async () => {
+      const onDeclararSos = vi.fn().mockRejectedValue(new Error('Token de seguridad inválido.'));
+      render(
+        <ProgramaDrawer
+          actividad={mockAct}
+          catalogos={catalogos}
+          indiceActual={1}
+          totalActividades={10}
+          onCerrar={vi.fn()}
+          onGuardar={vi.fn()}
+          onNavigateSeq={vi.fn()}
+          puedeDeclararSos
+          onDeclararSos={onDeclararSos}
+        />
+      );
+      fireEvent.click(screen.getByRole('button', { name: /Declarar Crisis SOS/i }));
+      expect(await screen.findByRole('alert')).toHaveTextContent('Token de seguridad inválido.');
+      expect(screen.getByRole('button', { name: /Declarar Crisis SOS/i })).toBeEnabled();
+    });
+
+    it('sin permiso de escritura del cajón LPS el botón queda deshabilitado', () => {
+      render(
+        <ProgramaDrawer
+          actividad={mockAct}
+          catalogos={catalogos}
+          indiceActual={1}
+          totalActividades={10}
+          onCerrar={vi.fn()}
+          onGuardar={vi.fn()}
+          onNavigateSeq={vi.fn()}
+          puedeDeclararSos={false}
+          onDeclararSos={vi.fn()}
+        />
+      );
+      expect(screen.getByRole('button', { name: /Declarar Crisis SOS/i })).toBeDisabled();
+    });
+
+    it('con la alerta ya activa en la fila lo dice y no ofrece volver a declararla', () => {
+      render(
+        <ProgramaDrawer
+          actividad={{ ...mockAct, alerta_crisis: 1 }}
+          catalogos={catalogos}
+          indiceActual={1}
+          totalActividades={10}
+          onCerrar={vi.fn()}
+          onGuardar={vi.fn()}
+          onNavigateSeq={vi.fn()}
+          puedeDeclararSos
+          onDeclararSos={vi.fn()}
+        />
+      );
+      expect(screen.getByRole('button', { name: /Alerta SOS LPS Activa/i })).toBeDisabled();
+    });
+  });
+
+  describe('descarte con cambios sin guardar', () => {
+    const montar = (onCerrar = vi.fn()) => {
+      const utils = render(
+        <ProgramaDrawer
+          actividad={mockAct}
+          catalogos={catalogos}
+          indiceActual={1}
+          totalActividades={10}
+          onCerrar={onCerrar}
+          onGuardar={vi.fn()}
+          onNavigateSeq={vi.fn()}
+        />
+      );
+      return { ...utils, onCerrar };
+    };
+
+    it('Esc con cambios pide confirmación y no cierra si se cancela', () => {
+      const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const { onCerrar } = montar();
+      fireEvent.change(screen.getByLabelText(/Avance Real/i), { target: { value: '40' } });
+      fireEvent.keyDown(window, { key: 'Escape' });
+      expect(confirmar).toHaveBeenCalledTimes(1);
+      expect(onCerrar).not.toHaveBeenCalled();
+      confirmar.mockReturnValue(true);
+      fireEvent.keyDown(window, { key: 'Escape' });
+      expect(onCerrar).toHaveBeenCalledTimes(1);
+      confirmar.mockRestore();
+    });
+
+    it('el clic en el velo con cambios pide confirmación', () => {
+      const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const { onCerrar, container } = montar();
+      fireEvent.change(screen.getByLabelText(/Avance Real/i), { target: { value: '40' } });
+      fireEvent.click(container.querySelector('.drawer-backdrop')!);
+      expect(confirmar).toHaveBeenCalledTimes(1);
+      expect(onCerrar).not.toHaveBeenCalled();
+      confirmar.mockRestore();
+    });
+
+    it('la X del encabezado con cambios pide confirmación y no cierra si se cancela', () => {
+      const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const { onCerrar } = montar();
+      fireEvent.change(screen.getByLabelText(/Avance Real/i), { target: { value: '40' } });
+      fireEvent.click(screen.getByRole('button', { name: /Cerrar panel/i }));
+      expect(confirmar).toHaveBeenCalledTimes(1);
+      expect(onCerrar).not.toHaveBeenCalled();
+      confirmar.mockReturnValue(true);
+      fireEvent.click(screen.getByRole('button', { name: /Cerrar panel/i }));
+      expect(onCerrar).toHaveBeenCalledTimes(1);
+      confirmar.mockRestore();
+    });
+
+    it('sin cambios, Esc y el velo cierran directo sin preguntar', () => {
+      const confirmar = vi.spyOn(window, 'confirm');
+      const { onCerrar, container } = montar();
+      fireEvent.keyDown(window, { key: 'Escape' });
+      fireEvent.click(container.querySelector('.drawer-backdrop')!);
+      expect(confirmar).not.toHaveBeenCalled();
+      expect(onCerrar).toHaveBeenCalledTimes(2);
+      confirmar.mockRestore();
+    });
+  });
+
+  describe('visibilidad y accesibilidad', () => {
+    const montar = (actividad: ActividadUI = mockAct) => render(
+      <ProgramaDrawer
+        actividad={actividad}
+        catalogos={catalogos}
+        indiceActual={1}
+        totalActividades={10}
+        onCerrar={vi.fn()}
+        onGuardar={vi.fn()}
+        onNavigateSeq={vi.fn()}
+      />
+    );
+
+    it('la barra de avance real no pinta su color en línea y marca el atraso con una clase', () => {
+      const { container, rerender } = montar();
+      const real = container.querySelector('.dual-fill-real') as HTMLElement;
+      expect(real.style.backgroundColor).toBe('');
+      expect(real.style.width).toBe('25%');
+      expect(real.className).toContain('dual-fill-real--atraso');
+
+      rerender(
+        <ProgramaDrawer
+          actividad={{ ...mockAct, avanceRealPct: 60 }}
+          catalogos={catalogos}
+          indiceActual={1}
+          totalActividades={10}
+          onCerrar={vi.fn()}
+          onGuardar={vi.fn()}
+          onNavigateSeq={vi.fn()}
+        />
+      );
+      expect((container.querySelector('.dual-fill-real') as HTMLElement).className).not.toContain('dual-fill-real--atraso');
+    });
+
+    it('los dos campos de avance tienen etiqueta asociada', () => {
+      montar();
+      expect(screen.getByLabelText('Avance Teórico Servidor')).toHaveValue('50.0%');
+      expect(screen.getByLabelText('Avance Real')).toHaveValue(25);
+    });
+
+    it('al abrir, el foco entra al cajón', () => {
+      montar();
+      expect(screen.getByRole('dialog', { name: /Editor Contextual LPS/i })).toHaveFocus();
+    });
+  });
+
+  describe('navegar entre actividades con cambios sin guardar', () => {
+    const montar = (onNav = vi.fn()) => {
+      render(
+        <ProgramaDrawer
+          actividad={mockAct}
+          catalogos={catalogos}
+          indiceActual={2}
+          totalActividades={10}
+          onCerrar={vi.fn()}
+          onGuardar={vi.fn()}
+          onNavigateSeq={onNav}
+        />
+      );
+      return onNav;
+    };
+
+    it('con teclado [ ] pide confirmación y no navega si se cancela', () => {
+      const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const onNav = montar();
+      fireEvent.change(screen.getByLabelText(/Avance Real/i), { target: { value: '40' } });
+      fireEvent.keyDown(window, { key: ']' });
+      fireEvent.keyDown(window, { key: '[' });
+      expect(confirmar).toHaveBeenCalledTimes(2);
+      expect(onNav).not.toHaveBeenCalled();
+      confirmar.mockReturnValue(true);
+      fireEvent.keyDown(window, { key: ']' });
+      expect(onNav).toHaveBeenCalledWith(1);
+      confirmar.mockRestore();
+    });
+
+    it('con los botones Anterior/Siguiente pide la misma confirmación', () => {
+      const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const onNav = montar();
+      fireEvent.change(screen.getByLabelText(/Avance Real/i), { target: { value: '40' } });
+      fireEvent.click(screen.getByTitle(/Actividad Siguiente/i));
+      fireEvent.click(screen.getByTitle(/Actividad Anterior/i));
+      expect(confirmar).toHaveBeenCalledTimes(2);
+      expect(onNav).not.toHaveBeenCalled();
+      confirmar.mockReturnValue(true);
+      fireEvent.click(screen.getByTitle(/Actividad Anterior/i));
+      expect(onNav).toHaveBeenCalledWith(-1);
+      confirmar.mockRestore();
+    });
+
+    it('sin cambios navega directo, sin preguntar', () => {
+      const confirmar = vi.spyOn(window, 'confirm');
+      const onNav = montar();
+      fireEvent.keyDown(window, { key: ']' });
+      fireEvent.click(screen.getByTitle(/Actividad Anterior/i));
+      expect(confirmar).not.toHaveBeenCalled();
+      expect(onNav.mock.calls).toEqual([[1], [-1]]);
+      confirmar.mockRestore();
+    });
+  });
+
+  describe('trampa de foco del cajón modal', () => {
+    it('Tab desde el último control vuelve al primero y Shift+Tab desde el primero va al último', () => {
+      render(
+        <>
+          <button type="button">Recargar</button>
+          <ProgramaDrawer
+            actividad={mockAct}
+            catalogos={catalogos}
+            indiceActual={1}
+            totalActividades={10}
+            onCerrar={vi.fn()}
+            onGuardar={vi.fn()}
+            onNavigateSeq={vi.fn()}
+          />
+        </>
+      );
+      const dialogo = screen.getByRole('dialog', { name: /Editor Contextual LPS/i });
+      const cerrar = screen.getByRole('button', { name: /Cerrar panel/i });
+      const guardar = screen.getByRole('button', { name: /Guardar Cambios/i });
+
+      guardar.focus();
+      fireEvent.keyDown(guardar, { key: 'Tab' });
+      expect(cerrar).toHaveFocus();
+
+      fireEvent.keyDown(cerrar, { key: 'Tab', shiftKey: true });
+      expect(guardar).toHaveFocus();
+
+      // Con el foco fuera (p. ej. en «Recargar»), Tab lo devuelve al cajón.
+      const fuera = screen.getByRole('button', { name: 'Recargar' });
+      fuera.focus();
+      fireEvent.keyDown(fuera, { key: 'Tab' });
+      expect(dialogo.contains(document.activeElement)).toBe(true);
+    });
   });
 });

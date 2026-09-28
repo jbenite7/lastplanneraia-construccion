@@ -931,6 +931,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - goal abierto · organizar-la-casa · `goals/organizar-la-casa/goal.md`
 - goal abierto · Goal — Paridad del shell React y RLS · `goals/paridad-shell-react-rls/goal.md`
 - goal abierto · Goal: Reapertura de móvil/tablet y tema claro · `goals/reapertura-movil-y-tema-claro/goal.md`
+- goal abierto · Goal: el cajón de Programa General dice la verdad · `goals/s05-cajon-verdad/goal.md`
 - goal abierto · Frente: vocabulario-estados-cascada · `goals/vocabulario-estados-cascada/goal.md`
 
 ### Inconsistencias
@@ -1431,6 +1432,12 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   cajón superpuesto, meta ≥ 20 filas visibles a 1180×820), orden por cronograma con señales, y
   alcance Programa General + el shell de T01 que se ve en esa pantalla. Esas decisiones se
   re-confirman contra la crítica nueva, no se ejecutan tal cual.
+  **Re-confirmado el 2026-09-28 tras la crítica nueva sobre `main`** (18/40,
+  `.impeccable/critique/2026-09-28T13-49-37Z__frontend-src-modules-programa-general.md`):
+  (1) el P0 del cajón (observación descartada con «guardado», SOS decorativo, recursos inventados)
+  va **aparte y primero**, frente `goals/s05-cajon-verdad/`; (2) la tabla abre en **orden de
+  cronograma puro**, sin filtro por defecto; el riesgo se lee por la bandera de gravedad en la fila;
+  (3) alcance del rediseño: **dirección completa**, con spec y mockup para su visto antes de ejecutar.
 - [ ] **Design system — frente aparte (decisión de Felipe, 2026-09-23).** Tres puntos que salieron
   de la crítica de S05 y afectan a otras pantallas, así que no van dentro de S05: (1) el primario en
   oscuro (`--ds-color-domain-corporate-on-dark`) queda en 4,87:1 frente a 13,1:1 de los botones
@@ -1440,6 +1447,17 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   no se distingue. Además, deuda de la herramienta: `scripts/design-system-audit.mjs:25` (`scanRoots`)
   no incluye `frontend/src/**`, así que el gate del design system no revisa el CSS de React
   (verificado en `main` el 2026-09-28).
+
+- [ ] **T02 — el SOS del cajón LPS compartido del shell respondería 403 si se apaga la simulación.**
+  Verificado leyendo el código el 2026-09-28 (revisión del frente `goals/s05-cajon-verdad/`):
+  `AppShell.tsx:256` pasa a `LpsDrawerProvider` el `sesion.csrfToken` de clave `shell_api`
+  (`SessionApiController.php:34`), y el registro y el cierre de crisis solo validan `lps_drawer`
+  (`rbac_guard.php:88-89`). Hoy no se nota porque `CajonContextualLps.tsx:230` deja la simulación
+  encendida por defecto (`simulado ?? true`) y ningún módulo la apaga: el SOS de ese cajón no
+  registra nada. Afecta a los consumidores que migren a ese cajón (PI, PS, S25). Programa General
+  no lo usa: su cajón propio ya registra la crisis con el token correcto.
+- [ ] **Deuda: la regla de «qué elementos reciben foco» está copiada en cuatro archivos** (trampas de
+  foco del shell, del cajón LPS y de Programa General). Extraerla a un solo módulo compartido.
 
 ## Pendiente de decisión: despliegue a producción
 

@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { ProgramaGeneralPage } from './ProgramaGeneralPage';
+import { ApiError } from '../../lib/api/cliente';
 
 const mockActividadesRaw = [
   {
@@ -57,12 +58,14 @@ const mockContexto = {
     subcontratistas: [{ id: 1, nombre: 'Excavaciones del Norte S.A.S.' }],
   },
   csrf_token: 'csrf123',
+  csrf_drawer: 'csrf-drawer',
 };
 
 const mockGuardar = vi.fn().mockResolvedValue({ ok: true });
 const mockCorteXlsx = vi.fn().mockResolvedValue({ ok: true, url: 'http://localhost/corte.xlsx' });
 const mockActualizarEjecucion = vi.fn().mockResolvedValue({ respuesta: 'BIEN' });
 const mockObtenerActividades = vi.fn().mockResolvedValue(mockActividadesRaw);
+const mockDeclararSos = vi.fn().mockResolvedValue({ mensaje: 'Alerta registrada', data: { alertId: 7, wasActive: false } });
 
 vi.mock('./api/programaGeneralApi', () => ({
   programaGeneralApi: () => ({
@@ -71,6 +74,7 @@ vi.mock('./api/programaGeneralApi', () => ({
     guardarActividad: mockGuardar,
     generarCorteXlsx: mockCorteXlsx,
     actualizarEjecucion: mockActualizarEjecucion,
+    declararSos: mockDeclararSos,
   }),
 }));
 
@@ -235,5 +239,70 @@ describe('ProgramaGeneralPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Actualizar Ejecución' }));
     await waitFor(() => expect(mockActualizarEjecucion).toHaveBeenCalledTimes(1));
     confirmar.mockRestore();
+  });
+
+  it('declara SOS con el token del cajón y pinta el estado que devuelve el servidor al recargar', async () => {
+    mockDeclararSos.mockClear();
+    render(<ProgramaGeneralPage />);
+    fireEvent.click((await screen.findAllByText('Excavación mecánica de zapatas'))[0]);
+    mockObtenerActividades.mockResolvedValueOnce(
+      mockActividadesRaw.map((row) => (row.unique_id === 101 ? { ...row, alerta_crisis: 1 } : row))
+    );
+    const llamadasAntes = mockObtenerActividades.mock.calls.length;
+    fireEvent.click(screen.getByRole('button', { name: /Declarar Crisis SOS/i }));
+    await waitFor(() => expect(mockDeclararSos).toHaveBeenCalledWith({ unique_id: 101, csrfToken: 'csrf-drawer' }));
+    await waitFor(() => expect(mockObtenerActividades.mock.calls.length).toBeGreaterThan(llamadasAntes));
+    expect(await screen.findByRole('button', { name: /Alerta SOS LPS Activa/i })).toBeDisabled();
+  });
+
+  it('al cerrar el cajón el foco vuelve a la fila que lo abrió', async () => {
+    const { container } = render(<ProgramaGeneralPage />);
+    await screen.findByText('Programa General');
+    const fila = container.querySelector('tr[data-unique-id="101"]') as HTMLElement;
+    fila.focus();
+    fireEvent.click(fila);
+    const dialogo = await screen.findByRole('dialog', { name: /Editor Contextual LPS/i });
+    expect(dialogo).toHaveFocus();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: /Editor Contextual LPS/i })).not.toBeInTheDocument());
+    await waitFor(() => expect(container.querySelector('tr[data-unique-id="101"]')).toHaveFocus());
+  });
+
+  it('navegar con ] sin editar no deja un borrador fantasma: Esc cierra sin preguntar', async () => {
+    const segunda = { ...mockActividadesRaw[1], unique_id: 102, Actividad: 'Acero de refuerzo', unidad: 'ton', cantidad_ppto: 12.5, Ejecutado: 0, Responsable_AIA: 'Ing. Carlos Restrepo' };
+    mockObtenerActividades.mockResolvedValueOnce([...mockActividadesRaw, segunda]);
+    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    render(<ProgramaGeneralPage />);
+    fireEvent.click((await screen.findAllByText('Excavación mecánica de zapatas'))[0]);
+    await screen.findByRole('dialog', { name: /Editor Contextual LPS/i });
+    fireEvent.keyDown(window, { key: ']' });
+    await screen.findByText('Actividad 2 de 2');
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(confirmar).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: /Editor Contextual LPS/i })).not.toBeInTheDocument());
+    confirmar.mockRestore();
+  });
+
+  it('«Recargar» con borrador en el cajón pide confirmación antes de descartarlo', async () => {
+    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    render(<ProgramaGeneralPage />);
+    fireEvent.click((await screen.findAllByText('Excavación mecánica de zapatas'))[0]);
+    fireEvent.change(screen.getByLabelText('Avance Real'), { target: { value: '40' } });
+    const llamadas = mockObtenerActividades.mock.calls.length;
+    fireEvent.click(screen.getByRole('button', { name: 'Recargar' }));
+    expect(confirmar).toHaveBeenCalledTimes(1);
+    expect(mockObtenerActividades.mock.calls.length).toBe(llamadas);
+    expect(screen.getByLabelText('Avance Real')).toHaveValue(40);
+    confirmar.mockRestore();
+  });
+
+  it('un SOS rechazado muestra un mensaje entendible, no la ruta ni el código crudo', async () => {
+    mockDeclararSos.mockRejectedValueOnce(new ApiError('/api/lps/crisis/register respondió 403', { tipo: 'http', status: 403, codigo: 'HTTP_403' }));
+    render(<ProgramaGeneralPage />);
+    fireEvent.click((await screen.findAllByText('Excavación mecánica de zapatas'))[0]);
+    fireEvent.click(screen.getByRole('button', { name: /Declarar Crisis SOS/i }));
+    const alerta = await screen.findByRole('alert');
+    expect(alerta).not.toHaveTextContent('/api/');
+    expect(alerta).toHaveTextContent(/permiso|token de seguridad/i);
   });
 });

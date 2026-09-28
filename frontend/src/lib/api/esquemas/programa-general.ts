@@ -1,5 +1,23 @@
 import { z } from 'zod';
 
+const valorRestriccion = z.union([z.string(), z.number()]).transform(String).nullable().optional();
+
+/** Forma de `RestrictionConfigResolver::presentationConfig()` que el contexto PG ya entrega. */
+export const esquemaConfigRestriccionesPg = z.object({
+  area: z.string(),
+  restrictions: z.array(z.object({
+    key: z.string(),
+    label: z.string(),
+    hard: z.boolean(),
+    thresholdPercent: z.coerce.number(),
+    options: z.array(z.string()).default([]),
+  })),
+  hardRestrictions: z.array(z.string()).default([]),
+  softRestrictions: z.array(z.string()).default([]),
+});
+
+export type ConfigRestriccionesPg = z.infer<typeof esquemaConfigRestriccionesPg>;
+
 export const esquemaFilaActividadPg = z.object({
   unique_id: z.coerce.number(),
   Consecutivo_en_Programa: z.union([z.string(), z.number()]).transform(String).nullable().optional(),
@@ -21,6 +39,20 @@ export const esquemaFilaActividadPg = z.object({
   Sub_Contratista: z.string().nullable().optional(),
   Observaciones: z.string().nullable().optional(),
   alerta_crisis: z.coerce.number().optional(),
+  // Restricciones de liberación que `programa_consolidado` guarda por fila (`SELECT *` de
+  // `/api/general/list`): Construcción usa las siete columnas del catálogo, Preconstrucción las
+  // `restriccion_pc_*`. Sin declararlas aquí, `z.object` las descartaba y el cajón no tenía fuente.
+  D_y_E: valorRestriccion,
+  Materiales: valorRestriccion,
+  MdeO: valorRestriccion,
+  Equipos: valorRestriccion,
+  Predecesora: valorRestriccion,
+  Pdto_Cons: valorRestriccion,
+  Modelo: valorRestriccion,
+  restriccion_pc_1: valorRestriccion,
+  restriccion_pc_2: valorRestriccion,
+  restriccion_pc_3: valorRestriccion,
+  restriccion_pc_4: valorRestriccion,
 });
 
 export type FilaActividadPg = z.infer<typeof esquemaFilaActividadPg>;
@@ -64,6 +96,10 @@ export const esquemaContextoPgBase = z.object({
   }),
   csrf_token: z.string(),
   csrf_shell: z.string().optional(),
+  /** Token de la clave `lps_drawer`: el único que acepta `POST /api/lps/crisis/register`. */
+  csrf_drawer: z.string().optional(),
+  /** Catálogo de restricciones del área del proyecto (etiquetas, umbrales y opciones). */
+  restricciones: esquemaConfigRestriccionesPg.optional(),
 });
 
 export const esquemaContextoPg = z.preprocess((val: unknown) => {
@@ -115,6 +151,8 @@ export const esquemaContextoPg = z.preprocess((val: unknown) => {
       },
       csrf_token: typeof csrf.programaGeneral === 'string' ? csrf.programaGeneral : String(obj.csrf_token ?? ''),
       csrf_shell: typeof csrf.shell === 'string' ? csrf.shell : undefined,
+      csrf_drawer: typeof csrf.drawer === 'string' ? csrf.drawer : undefined,
+      restricciones: obj.restrictionConfig && typeof obj.restrictionConfig === 'object' ? obj.restrictionConfig : undefined,
     };
   }
   return obj;

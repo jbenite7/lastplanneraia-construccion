@@ -1446,8 +1446,42 @@
     transition: width 0.2s ease;
   }
 
-  /* 7 Recursos Lean */
+  .dual-fill-real--atraso {
+    background: var(--ds-active-state-solid-red);
+  }
+
+  .dual-gauge-scale {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 10px;
+    color: var(--ds-color-text-tertiary);
+  }
+
+  .form-date-hint {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--ds-color-text-tertiary);
+  }
+
+  .drawer-schedule-meta {
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--ds-color-text-tertiary);
+  }
+
+  .drawer-alert-overdue {
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  /* Recursos de liberación */
   .lean-matrix-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -1507,6 +1541,19 @@
     border: 1px solid var(--ds-active-border);
   }
 
+  .pill-no-aplica {
+    background: var(--ds-active-state-tint-neutral);
+    color: var(--ds-active-state-solid-neutral-text);
+    border: 1px solid var(--ds-active-border);
+  }
+
+  .drawer-empty-note {
+    margin: 0;
+    font-size: 11px;
+    font-style: italic;
+    color: var(--ds-color-text-tertiary);
+  }
+
   /* Timeline & SOS */
   .timeline-feed {
     display: flex;
@@ -1523,6 +1570,11 @@
     border-left: 2px solid var(--ds-active-action-primary);
     border-radius: 2px;
     font-size: 10.5px;
+  }
+
+  .timeline-item--vacio {
+    font-style: italic;
+    color: var(--ds-color-text-tertiary);
   }
 
   .timeline-meta {
@@ -1559,6 +1611,16 @@
   .btn-sos-trigger:hover {
     background: color-mix(in srgb, var(--ds-active-state-solid-red) 20%, transparent);
     border-color: var(--ds-active-state-solid-red);
+  }
+
+  .drawer-sos-feedback {
+    margin: 6px 0 0;
+    font-size: 11px;
+    color: var(--ds-active-text-secondary);
+  }
+
+  .drawer-sos-feedback--error {
+    color: var(--ds-active-state-solid-red-text);
   }
 
   /* Drawer Footer */
