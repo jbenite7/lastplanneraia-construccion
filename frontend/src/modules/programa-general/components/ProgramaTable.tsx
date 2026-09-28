@@ -5,6 +5,7 @@ import {
   formatearFechaObra,
   formatearCantidadPresupuesto,
 } from '../domain/modelo';
+import { formatearInicioRelativo } from '../domain/inicioRelativo';
 import { obtenerConfigEstado } from '../domain/presentacionEstados';
 
 export interface ProgramaTableProps {
@@ -60,7 +61,7 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
               <th>ACTIVIDAD</th>
               <th>RC</th>
               <th>F. INICIO</th>
-              <th aria-label="SEM. INICIO" title="SEM. INICIO">SEM. INI.</th>
+              <th aria-label="Inicio relativo a la semana vigente" title="Inicio relativo a la semana vigente">INICIO REL.</th>
               <th>F. FIN</th>
               <th aria-label="CANTIDAD PPTO" title="CANTIDAD PPTO">CANT.</th>
               <th aria-label="UNIDAD" title="UNIDAD">UND.</th>
@@ -169,10 +170,11 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
                     </td>
                     <td className="cell-date"><span className="cell-date-value">{formatearFechaObra(act.Fecha_Inicio)}</span></td>
                     <td className="cell-date" style={{ textAlign: 'center' }}>
-                      <span className="cell-date-value">
-                        {act.Semanas_Inicio !== null && act.Semanas_Inicio !== undefined
-                          ? `Sem ${act.Semanas_Inicio}`
-                          : '-'}
+                      <span
+                        className="cell-date-value"
+                        title={act.Fecha_Inicio ? formatearFechaObra(act.Fecha_Inicio) : undefined}
+                      >
+                        {formatearInicioRelativo(act.Semanas_Inicio)}
                       </span>
                     </td>
                     <td className="cell-date">

@@ -3,7 +3,7 @@ capa: fuente
 tipo: plan
 estado: cerrado
 fecha: 2026-09-24
-areas: [lps, programacion_semanal, tnp, backend, frontend]
+areas: [lps]
 fuente: docs/superpowers/plans/2026-09-24-calificacion-tnp-semana-confirmada.md
 resumen: Calificación y registro de Trabajo No Planificado (TNP) en semanas confirmadas sin bloqueo HTTP 409
 ---

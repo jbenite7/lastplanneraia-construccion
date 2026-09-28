@@ -3,7 +3,7 @@ tipo: trampa
 estado: vigente
 fecha: 2026-08-12
 areas: [design-system, qa]
-fuente: tests/test_programa_general_sprint_contract.mjs:150, medicion en navegador sobre /programa-general
+fuente: tests/test_programa_general_sprint_contract.mjs:156-158, medicion en navegador sobre /programa-general
 resumen: un contrato que exige `!important` en la hoja mide la forma y no el resultado — obliga a reponer prioridad que la cascada no necesita, y sólo el computado del navegador dice si el valor gana
 ---
 

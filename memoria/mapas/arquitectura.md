@@ -28,17 +28,17 @@ choque con [[AGENTS]], manda AGENTS).
 
 `public/index.php` es un front controller plano, sin framework: carga el autoload, aplica
 `MaintenanceMode` y `SessionMiddleware::beginRequest()` (era `check()` hasta el 2026-08-29), y despacha por `App\Core\Router`, que envuelve a
-FastRoute. Las rutas están declaradas ahí mismo, en una lista larga agrupada por comentarios: **218
-llamadas `$router->…`** contadas el 2026-09-21 (215 rutas en el inventario de
-`scripts/wiki-arquitectura.mjs --cobertura`, sin cambios desde el 2026-09-17); esta línea decía
-«217» el 2026-09-17 y «~150» antes.
+FastRoute. Las rutas están declaradas ahí mismo, en una lista larga agrupada por comentarios: **219
+llamadas `$router->…`** y **216 rutas cubiertas** por el inventario de
+`scripts/wiki-arquitectura.mjs --cobertura`, medidas el 2026-09-26. El inventario excluye la ruta
+SPA `/programa-general`, que intercepta `SpaRouter` antes del router PHP.
 
 **Antes del router está la frontera con el shell React** (añadido el 2026-09-17, ampliado el
 2026-09-21). `SpaRouter::sirveLaSpa()` decide qué `GET`/`HEAD` son de la SPA —hoy `/`, `/login`,
-`/password/forgot`, `/password/reset`, `/proyectos` (sumada en S04, PR #50) y el árbol `/app`
-(`src/Core/SpaRouter.php:18,21`)—: esas rutas no exigen sesión de PHP (`public/index.php:56`) y se
-despachan con `SpaHostRenderer::render()` antes de `$router->dispatch()` (`:403-406`). Las
-mutaciones siguen siempre en su controlador PHP.
+`/password/forgot`, `/password/reset`, `/proyectos`, `/programa-general` (sumada en S05) y el árbol
+`/app` (`src/Core/SpaRouter.php:18,24-26`)—: esas rutas se despachan con
+`SpaHostRenderer::render()` antes de `$router->dispatch()` (`public/index.php:412-424`). Solo
+lecturas cruzan esa frontera; POST y demás mutaciones siguen en PHP.
 
 Algunas rutas apuntan a cierres que hacen `require_once` de un script procedural de `src/Legacy/`.
 Eso es el carril legado, no un error. Es zona de mantenimiento: se corrige la causa con el cambio

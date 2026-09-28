@@ -5,28 +5,24 @@ estado: vigente
 fecha: 2026-08-10
 areas: [qa, proceso]
 fuente: sesion
-resumen: "Mejorar el CI puso un gate en rojo: una aserción exigía que el workflow NOMBRARA un comando, no que lo ejecutara. Antes de editar un archivo, busca quién lo aserta"
+resumen: "Una aserción del CI que exigía nombrar un comando puso rojo el gate; D-CI-1 resolvió el caso midiendo ejecución. Busca contratos antes de editar."
 ---
 El 2026-08-10, el frente del runner de tests PHP sustituyó en
 `.github/workflows/design-system.yml` los tres tests que el CI listaba a mano por una llamada al
 runner, que ejecuta 71. La cobertura subió de 3 a 71 y el gate `node-tests` se puso **rojo en
 `main`**.
 
-La causa: `tests/design-system/visual-ci-contract.test.mjs:156` exige
+El registro de `D-CI-1` (`docs/decisiones-pendientes.md:138-169`) documenta el defecto histórico:
+el contrato exigía que el workflow incluyera literalmente el comando del test, aunque el runner ya
+lo ejecutaba. Esa aserción de cadena dejó de ser la condición vigente al resolverse D-CI-1.
 
-```js
-assert.match(workflow, /php tests\/test_global_table_safety\.php/);
-```
-
-es decir, que el workflow **contenga esa cadena**. El test seguía ejecutándose —dentro de la
-selección del runner— pero su nombre ya no aparecía escrito, así que la aserción falló. **El gate
-premia la forma, no el resultado.** Cualquier reorganización futura del CI que siga ejecutando esa
-prueba lo volverá a poner rojo.
-
-Quedó en verde conservando el paso explícito además del runner: la prueba corre dos veces y cuesta
-menos de un segundo. Cambiar la aserción para que compruebe que el CI *ejercita* el test habría sido
-mejor y más fuerte, pero es un contrato del design system y esos no se tocan para que el trabajo
-propio dé verde — está encolado como `D-CI-1` en `docs/decisiones-pendientes.md`.
+**Estado actual, verificado en el código:** desde 2026-08-11 el contrato comprueba que el workflow
+invoca el runner PHP y que el nivel máximo del CI incluye la etiqueta `@requiere` que declara
+`test_global_table_safety.php` (`tests/design-system/visual-ci-contract.test.mjs:306-355`). La
+prueba del runner cubre además que los niveles acumulativos no omitan niveles inferiores. La decisión
+se ejecutó y se verificó sobre `e66e7672`, según `docs/decisiones-pendientes.md:1691`; el paso
+explícito duplicado se retiró. El caso ya no predice que una futura reorganización equivalente vaya
+a fallar por perder una cadena literal.
 
 **Why:** quien hizo el cambio verificó lo suyo a conciencia —runner, ambos comandos del CI, códigos
 de salida— y aun así publicó en rojo, porque el contrato que vigilaba el archivo editado no estaba

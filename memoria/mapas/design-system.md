@@ -66,17 +66,21 @@ contra sus consumidores reales el 2026-08-04:
 - [[manifiesto-de-modulo]] — la declaración jurada de cada módulo, y los dos selladores del cierre.
 - [[inventarios-del-sistema]] — los cuatro censos y por qué dos son normativos y dos descriptivos.
 
-## Restricción de alcance
+## Alcance vigente
 
-El 2026-08-07 se retiraron las tres prohibiciones (móvil, tablet y tema claro) de los `.md`
-normativos. Lo que queda es descriptivo: el viewport canónico de validación sigue siendo 1180×820
-y dark sigue siendo el tema por defecto y único implementado.
+Claro es el tema de entrada y ambos temas son contractuales (spec de temas 2026-08-28, D12;
+`AGENTS.md:48-52`). El viewport canónico de escritorio sigue siendo 1180×820. El claro ya está
+implementado: `frontend/src/shell/tema.ts:5-18,34-37` define claro como fallback y mapea ambos
+temas a `data-aia-theme`. El 2026-08-07 se retiraron las prohibiciones normativas de móvil, tablet
+y tema claro; `linen` sigue retirado por DS-030 y reconstruirlo requeriría trabajo nuevo.
 
 El mismo día, **DS-032** (`docs/design-system/decisions.md:39`) llevó esa reapertura a los gates:
 `390x844` vuelve a ser un viewport **soportado pero no requerido** —la cobertura obligatoria sigue
 siendo `1180x820` y `1440x900`—, `design-system-contracts.mjs` distingue `SUPPORTED_VIEWPORTS` de
 `REQUIRED_VIEWPORTS` y, por primera vez, valida los viewports declarados en `homologation.json`.
-El candado de DS-031 se renombró a `tests/design-system/mobile-viewport-scope.test.mjs` y cambió de
+La suite visual actual también ejecuta los gates de escritorio en claro y oscuro
+(`.github/workflows/ci.yml:146-162`). El candado de DS-031 se renombró a
+`tests/design-system/mobile-viewport-scope.test.mjs` y cambió de
 intención: ya no prohíbe el ancho, exige evidencia para todo escenario declarado. **Evidencia móvil
 todavía no hay** (es la fase F2 del goal).
 

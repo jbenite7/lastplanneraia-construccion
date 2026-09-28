@@ -257,13 +257,13 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
 
     // Alternar a 13 columnas
     await btn13Cols.click();
-    await expect(page.getByRole('columnheader', { name: 'SEM. INICIO' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Inicio relativo a la semana vigente' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'CANTIDAD PPTO' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'LIB. RESTRICCIONES' })).toBeVisible();
 
     // Alternar de regreso a 8 columnas
     await btn8Cols.click();
-    await expect(page.getByRole('columnheader', { name: 'SEM. INICIO' })).not.toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Inicio relativo a la semana vigente' })).not.toBeVisible();
   });
 
   test('abre Drawer Contextual LPS (440px), navega con [ y ], y cierra con Escape', async ({ page }) => {

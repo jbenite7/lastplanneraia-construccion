@@ -41,8 +41,8 @@ El vault de Obsidian es la **raíz del repo**, no esta carpeta. Por eso los enla
 > ¿Buscas algo concreto? El catálogo del final lista **todas** las páginas y se filtra por columna.
 
 > [!warning] Antes de dar algo por verde
-> [[procesos-y-sesiones]] recoge once formas medidas en que un verde miente en este repo, y
-> [[worktrees]] doce más. Casi todas son la misma: **se mide en un árbol y se concluye sobre otro.**
+> [[procesos-y-sesiones]] recoge trampas medidas sobre el cierre y la coordinación; [[worktrees]] recoge las del aislamiento.
+> Cuando varias sesiones Codex comparten la app, consulta [[ventanas-compartidas-de-codex-cruzan-sesiones]] antes de atribuir mensajes o avances.
 
 ### Los tres tableros visuales
 

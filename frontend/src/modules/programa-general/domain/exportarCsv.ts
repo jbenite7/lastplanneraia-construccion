@@ -54,7 +54,8 @@ export function generarContenidoCsv13Cols(actividades: ActividadUI[]): string {
       continue;
     }
 
-    const semInicioStr = act.Semanas_Inicio ? `Sem ${act.Semanas_Inicio}` : '';
+    const semInicioStr =
+      act.Semanas_Inicio === null || act.Semanas_Inicio === undefined ? '' : String(act.Semanas_Inicio);
     const restriccionesStr = act.Estado_Restricciones ? `${act.Estado_Restricciones}` : '0%';
 
     const fila = [

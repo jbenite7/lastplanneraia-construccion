@@ -225,7 +225,9 @@ describe('ProgramaTable', () => {
     expect(screen.getByText('ACTIVIDAD')).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'RC' })).toBeInTheDocument();
     expect(screen.getByText('F. INICIO')).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: 'SEM. INICIO' })).toHaveTextContent('SEM. INI.');
+    const encabezadoInicio = screen.getByRole('columnheader', { name: 'Inicio relativo a la semana vigente' });
+    expect(encabezadoInicio).toHaveTextContent('INICIO REL.');
+    expect(encabezadoInicio).toHaveAttribute('title', 'Inicio relativo a la semana vigente');
     expect(screen.getByText('F. FIN')).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'CANTIDAD PPTO' })).toHaveTextContent('CANT.');
     expect(screen.getByRole('columnheader', { name: 'UNIDAD' })).toHaveTextContent('UND.');
@@ -239,13 +241,28 @@ describe('ProgramaTable', () => {
     expect(chapterCell).toHaveAttribute('colSpan', '13');
 
     // Celdas independientes en 13 cols
-    expect(screen.getByText('Sem 33')).toBeInTheDocument();
+    expect(screen.getByText('En 33 sem')).toBeInTheDocument();
+    expect(screen.getByText('En 33 sem')).toHaveAttribute('title', '10/08/2026');
     expect(screen.getByText('450.0')).toBeInTheDocument();
     expect(screen.getByText('m³')).toBeInTheDocument();
     expect(screen.getByText('25.0%')).toBeInTheDocument();
     expect(screen.getByText('50.0%')).toBeInTheDocument();
     expect(screen.getByText('66%')).toBeInTheDocument();
     expect(screen.getByText('100%')).toBeInTheDocument();
+  });
+
+  it('muestra hace N semanas para un desfase negativo', () => {
+    const actividadAtrasada = { ...mockActividades[2], unique_id: 103, Semanas_Inicio: -9 };
+    render(
+      <ProgramaTable
+        actividades={[actividadAtrasada]}
+        actividadSeleccionadaId={null}
+        onSelectActividad={vi.fn()}
+        modo13Cols={true}
+      />
+    );
+
+    expect(screen.getByText('Hace 9 sem')).toBeInTheDocument();
   });
 
   it('muestra icono de alerta cuando el plazo está vencido', () => {
@@ -450,6 +467,6 @@ describe('ProgramaTable', () => {
     expect(screen.getByText(/ESTRUCTURAS/)).toBeInTheDocument();
     expect(screen.getByText('01/09/2026')).toBeInTheDocument();
     expect(screen.getByText('05/09/2026')).toBeInTheDocument();
-    expect(screen.getByText('Sem 35')).toBeInTheDocument();
+    expect(screen.getByText('En 35 sem')).toBeInTheDocument();
   });
 });

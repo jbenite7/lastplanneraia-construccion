@@ -24,11 +24,12 @@ Dos archivos se reparten el trabajo:
 
 **El gate cierra el círculo en ambos sentidos** (`scripts/design-system-contracts.mjs:196-244`):
 un candidato no puede figurar `approved` sin su aprobación registrada, y una aprobación no puede
-apuntar a un candidato inexistente. Toda aprobación sigue exigiendo tema `dark` y los viewports
-`1180x820`/`1440x900` como **requeridos** (`REQUIRED_VIEWPORTS`, `:194`) — pero desde DS-032
-(2026-08-07) `SUPPORTED_VIEWPORTS` (`:193`) también acepta `390x844`, así que una aprobación en ese
-viewport móvil **ya no** es inválida por construcción; sigue sin ser obligatoria y ninguna familia
-lo declara todavía (corregido el 2026-08-10, medido contra el código actual).
+apuntar a un candidato inexistente. El validador de homologación exige tema `dark` y los viewports
+`1180x820`/`1440x900` como **requeridos** (`REQUIRED_VIEWPORTS`, líneas 190-194); desde DS-032
+(2026-08-07) `SUPPORTED_VIEWPORTS` también acepta `390x844`, así que una aprobación en ese viewport
+móvil ya no es inválida por construcción. Este esquema de aprobación aún registra solo `dark`; el
+contrato de producto exige ambos temas y la suite visual de CI los ejecuta por separado
+(`AGENTS.md:48-52`, `.github/workflows/ci.yml:146-162`). Ninguna familia declara hoy el viewport móvil.
 
 **Dónde se ve.** El laboratorio (`/internal/design-system`) renderiza el estado real de cada
 familia leyendo estos dos archivos (`src/Controllers/Internal/DesignSystemLabController.php:19-53`).
