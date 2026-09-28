@@ -888,6 +888,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 6 · Ingest de los aprendizajes de la ronda 1.2
   - sin señal · 7 · Verificación final, revisión e informe
 
+### S05-REDISENO · S05 — Rediseño de Programa General (ronda sobre `main`) (abierto)
+
+- Sin plan todavía.
+
 ### Sin spec
 
 - **Sidebar canónico del laboratorio** (cerrado): 0 de 0 hechas · `2026-07-20-sidebar-canonico-laboratorio.md`
