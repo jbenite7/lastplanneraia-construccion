@@ -890,7 +890,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### S05-REDISENO · S05 — Rediseño de Programa General (ronda sobre `main`) (abierto)
 
-- Sin plan todavía.
+- **Encargo para Codex — mockup del rediseño de Programa General** (abierto): 0 de 0 hechas · `2026-09-28-s05-rediseno-encargo-mockup.md`
 
 ### Sin spec
 
