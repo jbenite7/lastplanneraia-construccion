@@ -17,10 +17,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 514 |
-| en progreso | 8 |
-| pendiente | 159 |
-| sin señal | 182 |
+| hecha | 518 |
+| en progreso | 7 |
+| pendiente | 158 |
+| sin señal | 180 |
 | descartada | 48 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -285,12 +285,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### Espacio de la cuenta de SiteGround: dejar de guardar lo que git ya guarda (cerrado)
 
-- **Espacio de la cuenta de SiteGround** (vigente): 1 de 5 hechas · `2026-08-18-espacio-cuenta-siteground.md`
-  - pendiente · 1 · Frente D: basura suelta en producción
-  - en progreso · 2 · Frente A: archivar los binarios de QA fuera de git
-  - sin señal · 3 · Frente B: el tar de pre-deploy guarda lo irremplazable
-  - sin señal · 4 · Frente C: clon shallow en pruebas
-  - hecha · 5 · Cierre: verificar, publicar y anotar
+- **Espacio de la cuenta de SiteGround** (cerrado): 5 de 5 hechas · `2026-08-18-espacio-cuenta-siteground.md`
 
 ### Wiki v2 — visual, etiquetada, misma metodología (cerrado)
 
@@ -940,6 +935,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - cerrado_sin_archivos · `plans/2026-08-03-cierre-dark-mode-fases-0-3.md`: dice «plan cerrado»; git dice «1 de 5 archivos que mandaba crear no existieron nunca en ninguna rama: admin/src/Core/DevDoor.php»
 - cerrado_sin_archivos · `plans/2026-08-04-biblia-t4-soporte.md`: dice «plan cerrado»; git dice «5 de 7 archivos que mandaba crear no existieron nunca en ninguna rama: docs/flujos/soporte-contratos-y-actividades.md, docs/flujos/soporte-subcontratistas.md, docs/flujos/soporte-profesionales.md…»
 - cerrado_sin_archivos · `plans/2026-08-04-biblia-t5-lectura.md`: dice «plan cerrado»; git dice «2 de 4 archivos que mandaba crear no existieron nunca en ninguna rama: docs/flujos/lectura-indicadores.md, docs/flujos/lectura-torre-de-control.md»
+- cerrado_sin_archivos · `plans/2026-08-18-espacio-cuenta-siteground.md`: dice «plan cerrado»; git dice «1 de 2 archivos que mandaba crear no existieron nunca en ninguna rama: /Volumes/Crucial X6/Developer/lps-aia-evidencia/»
 - cerrado_sin_archivos · `plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas.md`: dice «plan cerrado»; git dice «1 de 2 archivos que mandaba crear no existieron nunca en ninguna rama: docs/design-system/manifests/dashboard.json»
 - cerrado_sin_archivos · `plans/2026-08-30-s01-login-react.md`: dice «plan cerrado»; git dice «3 de 26 archivos que mandaba crear no existieron nunca en ninguna rama: frontend/src/lib/api/frontera.test.ts, frontend/src/lib/api/esquemas/sesion.test.ts, src/Controllers/Core/SpaHostController.php»
 - parece_cerrado · `plans/2026-09-23-s05-programa-general-react.md`: dice «plan vigente»; git dice «las 8 tareas con señal están hechas según git»
@@ -947,7 +943,6 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - spec_cerrado_plan_vivo · `specs/2026-07-23-a16-comparativo-versiones-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-07-22-roadmap-pdc-v2.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-03-reparto-trabajo-pendiente-design.md`: dice «spec derogada»; git dice «1 plan suyo sigue vivo: 2026-08-03-usabilidad-altas-y-medias.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-11-plan-cierre-hasta-produccion-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-11-cierre-hasta-produccion.md»
-- spec_cerrado_plan_vivo · `specs/2026-08-18-espacio-cuenta-siteground-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-18-espacio-cuenta-siteground.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-19-linea-base-contractual-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-19-linea-base-contractual.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-19-runtime-budgets-al-ci-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-19-runtime-budgets-al-ci.md»
 - spec_vivo_planes_cerrados · `specs/2026-08-26-v0-del-producto-design.md`: dice «spec vigente»; git dice «sus 2 planes están cerrados o derogados»
