@@ -184,8 +184,12 @@ describe('ProgramaDrawer Contextual LPS', () => {
     expect(screen.queryByPlaceholderText(/nueva observación/i)).toBeNull();
     expect(screen.queryByLabelText(/Nueva Observación/i)).toBeNull();
     expect(document.querySelector('textarea')).toBeNull();
-    // La observación registrada en la fila se ve, en solo lectura.
-    expect(screen.getByText('Lluvia suspendió labores el 18/08.')).toBeInTheDocument();
+    // La observación registrada en la fila se ve, en solo lectura y sin autor inventado.
+    const observacion = screen.getByText('Lluvia suspendió labores el 18/08.');
+    expect(observacion).toBeInTheDocument();
+    const entrada = observacion.closest('.timeline-item') as HTMLElement;
+    expect(entrada).not.toHaveTextContent('Ing. Carlos Restrepo');
+    expect(entrada.querySelector('.timeline-meta')).toHaveTextContent(/^Observación registrada \(solo lectura\)$/);
 
     fireEvent.click(screen.getByRole('button', { name: /Guardar Cambios/i }));
     expect(onGuardar).toHaveBeenCalledTimes(1);

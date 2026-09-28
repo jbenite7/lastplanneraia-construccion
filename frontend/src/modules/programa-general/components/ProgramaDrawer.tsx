@@ -630,7 +630,6 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
               {actividad.Observaciones ? (
                 <div className="timeline-item">
                   <div className="timeline-meta">
-                    <span>{actividad.Responsable_AIA || 'AIA'}</span>
                     <span>Observación registrada (solo lectura)</span>
                   </div>
                   <div className="timeline-text">{actividad.Observaciones}</div>
