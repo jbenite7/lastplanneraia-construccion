@@ -179,6 +179,14 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
     onCerrar();
   }, [onCerrar]);
 
+  /** Pasar a otra actividad recarga los campos: con cambios sin guardar se confirma antes. */
+  const solicitarNavegacion = useCallback((direccion: number) => {
+    if (stateRef.current.dirty && !window.confirm('Hay cambios sin guardar en esta actividad. ¿Descartarlos y pasar a otra actividad?')) {
+      return;
+    }
+    onNavigateSeq(direccion);
+  }, [onNavigateSeq]);
+
   const alertaActiva = actividad.alerta_crisis === 1;
 
   const handleDeclararSos = async () => {
@@ -223,17 +231,17 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
       if (!isFormField) {
         if (e.key === '[') {
           e.preventDefault();
-          onNavigateSeq(-1);
+          solicitarNavegacion(-1);
         } else if (e.key === ']') {
           e.preventDefault();
-          onNavigateSeq(1);
+          solicitarNavegacion(1);
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [solicitarCierre, onNavigateSeq, handleSave, puedeEditar]);
+  }, [solicitarCierre, solicitarNavegacion, handleSave, puedeEditar]);
 
   const realRatio = (parseFloat(avanceReal) || 0) / 100;
   const teorRatio = actividad.avanceTeoricoPct / 100;
@@ -309,7 +317,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
             <button
               type="button"
               className="seq-btn"
-              onClick={() => onNavigateSeq(-1)}
+              onClick={() => solicitarNavegacion(-1)}
               title="Actividad Anterior (Atajo: [)"
             >
               <i className="fas fa-chevron-left" aria-hidden="true"></i> Anterior <span className="seq-key">[</span>
@@ -317,7 +325,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
             <button
               type="button"
               className="seq-btn"
-              onClick={() => onNavigateSeq(1)}
+              onClick={() => solicitarNavegacion(1)}
               title="Actividad Siguiente (Atajo: ])"
             >
               Siguiente <span className="seq-key">]</span> <i className="fas fa-chevron-right" aria-hidden="true"></i>

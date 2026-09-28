@@ -619,4 +619,59 @@ describe('ProgramaDrawer Contextual LPS', () => {
       expect(screen.getByRole('dialog', { name: /Editor Contextual LPS/i })).toHaveFocus();
     });
   });
+
+  describe('navegar entre actividades con cambios sin guardar', () => {
+    const montar = (onNav = vi.fn()) => {
+      render(
+        <ProgramaDrawer
+          actividad={mockAct}
+          catalogos={catalogos}
+          indiceActual={2}
+          totalActividades={10}
+          onCerrar={vi.fn()}
+          onGuardar={vi.fn()}
+          onNavigateSeq={onNav}
+        />
+      );
+      return onNav;
+    };
+
+    it('con teclado [ ] pide confirmación y no navega si se cancela', () => {
+      const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const onNav = montar();
+      fireEvent.change(screen.getByLabelText(/Avance Real/i), { target: { value: '40' } });
+      fireEvent.keyDown(window, { key: ']' });
+      fireEvent.keyDown(window, { key: '[' });
+      expect(confirmar).toHaveBeenCalledTimes(2);
+      expect(onNav).not.toHaveBeenCalled();
+      confirmar.mockReturnValue(true);
+      fireEvent.keyDown(window, { key: ']' });
+      expect(onNav).toHaveBeenCalledWith(1);
+      confirmar.mockRestore();
+    });
+
+    it('con los botones Anterior/Siguiente pide la misma confirmación', () => {
+      const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const onNav = montar();
+      fireEvent.change(screen.getByLabelText(/Avance Real/i), { target: { value: '40' } });
+      fireEvent.click(screen.getByTitle(/Actividad Siguiente/i));
+      fireEvent.click(screen.getByTitle(/Actividad Anterior/i));
+      expect(confirmar).toHaveBeenCalledTimes(2);
+      expect(onNav).not.toHaveBeenCalled();
+      confirmar.mockReturnValue(true);
+      fireEvent.click(screen.getByTitle(/Actividad Anterior/i));
+      expect(onNav).toHaveBeenCalledWith(-1);
+      confirmar.mockRestore();
+    });
+
+    it('sin cambios navega directo, sin preguntar', () => {
+      const confirmar = vi.spyOn(window, 'confirm');
+      const onNav = montar();
+      fireEvent.keyDown(window, { key: ']' });
+      fireEvent.click(screen.getByTitle(/Actividad Anterior/i));
+      expect(confirmar).not.toHaveBeenCalled();
+      expect(onNav.mock.calls).toEqual([[1], [-1]]);
+      confirmar.mockRestore();
+    });
+  });
 });
