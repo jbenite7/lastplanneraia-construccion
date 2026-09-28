@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 import { arranqueAutenticadoConProyecto, CSRF_TOKEN } from './support/project-selector-react-fixtures.mjs';
 import { BASE_URL } from './fixtures/projects.mjs';
 
@@ -340,6 +341,73 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
     const toast = page.locator('.pro-toast');
     await expect(toast).toBeVisible();
     await expect(toast).toContainText('Cambios guardados con éxito');
+  });
+
+  test('cajón que dice la verdad: SOS real, barra visible, descarte confirmado, foco y axe sin críticos', async ({ page }) => {
+    await page.setViewportSize({ width: 1180, height: 820 });
+    const registros = [];
+    await page.route('**/api/lps/crisis/register', (route) => {
+      registros.push(new URLSearchParams(route.request().postData() ?? ''));
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          respuesta: 'OK', ok: true, mensaje: 'Alerta registrada',
+          data: { alertId: 77, wasActive: false },
+          target: { kind: 'activity', activityId: 102, module: 'PG', week: 33 },
+          meta: { requestId: 'e2e' },
+        }),
+      });
+    });
+    await page.goto('/programa-general');
+
+    const fila = page.locator('tr.row-activity[data-unique-id="102"]');
+    await fila.click();
+    const drawer = page.getByRole('dialog', { name: 'Editor Contextual LPS' });
+    await expect(drawer).toBeVisible();
+    await expect(drawer).toBeFocused();
+
+    // Barra de avance real visible (color real, no transparente) con avance > 0.
+    await drawer.getByLabel('Avance Real').fill('40');
+    // `.dual-fill-real` anima `width` (0.2s): se mide cuando la transición asentó.
+    const relleno = drawer.locator('.dual-fill-real');
+    await expect.poll(() => relleno.evaluate((el) => el.getBoundingClientRect().width)).toBeGreaterThan(0);
+    const barra = await drawer.locator('.dual-fill-real').evaluate((el) => {
+      const css = getComputedStyle(el);
+      const alfa = css.backgroundColor.match(/[\d.]+/g)?.map(Number)[3] ?? 1;
+      return { ancho: el.getBoundingClientRect().width, alfa, color: css.backgroundColor };
+    });
+    expect(barra.ancho).toBeGreaterThan(0);
+    expect(barra.alfa).toBeGreaterThan(0);
+    expect(barra.color).not.toBe('rgba(0, 0, 0, 0)');
+
+    // axe sobre el cajón abierto: cero críticos.
+    const axe = await new AxeBuilder({ page }).include('.drawer-panel-pro').analyze();
+    const criticos = axe.violations.filter((v) => v.impact === 'critical');
+    expect(criticos.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
+
+    // Esc con cambios: pide confirmación; al cancelar, el cajón sigue abierto.
+    let preguntas = 0;
+    page.once('dialog', (dialogo) => { preguntas += 1; void dialogo.dismiss(); });
+    await page.keyboard.press('Escape');
+    await expect(drawer).toBeVisible();
+    expect(preguntas).toBe(1);
+    await drawer.getByLabel('Avance Real').fill('0');
+
+    // SOS real: llama al servidor con modulo PG, consecutivo = unique_id y el token del cajón.
+    await drawer.getByRole('button', { name: /Declarar Crisis SOS/i }).click();
+    await expect(drawer.getByRole('status')).toContainText('Alerta registrada');
+    expect(registros).toHaveLength(1);
+    expect(registros[0].get('modulo')).toBe('PG');
+    expect(registros[0].get('consecutivo')).toBe('102');
+    expect(registros[0].get('trigger')).toBe('MANUAL');
+    expect(registros[0].get('_csrf_token')).toBe('csrf-drawer-e2e');
+    await expect(drawer.getByPlaceholder(/observación/i)).toHaveCount(0);
+
+    // Sin cambios, Esc cierra directo y el foco vuelve a la fila.
+    await page.keyboard.press('Escape');
+    await expect(drawer).not.toBeVisible();
+    await expect(fila).toBeFocused();
   });
 
   test('filtra por chips de señales y búsqueda por texto', async ({ page }) => {
