@@ -55,6 +55,8 @@ export interface ProgramaDrawerProps {
   onDeclararSos?: (uniqueId: number) => Promise<string>;
 }
 
+type EstadoSos = { fase: 'enviando' } | { fase: 'ok' | 'error'; texto: string };
+
 export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   actividad,
   catalogos,
@@ -76,9 +78,12 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   const [avanceReal, setAvanceReal] = useState(actividad.avanceRealPct.toString());
   const [profesional, setProfesional] = useState(actividad.Responsable_AIA || '');
   const [subcontratista, setSubcontratista] = useState(actividad.Sub_Contratista || '');
-  const [sosEnviando, setSosEnviando] = useState(false);
-  const [sosMensaje, setSosMensaje] = useState<string | null>(null);
-  const [sosError, setSosError] = useState<string | null>(null);
+  // Estado del SOS atado al id de la actividad que lo disparó: al navegar, la nueva no lo hereda.
+  const [sosPorActividad, setSosPorActividad] = useState<Record<number, EstadoSos>>({});
+  const sos = sosPorActividad[actividad.unique_id];
+  const sosEnviando = sos?.fase === 'enviando';
+  const sosMensaje = sos?.fase === 'ok' ? sos.texto : null;
+  const sosError = sos?.fase === 'error' ? sos.texto : null;
 
   // Actividad con la que se cargaron los campos. Al navegar con [ ] la prop cambia un render antes
   // de que el efecto de sincronización recargue los campos; comparar contra `actividad` en ese
@@ -108,12 +113,6 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
     setProfesional(actividad.Responsable_AIA || '');
     setSubcontratista(actividad.Sub_Contratista || '');
   }, [actividad]);
-
-  // Al cambiar de actividad (navegación secuencial) el mensaje SOS de la anterior no aplica.
-  useEffect(() => {
-    setSosMensaje(null);
-    setSosError(null);
-  }, [actividad.unique_id]);
 
   // Al abrir, el foco entra al cajón (el retorno a la fila de origen lo gestiona la página).
   const panelRef = useRef<HTMLElement>(null);
@@ -195,16 +194,13 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
     if (stateRef.current.dirty && !window.confirm('Hay cambios sin guardar en esta actividad. Declarar la crisis recarga la actividad y los descarta. ¿Continuar?')) {
       return;
     }
-    setSosEnviando(true);
-    setSosMensaje(null);
-    setSosError(null);
+    const id = actividad.unique_id;
+    const fijar = (estado: EstadoSos) => setSosPorActividad((previo) => ({ ...previo, [id]: estado }));
+    fijar({ fase: 'enviando' });
     try {
-      const mensaje = await onDeclararSos(actividad.unique_id);
-      setSosMensaje(mensaje);
+      fijar({ fase: 'ok', texto: await onDeclararSos(id) });
     } catch (err: unknown) {
-      setSosError(err instanceof Error ? err.message : 'No se pudo registrar la crisis SOS.');
-    } finally {
-      setSosEnviando(false);
+      fijar({ fase: 'error', texto: err instanceof Error ? err.message : 'No se pudo registrar la crisis SOS.' });
     }
   };
 

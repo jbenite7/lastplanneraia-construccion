@@ -469,6 +469,28 @@ describe('ProgramaDrawer Contextual LPS', () => {
       confirmar.mockRestore();
     });
 
+    it('un SOS en vuelo no deja su estado en la actividad a la que se navegó', async () => {
+      let resolver: ((m: string) => void) | undefined;
+      const onDeclararSos = vi.fn(() => new Promise<string>((r) => { resolver = r; }));
+      const props = {
+        catalogos, indiceActual: 1, totalActividades: 10, onCerrar: vi.fn(), onGuardar: vi.fn(),
+        onNavigateSeq: vi.fn(), puedeDeclararSos: true, onDeclararSos,
+      };
+      const otra: ActividadUI = { ...mockAct, unique_id: 102, Actividad: 'Acero de refuerzo', Observaciones: null };
+      const { rerender } = render(<ProgramaDrawer actividad={mockAct} {...props} />);
+      fireEvent.click(screen.getByRole('button', { name: /Declarar Crisis SOS/i }));
+      expect(screen.getByRole('button', { name: /Registrando/i })).toBeDisabled();
+
+      rerender(<ProgramaDrawer actividad={otra} {...props} />);
+      expect(screen.getByRole('button', { name: /Declarar Crisis SOS/i })).toBeEnabled();
+      await act(async () => { resolver?.('Alerta registrada'); });
+      expect(screen.queryByText('Alerta registrada')).toBeNull();
+
+      // De vuelta en la actividad que lo disparó, el resultado sí se ve.
+      rerender(<ProgramaDrawer actividad={mockAct} {...props} />);
+      expect(screen.getByRole('status')).toHaveTextContent('Alerta registrada');
+    });
+
     it('muestra el error del servidor y no declara nada', async () => {
       const onDeclararSos = vi.fn().mockRejectedValue(new Error('Token de seguridad inválido.'));
       render(
