@@ -183,6 +183,10 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
 
   const handleDeclararSos = async () => {
     if (!onDeclararSos || !puedeDeclararSos || sosEnviando || alertaActiva) return;
+    // Tras registrar, la página recarga la fila y el cajón se resincroniza: lo editado se perdería.
+    if (stateRef.current.dirty && !window.confirm('Hay cambios sin guardar en esta actividad. Declarar la crisis recarga la actividad y los descarta. ¿Continuar?')) {
+      return;
+    }
     setSosEnviando(true);
     setSosMensaje(null);
     setSosError(null);

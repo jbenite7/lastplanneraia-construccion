@@ -443,6 +443,32 @@ describe('ProgramaDrawer Contextual LPS', () => {
       expect(screen.queryByText(/Alerta SOS LPS Activa/i)).toBeNull();
     });
 
+    it('con cambios sin guardar pide confirmación antes del SOS, porque la recarga los descarta', () => {
+      const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const onDeclararSos = vi.fn().mockResolvedValue('Alerta registrada');
+      render(
+        <ProgramaDrawer
+          actividad={mockAct}
+          catalogos={catalogos}
+          indiceActual={1}
+          totalActividades={10}
+          onCerrar={vi.fn()}
+          onGuardar={vi.fn()}
+          onNavigateSeq={vi.fn()}
+          puedeDeclararSos
+          onDeclararSos={onDeclararSos}
+        />
+      );
+      fireEvent.change(screen.getByLabelText(/Avance Real/i), { target: { value: '40' } });
+      fireEvent.click(screen.getByRole('button', { name: /Declarar Crisis SOS/i }));
+      expect(confirmar).toHaveBeenCalledTimes(1);
+      expect(onDeclararSos).not.toHaveBeenCalled();
+      confirmar.mockReturnValue(true);
+      fireEvent.click(screen.getByRole('button', { name: /Declarar Crisis SOS/i }));
+      expect(onDeclararSos).toHaveBeenCalledWith(101);
+      confirmar.mockRestore();
+    });
+
     it('muestra el error del servidor y no declara nada', async () => {
       const onDeclararSos = vi.fn().mockRejectedValue(new Error('Token de seguridad inválido.'));
       render(
