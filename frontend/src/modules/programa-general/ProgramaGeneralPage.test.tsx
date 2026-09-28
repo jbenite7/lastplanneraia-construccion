@@ -253,4 +253,17 @@ describe('ProgramaGeneralPage', () => {
     await waitFor(() => expect(mockObtenerActividades.mock.calls.length).toBeGreaterThan(llamadasAntes));
     expect(await screen.findByRole('button', { name: /Alerta SOS LPS Activa/i })).toBeDisabled();
   });
+
+  it('al cerrar el cajón el foco vuelve a la fila que lo abrió', async () => {
+    const { container } = render(<ProgramaGeneralPage />);
+    await screen.findByText('Programa General');
+    const fila = container.querySelector('tr[data-unique-id="101"]') as HTMLElement;
+    fila.focus();
+    fireEvent.click(fila);
+    const dialogo = await screen.findByRole('dialog', { name: /Editor Contextual LPS/i });
+    expect(dialogo).toHaveFocus();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: /Editor Contextual LPS/i })).not.toBeInTheDocument());
+    await waitFor(() => expect(container.querySelector('tr[data-unique-id="101"]')).toHaveFocus());
+  });
 });

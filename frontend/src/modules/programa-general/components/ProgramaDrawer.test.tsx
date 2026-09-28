@@ -547,4 +547,50 @@ describe('ProgramaDrawer Contextual LPS', () => {
       confirmar.mockRestore();
     });
   });
+
+  describe('visibilidad y accesibilidad', () => {
+    const montar = (actividad: ActividadUI = mockAct) => render(
+      <ProgramaDrawer
+        actividad={actividad}
+        catalogos={catalogos}
+        indiceActual={1}
+        totalActividades={10}
+        onCerrar={vi.fn()}
+        onGuardar={vi.fn()}
+        onNavigateSeq={vi.fn()}
+      />
+    );
+
+    it('la barra de avance real no pinta su color en línea y marca el atraso con una clase', () => {
+      const { container, rerender } = montar();
+      const real = container.querySelector('.dual-fill-real') as HTMLElement;
+      expect(real.style.backgroundColor).toBe('');
+      expect(real.style.width).toBe('25%');
+      expect(real.className).toContain('dual-fill-real--atraso');
+
+      rerender(
+        <ProgramaDrawer
+          actividad={{ ...mockAct, avanceRealPct: 60 }}
+          catalogos={catalogos}
+          indiceActual={1}
+          totalActividades={10}
+          onCerrar={vi.fn()}
+          onGuardar={vi.fn()}
+          onNavigateSeq={vi.fn()}
+        />
+      );
+      expect((container.querySelector('.dual-fill-real') as HTMLElement).className).not.toContain('dual-fill-real--atraso');
+    });
+
+    it('los dos campos de avance tienen etiqueta asociada', () => {
+      montar();
+      expect(screen.getByLabelText('Avance Teórico Servidor')).toHaveValue('50.0%');
+      expect(screen.getByLabelText('Avance Real')).toHaveValue(25);
+    });
+
+    it('al abrir, el foco entra al cajón', () => {
+      montar();
+      expect(screen.getByRole('dialog', { name: /Editor Contextual LPS/i })).toHaveFocus();
+    });
+  });
 });

@@ -28,6 +28,9 @@ export const ProgramaGeneralPage: React.FC = () => {
   const [leyendaAbierta, setLeyendaAbierta] = useState(false);
   const [borradorDrawer, setBorradorDrawer] = useState(false);
   const cierreLeyendaRef = useRef<HTMLButtonElement>(null);
+  // Lo que abrió el cajón (fila, tarjeta o botón de la barra) y la actividad con que abrió, para
+  // devolverle el foco al cerrar; si ese nodo ya no está en el DOM, se busca la fila por id.
+  const origenCajonRef = useRef<{ elemento: HTMLElement | null; id: number } | null>(null);
   const origenLeyendaRef = useRef<HTMLElement | null>(null);
   const recargaControllerRef = useRef<AbortController | null>(null);
 
@@ -171,6 +174,27 @@ export const ProgramaGeneralPage: React.FC = () => {
     return actividades.find((a) => a.unique_id === actividadSeleccionadaId) || null;
   }, [actividades, actividadSeleccionadaId]);
 
+  const abrirCajon = useCallback((id: number) => {
+    if (actividadSeleccionadaId === null) {
+      origenCajonRef.current = {
+        elemento: document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null,
+        id,
+      };
+    }
+    setBorradorDrawer(false);
+    setActividadSeleccionadaId(id);
+  }, [actividadSeleccionadaId]);
+
+  useEffect(() => {
+    if (actividadSeleccionadaId !== null || !origenCajonRef.current) return;
+    const { elemento, id } = origenCajonRef.current;
+    origenCajonRef.current = null;
+    const destino = elemento && elemento.isConnected
+      ? elemento
+      : document.querySelector<HTMLElement>(`[data-unique-id="${id}"]`);
+    destino?.focus();
+  }, [actividadSeleccionadaId]);
+
   const handleNavigateSeq = useCallback(
     (direccion: number) => {
       const idx = tareasOperativas.findIndex((a) => a.unique_id === actividadSeleccionadaId);
@@ -305,8 +329,7 @@ export const ProgramaGeneralPage: React.FC = () => {
         onToggleColumnas={() => setModo13Cols(!modo13Cols)}
         onOpenDrawer={() => {
           if (tareasOperativas.length > 0) {
-            setBorradorDrawer(false);
-            setActividadSeleccionadaId(tareasOperativas[0].unique_id);
+            abrirCajon(tareasOperativas[0].unique_id);
           }
         }}
         onExportCsv={handleExportCsv}
@@ -356,12 +379,12 @@ export const ProgramaGeneralPage: React.FC = () => {
         <ProgramaTable
           actividades={actividadesFiltradas}
           actividadSeleccionadaId={actividadSeleccionadaId}
-          onSelectActividad={(id) => { setBorradorDrawer(false); setActividadSeleccionadaId(id); }}
+          onSelectActividad={abrirCajon}
           modo13Cols={modo13Cols}
         />
         <ProgramaCards
           actividades={actividadesFiltradas}
-          onSelectActividad={(id) => { setBorradorDrawer(false); setActividadSeleccionadaId(id); }}
+          onSelectActividad={abrirCajon}
         />
       </div>
 

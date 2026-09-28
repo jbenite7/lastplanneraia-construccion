@@ -110,6 +110,12 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
     setSosError(null);
   }, [actividad.unique_id]);
 
+  // Al abrir, el foco entra al cajón (el retorno a la fila de origen lo gestiona la página).
+  const panelRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    panelRef.current?.focus();
+  }, []);
+
   // Mantener referencia al estado actual para atajos de teclado sin closures obsoletos
   const stateRef = useRef({
     fechaInicio,
@@ -235,6 +241,8 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
     <>
       <div className="drawer-backdrop active" onClick={solicitarCierre} aria-hidden="true" />
       <aside
+        ref={panelRef}
+        tabIndex={-1}
         className="drawer-panel-pro active"
         role="dialog"
         aria-modal="true"
@@ -332,7 +340,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                     disabled={!puedeEditar}
                     onChange={(e) => setFechaInicio(e.target.value)}
                   />
-                  <span className="drawer-date-formatted form-date-hint" style={{ fontSize: '11px', color: 'var(--ds-text-muted)', marginTop: '2px', display: 'block' }}>
+                  <span className="drawer-date-formatted form-date-hint">
                     Formato obra: <strong>{formatearFechaObra(fechaInicio)}</strong>
                   </span>
                 </div>
@@ -350,26 +358,20 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                     disabled={!puedeEditar}
                     onChange={(e) => setFechaFin(e.target.value)}
                   />
-                  <span className="drawer-date-formatted form-date-hint" style={{ fontSize: '11px', color: 'var(--ds-text-muted)', marginTop: '2px', display: 'block' }}>
+                  <span className="drawer-date-formatted form-date-hint">
                     Formato obra: <strong>{formatearFechaObra(fechaFin)}</strong>
                   </span>
                 </div>
               </div>
             </div>
             {actividad.Semanas_Inicio !== undefined && actividad.Semanas_Inicio !== null && (
-              <div className="drawer-schedule-meta" style={{ fontSize: '11px', color: 'var(--ds-text-muted)', marginTop: '2px' }}>
+              <div className="drawer-schedule-meta">
                 <span>Semana contractual: <strong>Sem {actividad.Semanas_Inicio}</strong></span>
               </div>
             )}
             {actividad.plazoVencido && (
               <div
                 className="drawer-alert-overdue cell-alert cell-date-overdue date-overdue"
-                style={{
-                  color: 'var(--ds-state-danger-text, #ef4444)',
-                  fontSize: '11px',
-                  marginTop: '4px',
-                  fontWeight: 600,
-                }}
               >
                 ⚠️ Plazo vencido hace {actividad.diasVencimiento} días
               </div>
@@ -483,8 +485,9 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
 
             <div className="form-grid-2col" style={{ marginTop: '8px' }}>
               <div className="form-field-group">
-                <label className="form-label">Avance Teórico Servidor</label>
+                <label className="form-label" htmlFor="drawerInputTeorico">Avance Teórico Servidor</label>
                 <input
+                  id="drawerInputTeorico"
                   type="text"
                   className="form-input-pro"
                   value={`${actividad.avanceTeoricoPct.toFixed(1)}%`}
@@ -524,22 +527,11 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                   style={{ width: `${Math.min(Math.max(actividad.avanceTeoricoPct, 0), 100)}%` }}
                 ></div>
                 <div
-                  className="dual-fill-real micro-gauge-fill"
-                  style={{
-                    width: `${Math.min(Math.max(parseFloat(avanceReal) || 0, 0), 100)}%`,
-                    backgroundColor: desviacion.esNegativo ? 'var(--ds-state-danger-text)' : 'var(--aia-corporate)',
-                  }}
+                  className={`dual-fill-real micro-gauge-fill${desviacion.esNegativo ? ' dual-fill-real--atraso' : ''}`}
+                  style={{ width: `${Math.min(Math.max(parseFloat(avanceReal) || 0, 0), 100)}%` }}
                 ></div>
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  fontSize: '10px',
-                  color: 'var(--ds-text-muted)',
-                  marginTop: '4px',
-                }}
-              >
+              <div className="dual-gauge-scale">
                 <span>0%</span>
                 <span>Meta teórica: {actividad.avanceTeoricoPct.toFixed(1)}%</span>
                 <span>100%</span>
@@ -601,7 +593,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                   <div className="timeline-text">{actividad.Observaciones}</div>
                 </div>
               ) : (
-                <div className="timeline-item" style={{ fontStyle: 'italic', color: 'var(--ds-text-muted)' }}>
+                <div className="timeline-item timeline-item--vacio">
                   Sin observaciones previas registradas.
                 </div>
               )}
