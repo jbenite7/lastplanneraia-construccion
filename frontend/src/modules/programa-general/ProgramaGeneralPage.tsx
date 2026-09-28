@@ -120,6 +120,7 @@ export const ProgramaGeneralPage: React.FC = () => {
   }, [api]);
 
   const handleRecargar = useCallback(async () => {
+    if (borradorDrawer && !window.confirm('Hay cambios sin guardar en el Drawer. ¿Recargar Programa General y descartar el borrador?')) return;
     recargaControllerRef.current?.abort();
     const controller = new AbortController();
     recargaControllerRef.current = controller;
@@ -136,7 +137,7 @@ export const ProgramaGeneralPage: React.FC = () => {
         setCargando(false);
       }
     }
-  }, [cargarDatos]);
+  }, [borradorDrawer, cargarDatos]);
 
   const handleActualizarEjecucion = useCallback(async () => {
     if (!contexto || !contexto.permisos.puedeLote) return;

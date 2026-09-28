@@ -55,6 +55,9 @@ export interface ProgramaDrawerProps {
   onDeclararSos?: (uniqueId: number) => Promise<string>;
 }
 
+const SELECTOR_ENFOCABLES =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 type EstadoSos = { fase: 'enviando' } | { fase: 'ok' | 'error'; texto: string };
 
 export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
@@ -215,6 +218,29 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
       if (e.key === 'Escape') {
         e.preventDefault();
         solicitarCierre();
+        return;
+      }
+
+      // Trampa de foco (el cajón es aria-modal): Tab no sale a la página, donde «Recargar» u otra
+      // fila descartarían el borrador. Mismo patrón que `CajonContextualLps`.
+      if (e.key === 'Tab') {
+        const panel = panelRef.current;
+        if (!panel) return;
+        const enfocables = panel.querySelectorAll<HTMLElement>(SELECTOR_ENFOCABLES);
+        if (enfocables.length === 0) return;
+        const primero = enfocables[0];
+        const ultimo = enfocables[enfocables.length - 1];
+        const activo = document.activeElement;
+        if (!panel.contains(activo)) {
+          e.preventDefault();
+          primero.focus();
+        } else if (e.shiftKey && (activo === primero || activo === panel)) {
+          e.preventDefault();
+          ultimo.focus();
+        } else if (!e.shiftKey && activo === ultimo) {
+          e.preventDefault();
+          primero.focus();
+        }
         return;
       }
 

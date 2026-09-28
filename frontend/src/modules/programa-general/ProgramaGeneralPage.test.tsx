@@ -281,4 +281,17 @@ describe('ProgramaGeneralPage', () => {
     await waitFor(() => expect(screen.queryByRole('dialog', { name: /Editor Contextual LPS/i })).not.toBeInTheDocument());
     confirmar.mockRestore();
   });
+
+  it('«Recargar» con borrador en el cajón pide confirmación antes de descartarlo', async () => {
+    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    render(<ProgramaGeneralPage />);
+    fireEvent.click((await screen.findAllByText('Excavación mecánica de zapatas'))[0]);
+    fireEvent.change(screen.getByLabelText('Avance Real'), { target: { value: '40' } });
+    const llamadas = mockObtenerActividades.mock.calls.length;
+    fireEvent.click(screen.getByRole('button', { name: 'Recargar' }));
+    expect(confirmar).toHaveBeenCalledTimes(1);
+    expect(mockObtenerActividades.mock.calls.length).toBe(llamadas);
+    expect(screen.getByLabelText('Avance Real')).toHaveValue(40);
+    confirmar.mockRestore();
+  });
 });

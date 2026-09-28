@@ -696,4 +696,39 @@ describe('ProgramaDrawer Contextual LPS', () => {
       confirmar.mockRestore();
     });
   });
+
+  describe('trampa de foco del cajón modal', () => {
+    it('Tab desde el último control vuelve al primero y Shift+Tab desde el primero va al último', () => {
+      render(
+        <>
+          <button type="button">Recargar</button>
+          <ProgramaDrawer
+            actividad={mockAct}
+            catalogos={catalogos}
+            indiceActual={1}
+            totalActividades={10}
+            onCerrar={vi.fn()}
+            onGuardar={vi.fn()}
+            onNavigateSeq={vi.fn()}
+          />
+        </>
+      );
+      const dialogo = screen.getByRole('dialog', { name: /Editor Contextual LPS/i });
+      const cerrar = screen.getByRole('button', { name: /Cerrar panel/i });
+      const guardar = screen.getByRole('button', { name: /Guardar Cambios/i });
+
+      guardar.focus();
+      fireEvent.keyDown(guardar, { key: 'Tab' });
+      expect(cerrar).toHaveFocus();
+
+      fireEvent.keyDown(cerrar, { key: 'Tab', shiftKey: true });
+      expect(guardar).toHaveFocus();
+
+      // Con el foco fuera (p. ej. en «Recargar»), Tab lo devuelve al cajón.
+      const fuera = screen.getByRole('button', { name: 'Recargar' });
+      fuera.focus();
+      fireEvent.keyDown(fuera, { key: 'Tab' });
+      expect(dialogo.contains(document.activeElement)).toBe(true);
+    });
+  });
 });
