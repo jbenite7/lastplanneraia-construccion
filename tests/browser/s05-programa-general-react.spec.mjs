@@ -383,6 +383,10 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
 
     // axe sobre el cajón abierto: cero críticos.
     const axe = await new AxeBuilder({ page }).include('.drawer-panel-pro').analyze();
+    test.info().annotations.push({
+      type: 'axe-cajon',
+      description: JSON.stringify(axe.violations.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.length }))),
+    });
     const criticos = axe.violations.filter((v) => v.impact === 'critical');
     expect(criticos.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
 
