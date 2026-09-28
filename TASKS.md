@@ -17,10 +17,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 518 |
+| hecha | 534 |
 | en progreso | 7 |
 | pendiente | 158 |
-| sin señal | 180 |
+| sin señal | 164 |
 | descartada | 48 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -241,23 +241,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### Plan de cierre hasta producción (cerrado)
 
-- **Plan de cierre hasta producción** (vigente): 0 de 16 hechas · `2026-08-11-cierre-hasta-produccion.md`
-  - sin señal · 1 · Cambiar la aserción, y verla rechazar lo que debe
-  - sin señal · 2 · Comprobar que el static pasa entero, no solo esta prueba
-  - sin señal · 2b · El segundo rojo — la regex de los chips quedó vieja (`D-GAC-2`)
-  - sin señal · 2c · El tercer y último rojo — `!important` como forma, no como resultado (`D-GAC-3`)
-  - sin señal · 3 · Verlo verde en CI de verdad, y entregar
-  - sin señal · 1 · Comprobar que el workflow corre verde hoy, antes de tocarlo
-  - sin señal · 2 · Enchufar `full-app-flow` al job de runtime
-  - sin señal · 3 · Enchufar `runtime-budgets` al mismo job
-  - sin señal · 4 · Ver los dos gates fallar, y solo después verlos pasar
-  - sin señal · 5 · Actualizar los recibos y entregar
-  - sin señal · 1 · Censar los diez vivos y verificar los dos fantasmas
-  - sin señal · 2 · Añadir el campo al esquema, y verlo rechazar
-  - sin señal · 3 · Rellenar la superficie de los doce y hacerla cumplir en el gate
-  - sin señal · 4 · Cerrar `D-CEF-1` y entregar
-  - sin señal · 1 · Preparar y respaldar
-  - sin señal · 2 · Publicar
+- **Plan de cierre hasta producción** (cerrado): 16 de 16 hechas · `2026-08-11-cierre-hasta-produccion.md`
 
 ### Fijar la semana en la prueba visual de Programación Intermedia (cerrado)
 
@@ -942,7 +926,6 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - parece_cerrado · `plans/2026-09-26-s05-deuda-cierre.md`: dice «plan abierto»; git dice «las 1 tareas con señal están hechas según git; 7 sin señal»
 - spec_cerrado_plan_vivo · `specs/2026-07-23-a16-comparativo-versiones-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-07-22-roadmap-pdc-v2.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-03-reparto-trabajo-pendiente-design.md`: dice «spec derogada»; git dice «1 plan suyo sigue vivo: 2026-08-03-usabilidad-altas-y-medias.md»
-- spec_cerrado_plan_vivo · `specs/2026-08-11-plan-cierre-hasta-produccion-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-11-cierre-hasta-produccion.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-19-linea-base-contractual-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-19-linea-base-contractual.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-19-runtime-budgets-al-ci-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-19-runtime-budgets-al-ci.md»
 - spec_vivo_planes_cerrados · `specs/2026-08-26-v0-del-producto-design.md`: dice «spec vigente»; git dice «sus 2 planes están cerrados o derogados»
