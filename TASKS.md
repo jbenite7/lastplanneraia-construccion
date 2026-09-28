@@ -1448,6 +1448,17 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   no incluye `frontend/src/**`, así que el gate del design system no revisa el CSS de React
   (verificado en `main` el 2026-09-28).
 
+- [ ] **T02 — el SOS del cajón LPS compartido del shell respondería 403 si se apaga la simulación.**
+  Verificado leyendo el código el 2026-09-28 (revisión del frente `goals/s05-cajon-verdad/`):
+  `AppShell.tsx:256` pasa a `LpsDrawerProvider` el `sesion.csrfToken` de clave `shell_api`
+  (`SessionApiController.php:34`), y el registro y el cierre de crisis solo validan `lps_drawer`
+  (`rbac_guard.php:88-89`). Hoy no se nota porque `CajonContextualLps.tsx:230` deja la simulación
+  encendida por defecto (`simulado ?? true`) y ningún módulo la apaga: el SOS de ese cajón no
+  registra nada. Afecta a los consumidores que migren a ese cajón (PI, PS, S25). Programa General
+  no lo usa: su cajón propio ya registra la crisis con el token correcto.
+- [ ] **Deuda: la regla de «qué elementos reciben foco» está copiada en cuatro archivos** (trampas de
+  foco del shell, del cajón LPS y de Programa General). Extraerla a un solo módulo compartido.
+
 ## Pendiente de decisión: despliegue a producción
 
 **El arreglo del arrastre de avance semanal está en `main` (`c1e3365e`) y desplegado en
