@@ -2110,6 +2110,51 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+**Lo que siguió vivo al cerrar cuatro planes huérfanos, 2026-09-28.** Los planes se cerraron porque
+sus specs ya estaban cerradas o derogadas (decisión de la sesión de infraestructura por delegación de
+Felipe, no de Felipe); lo que seguía abierto pasa aquí. Responsable y fecha: pendiente, en todos.
+Ninguno se comprobó en el navegador: la evidencia es código y `git log` sobre `46eb29a4`.
+
+- [ ] 2026-09-28 — **El chip de BI no cumple contraste (H-34).** `public/css/bi-control-tower.css:202`
+  pinta el texto de `.bi-chip` con `var(--ds-color-brand-aqua)` y su excepción sigue en
+  `docs/design-system/state-token-exceptions.json`. El color que proponía el plan se midió solo en
+  oscuro; desde el 2026-08-28 los dos temas son contractuales, así que hay que medir en los dos antes
+  de elegir. Tarea 12 de `docs/superpowers/plans/2026-08-03-usabilidad-altas-y-medias.md`.
+- [ ] 2026-09-28 — **«Quitar filtro» mide 20 px y el contador de filtros de BI se desfasa (H-36,
+  H-25).** `bi-control-tower.css:218-219` fija el botón en `1.25rem`, y `#bi-filter-count` solo se
+  recalcula con eventos del cajón, no al pintar los chips. Tarea 13 del mismo plan.
+- [ ] 2026-09-28 — **Los filtros de Control de Cambios no se leen (H-08).** `.cc-filter-80`
+  (`public/css/styles.css:2120`) no tiene ancho mínimo por contenido, y el filtro de Costo Directo se
+  ve bajo otra columna aunque filtra la correcta. **Decidir antes si va en PHP o dentro de S15**
+  (`docs/superpowers/plans/2026-08-30-s15-control-cambios-react.md`). Tarea 16 del mismo plan.
+- [ ] 2026-09-28 — **Las pestañas de BI esconden módulos (H-16).** `views/bi/_nav.php:6` sigue con
+  `overflow-x-auto whitespace-nowrap`; `539aaf68` solo añadió un degradado en el borde, y el plan
+  descartaba el desplazamiento como solución. Tarea 21 del mismo plan.
+- [ ] 2026-09-28 — **El recorrido del Plan de Compras se tapa a sí mismo (H-17, H-20).**
+  `pdc-app/src/components/Recorrido.tsx` no cambió desde antes de la auditoría y «Omitir» sigue
+  primero y sin estilo discreto. Tarea 22 del mismo plan.
+- [ ] 2026-09-28 — **Control de Cambios no tiene cómo crear una solicitud (H-38).** El backend de alta
+  existe (`src/Controllers/Api/ControlCambiosApiController.php:71`, `opcion=nuevo`) y la vista no
+  tiene botón; su estado vacío lleva texto provisional (C-33) que depende de esto. **Decidir antes si
+  va en PHP o dentro de S15.** Tarea 26 del mismo plan.
+- [ ] 2026-09-28 — **El gráfico no dice de quién es la fecha contractual.** No existe
+  `contractual_finish_scope` ni `tests/test_linea_base_rotulo.php`; «Fin contractual» sale sin rótulo
+  (`views/bi/control-tower.php:356`). Y la definición de la métrica contradice la spec:
+  `src/Services/ControlTowerService.php:1955` y `src/Services/Bi/MetricDictionaryService.php:424`
+  dicen «del alcance filtrado», cuando bajo filtro la fecha es siempre la del proyecto. Tarea 3 de
+  `docs/superpowers/plans/2026-08-19-linea-base-contractual.md`.
+- [ ] 2026-09-28 — **La siembra de la línea base contractual falta en producción.**
+  `database/migrations/20260819_sembrar_linea_base_contractual.sql` ya corrió en dev y está en el
+  paquete de «Pendiente de decisión: despliegue a producción», donde quien lo anotó dejó escrito
+  «la primera no la revisé»; en
+  pruebas no está claro si se aplicó. Siembra «cuándo empezamos a registrar», no la fecha del
+  contrato (lo dice su cabecera). **Requiere revisión previa, `/visto-prod` de Felipe, y dry-run,
+  respaldo verificable y gate según `docs/global-tables-architecture.md`.** Tarea 5 del mismo plan.
+- [ ] 2026-09-28 — **El Plan de Compras no conserva la línea base al recalcular.** La auditoría de
+  la Tarea 6 concluye que `PlanFechasService::calcular()` «NO CONSERVA la línea base»
+  (`docs/superpowers/evidencia/2026-08-19-auditoria-linea-base-pdc.md:275`), con evidencia de código y
+  sin verificación con datos. No se encontró dónde se escaló. Hallazgo del mismo plan.
+
 - [ ] 2026-09-01 — **El sistema de diseño valida escritorio en un ancho que su propio token llama
   tablet.** `--ds-breakpoint-desktop` vale `1200px` (`public/css/tokens.css:731`), pero `DESIGN.md`,
   `AGENTS.md` y `docs/design-system/README.md` declaran **1180×820 como viewport canónico de
@@ -2469,8 +2514,10 @@ estado por defecto mientras Felipe no reparta.
   necesita el contenedor. Afecta config global, no solo este repo.
 - [ ] **Fusionar contenido solapado de `AGENTS.md` / `GEMINI.md` / `CLAUDE.md`** con lo que ahora
   vive en [[README]] y [[ROADMAP]]. No se tocó su contenido en el bootstrap, solo se enlazó.
-- [ ] **Plan espacio SiteGround** — tareas 1–5 de
-  `docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground.md`.
+- [x] 2026-09-28 — **Plan espacio SiteGround** — tareas 1–5 de
+  `docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground.md`. Cerrado: los cuatro frentes
+  estaban resueltos desde el 2026-08-24 (C descartado por su propia verificación). Evidencia en el
+  `## Cierre` del plan.
 - [ ] **Dropdown PS sobre selector de semana** — diagnóstico del stacking en
   `/programacion-semanal`, con `systematic-debugging`.
 - [ ] **Backlog Fase 7-10** (notificaciones por rol, QA sistemático, despliegue gradual, shared
@@ -2880,7 +2927,7 @@ está cableando dos de esos mismos gates, y **MO-F4** quiere cambiarles la matri
 ## Frentes en espera (no arrancan hasta cerrar el bloque 0)
 
 - [[goals/contadores-cero/goal|contadores-cero]] — visto concedido; localizar rama, re-verificar, publicar.
-- **Plan espacio SiteGround** — tareas 1–5 de `docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground.md`.
+- ~~**Plan espacio SiteGround**~~ — cerrado el 2026-09-28; ver el `## Cierre` de `docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground.md`.
 - **Dropdown PS sobre selector de semana** — diagnóstico (`systematic-debugging`) del stacking en `/programacion-semanal`.
 - **Higiene de coordinación** — sesiones zombi, `cas-log.*` de la raíz, triaje de goals.
 
