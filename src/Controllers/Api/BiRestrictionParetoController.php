@@ -68,7 +68,7 @@ class BiRestrictionParetoController extends BaseController
         // Semántica explícita para `semana` ausente (ni `$_GET` ni `$_SESSION`): a diferencia de
         // `MetricExecutor::buildWhereClause()` -- que omite el filtro entero y trae TODAS las
         // semanas cuando la semana es null --, este endpoint responde 422. Razón: en producción
-        // `ProjectSelectorController::enterProject()` siempre siembra `$_SESSION['semana']` al
+        // `ProjectAccessService::select()` (antes `ProjectSelectorController::enterProject()`, retirado con VIEW-11) siempre siembra `$_SESSION['semana']` al
         // entrar a un proyecto, así que un `semana` ausente aquí no es "quiero el total histórico"
         // sino un estado que no debería alcanzarse; sin este 422 el `WHERE Semana = NULL` no empata
         // nada y el endpoint respondía 200 con una lista vacía sin que nadie lo pidiera.
