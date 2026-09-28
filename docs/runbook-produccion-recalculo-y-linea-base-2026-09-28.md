@@ -11,9 +11,14 @@ resumen: Runbook para llevar a producción el recálculo de estados y, si hace f
 
 - **Escrito el:** 2026-09-28, por la sesión de software e infraestructura, con lecturas del repo y de
   las actas de desarrollo. **No se ejecutó nada y no se tocó producción.**
-- **Estado:** preparado. Falta la ventana que fija Felipe y las autorizaciones de la sección 1.
-- **Qué NO es:** no es una autorización ni un «ya está aprobado». La decisión de Felipe del
-  2026-09-28 fue «esta semana»; la fecha y hora exactas siguen **pendientes**.
+- **Estado:** preparado y **en espera**. La ventana es **después de terminar la migración React**
+  (decisión de Felipe, 2026-09-28, en el chat; antes había dicho «esta semana» y lo cambió el mismo
+  día). Falta la fecha, y las autorizaciones de la sección 1.
+- **Qué NO es:** no es una autorización ni un «ya está aprobado». No hay fecha ni hora: **pendientes**.
+  Mientras tanto producción sigue mostrando los estados con la regla vieja.
+- **Antes de ejecutarlo, en la fecha que se fije:** repetir la sección 2 (precondiciones) y la 3
+  (conteos), porque los datos y el código de producción habrán cambiado desde esta lectura, y
+  rehacer el respaldo el mismo día (sección 4).
 
 ## 0. Qué se hace y en qué se apoya
 
