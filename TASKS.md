@@ -1321,7 +1321,9 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   navegación React antes de migrar los módulos de programación.
 - [ ] **Definir QA y goldens durante la convivencia:** decidir por cada módulo si su golden PHP se
   archiva o se reemplaza al cruzar a React, y mantener cobertura extremo a extremo en ambos mundos.
-- [ ] **`/programa-general` responde 500 si se entra sin semana en sesión.** Descubierto el
+- [x] 2026-09-28 — **`/programa-general` responde 500 si se entra sin semana en sesión: NO SE
+  REPRODUCE en `main` (`a70f7bb6`); causa del 500 original sin atribuir. Ver «Cierre» al final del
+  ítem, que dice qué se probó y qué no.** Descubierto el
   2026-08-31 en la Tarea 9 del plan T01 (`docs/superpowers/plans/2026-08-30-t01-shell-runtime-react.md`)
   al escribir `tests/browser/shell-coexistence-navigation.spec.mjs`: navegar directo a
   `/programa-general` tras login (sin pasar antes por `changeWeek()`, el helper que fija la semana
@@ -1342,6 +1344,27 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   un estado artificial que en producción no ocurriría, o (b) existe un camino real que la pierde.
   En cualquiera de los dos casos, la pantalla no debe responder 500 nunca: en el único caso legítimo
   (proyecto nuevo sin cronograma) debe guiar a cargar el primero.
+  **Cierre (2026-09-28, sesión de software e infraestructura).** Se reprodujo en un Apache efímero
+  que servía `main` (`1fb4c341`), con la puerta de servicio (`test.R`, `PDC Sandbox E2E`), y **no
+  hay 500**: (1) entrar directo a `/programa-general` tras la puerta responde 200; (2) forzando el
+  estado del bug —`POST /context/clear-week`, que dejó `{"ok":true,"week":null}`— y entrando de nuevo,
+  responde 200 y la pantalla **se repone sola en «Semana 4»** con su tabla cargada. Sobre las dos
+  hipótesis del encuadre de Felipe: **(a) se descarta tal como estaba planteada**: la puerta de
+  servicio (`DevDoorController`) pasa hoy por `ProjectAccessService`, que fija la semana con
+  `ProjectLandingService::resolve()`. **(b) sí existe un camino real que deja la sesión sin semana,
+  y es por diseño**: `POST /context/clear-week` (`ContextController::clearWeek`, ruta
+  `public/index.php:366`), que usa `public/js/core/ContextManager.js:81`. Lo que evita el 500 es
+  `ProgramaGeneralController` (~líneas 190-215), que repone la semana con `sanitizeWeek()` o, si el
+  proyecto no tiene semanas activas, redirige a `/programa-general-actualizar`. Ese código existe
+  desde `0767a64e` (2026-03-25), **antes** del bug, así que el arreglo no está ahí.
+  **Lo que NO se sabe:** qué cambió entre el 2026-08-31 y hoy para que el 500 desaparezca. Sospecho
+  de `ProjectSqlGuard` (siete commits del 2026-08-29 al 2026-09-03, el último `ae61cf94`, #25), porque
+  el mensaje original venía de ahí, pero **no lo bisecé**: es una sospecha, no un hallazgo. **Tampoco
+  se probó** el caso «proyecto nuevo sin cronograma» (lo cubre el código leído, no una corrida) ni se
+  reprodujo con el helper `login()`/`selectProject()` de Playwright del spec original. Si el 500
+  reaparece, este ítem se reabre. **Pregunta de producto que queda**: la invariante «siempre debe
+  haber una semana» no se impone a nivel de sesión, porque `clear-week` existe a propósito; hoy
+  la sostiene cada pantalla al reponerla. Es de Felipe decidir si eso basta.
 - [x] **La rama "sin sesión" de `NotificationController::getUnread()`/`::markAsRead()` era código
   muerto por esta puerta — retirada en T02 Tarea 9 (2026-08-31).** Ambos métodos comprobaban
   `$_SESSION['usuario']` y, si faltaba, respondían `403 {"error":"No autorizado"}` — pero
