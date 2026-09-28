@@ -410,7 +410,7 @@ describe('getMetric', () => {
 //
 // El endpoint exige `semana` (query o sesión) y responde 422 `SEMANA_INVALIDA` si falta o no es un
 // entero positivo — pero es responsabilidad del SERVIDOR resolverla desde `$_SESSION['semana']`
-// (sembrada por `ProjectSelectorController::enterProject()`); igual que `getRestricciones()` y
+// (sembrada por `ProjectAccessService::select()` (antes `ProjectSelectorController::enterProject()`, retirado con VIEW-11)); igual que `getRestricciones()` y
 // `getMetric()`, el cliente no manda parámetros de semana explícitos, confía en la sesión. Mismo
 // criterio que el resto del archivo: GET, sin mutación, sin CSRF ni `__CT_BOOTSTRAP__` — a
 // propósito, NO se llama `stubBootstrap()` en este describe.

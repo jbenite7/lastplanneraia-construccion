@@ -14,9 +14,11 @@
  * MIGRATION_COMPLETE): ya no hay controlador legado que lo atienda y responde el 404
  * controlado del producto, nunca el formulario PHP ni el shell React.
  * Desde la Tarea 10 (S04 «Corte, conservando el PHP», gate explícito de Felipe 2026-09-18)
- * GET/HEAD `/proyectos` también cruzan al shell React — a diferencia de S02/S03, el legado
- * (vista, controlador, CSS) NO se retiró: sigue registrado y POST anónimo a `/proyectos` (que
- * nunca tuvo ese verbo) cae en la protección universal de sesión, no en un 404.
+ * GET/HEAD `/proyectos` también cruzan al shell React. El legado (vista, controlador, CSS y
+ * `POST /proyecto/seleccionar`) se conservó hasta el 2026-09-28 y se retiró entonces por
+ * autorización puntual de Felipe («Retirarlo en un PR aparte»). `/proyectos` y
+ * `/proyecto/seleccionar` no están en `$publicRoutes`: un POST anónimo cae en la protección
+ * universal de sesión (302 a /login), no en el formulario PHP retirado.
  */
 
 declare(strict_types=1);
@@ -246,13 +248,12 @@ try {
 
     // --- El corte de la Tarea 10 (S04): GET/HEAD '/proyectos' sirven el shell React sin exigir
     // sesión en la frontera (sirveLaSpa() cruza antes de la protección universal, igual que '/app'
-    // — el propio React resuelve anónimo/autenticado contra /api/session). El legado PHP no se
-    // retiró: sigue vivo detrás de la ruta, solo inalcanzable por GET/HEAD mientras el mapa lo
-    // cubra. ---
+    // — el propio React resuelve anónimo/autenticado contra /api/session). El legado PHP (VIEW-11)
+    // se retiró el 2026-09-28: no hay nada detrás de la ruta. ---
     $proyectosGet = pedirFronteraSpa("{$base}/proyectos");
     comprobarFronteraSpa($proyectosGet['codigo'] === 200, "GET /proyectos debe responder 200, llegó {$proyectosGet['codigo']}");
     comprobarFronteraSpa(str_contains($proyectosGet['cuerpo'], '<div id="root"></div>'), 'GET /proyectos debe devolver el HTML del shell React');
-    comprobarFronteraSpa(!str_contains($proyectosGet['cuerpo'], 'project-selector-page'), 'GET /proyectos ya no debe devolver la vista PHP legada (aunque siga en el repo)');
+    comprobarFronteraSpa(!str_contains($proyectosGet['cuerpo'], 'project-selector-page'), 'GET /proyectos no debe devolver la vista PHP legada (retirada)');
 
     $proyectosHead = pedirFronteraSpaConMetodo("{$base}/proyectos", 'HEAD');
     comprobarFronteraSpa($proyectosHead['codigo'] === 200, "HEAD /proyectos debe responder 200, llegó {$proyectosHead['codigo']}");
@@ -264,6 +265,15 @@ try {
     comprobarFronteraSpa($proyectosPost['codigo'] === 302, "POST /proyectos anónimo debe redirigir (302), llegó {$proyectosPost['codigo']}");
     comprobarFronteraSpa(str_contains($proyectosPost['cabeceras'], 'Location: /login'), 'POST /proyectos anónimo debe redirigir a /login');
     comprobarFronteraSpa(!str_contains($proyectosPost['cuerpo'], '<div id="root"></div>'), 'POST /proyectos no debe devolver el HTML del shell React');
+
+    // POST '/proyecto/seleccionar' (el envío del formulario de VIEW-11) se retiró: nadie lo atiende.
+    // Sin sesión la protección universal redirige a /login antes de llegar al router, así que esta
+    // aserción anónima prueba que el formulario PHP no responde; con sesión válida el router no
+    // tiene ruta y devuelve el 404 controlado (no se prueba aquí: exigiría iniciar sesión).
+    $seleccionarPost = pedirFronteraSpaConMetodo("{$base}/proyecto/seleccionar", 'POST', ['proyecto' => 'x']);
+    comprobarFronteraSpa($seleccionarPost['codigo'] === 302, "POST /proyecto/seleccionar anónimo debe redirigir (302), llegó {$seleccionarPost['codigo']}");
+    comprobarFronteraSpa(str_contains($seleccionarPost['cabeceras'], 'Location: /login'), 'POST /proyecto/seleccionar anónimo debe redirigir a /login');
+    comprobarFronteraSpa(!str_contains($seleccionarPost['cuerpo'], '<div id="root"></div>'), 'POST /proyecto/seleccionar no debe devolver el HTML del shell React');
 
     // El piloto '/app/proyectos' sigue vivo (prefijo migrado, sin cambios de la Tarea 10).
     $proyectosApp = pedirFronteraSpa("{$base}/app/proyectos");

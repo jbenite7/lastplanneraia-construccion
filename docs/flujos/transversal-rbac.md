@@ -143,7 +143,7 @@ Escenario contraintuitivo y por eso obligatorio.
 - **Resultado esperado:** la sesión degrada a Visualizador; nunca se concede una capacidad por
   defecto. `AGENTS.md` lo exige: «conserva solo lectura como fallback seguro».
 - **Verificación:** lectura — el camino del selector lo cumple
-  (`ProjectSelectorController.php:174-176`), aunque **por su cuenta y no con el normalizador que
+  (`ProjectSelectorController.php:174-176`, retirado el 2026-09-28; hoy `ProjectAccessService::select()`), aunque **por su cuenta y no con el normalizador que
   manda el contrato**: ver el hallazgo de `PROY-007`.
 
 ---

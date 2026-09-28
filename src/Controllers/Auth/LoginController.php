@@ -169,7 +169,8 @@ class LoginController
         exit();
     }
 
-    // Método iniciarSesion eliminado ya que la lógica se movió a ProjectSelectorController::select()
+    // Método iniciarSesion eliminado: la lógica de selección vive en ProjectAccessService::select()
+    // (antes en ProjectSelectorController::select(), retirado con VIEW-11 el 2026-09-28).
 
     /**
      * Actualizar la contraseña del usuario (Requisito de Seguridad).

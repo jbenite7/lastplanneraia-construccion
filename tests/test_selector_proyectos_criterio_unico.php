@@ -6,8 +6,9 @@ declare(strict_types=1);
 
 /**
  * Task 5 (frente 1a): un solo criterio de "proyecto cerrado visible para la jefatura",
- * consumido por BiProjectScope y ProjectAccessService. ProjectSelectorController delega en
- * ese servicio, que normaliza roles con App\Security\RbacService::normalizeRole() (que
+ * consumido por BiProjectScope y ProjectAccessService. El controlador del selector delega en
+ * ese servicio (era ProjectSelectorController hasta su retiro con VIEW-11, 2026-09-28; hoy
+ * lo hace ProjectApiController, el único que queda), que normaliza roles con App\Security\RbacService::normalizeRole() (que
  * traduce alias de texto vía RbacCatalog::roleAliases()) en vez de un normalizador privado
  * incompleto; listar y seleccionar filtran/comprueban con el mismo rol ya normalizado; y la
  * barra de avance inventada (`rand(0, 100)`) se retiró del selector.
@@ -87,17 +88,17 @@ comprobar(
     true,
 );
 
-$selectorSrc = (string) file_get_contents(__DIR__ . '/../src/Controllers/Core/ProjectSelectorController.php');
+$selectorSrc = (string) file_get_contents(__DIR__ . '/../src/Controllers/Api/ProjectApiController.php');
 $accessServiceSrc = (string) file_get_contents(__DIR__ . '/../src/Services/ProjectAccessService.php');
 
 comprobar(
-    'ProjectSelectorController ya no define el normalizador privado (normalizeRoleCode)',
+    'ProjectApiController ya no define el normalizador privado (normalizeRoleCode)',
     str_contains($selectorSrc, 'function normalizeRoleCode'),
     false,
 );
 
 comprobar(
-    'ProjectSelectorController delega el listado y la selección a ProjectAccessService',
+    'ProjectApiController delega el listado y la selección a ProjectAccessService',
     str_contains($selectorSrc, '$this->projectAccess->listForUser(')
         && str_contains($selectorSrc, '$this->projectAccess->select('),
     true,
@@ -118,7 +119,7 @@ comprobar(
 );
 
 comprobar(
-    "index() ya no filtra por rol crudo en el SQL (perdía alias de texto, ver hallazgo 3)",
+    "el controlador ya no filtra por rol crudo en el SQL (perdía alias de texto, ver hallazgo 3)",
     (bool) preg_match('/pm\\.role IN \\(/', $selectorSrc),
     false,
 );
@@ -126,7 +127,7 @@ comprobar(
 echo "\n=== La barra de avance inventada se retira, no se sustituye ===\n";
 
 comprobar(
-    "ProjectSelectorController ya no genera 'progreso' con rand()",
+    "ProjectApiController ya no genera 'progreso' con rand()",
     str_contains($selectorSrc, 'rand(0, 100)') || str_contains($selectorSrc, "['progreso']"),
     false,
 );

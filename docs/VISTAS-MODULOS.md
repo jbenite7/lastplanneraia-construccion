@@ -240,7 +240,9 @@ consumidores. Para estado usa la escalera `--ds-state-tint-*` de
 
 ---
 
-### 5. Selector de Proyectos (`core/project_selector.view.php`)
+### 5. Selector de Proyectos (`core/project_selector.view.php`) ⚠️ RETIRADO
+
+**Estado (2026-09-28):** **Retirada el 2026-09-28** (S04, autorización puntual de Felipe: «Retirarlo en un PR aparte»). `GET/HEAD /proyectos` los sirve la SPA React desde el corte de S04 (`frontend/src/shell/proyectos/SelectorProyectos.tsx`); la selección va a `POST /api/proyectos/seleccionar` (`App\Controllers\Api\ProjectApiController`). Se retiraron con la vista `App\Controllers\Core\ProjectSelectorController`, `public/css/project-selector.css` y el `POST /proyecto/seleccionar` legado, que sin sesión redirige a `/login` y con sesión responde el 404 controlado. Lo de abajo describe la vista que existía y se conserva como historia.
 
 **Propósito:** Dashboard de selección de proyecto que aparece tras el login.
 

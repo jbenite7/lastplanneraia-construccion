@@ -1390,6 +1390,15 @@ Playwright `project-selector-react` 20/20 y `project-selector-sidebar` 2/2, más
 acceso; goldens de S04 y S01 sin regenerar. CI del PR con la condición `G_*` declarada antes de
 correr.
 
+### Retiro de VIEW-11, hecho aparte el 2026-09-28
+
+Felipe respondió «Retirarlo en un PR aparte» (2026-09-28) y el retiro se hizo en la rama
+`chore/retiro-view-11-selector-php`: vista, `ProjectSelectorController`,
+`public/css/project-selector.css` y los registros `GET/HEAD /proyectos` y `POST /proyecto/seleccionar`
+de `public/index.php`. La lista de abajo («Lo que el corte NO hizo») describe el estado del
+2026-09-21 y su punto 1 queda resuelto con esa rama. No es un cambio de alcance del plan: el
+punto 1 seguía pendiente y se cierra tal como el plan lo anticipaba.
+
 ### Lo que el corte NO hizo (verificado en `origin/main` el 2026-09-21)
 
 1. **VIEW-11 sigue en el repo sin uso:** `views/core/project_selector.view.php`,

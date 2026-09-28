@@ -63,7 +63,7 @@ class RbacCatalog
     /**
      * Roles crudos de project_members.role que ven un proyecto con Acceso=0 (cerrado)
      * en el selector y en Control Tower. Único criterio: antes vivía duplicado con listas
-     * distintas en ProjectSelectorController::index() (sin 'P') y en BiProjectScope (con 'P').
+     * distintas en el controlador del selector PHP (ProjectSelectorController::index(), sin 'P', retirado con VIEW-11) y en BiProjectScope (con 'P').
      * 'P' es el alias legado de Director ('D') en roleAliases(). BiProjectScope sigue
      * filtrando por rol crudo en SQL, así que necesita 'P' explícito además de los canónicos.
      */

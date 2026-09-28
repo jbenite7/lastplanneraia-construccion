@@ -15,6 +15,13 @@ sesión — el estado del que dependen las otras cuatro tandas.
 
 Formato y reglas: `docs/flujos/README.md`. Verificado por lectura el **2026-08-04**.
 
+> **Nota del 2026-09-28.** `ProjectSelectorController` (y la vista `project_selector.view.php`, VIEW-11)
+> se retiraron ese día. Las referencias `ProjectSelectorController.php:NN` de abajo son **históricas**
+> (lecturas del 2026-08-04): la lógica que describen vive hoy en `ProjectAccessService::listForUser()`
+> y `::select()`, alcanzados por `GET /api/proyectos` y `POST /api/proyectos/seleccionar`
+> (`ProjectApiController`). `GET /proyectos` lo sirve la SPA React y `POST /proyecto/seleccionar` ya
+> no existe. Los escenarios no se han vuelto a verificar contra ese código.
+
 ---
 
 ## PROY-001 · La lista solo muestra proyectos donde la cuenta es miembro

@@ -1258,12 +1258,20 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   Felipe decidió que el login legado no necesita poder activarse como respaldo (entrada del criterio
   de deploy, más abajo). El plan S01 quedó `cerrado` como `CODE_COMPLETE` por su decisión del
   2026-09-21; este retiro sigue sin ejecutar y es lo que falta para `MIGRATION_COMPLETE`.
-- [ ] **S04 — retirar VIEW-11, el selector PHP.** El PR #50 (`5aa9c73a`, 2026-09-18) cortó
+- [x] **S04 — retirar VIEW-11, el selector PHP.** El PR #50 (`5aa9c73a`, 2026-09-18) cortó
   `GET/HEAD /proyectos` a React conservando el PHP, por decisión de Felipe («Corte, conservando el
   PHP»). Quedan sin uso en `main`: `views/core/project_selector.view.php`,
   `src/Controllers/Core/ProjectSelectorController.php`, `public/css/project-selector.css` (y su
   espejo en `public/dist-css/`) y `POST /proyecto/seleccionar`. Retirarlo se le pregunta a Felipe
   aparte, como se hizo con S02 y S03. Plan: `docs/superpowers/plans/2026-08-30-s04-selector-proyectos-react.md` › `## Cierre`.
+  **Hecho el 2026-09-28 en la rama `chore/retiro-view-11-selector-php` (entra a `main` cuando se mergee su PR):** Felipe respondió «Retirarlo
+  en un PR aparte» (tablero de specs, pregunta «¿Retiramos el selector de proyectos PHP (VIEW-11) que
+  S04 dejó sin uso?»). Se retiraron la vista, el controlador, `public/css/project-selector.css` (y su
+  espejo en `dist-css`) y los registros `GET/HEAD /proyectos` y `POST /proyecto/seleccionar`;
+  `ProjectAccessService`, `ProjectApiController` y `project-selector-react.css` no se tocan.
+  **Pendiente de la ronda:** los `vendors` de `project-selector.json` (bootstrap, jquery,
+  font-awesome: eran de la vista PHP) siguen tal cual — quitarlos cambia lo que `renderForModule`
+  emite y se decide aparte; y `docs/design-system/auditoria/` conserva el censo histórico del PHP.
 - [x] **Resuelto el 2026-09-03: el acceso abre en claro.** Decisión de Felipe, siguiendo la
   recomendación: `AGENTS.md` («claro es la cara del producto y el tema de entrada», spec de temas
   2026-08-28) y `docs/design-system/manifests/auth.json` («claro por defecto sin flash») ceden la

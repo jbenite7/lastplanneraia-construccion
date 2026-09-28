@@ -64,7 +64,7 @@ declare(strict_types=1);
  * YAGNI: esta ruta no depende de `ControlTowerService`, y `null` es un `MetricScope` legítimo, no un
  * error — agrega sobre TODAS las semanas del proyecto, comportamiento ya soportado nativamente por
  * `MetricExecutor::buildWhereClause()`, que omite el filtro `Semana = ?` cuando `week() === null`).
- * `ProjectSelectorController::enterProject()` fija `$_SESSION['semana']` a la "semana de aterrizaje"
+ * `ProjectAccessService::select()` (antes `ProjectSelectorController::enterProject()`, retirado con VIEW-11) fija `$_SESSION['semana']` a la "semana de aterrizaje"
  * real (`ProjectLandingService`, depende de rol/área) — este test NO adivina qué semana es: la lee
  * en vivo del propio almacén de sesión (mismo mecanismo de subproceso PHP fijado al `session_id` que
  * usa `tests/test_bi_constraint_write.php::csrfTokenForSession()`, sin tocar el candado de DevDoor) y

@@ -29,9 +29,10 @@ export const MODULOS = [
     titulo: 'Selector de proyectos',
     areas: ['rbac', 'arquitectura'],
     flujo: null,
-    rutas: ['/proyectos', '/proyecto', '/api/proyectos'],
+    rutas: ['/api/proyectos'],
     capacidades: [],
-    nota: '',
+    nota: 'GET/HEAD /proyectos los sirve el shell React (SpaRouter), no el router; '
+      + 'el legado PHP (VIEW-11 y POST /proyecto/seleccionar) se retiró el 2026-09-28.',
   },
   {
     slug: 'programa-general',
