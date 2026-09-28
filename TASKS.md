@@ -17,10 +17,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 534 |
-| en progreso | 7 |
-| pendiente | 158 |
-| sin señal | 164 |
+| hecha | 554 |
+| en progreso | 4 |
+| pendiente | 156 |
+| sin señal | 149 |
 | descartada | 48 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -145,34 +145,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### Reparto del trabajo pendiente tras el saneamiento del goal de tablas (derogada)
 
-- **Usabilidad: altas y medias** (vigente): 7 de 27 hechas · `2026-08-03-usabilidad-altas-y-medias.md`
-  - sin señal · 1 · Tildes en los chips de estado del PDC (H-28)
-  - hecha · 2 · Retirar la unidad cruda «count» de los KPI de BI (H-29)
-  - sin señal · 3 · Desambiguar las columnas homónimas de control de cambios (H-30)
-  - sin señal · 4 · Estado vacío de control de cambios (H-02)
-  - hecha · 5 · Componente compartido de estado vacío para Handsontable
-  - hecha · 6 · Estado vacío de la malla semanal (H-01)
-  - sin señal · 7 · Estado vacío del PDC (H-04)
-  - pendiente · 8 · La tarjeta «Resumen Ejecutivo» deja de mostrar «--» (H-05)
-  - hecha · 9 · Labels y `autocomplete` en el acceso de admin (H-33)
-  - hecha · 10 · Label del correo en la recuperación de admin (H-35)
-  - en progreso · 11 · El error de JS de escalamientos deja de fallar en silencio (H-26)
-  - en progreso · 12 · Contraste del chip de BI (H-34)
-  - sin señal · 13 · Objetivo de «Quitar filtro» y contador de filtros (H-36, H-25)
-  - sin señal · 14 · Verificación de fase F3
-  - sin señal · 15 · Cabeceras del PDC legibles y distinguibles (H-07)
-  - sin señal · 16 · Filtros legibles en control de cambios (H-08)
-  - sin señal · 17 · Botones de la barra semanal sin truncar (H-09)
-  - sin señal · 18 · Cabeceras del programa general (H-10)
-  - sin señal · 19 · El rail «CONCURRENCIA LPS» deja de tapar controles (H-12, H-13)
-  - sin señal · 20 · Verificación de fase F4
-  - sin señal · 21 · Las pestañas de BI dejan de ocultar módulos (H-16)
-  - pendiente · 22 · El tour de plan de compras deja de taparse a sí mismo (H-17, H-20)
-  - en progreso · 23 · Encabezado de página en las seis superficies que no lo tienen (H-19)
-  - hecha · 24 · Los dos proyectos dejan de ser indistinguibles (H-21)
-  - hecha · 25 · Devolver el shell a escalamientos (H-18) — CON FRENO
-  - sin señal · 26 · Dar salida a control de cambios (H-38)
-  - sin señal · 27 · Verificación de fase F5 y cierre del goal
+- **Usabilidad: altas y medias** (cerrado): 27 de 27 hechas · `2026-08-03-usabilidad-altas-y-medias.md`
 
 ### Saneamiento de las deudas abiertas del goal de usabilidad (cerrado)
 
@@ -925,7 +898,6 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - parece_cerrado · `plans/2026-09-23-s05-programa-general-react.md`: dice «plan vigente»; git dice «las 8 tareas con señal están hechas según git»
 - parece_cerrado · `plans/2026-09-26-s05-deuda-cierre.md`: dice «plan abierto»; git dice «las 1 tareas con señal están hechas según git; 7 sin señal»
 - spec_cerrado_plan_vivo · `specs/2026-07-23-a16-comparativo-versiones-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-07-22-roadmap-pdc-v2.md»
-- spec_cerrado_plan_vivo · `specs/2026-08-03-reparto-trabajo-pendiente-design.md`: dice «spec derogada»; git dice «1 plan suyo sigue vivo: 2026-08-03-usabilidad-altas-y-medias.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-19-linea-base-contractual-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-19-linea-base-contractual.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-19-runtime-budgets-al-ci-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-19-runtime-budgets-al-ci.md»
 - spec_vivo_planes_cerrados · `specs/2026-08-26-v0-del-producto-design.md`: dice «spec vigente»; git dice «sus 2 planes están cerrados o derogados»

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-03
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-03-usabilidad-altas-y-medias.md
@@ -1570,10 +1570,76 @@ Esperado: sin hallazgos.
 
 ---
 
-## Estado verificado — sigue vigente
+## Estado verificado — cerrado
 
-Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+Verificado contra el código y el historial de git el 2026-09-28. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill: el plan se cierra con trabajo vivo, y ese trabajo pasa a `TASKS.md`.
 
-**Qué falta:** de los ~10 archivos de prueba que manda crear solo existe tests/browser/ht-empty-state.spec.mjs. Las fases F3, F4 y F5 (18 de 26 hallazgos) sin ejecutar, y goals/usabilidad-altas-y-medias/ no existe
+**Evidencia:** de las 27 tareas, 13 están hechas (varias dentro de otros frentes), 8 se descartan por obsoletas o por ser verificaciones de fase de un plan que se cierra, y 6 siguen vivas y pasan a `TASKS.md`. Detalle en `## Cierre`.
+
+Historia: el 2026-08-25 esta sección decía que F3, F4 y F5 estaban «sin ejecutar»; ya entonces las tareas 11 y 23 estaban hechas (`574c827d`, `8b49d0dc`, ambos de agosto).
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
+
+## Cierre
+
+**Fecha:** 2026-09-28. **Lo cierra:** la sesión de infraestructura, por delegación de Felipe del
+2026-09-28 para barrer los planes abiertos cuya spec ya está cerrada o derogada. Es decisión de esa
+sesión, no de Felipe.
+
+**Por qué se cierra:** su spec, `docs/superpowers/specs/2026-08-03-reparto-trabajo-pendiente-design.md`,
+está `derogada` (absorbida por el mapa único del 2026-08-25). Un plan sin spec viva no tiene quién
+lo gobierne, y buena parte de sus superficies cambiaron de dueño: el PDC v1 se borró, Programa General
+pasó a React y Control de Cambios tiene su propia spec de migración. Lo que sigue vivo no se pierde:
+pasa a `TASKS.md` como pendiente suelto, citando este plan.
+
+**Cómo se verificó:** cada tarea abierta se contrastó contra el código actual y `git log` de
+`origin/main` (`46eb29a4`), no contra las casillas, que no son evidencia y no se marcan
+retroactivamente (`AGENTS.md` §Verificación). **Ninguna comprobación fue visual**: no se abrió el
+navegador. Las tres tareas «en progreso» del tablero (11, 12 y 23) se revisaron una por una antes de
+clasificarlas; ninguna se descartó.
+
+**Qué quedó hecho, con evidencia:**
+
+| Tarea | Hallazgo | Evidencia |
+|---|---|---|
+| 2, 5, 6, 9, 10, 24, 25 | H-29, componente vacío HT, H-01, H-33, H-35, H-21, H-18 | ya contadas como hechas por el tablero de `TASKS.md` según git antes de este cierre |
+| 3 | H-30 | `04ba7499`: «Detalle Solicitante» y «Detalle Responsable» (`views/control-cambios/controlCambios.view.php:51,56`) |
+| 4 | H-02 | `sEmptyTable` en `controlCambios.view.php:729` (`d77d4c43`, luego `df8a5f03`); el propio código marca la redacción como provisional (C-33), atada a la tarea 26 |
+| 8 | H-05 | `bebb32f2`: `executiveBriefText()` en `public/js/modules/bi-spa.js:4203` |
+| 11 | H-26 | `574c827d`; existe `tests/browser/escalamientos-sin-errores.spec.mjs` |
+| 17 | H-09 | `f61f9661` pasó las acciones que no caben al menú «Más»; `9f4e9926` (C-17, decisión del usuario) devolvió «Recargar» y «BI Semanal» a la barra sin dejar medición de ancho a 1180 |
+| 23 | H-19 | `8b49d0dc` (C-30): `h1` propio en las vistas del shell. Es visualmente oculto, no visible como prefería el plan, y los de CIC, CNC y CNP no conservan la sigla; eso queda como observación contra `GLOSARIO.md`, no como tarea |
+
+**Qué se descarta, con su motivo:**
+
+| Tarea | Motivo |
+|---|---|
+| 1 · H-28, tildes en chips del PDC | superficie borrada: `views/pdc/` salió con el PDC v1 en `a3fee1fb` |
+| 7 · H-04, estado vacío del PDC | superficie borrada en `a3fee1fb`; el PDC v2 vive en `pdc-app/` |
+| 15 · H-07, cabeceras del PDC | `public/js/modules/pdc/hot.js` borrado en `a3fee1fb` |
+| 18 · H-10, cabeceras de Programa General | `/programa-general` pasó a React en `e28d12dc` (2026-09-24); lo cubre el rediseño S05 |
+| 19 · H-12/H-13, rail «CONCURRENCIA LPS» | `2c39fe05` cambió el rail por un botón flotante y quitó la reserva que tapaba controles |
+| 14 · verificación de F3 | verificación de fase de un plan que se cierra; lo vivo de F3 lleva su propia verificación en `TASKS.md` |
+| 20 · verificación de F4 | igual; además sus dos specs de F4 (tareas 15 y 19) quedaron sin objeto |
+| 27 · verificación de F5 y cierre del goal | igual; `goals/usabilidad-altas-y-medias/` nunca se creó y este cierre ocupa su lugar |
+
+**Qué pasa a `TASKS.md`** (seis entradas en §Diferibles, fechadas 2026-09-28):
+
+- **12 · H-34, contraste de `.bi-chip`.** `public/css/bi-control-tower.css:202` sigue en
+  `var(--ds-color-brand-aqua)` y la excepción sigue en `docs/design-system/state-token-exceptions.json`.
+  El color que el plan eligió se midió solo en oscuro; desde el 2026-08-28 los dos temas son
+  contractuales.
+- **13 · H-36/H-25, «Quitar filtro» y contador de BI.** El botón sigue en 20 px
+  (`bi-control-tower.css:218-219`) y `#bi-filter-count` no se recalcula al pintar los chips.
+- **16 · H-08, filtros de Control de Cambios.** `.cc-filter-80` (`public/css/styles.css:2120`) sin
+  ancho mínimo por contenido, y el filtro de Costo Directo se ve bajo otra columna.
+- **21 · H-16, pestañas de BI ocultas.** `views/bi/_nav.php:6` sigue con `overflow-x-auto`;
+  `539aaf68` solo añadió un degradado, y el plan descartaba el desplazamiento como solución.
+- **22 · H-17/H-20, recorrido del Plan de Compras.** `pdc-app/src/components/Recorrido.tsx` sin
+  cambios desde antes de la auditoría.
+- **26 · H-38, Control de Cambios sin salida.** El backend de alta existe
+  (`src/Controllers/Api/ControlCambiosApiController.php:71`, `opcion=nuevo`) y la vista no tiene
+  botón para crear.
+
+Para 16 y 26 queda por decidir si se hacen en PHP o dentro de S15, «Control de Cambios en React»
+(`docs/superpowers/plans/2026-08-30-s15-control-cambios-react.md`, vigente). Este cierre no lo decide.
