@@ -89,7 +89,45 @@ describe('ProgramaDrawer Contextual LPS', () => {
     expect(onNav).toHaveBeenCalledWith(-1);
   });
 
-  it('muestra la Matriz de los 7 Recursos Lean con estados de liberación', () => {
+  it('muestra solo los recursos de liberación con dato real, con etiqueta y estado del catálogo', () => {
+    const restricciones = {
+      area: 'Construccion',
+      restrictions: [
+        { key: 'D_y_E', label: 'D y E', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] },
+        { key: 'Materiales', label: 'Materiales', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] },
+        { key: 'MdeO', label: 'M de O', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] },
+        { key: 'Equipos', label: 'Equipos', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] },
+      ],
+      hardRestrictions: ['D_y_E', 'Materiales', 'MdeO', 'Equipos'],
+      softRestrictions: [],
+    };
+    render(
+      <ProgramaDrawer
+        actividad={{ ...mockAct, D_y_E: '100%', Materiales: '0%', MdeO: null, Equipos: undefined }}
+        catalogos={catalogos}
+        restricciones={restricciones}
+        indiceActual={1}
+        totalActividades={10}
+        onCerrar={vi.fn()}
+        onGuardar={vi.fn()}
+        onNavigateSeq={vi.fn()}
+      />
+    );
+
+    const lista = screen.getByRole('list', { name: /Recursos de liberación/i });
+    const items = Array.from(lista.querySelectorAll('li')).map((li) => li.textContent);
+    expect(items).toHaveLength(2);
+    expect(items[0]).toMatch(/D y E.*100%.*Liberada/);
+    expect(items[1]).toMatch(/Materiales.*0%.*Pendiente/);
+    // Recursos sin fuente en la fila no se muestran, ni los inventados de antes.
+    expect(screen.queryByText('M de O')).toBeNull();
+    expect(screen.queryByText('Equipos')).toBeNull();
+    expect(screen.queryByText('Seguridad')).toBeNull();
+    expect(screen.queryByText('Externos')).toBeNull();
+    expect(screen.queryByText(/Liberado$/)).toBeNull();
+  });
+
+  it('sin dato de restricciones lo dice en vez de afirmar recursos liberados', () => {
     render(
       <ProgramaDrawer
         actividad={mockAct}
@@ -101,15 +139,9 @@ describe('ProgramaDrawer Contextual LPS', () => {
         onNavigateSeq={vi.fn()}
       />
     );
-
-    expect(screen.getByText(/7 Recursos Lean/i)).toBeInTheDocument();
-    expect(screen.getByText('Mano de Obra')).toBeInTheDocument();
-    expect(screen.getByText('Maquinaria')).toBeInTheDocument();
-    expect(screen.getByText('Materiales')).toBeInTheDocument();
-    expect(screen.getByText('Información')).toBeInTheDocument();
-    expect(screen.getByText('Condiciones Previas')).toBeInTheDocument();
-    expect(screen.getByText('Seguridad')).toBeInTheDocument();
-    expect(screen.getByText('Externos')).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: /Recursos de liberación/i })).toBeNull();
+    expect(screen.getByText(/Sin restricciones registradas/i)).toBeInTheDocument();
+    expect(screen.queryByText('Mano de Obra')).toBeNull();
   });
 
   it('no ofrece escribir observaciones: el guardado no las lleva y el legado nunca las editó', () => {

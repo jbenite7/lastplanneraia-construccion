@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ActividadUI, parsearTextoActividad, formatearFechaObra } from '../domain/modelo';
 import { calcularDesviacionFisica } from '../domain/validacion';
 import { obtenerConfigEstado } from '../domain/presentacionEstados';
+import { recursosConDato, type ConfigRestriccionesPg } from '../domain/recursos';
 
 export interface CatalogoProfesional {
   id: number;
@@ -39,6 +40,8 @@ export interface DatosGuardarActividad {
 export interface ProgramaDrawerProps {
   actividad: ActividadUI;
   catalogos: CatalogosPg;
+  /** Catálogo de restricciones del contexto; sin él no se muestra ningún recurso. */
+  restricciones?: ConfigRestriccionesPg | null;
   indiceActual: number;
   totalActividades: number;
   onCerrar: () => void;
@@ -52,17 +55,10 @@ export interface ProgramaDrawerProps {
   onDeclararSos?: (uniqueId: number) => Promise<string>;
 }
 
-interface RecursoLeanItem {
-  id: string;
-  nombre: string;
-  icono: string;
-  detalle: string;
-  estado: 'Liberado' | 'En gestión' | 'Bloqueante';
-}
-
 export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   actividad,
   catalogos,
+  restricciones = null,
   indiceActual,
   totalActividades,
   onCerrar,
@@ -217,58 +213,9 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   const estadoCfg = obtenerConfigEstado(actividad.Estado);
   const parsedAct = parsearTextoActividad(actividad.Actividad);
 
-  // 7 Recursos Lean
-  const recursosLean: RecursoLeanItem[] = [
-    {
-      id: 'mo',
-      nombre: 'Mano de Obra',
-      icono: 'fas fa-users',
-      detalle: 'Cuadrilla de ejecución disponible en obra',
-      estado: 'Liberado',
-    },
-    {
-      id: 'maq',
-      nombre: 'Maquinaria',
-      icono: 'fas fa-tractor',
-      detalle: 'Equipos y maquinaria requerida para el tajo',
-      estado: actividad.alerta_crisis === 1 ? 'Bloqueante' : 'Liberado',
-    },
-    {
-      id: 'mat',
-      nombre: 'Materiales',
-      icono: 'fas fa-truck-loading',
-      detalle: 'Insumos verificados y disponibles en bodega',
-      estado: 'Liberado',
-    },
-    {
-      id: 'info',
-      nombre: 'Información',
-      icono: 'fas fa-drafting-compass',
-      detalle: 'Planos estructurales y especificaciones vigentes',
-      estado: 'Liberado',
-    },
-    {
-      id: 'prev',
-      nombre: 'Condiciones Previas',
-      icono: 'fas fa-project-diagram',
-      detalle: 'Prerrequisitos y actividades predecesoras al 100%',
-      estado: 'Liberado',
-    },
-    {
-      id: 'seg',
-      nombre: 'Seguridad',
-      icono: 'fas fa-hard-hat',
-      detalle: 'Protocolos SST y condiciones de espacio liberadas',
-      estado: 'Liberado',
-    },
-    {
-      id: 'ext',
-      nombre: 'Externos',
-      icono: 'fas fa-file-contract',
-      detalle: 'Permisos de obra, licencias y trámites al día',
-      estado: 'Liberado',
-    },
-  ];
+  const recursos = recursosConDato(actividad as unknown as Record<string, unknown>, restricciones);
+  const ETIQUETA_ESTADO_RECURSO = { liberada: 'Liberada', pendiente: 'Pendiente', 'no-aplica': 'No aplica' } as const;
+  const CLASE_ESTADO_RECURSO = { liberada: 'pill-liberado', pendiente: 'pill-gestion', 'no-aplica': 'pill-no-aplica' } as const;
 
   return (
     <>
@@ -586,53 +533,38 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
             </div>
           </div>
 
-          {/* SECCIÓN 4: Matriz de los 7 Recursos Lean */}
+          {/* SECCIÓN 4: Recursos de liberación con dato real en la fila */}
           <div className="pro-section">
             <div className="pro-section-title">
               <span className="pro-section-title-label">
                 <i className="fas fa-shield-alt" aria-hidden="true"></i>{' '}
-                <span>Matriz de los 7 Recursos Lean</span>
+                <span id="drawerRecursosTitulo">Recursos de liberación</span>
               </span>
-              <span className="badge-optional-pill">
-                {actividad.Estado_Restricciones ? `Liberación: ${actividad.Estado_Restricciones}` : '7 Recursos'}
-              </span>
+              {actividad.Estado_Restricciones && (
+                <span className="badge-optional-pill">Liberación: {actividad.Estado_Restricciones}</span>
+              )}
             </div>
-            <div className="lean-matrix-list">
-              {recursosLean.map((rec) => (
-                <div key={rec.id} className="lean-resource-card">
-                  <div className="lean-res-left">
-                    <i
-                      className={rec.icono}
-                      aria-hidden="true"
-                      style={{
-                        fontSize: '11px',
-                        color:
-                          rec.estado === 'Bloqueante'
-                            ? 'var(--ds-state-danger-text)'
-                            : rec.estado === 'En gestión'
-                            ? 'var(--ds-color-state-warning-text)'
-                            : 'var(--ds-color-state-success-text)',
-                      }}
-                    ></i>
-                    <div>
-                      <div className="lean-res-name">{rec.nombre}</div>
-                      <div className="lean-res-detail">{rec.detalle}</div>
+            {recursos.length > 0 ? (
+              <ul className="lean-matrix-list" aria-labelledby="drawerRecursosTitulo">
+                {recursos.map((rec) => (
+                  <li key={rec.key} className="lean-resource-card">
+                    <div className="lean-res-left">
+                      <div>
+                        <div className="lean-res-name">{rec.label}</div>
+                        <div className="lean-res-detail">
+                          {rec.valor} · {rec.dura ? 'Restricción dura' : 'Restricción blanda'}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <span
-                    className={`lean-pill ${
-                      rec.estado === 'Bloqueante'
-                        ? 'pill-bloqueado'
-                        : rec.estado === 'En gestión'
-                        ? 'pill-gestion'
-                        : 'pill-liberado'
-                    }`}
-                  >
-                    {rec.estado}
-                  </span>
-                </div>
-              ))}
-            </div>
+                    <span className={`lean-pill ${CLASE_ESTADO_RECURSO[rec.estado]}`}>
+                      {ETIQUETA_ESTADO_RECURSO[rec.estado]}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="drawer-empty-note">Sin restricciones registradas para esta actividad.</p>
+            )}
           </div>
 
           {/* SECCIÓN 5: Bitácora SOS */}

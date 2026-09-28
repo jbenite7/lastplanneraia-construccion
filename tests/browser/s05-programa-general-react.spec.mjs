@@ -9,7 +9,7 @@ import { BASE_URL } from './fixtures/projects.mjs';
  * 2. Alternancia 8 vs 13 columnas completas.
  * 3. Drawer Contextual LPS (440px) con navegación secuencial (`[` y `]`), plazos,
  *    asignaciones opcionales (Responsable AIA y Subcontratista), dual-gauge con desviación Δ,
- *    matriz de 7 recursos Lean y bitácora SOS.
+ *    recursos de liberación con dato real de la fila y bitácora SOS.
  * 4. Cierre con tecla Escape.
  * 5. Sanitización de etiquetas HTML crudas (<b> y <small>) y formateo canónico de fechas DD/MM/AAAA.
  * 6. Verificación integral de la ruta canónica /programa-general contra servidor Docker real.
@@ -47,6 +47,18 @@ const MOCK_CONTEXT = {
     ],
   },
   csrf_token: CSRF_TOKEN,
+  csrf_drawer: 'csrf-drawer-e2e',
+  restricciones: {
+    area: 'Construccion',
+    restrictions: [
+      { key: 'D_y_E', label: 'D y E', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] },
+      { key: 'Materiales', label: 'Materiales', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] },
+      { key: 'MdeO', label: 'M de O', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] },
+      { key: 'Equipos', label: 'Equipos', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] },
+    ],
+    hardRestrictions: ['D_y_E', 'Materiales', 'MdeO', 'Equipos'],
+    softRestrictions: [],
+  },
 };
 
 const MOCK_ACTIVIDADES = [
@@ -91,6 +103,9 @@ const MOCK_ACTIVIDADES = [
     Sub_Contratista: 'Excavaciones del Norte S.A.S.',
     Observaciones: 'Retraso por nivel freático alto en eje B',
     alerta_crisis: 1,
+    D_y_E: '100%',
+    Materiales: '0%',
+    MdeO: null,
   },
   {
     unique_id: 102,
@@ -281,7 +296,13 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
     await expect(drawer.getByText('Responsables & Asignaciones')).toBeVisible();
     await expect(drawer.getByText('Opcional en S05')).toBeVisible();
     await expect(drawer.getByText(/Desviación Física/i)).toBeVisible();
-    await expect(drawer.getByText('Matriz de los 7 Recursos Lean')).toBeVisible();
+    await expect(drawer.getByText('Recursos de liberación', { exact: true })).toBeVisible();
+    const recursos = drawer.getByRole('list', { name: 'Recursos de liberación' }).getByRole('listitem');
+    await expect(recursos).toHaveCount(2);
+    await expect(recursos.nth(0)).toContainText('D y E');
+    await expect(recursos.nth(0)).toContainText('Liberada');
+    await expect(recursos.nth(1)).toContainText('Materiales');
+    await expect(recursos.nth(1)).toContainText('Pendiente');
     await expect(drawer.getByText('Bitácora SOS')).toBeVisible();
 
     // Título limpio sin etiquetas

@@ -369,6 +369,7 @@ export const ProgramaGeneralPage: React.FC = () => {
         <ProgramaDrawer
           actividad={actividadSeleccionada}
           catalogos={contexto.catalogos}
+          restricciones={contexto.restricciones ?? null}
           indiceActual={indiceActualDrawer > 0 ? indiceActualDrawer : 1}
           totalActividades={tareasOperativas.length}
           onCerrar={() => { setBorradorDrawer(false); setActividadSeleccionadaId(null); }}

@@ -192,4 +192,33 @@ describe('programaGeneralApi & esquemas', () => {
       vi.unstubAllGlobals();
     }
   });
+
+  it('conserva en la fila los campos de restricción y en el contexto el catálogo de restricciones', () => {
+    const fila = esquemaFilaActividadPg.parse({
+      unique_id: 7, Actividad: 'X', Titulo: 0,
+      D_y_E: '100%', Materiales: 0.5, MdeO: null, Equipos: 'N/A',
+      restriccion_pc_1: '50%',
+    });
+    expect(fila).toMatchObject({ D_y_E: '100%', Materiales: '0.5', MdeO: null, Equipos: 'N/A', restriccion_pc_1: '50%' });
+
+    const parsed = esquemaContextoPg.safeParse({
+      project: { id: 1, name: 'P', dbPrefix: 'p', area: 'Construccion' },
+      week: { number: 33, max: 33, confirmed: 0 },
+      actions: {},
+      csrf: { programaGeneral: 't' },
+      restrictionConfig: {
+        area: 'Construccion',
+        restrictions: [{ key: 'D_y_E', label: 'D y E', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] }],
+        hardRestrictions: ['D_y_E'],
+        softRestrictions: [],
+      },
+      catalogos: {},
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.restricciones?.restrictions[0]).toEqual(
+        { key: 'D_y_E', label: 'D y E', hard: true, thresholdPercent: 100, options: ['0%', '100%', 'N/A'] },
+      );
+    }
+  });
 });
