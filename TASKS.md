@@ -1388,7 +1388,12 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   **no la guarda en la sesión**: con solo pedir el HTML, `/api/session` sigue devolviendo la semana nula, y el
   shell oculta a propósito la barra cuando la sesión no tiene semana (`BarraContexto`: `if (semana === null) return null`;
   contrato en `SessionApiController::activeWeek`). No es un fallo del PHP, es una pieza que le falta a la
-  pantalla nueva de S05. **Falta**: saber si se llega a este estado
+  pantalla nueva de S05. **DECIDIDO por Felipe el 2026-09-28, viendo una maqueta con cuatro situaciones:
+  la pantalla nueva guarda en la sesión la semana que ya elige** (`POST /context/week` con la semana calculada,
+  o su equivalente), para que la barra y el selector aparezcan solos. Es cambio de S05 (la construye Codex; no se
+  le puede escribir por mensaje, así que la decisión viaja por este archivo y por el tablero); queda pendiente de
+  ese sprint, con prueba de que `/api/session` devuelve la semana tras cargar la pantalla sin semana en la sesión.
+  **Falta**: saber si se llega a este estado
   por un camino real (quién llama a `clear-week` además del botón: `public/js/core/ContextManager.js:81`),
   y si las otras pantallas que dependen de la semana quedan igual (solo se vio esta y se verificó el estado
   HTTP en las demás, no la cabecera). Decisión de producto pendiente de Felipe: qué debe ver el usuario.
@@ -2161,6 +2166,14 @@ estado por defecto mientras Felipe no reparta.
   «Contratistas en alerta» amarillo en 4; «Desviación vs plan» muestra Medio en 3 que antes salían
   verdes. **Fuera de alcance, sin tocar:** «¿Qué hacer?», «¿Podemos?» y «¿Se hará?» son conteos
   informativos, no de cosas malas, y siguen sin semáforo. **No medido:** producción.
+  **Actualización 2026-09-29 — «Bloqueadas» pasa de conteo a porcentaje, por decisión de Felipe.**
+  Solo restricciones duras: verde por debajo de 10%, amarillo de 10% a 49% y rojo desde 50%, sobre las
+  actividades de la ventana de 6 semanas («¿Qué hacer?»). El valor mostrado sigue siendo el conteo
+  (`kpiBloqueadas()`, `tests/test_bi_bloqueadas_porcentaje.php`). **Los cortes son PROVISIONALES:** medido en
+  desarrollo, el porcentaje va de 59% a 100% (mediana 100%) porque allí nadie registra liberaciones (una
+  actividad solo es «lista» con las cinco columnas de restricciones llenas), así que casi todo sale rojo y esa
+  medición no dice nada de producción. **Falta:** revisar los cortes con la distribución real de producción
+  (lectura, pide `/visto-prod`). Recomendaba 25/60; Felipe eligió 10/50.
 
 - [ ] **Ficha de trampa pendiente: «el guard que valida su declaración, no su efecto».** Es la
   tercera vez que se mide la misma familia en este repo —hermana de
@@ -2247,6 +2260,16 @@ Ninguno se comprobó en el navegador: la evidencia es código y `git log` sobre 
   `src/Services/ControlTowerService.php:1955` y `src/Services/Bi/MetricDictionaryService.php:424`
   dicen «del alcance filtrado», cuando bajo filtro la fecha es siempre la del proyecto. Tarea 3 de
   `docs/superpowers/plans/2026-08-19-linea-base-contractual.md`.
+  **DECIDIDO por Felipe el 2026-09-28, viendo una maqueta con cuatro situaciones (recomendaba A; eligió B):**
+  al filtrar, un **recuadro sobre el gráfico con las dos fechas** —la del proyecto («Proyecto (toda la obra)») y la
+  del filtro («Filtro: …»)— **y su diferencia con palabras** («15 días antes del fin del proyecto», o «después»
+  según el caso; sin signos). **Sin filtro** se muestra una sola, como hoy. **Si no hay fecha** (proyecto sin línea
+  base, como el 59): un guion y la nota «Sin línea base declarada». Ojo: hoy no se puede distinguir una fecha
+  sembrada automáticamente de una declarada a mano, así que esa nota solo cubre la fecha realmente vacía.
+  **Nota de precisión:** la contradicción con la spec que se afirma arriba **no está confirmada**: la spec
+  (`docs/superpowers/specs/2026-08-19-linea-base-contractual-design.md`, sección «El filtro no es un descuido»)
+  dice que el filtro existe a propósito para que, al filtrar, la fecha corresponda a las actividades filtradas;
+  lo que sí falta es el rótulo que diga de quién es cada fecha, y esta decisión lo resuelve.
 - [ ] 2026-09-28 — **La siembra de la línea base contractual falta en producción.**
   `database/migrations/20260819_sembrar_linea_base_contractual.sql` ya corrió en dev y está en el
   paquete de «Pendiente de decisión: despliegue a producción», donde quien lo anotó dejó escrito

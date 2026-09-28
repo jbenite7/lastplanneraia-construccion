@@ -6,8 +6,8 @@ declare(strict_types=1);
 /**
  * Dos reglas del semáforo de BI decididas por Felipe el 2026-09-28:
  *
- * 1. Indicadores de CONTEO de cosas malas (compromisos en riesgo, PDC en riesgo, bloqueadas, restricciones
- *    no listas, contratistas en alerta): 0 = verde (estado OK, sin acción); 1 o más = amarillo (estado
+ * 1. Indicadores de CONTEO de cosas malas (compromisos en riesgo, PDC en riesgo, restricciones no listas,
+ *    contratistas en alerta; «Bloqueadas» sigue el porcentaje: test_bi_bloqueadas_porcentaje.php): 0 = verde (estado OK, sin acción); 1 o más = amarillo (estado
  *    «Medio», con su acción). Solo «Críticas atrasadas» sube a rojo (ya cubierto por
  *    test_bi_criticas_atrasadas_estado.php).
  * 2. Un «Medio» CALCULADO se ve amarillo: la desviación del plan entre 0 y −5 pp, el PAC entre 60% y 80%
@@ -61,7 +61,6 @@ function esperar(array &$failures, string $etiqueta, ?array $kpi, string $estado
 $conteoOverview = [
     'Compromisos en riesgo' => 'weekly_commitments_at_risk_count',
     'PDC en riesgo' => 'pdc_at_risk_count',
-    'Bloqueadas (restricciones)' => 'hard_restriction_blocked_count',
     'Contratistas en alerta' => 'contractors_at_risk_count',
 ];
 foreach ($conteoOverview as $nombre => $clave) {
