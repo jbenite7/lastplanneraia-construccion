@@ -9,7 +9,7 @@ test('archivos no-UI no disparan gates de design system', () => {
 });
 
 test('editar una superficie declarada enruta a su gate estático', () => {
-  const r = routeChanges(['views/core/project_selector.view.php']);
+  const r = routeChanges(['public/css/project-selector-react.css']);
   assert.deepEqual(r.declared, ['project-selector']);
   assert.ok(r.commands.includes('npm run test:design-system:static'));
 });

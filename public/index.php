@@ -114,15 +114,15 @@ $router->post('/password/update', [\App\Controllers\Auth\LoginController::class,
 $router->get('/login/cancelar', [\App\Controllers\Auth\LoginController::class, 'cancelPasswordChange']);
 $router->get('/logout', [\App\Controllers\Auth\LoginController::class, 'logout']);
 
-// Project Selector (Phase 2). GET/HEAD '/proyectos' los sirve SpaRouter/SpaHostRenderer desde la
-// Tarea 10 (S04 «Corte, conservando el PHP», gate explícito de Felipe 2026-09-18): a diferencia
-// de S02/S03, el legado NO se retira. Sigue registrado aquí, junto con HEAD (mismo patrón que
-// '/' y '/login' — ver App\Core\Router::head()) para que el rollback (quitar '/proyectos' de
-// SpaRouter::RUTAS_EXACTAS_MIGRADAS) devuelva ambos métodos a esta pantalla PHP real, no a un
-// 404 controlado.
-$router->get('/proyectos', [\App\Controllers\Core\ProjectSelectorController::class, 'index']);
-$router->head('/proyectos', [\App\Controllers\Core\ProjectSelectorController::class, 'index']);
-$router->post('/proyecto/seleccionar', [\App\Controllers\Core\ProjectSelectorController::class, 'select']);
+// Selector de proyectos. GET/HEAD '/proyectos' los sirve SpaRouter/SpaHostRenderer desde la
+// Tarea 10 (S04, gate explícito de Felipe 2026-09-18) y la selección real vive en
+// POST '/api/proyectos/seleccionar' (más abajo). El legado PHP (VIEW-11
+// `views/core/project_selector.view.php`, `ProjectSelectorController` y
+// `POST '/proyecto/seleccionar'`) se retiró el 2026-09-28 por autorización puntual de Felipe
+// («Retirarlo en un PR aparte»), como S02/S03: ya no hay registro aquí. Sacar '/proyectos' de
+// SpaRouter::RUTAS_EXACTAS_MIGRADAS dejaría de servirla la SPA y caería al 404 controlado; y un
+// POST a '/proyecto/seleccionar' sin sesión redirige a /login (no está en $publicRoutes), con
+// sesión responde ese mismo 404.
 
 // Puerta de servicio de desarrollo. Fuera de desarrollo la ruta NO se registra: el router
 // responde 404, que es lo correcto — un 403 confirmaría que el endpoint existe.

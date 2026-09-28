@@ -20,11 +20,16 @@ export function consumerContractFailures({ root, manifest, viewOverride = null, 
 
   const sources = manifest.sources || [];
   const ownViewSource = sources.find((s) => s.endsWith('.view.php'));
-  const viewSource = ownViewSource ?? 'views/core/project_selector.view.php';
-  const cssSource = sources.find((s) => /project-selector\.css$|\/module\.css$/.test(s))
-    ?? sources.find((s) => s.endsWith('.css')) ?? 'public/css/project-selector.css';
-  const view = viewOverride ?? read(viewSource);
-  const css = cssOverride ?? read(cssSource);
+  // Sin vista o CSS propios (y sin override) no hay nada que leer: el contrato v1 se dirige a
+  // superficies PHP, y el único que lo declaraba (project-selector, VIEW-11) se retiró el
+  // 2026-09-28. Antes caía a rutas fijas de ese módulo, que ya no existen.
+  const cssSource = sources.find((s) => /\/module\.css$/.test(s))
+    ?? sources.find((s) => s.endsWith('.css'));
+  if (viewOverride === null && !ownViewSource) {
+    failures.push(`${manifest.moduleId}: consumer contract v1 requires a .view.php source`);
+  }
+  const view = viewOverride ?? (ownViewSource ? read(ownViewSource) : '');
+  const css = cssOverride ?? (cssSource ? read(cssSource) : '');
   const usesRenderForModule = view.includes(`renderForModule('${manifest.moduleId}')`);
   // El check de assets canónicos solo aplica a la vista del propio manifiesto:
   // un manifiesto sin vista (p. ej. foundation-shell) no debe validarse contra

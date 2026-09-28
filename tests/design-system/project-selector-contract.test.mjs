@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { consumerContractFailures } from '../../scripts/design-system-consumer-contract.mjs';
@@ -7,14 +9,41 @@ import { consumerContractFailures } from '../../scripts/design-system-consumer-c
 const root = fileURLToPath(new URL('../..', import.meta.url));
 const manifest = JSON.parse(await readFile(new URL('../../docs/design-system/manifests/project-selector.json', import.meta.url), 'utf8'));
 
-test('Project Selector consumes the canonical design system contract', () => {
-  assert.deepEqual(consumerContractFailures({ root, manifest }), []);
+// VIEW-11 (`views/core/project_selector.view.php`), su controlador y su CSS se retiraron el
+// 2026-09-28 por autorización puntual de Felipe («Retirarlo en un PR aparte»), como VIEW-02/03 en
+// S02/S03. El selector ya no es un consumidor PHP del contrato v1: el manifiesto dejó de declarar
+// `consumerContract` y el validador no lo evalúa (devuelve [] sin comprobar nada), así que la
+// ausencia del legado se afirma aquí de forma directa, no a través del validador.
+test('VIEW-11 está retirado: sin vista, controlador ni CSS legados, y el manifiesto ya no los declara', () => {
+  for (const retirado of [
+    'views/core/project_selector.view.php',
+    'src/Controllers/Core/ProjectSelectorController.php',
+    'public/css/project-selector.css',
+    'public/dist-css/project-selector.css',
+  ]) {
+    assert.ok(!existsSync(join(root, retirado)), `${retirado} debe estar retirado`);
+    assert.ok(!manifest.sources.includes(retirado), `project-selector.json no debe declarar ${retirado}`);
+  }
+  assert.ok(!manifest.routes.includes('/proyecto/seleccionar'), 'la ruta POST legada ya no existe');
+  assert.equal(manifest.consumerContract, undefined, 'sin vista PHP no hay consumo v1 que validar');
 });
+
+// El validador v1 sigue siendo compartido. Ningún manifiesto real lo declara ya, así que sus
+// reglas (CDN, hex, tamaños y radios locales) se ejercitan con un manifiesto sintético para no
+// perder cobertura.
+const manifiestoSintetico = {
+  moduleId: 'project-selector',
+  consumerContract: 'v1',
+  sources: [],
+  tests: [],
+  evidence: [],
+  scenarios: [],
+};
 
 test('consumer contract rejects external vendors and local visual primitives', () => {
   const view = '<link href="https://cdn.example.test/adminlte.css"><div style="color:#fff" class="aia-card aia-input aia-btn aia-chip aia-empty aia-alert aia-shell"></div>';
   const css = '.bad { color: #fff; font-size: 14px; border-radius: 4px; box-shadow: 0 2px 4px #000; }';
-  const failures = consumerContractFailures({ root, manifest, viewOverride: view, cssOverride: css });
+  const failures = consumerContractFailures({ root, manifest: manifiestoSintetico, viewOverride: view, cssOverride: css });
   assert.ok(failures.some((failure) => failure.includes('external URL/CDN')));
   assert.ok(failures.some((failure) => failure.includes('raw hex color')));
   assert.ok(failures.some((failure) => failure.includes('local font size')));
@@ -25,7 +54,7 @@ test('consumer contract accepts renderForModule as canonical consumption', () =>
   const view = "<?= \\App\\View\\Components\\DesignSystemHeadComponent::renderForModule('project-selector') ?>"
     + '<div class="aia-shell aia-card aia-input aia-btn aia-chip aia-empty aia-alert"></div>';
   const css = '.ok { color: var(--ds-active-text-primary); }';
-  const failures = consumerContractFailures({ root, manifest, viewOverride: view, cssOverride: css });
+  const failures = consumerContractFailures({ root, manifest: manifiestoSintetico, viewOverride: view, cssOverride: css });
   assert.ok(!failures.some((failure) => failure.includes('canonical asset missing')));
 });
 

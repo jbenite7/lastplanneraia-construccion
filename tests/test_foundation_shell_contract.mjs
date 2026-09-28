@@ -16,7 +16,6 @@ const exceptions = JSON.parse(read('docs/design-system/exceptions.json'));
 const theme = read('public/js/modules/aia_ui/theme.js');
 const commonLoader = read('public/js/linksComunesHead2.js');
 const loginView = read('views/auth/login.view.php');
-const projectSelectorView = read('views/core/project_selector.view.php');
 const loader = read('public/js/cargarDatosGeneralesPagina2.js');
 
 // Tolerantes al estilo de comillas: biome formatea el JS con comillas dobles.
@@ -83,4 +82,3 @@ assert.match(commonLoader, /nav_drawer\.js\?v=20260711foundation5/);
 // tokens.css llega vía el entrypoint runtime de aia-design-system.css, no por el loader.
 assert.doesNotMatch(commonLoader, /tokens\.css/);
 assert.match(loginView, /theme\.js\?v=<\?= filemtime\(/);
-assert.match(projectSelectorView, /theme\.js\?v=<\?= filemtime\(/);

@@ -67,8 +67,9 @@ comprobarMatrizSpa([
 
 // --- Tarea 10 (S04, «Corte, conservando el PHP», Felipe 2026-09-18): GET/HEAD '/proyectos'
 // cruzan al shell React; POST sigue sin cruzar (no hay POST a esa ruta exacta). El legado
-// (vista, controlador y CSS) NO se retira — a diferencia de S02/S03, el rollback de esta ruta
-// vuelve a servir la pantalla PHP real, no un 404 controlado. ---
+// (vista, controlador y CSS) se conservó hasta el 2026-09-28, cuando Felipe autorizó retirarlo
+// aparte («Retirarlo en un PR aparte»): desde entonces, como en S02/S03, no hay pantalla PHP a
+// la que volver. ---
 comprobarMatrizSpa([
     ['GET', '/proyectos', true],
     ['HEAD', '/proyectos', true],
@@ -248,13 +249,13 @@ function comprobarRollbackS03(): void
     }
 }
 
-// --- Rollback de la Tarea 10 (S04): a diferencia de '/password/forgot' y '/password/reset'
-// (S02/S03, legado RETIRADO), aquí el legado se CONSERVA a propósito — «Corte, conservando el
-// PHP», Felipe 2026-09-18. Rollback real es sacar '/proyectos' del mapa; el legado ya está listo
-// para recibir la petición porque nunca se tocó. ---
-comprobarRollbackConservandoElPhpS04();
+// --- Mapa de la Tarea 10 (S04) y retiro de VIEW-11 (2026-09-28). Igual que '/password/forgot' y
+// '/password/reset' (S02/S03), ya no hay legado: sacar '/proyectos' del mapa deja de servirla la
+// SPA y la petición cae al 404 controlado. Esta función fija el comportamiento del mapa y exige
+// la ausencia de vista, controlador, CSS y registros. ---
+comprobarRollbackYRetiroS04();
 
-function comprobarRollbackConservandoElPhpS04(): void
+function comprobarRollbackYRetiroS04(): void
 {
     global $fallos;
 
@@ -268,7 +269,7 @@ function comprobarRollbackConservandoElPhpS04(): void
             $fallos++;
         }
         if (SpaRouter::coincideConMapa('/proyectos', $metodo, $mapaSinProyectos, $prefijoPiloto)) {
-            echo "FALLO: S04 — rollback: sin '/proyectos' en el mapa, {$metodo} debe volver al legado\n";
+            echo "FALLO: S04 — sin '/proyectos' en el mapa, {$metodo} deja de ser de la SPA (ya no hay legado: 404 controlado)\n";
             $fallos++;
         }
     }
@@ -281,32 +282,29 @@ function comprobarRollbackConservandoElPhpS04(): void
         $fallos++;
     }
 
-    // El legado SIGUE en el repo y SIGUE registrado en el router: el rollback de esta ruta no es
-    // un 404 controlado, es una pantalla PHP real esperando la petición (a diferencia de S02/S03).
+    // VIEW-11 se retiró (2026-09-28, autorización puntual de Felipe: «Retirarlo en un PR aparte»,
+    // igual que S02 y S03). El rollback de esta ruta ya no devuelve una pantalla PHP: sin
+    // '/proyectos' en el mapa, GET/HEAD cae al 404 controlado. Lo que se exige ahora es la
+    // ausencia: ni registros, ni vista, ni controlador, ni CSS legado.
     $index = (string) file_get_contents(__DIR__ . '/../public/index.php');
-    if (preg_match("~\\\$router->get\\(\\s*'/proyectos'~", $index) !== 1) {
-        echo "FALLO: S04 — public/index.php debe seguir registrando el GET legado de '/proyectos' (rollback conserva el PHP)\n";
+    if (preg_match("~\\\$router->(get|head)\\(\\s*'/proyectos'~", $index) === 1) {
+        echo "FALLO: S04 — public/index.php ya no debe registrar GET/HEAD legado de '/proyectos' (retirado)\n";
         $fallos++;
     }
-    if (preg_match("~\\\$router->head\\(\\s*'/proyectos'~", $index) !== 1) {
-        echo "FALLO: S04 — public/index.php debe registrar también el HEAD legado de '/proyectos', como '/' y '/login'\n";
+    if (preg_match("~\\\$router->post\\(\\s*'/proyecto/seleccionar'~", $index) === 1) {
+        echo "FALLO: S04 — POST '/proyecto/seleccionar' ya no debe estar registrado (retirado)\n";
         $fallos++;
     }
-    if (preg_match("~\\\$router->post\\(\\s*'/proyecto/seleccionar'~", $index) !== 1) {
-        echo "FALLO: S04 — POST '/proyecto/seleccionar' debe seguir registrado (no se retira en la Tarea 10)\n";
-        $fallos++;
-    }
-    if (!is_file(__DIR__ . '/../views/core/project_selector.view.php')) {
-        echo "FALLO: S04 — views/core/project_selector.view.php NO debe borrarse (decisión de Felipe: conservar el PHP)\n";
-        $fallos++;
-    }
-    if (!is_file(__DIR__ . '/../src/Controllers/Core/ProjectSelectorController.php')) {
-        echo "FALLO: S04 — src/Controllers/Core/ProjectSelectorController.php NO debe borrarse (decisión de Felipe: conservar el PHP)\n";
-        $fallos++;
-    }
-    if (!is_file(__DIR__ . '/../public/css/project-selector.css')) {
-        echo "FALLO: S04 — public/css/project-selector.css NO debe borrarse (decisión de Felipe: conservar el PHP)\n";
-        $fallos++;
+    foreach ([
+        'views/core/project_selector.view.php',
+        'src/Controllers/Core/ProjectSelectorController.php',
+        'public/css/project-selector.css',
+        'public/dist-css/project-selector.css',
+    ] as $retirado) {
+        if (is_file(__DIR__ . '/../' . $retirado)) {
+            echo "FALLO: S04 — {$retirado} debe estar retirado (VIEW-11)\n";
+            $fallos++;
+        }
     }
 
     // El mapa real de producción sirve GET/HEAD desde React tras el corte.

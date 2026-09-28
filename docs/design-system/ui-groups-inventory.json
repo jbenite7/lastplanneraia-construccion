@@ -269,7 +269,7 @@
       "family": "shell-navigation",
       "label": "Cambio de proyecto",
       "sources": [
-        "views/core/project_selector.view.php"
+        "frontend/src/shell/navegacion/BarraLateral.tsx"
       ],
       "catalogIds": [
         "menu",
