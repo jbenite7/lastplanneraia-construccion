@@ -833,6 +833,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 6 · Ingest de los aprendizajes de la ronda 1.2
   - sin señal · 7 · Verificación final, revisión e informe
 
+### S05-REDISENO · S05 — Rediseño de Programa General (ronda sobre `main`) (abierto)
+
+- **Encargo para Codex — mockup del rediseño de Programa General** (abierto): 0 de 0 hechas · `2026-09-28-s05-rediseno-encargo-mockup.md`
+
 ### Sin spec
 
 - **Sidebar canónico del laboratorio** (cerrado): 0 de 0 hechas · `2026-07-20-sidebar-canonico-laboratorio.md`
@@ -871,6 +875,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - **Errores de `/api/lps/*` alineados con el esquema del cliente** (cerrado): 1 de 1 hechas · `2026-09-17-errores-api-lps-contrato.md`
 - **Informe de sprint S05 ronda 1.2** (abierto): 0 de 0 hechas · `2026-09-24-s05-ronda-1-2-informe.md`
 - **Informe de sprint S05-DEUDA** (abierto): 0 de 0 hechas · `2026-09-26-s05-deuda-cierre-informe.md`
+- **Informe del mockup S05 · Programa General** (vigente): 0 de 0 hechas · `2026-09-28-s05-rediseno-mockup-informe.md`
 - goal abierto · Goal — BI Control Tower / Programa General (Radar y Cronograma) · `goals/bi-control-tower-gemini/goal.md`
 - goal abierto · Núcleo y gobernanza del Design System AIA · `goals/design-system-nucleo-gobernanza/goal.md`
 - goal abierto · organizar-la-casa · `goals/organizar-la-casa/goal.md`
