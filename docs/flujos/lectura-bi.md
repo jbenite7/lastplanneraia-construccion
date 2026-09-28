@@ -59,8 +59,8 @@ El escenario que sostiene todo el aislamiento del portafolio.
 >
 > | Dónde | Cómo filtra |
 > |---|---|
-> | `ProjectSelectorController::index()` | SQL: `Acceso = 1 OR pm.role IN ('A','D')` |
-> | `ProjectSelectorController::enterProject()` | PHP, con el rol **ya normalizado** |
+> | `ProjectSelectorController::index()` (retirado el 2026-09-28; hoy `ProjectAccessService::listForUser()`) | SQL: `Acceso = 1 OR pm.role IN ('A','D')` |
+> | `ProjectSelectorController::enterProject()` (retirado el 2026-09-28; hoy `ProjectAccessService::select()`) | PHP, con el rol **ya normalizado** |
 > | `BiProjectScope::authorizedProjectIds()` | SQL: `Acceso = 1 OR pm.role IN ('A','D','P')` |
 >
 > BI incluye **`'P'`**, el alias legado de Director, que el selector omite. Consecuencia: una cuenta

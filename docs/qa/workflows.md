@@ -168,7 +168,7 @@ Pasos:
 
 1. Despues de login, entrar a `/proyectos`.
 2. Ver tarjetas de proyectos permitidos.
-3. Seleccionar proyecto con `POST /proyecto/seleccionar`.
+3. Seleccionar proyecto con `POST /api/proyectos/seleccionar` (la SPA React; el `POST /proyecto/seleccionar` legado se retiró el 2026-09-28).
 4. Guardar proyecto, `dbPrefix`, area y permisos en sesion.
 5. Redirigir al modulo inicial del tipo de proyecto.
 
@@ -177,8 +177,8 @@ Auditoria tecnica:
 | Campo | Detalle |
 |---|---|
 | UI | `/proyectos` |
-| API/ruta | `POST /proyecto/seleccionar` |
-| Controlador | `App\Controllers\Core\ProjectSelectorController` |
+| API/ruta | `GET /api/proyectos`, `POST /api/proyectos/seleccionar` |
+| Controlador | `App\Controllers\Api\ProjectApiController` (delega en `ProjectAccessService`; `ProjectSelectorController` se retiró con VIEW-11 el 2026-09-28) |
 | Persistencia | Sesion |
 | Tests actuales | `tests/browser/full-app-flow.spec.mjs`, helpers `session.mjs` |
 | Riesgo | Seguro |
@@ -1178,7 +1178,7 @@ Pre-Construccion reutiliza la misma arquitectura de rutas y componentes, pero ca
 
 1. Usuario inicia sesion.
 2. Selecciona Aeropuerto Regional PC.
-3. `ProjectSelectorController::select()` deja el area en sesion.
+3. `ProjectAccessService::select()` (vía `POST /api/proyectos/seleccionar`) deja el area en sesion.
 4. `cargarDatosGeneralesPagina(seccion)` detecta `window.__PROJECT_AREA__`/hidden `area_PHP`.
 5. Navbar muestra modulos PC:
    - Programa General.
@@ -1742,7 +1742,7 @@ Auditoria tecnica:
 | Grupo | Rutas |
 |---|---|
 | Publicas/auth | `/`, `/login`, `/logout`, `/password/forgot`, `/password/reset`, `/password/update`, `/runtime/frontend-config.js` |
-| Proyecto/contexto | `/proyectos`, `/proyecto/seleccionar`, `/context/week`, `/context/clear-week`, `/session/touch` |
+| Proyecto/contexto | `/proyectos` (SPA), `/api/proyectos`, `/api/proyectos/seleccionar`, `/context/week`, `/context/clear-week`, `/session/touch` |
 | Programacion | `/programa-general`, `/programa-general/filtros`, `/programa-general/set-filtro`, `/programa-general-actualizar`, `/programacion-intermedia`, `/programacion-intermedia/filtros`, `/programacion-intermedia/set-filtro`, `/programacion-intermedia/set-view-all`, `/programacion-semanal`, `/programacion-semanal/cnp`, `/programacion-semanal/cnc`, `/programacion-semanal/cic` |
 | Gestion | `/pdc`, `/profesionales`, `/subcontratistas`, `/contratos`, `/listado-actividades`, `/indicadores`, `/control-cambios` |
 | Reportes | `/reportes/{tipo}` |
