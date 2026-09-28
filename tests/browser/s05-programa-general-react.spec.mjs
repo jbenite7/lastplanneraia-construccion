@@ -396,6 +396,19 @@ test.describe('S05 Programa General React — Comportamiento y Verificación Vis
     await page.keyboard.press('Escape');
     await expect(drawer).toBeVisible();
     expect(preguntas).toBe(1);
+
+    // Pasar a otra actividad con cambios: también confirma; al cancelar, sigue en la misma.
+    const indicador = drawer.locator('.seq-indicator');
+    const antes = await indicador.textContent();
+    page.once('dialog', (dialogo) => { preguntas += 1; void dialogo.dismiss(); });
+    await drawer.getByRole('button', { name: /Siguiente/ }).click();
+    expect(preguntas).toBe(2);
+    await expect(indicador).toHaveText(antes ?? '');
+
+    // Trampa de foco: 40 Tabs no sacan el foco del cajón.
+    for (let i = 0; i < 40; i += 1) await page.keyboard.press('Tab');
+    expect(await drawer.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+
     await drawer.getByLabel('Avance Real').fill('0');
 
     // SOS real: llama al servidor con modulo PG, consecutivo = unique_id y el token del cajón.
