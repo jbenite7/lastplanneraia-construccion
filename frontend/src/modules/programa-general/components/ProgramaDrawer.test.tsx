@@ -497,4 +497,54 @@ describe('ProgramaDrawer Contextual LPS', () => {
       expect(screen.getByRole('button', { name: /Alerta SOS LPS Activa/i })).toBeDisabled();
     });
   });
+
+  describe('descarte con cambios sin guardar', () => {
+    const montar = (onCerrar = vi.fn()) => {
+      const utils = render(
+        <ProgramaDrawer
+          actividad={mockAct}
+          catalogos={catalogos}
+          indiceActual={1}
+          totalActividades={10}
+          onCerrar={onCerrar}
+          onGuardar={vi.fn()}
+          onNavigateSeq={vi.fn()}
+        />
+      );
+      return { ...utils, onCerrar };
+    };
+
+    it('Esc con cambios pide confirmación y no cierra si se cancela', () => {
+      const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const { onCerrar } = montar();
+      fireEvent.change(screen.getByLabelText(/Avance Real/i), { target: { value: '40' } });
+      fireEvent.keyDown(window, { key: 'Escape' });
+      expect(confirmar).toHaveBeenCalledTimes(1);
+      expect(onCerrar).not.toHaveBeenCalled();
+      confirmar.mockReturnValue(true);
+      fireEvent.keyDown(window, { key: 'Escape' });
+      expect(onCerrar).toHaveBeenCalledTimes(1);
+      confirmar.mockRestore();
+    });
+
+    it('el clic en el velo con cambios pide confirmación', () => {
+      const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const { onCerrar, container } = montar();
+      fireEvent.change(screen.getByLabelText(/Avance Real/i), { target: { value: '40' } });
+      fireEvent.click(container.querySelector('.drawer-backdrop')!);
+      expect(confirmar).toHaveBeenCalledTimes(1);
+      expect(onCerrar).not.toHaveBeenCalled();
+      confirmar.mockRestore();
+    });
+
+    it('sin cambios, Esc y el velo cierran directo sin preguntar', () => {
+      const confirmar = vi.spyOn(window, 'confirm');
+      const { onCerrar, container } = montar();
+      fireEvent.keyDown(window, { key: 'Escape' });
+      fireEvent.click(container.querySelector('.drawer-backdrop')!);
+      expect(confirmar).not.toHaveBeenCalled();
+      expect(onCerrar).toHaveBeenCalledTimes(2);
+      confirmar.mockRestore();
+    });
+  });
 });

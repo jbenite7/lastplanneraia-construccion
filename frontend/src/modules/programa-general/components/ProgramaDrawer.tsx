@@ -80,17 +80,18 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   const [sosMensaje, setSosMensaje] = useState<string | null>(null);
   const [sosError, setSosError] = useState<string | null>(null);
 
+  const dirty =
+    fechaInicio !== (actividad.Fecha_Inicio || '') ||
+    fechaFin !== (actividad.Fecha_Fin || '') ||
+    unidad !== (actividad.unidad || 'm³') ||
+    cantidadPpto !== (actividad.cantidad_ppto?.toString() || '') ||
+    avanceReal !== actividad.avanceRealPct.toString() ||
+    profesional !== (actividad.Responsable_AIA || '') ||
+    subcontratista !== (actividad.Sub_Contratista || '');
+
   useEffect(() => {
-    onDirtyChange?.(
-      fechaInicio !== (actividad.Fecha_Inicio || '') ||
-      fechaFin !== (actividad.Fecha_Fin || '') ||
-      unidad !== (actividad.unidad || 'm³') ||
-      cantidadPpto !== (actividad.cantidad_ppto?.toString() || '') ||
-      avanceReal !== actividad.avanceRealPct.toString() ||
-      profesional !== (actividad.Responsable_AIA || '') ||
-      subcontratista !== (actividad.Sub_Contratista || '')
-    );
-  }, [actividad, fechaInicio, fechaFin, unidad, cantidadPpto, avanceReal, profesional, subcontratista, onDirtyChange]);
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
 
   // Sincronizar estado cuando cambia la actividad seleccionada (navegación secuencial)
   useEffect(() => {
@@ -119,6 +120,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
     profesional,
     subcontratista,
     actividad,
+    dirty,
   });
 
   useEffect(() => {
@@ -131,6 +133,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
       profesional,
       subcontratista,
       actividad,
+      dirty,
     };
   });
 
@@ -153,6 +156,17 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
       Sub_Contratista: cur.subcontratista,
     });
   }, [onGuardar]);
+
+  /**
+   * Cierre accidental (Esc, velo, X): con cambios sin guardar pide confirmación antes de
+   * descartarlos. «Descartar» es la intención explícita y cierra directo.
+   */
+  const solicitarCierre = useCallback(() => {
+    if (stateRef.current.dirty && !window.confirm('Hay cambios sin guardar en esta actividad. ¿Descartarlos y cerrar?')) {
+      return;
+    }
+    onCerrar();
+  }, [onCerrar]);
 
   const alertaActiva = actividad.alerta_crisis === 1;
 
@@ -181,7 +195,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
 
       if (e.key === 'Escape') {
         e.preventDefault();
-        onCerrar();
+        solicitarCierre();
         return;
       }
 
@@ -204,7 +218,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onCerrar, onNavigateSeq, handleSave, puedeEditar]);
+  }, [solicitarCierre, onNavigateSeq, handleSave, puedeEditar]);
 
   const realRatio = (parseFloat(avanceReal) || 0) / 100;
   const teorRatio = actividad.avanceTeoricoPct / 100;
@@ -219,7 +233,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
 
   return (
     <>
-      <div className="drawer-backdrop active" onClick={onCerrar} aria-hidden="true" />
+      <div className="drawer-backdrop active" onClick={solicitarCierre} aria-hidden="true" />
       <aside
         className="drawer-panel-pro active"
         role="dialog"
@@ -236,7 +250,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
             <button
               type="button"
               className="drawer-close-btn"
-              onClick={onCerrar}
+              onClick={solicitarCierre}
               aria-label="Cerrar panel (Esc)"
             >
               <i className="fas fa-times" aria-hidden="true"></i>
