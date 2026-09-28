@@ -776,10 +776,10 @@ class ControlTowerService
             $this->kpi('¿Podemos?', (int) ($s['activities_can_do_count'] ?? 0), 'count', 'Actividades listas'),
             $this->kpi('¿Se hará?', (int) ($s['activities_will_do_count'] ?? 0), 'count', 'Compromisos activos'),
             $this->kpi('Críticas atrasadas', (int) ($s['critical_late_count'] ?? 0), 'count', $this->accionCriticasAtrasadas((int) ($s['critical_late_count'] ?? 0))),
-            $this->kpi('Bloqueadas (restricciones)', (int) ($s['hard_restriction_blocked_count'] ?? 0), 'count', 'Liberar'),
-            $this->kpi('Compromisos en riesgo', (int) ($s['weekly_commitments_at_risk_count'] ?? 0), 'count', 'Revisar'),
-            $this->kpi('PDC en riesgo', (int) ($s['pdc_at_risk_count'] ?? 0), 'count', 'Revisar compras'),
-            $this->kpi('Contratistas en alerta', (int) ($s['contractors_at_risk_count'] ?? 0), 'count', 'Intervenir'),
+            $this->kpiConteo('Bloqueadas (restricciones)', (int) ($s['hard_restriction_blocked_count'] ?? 0), 'Liberar'),
+            $this->kpiConteo('Compromisos en riesgo', (int) ($s['weekly_commitments_at_risk_count'] ?? 0), 'Revisar'),
+            $this->kpiConteo('PDC en riesgo', (int) ($s['pdc_at_risk_count'] ?? 0), 'Revisar compras'),
+            $this->kpiConteo('Contratistas en alerta', (int) ($s['contractors_at_risk_count'] ?? 0), 'Intervenir'),
         ];
     }
 
@@ -828,7 +828,7 @@ class ControlTowerService
         $totalHard = count(array_filter($data, fn($r) => ($r['is_hard'] ?? 0) == 1));
         $readyPct = $totalHard > 0 ? round((1 - $hardNotReady / $totalHard) * 100) : 0;
         return [
-            $this->kpi('Restricciones no listas', $hardNotReady, 'count', 'Liberar'),
+            $this->kpiConteo('Restricciones no listas', $hardNotReady, 'Liberar'),
             $this->kpi('% Restricciones listas', $readyPct, '%', $readyPct < 50 ? 'Crítico' : 'OK'),
             $this->kpi('Total restricciones duras', $totalHard, 'count', null),
         ];
@@ -3766,6 +3766,22 @@ class ControlTowerService
         return $criticasAtrasadas > 0 ? 'Escalar' : null;
     }
 
+    /**
+     * Indicador de CONTEO de cosas malas: 0 = OK y sin acción; 1 o más = «Medio» y con su acción.
+     *
+     * Regla decidida por Felipe el 2026-09-28. Antes cada uno llevaba una acción fija y `kpi()` derivaba el
+     * estado del texto: «Revisar» daba «Medio» siempre, y «Liberar» e «Intervenir» daban «OK» siempre.
+     * Solo «Críticas atrasadas» sube a rojo (`accionCriticasAtrasadas()`).
+     * Cubierto por tests/test_bi_alertas_conteo_y_medio.php.
+     */
+    private function kpiConteo(string $name, int $conteo, string $accion): array
+    {
+        $kpi = $this->kpi($name, $conteo, 'count', $conteo > 0 ? $accion : null);
+        $kpi['status'] = $conteo > 0 ? 'Medio' : 'OK';
+
+        return $kpi;
+    }
+
     private function kpi(string $name, float|int $value, string $unit, ?string $action): array
     {
         $status = 'OK';
@@ -3773,7 +3789,9 @@ class ControlTowerService
             $status = 'Crítico';
         } elseif ($action && (str_contains(strtolower($action), 'escalar') || str_contains(strtolower($action), 'alto'))) {
             $status = 'Alto riesgo';
-        } elseif ($action && str_contains(strtolower($action), 'revisar')) {
+        } elseif ($action && (str_contains(strtolower($action), 'revisar') || strtolower($action) === 'medio')) {
+            // «Medio» también cuenta: varios scorecards pasan la palabra de estado como acción (desviación,
+            // PAC), y antes caía en «OK», así que el amarillo calculado nunca se veía.
             $status = 'Medio';
         }
 
