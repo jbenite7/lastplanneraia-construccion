@@ -10,8 +10,8 @@ fuente: sesion-ejecucion
 > **Nota del 2026-09-17, precisada el 2026-09-21.** La pantalla de la ruta oculta que describe esta
 > página ya no es la vista PHP: desde el 2026-09-01 (`4b3c891c`, S01) la sirve
 > `MaintenanceLoginController` con el shell React. Su HTML (`public/app/index.html:17-23`) enlaza
-> **cinco** hojas estáticas `/css/*` —subió de cuatro con `project-selector-react.css` en S04
-> (`bc1013ac`)— y el CSS del bundle en `/app/assets/`, ninguna por `/runtime/css/`, y
+> **cuatro** hojas estáticas `/css/*` (tokens.css, aia-design-system.css, auth-react.css y
+> project-selector-react.css) y el CSS del bundle en `/app/assets/`, ninguna por `/runtime/css/`, y
 > `MaintenanceMode::isExemptRoute()` añadió para ello la exención del prefijo `/app/assets/`
 > (`src/Core/MaintenanceMode.php:29-31`). Las «cinco hojas, tres y dos» de abajo son el estado medido
 > el 2026-08-12, sobre la vista PHP retirada — coincide en número con las estáticas de hoy por

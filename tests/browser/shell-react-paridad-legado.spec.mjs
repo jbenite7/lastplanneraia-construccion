@@ -103,3 +103,52 @@ test('la semana vive en la barra de contexto, como en el legado', async ({ page 
   await page.keyboard.press('Escape');
   await expect(chip).toBeFocused();
 });
+
+function luminancia([r, g, b]) {
+  const canal = (c) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * canal(r) + 0.7152 * canal(g) + 0.0722 * canal(b);
+}
+function contraste(a, b) {
+  const [l1, l2] = [luminancia(a), luminancia(b)].sort((x, y) => y - x);
+  return (l1 + 0.05) / (l2 + 0.05);
+}
+async function contrasteIconosInactivos(page, ruta) {
+  await page.goto(ruta);
+  const riel = page.locator('aside.aia-navigation--sidebar');
+  await riel.waitFor();
+  const pares = await riel.evaluate((el) => {
+    const rgb = (v) => (v.match(/\d+(\.\d+)?/g) || []).slice(0, 3).map(Number);
+    const fondoDe = (n) => {
+      for (let x = n; x; x = x.parentElement) {
+        const bg = getComputedStyle(x).backgroundColor;
+        if (bg && !/rgba?\(0, 0, 0, 0\)|transparent/.test(bg)) return rgb(bg);
+      }
+      return [255, 255, 255];
+    };
+    return [...el.querySelectorAll('a:not([aria-current]) svg, button:not([aria-current]) svg')]
+      .filter((svg) => svg.getBoundingClientRect().width > 0)
+      .map((svg) => {
+        const cs = getComputedStyle(svg);
+        const color = cs.stroke && cs.stroke !== 'none' ? cs.stroke : cs.color;
+        return { color: rgb(color), fondo: fondoDe(svg.parentElement) };
+      });
+  });
+  return pares.map(({ color, fondo }) => contraste(color, fondo));
+}
+
+test('íconos inactivos del riel en claro: contraste de React frente al legado', async ({ page }) => {
+  await page.setViewportSize({ width: 1180, height: 820 });
+  await page.addInitScript(() => localStorage.setItem('aia-theme', 'light'));
+  await page.goto(ENTRAR);
+  const legado = await contrasteIconosInactivos(page, 'http://localhost:8081/programacion-semanal');
+  const react = await contrasteIconosInactivos(page, 'http://localhost:8081/programa-general');
+  test.info().annotations.push({
+    type: 'contraste',
+    description: `legado min=${Math.min(...legado).toFixed(2)} · react min=${Math.min(...react).toFixed(2)}`,
+  });
+  expect(react.length).toBeGreaterThan(0);
+  expect(Math.min(...react)).toBeGreaterThanOrEqual(Math.min(3, Math.min(...legado)));
+});

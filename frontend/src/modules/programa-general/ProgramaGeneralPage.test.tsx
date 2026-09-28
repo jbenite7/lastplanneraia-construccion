@@ -114,7 +114,7 @@ describe('ProgramaGeneralPage', () => {
     fireEvent.click(btn13);
 
     expect(screen.getByRole('columnheader', { name: 'LIB. RESTRICCIONES' })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: 'SEM. INICIO' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Inicio relativo a la semana vigente' })).toBeInTheDocument();
 
     const btn8 = screen.getByRole('button', { name: /8 Cols Esenciales/i });
     fireEvent.click(btn8);

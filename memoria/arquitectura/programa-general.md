@@ -6,19 +6,26 @@ fecha: 2026-08-03
 areas: [lps, arquitectura]
 tags: [generado]
 fuente: public/index.php
-resumen: "Programa General: la línea base del cronograma maestro; editar el pasado exige rol A o D"
+resumen: "Programa General: cronograma maestro servido por la SPA React; editar el pasado exige rol A o D"
 ---
 # Programa General
 
 **Qué resuelve.** Es el cronograma maestro del proyecto — la línea base contra la que se mide todo
 lo demás en el flujo LPS. Solo Admin y Director pueden editar filas de semanas ya pasadas
-(`canEditPastGeneralProgram`); el resto del equipo puede ver y editar el presente/futuro. Para
+(src/Controllers/Api/GeneralApiController.php:1800; src/Security/RbacManager.php:36); las otras filas se rigen por la autorización normal de edición. Para
 traer una versión nueva desde Excel / MS Project o cargar reprogramaciones, ver [[cronograma]]
 y [[programa-general-actualizar-es-otra-herramienta]].
 
 **Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]] y el catálogo completo en [[mapa-de-modulos-y-submodulos]].
 
-Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
+## Servido hoy
+
+GET y HEAD /programa-general y /app/programa-general llegan al shell React por
+SpaRouter (src/Core/SpaRouter.php:18,24-28; public/index.php:412-424) y montan ProgramaGeneralPage
+(frontend/src/shell/rutas.tsx:450-451). Las mutaciones siguen en los controladores PHP. El
+controlador GET /programa-general (public/index.php:135) que aparece en el inventario es el
+fallback legado, útil para rollback; no describe la superficie que sirve la ruta canónica hoy. La vista PHP permanece
+catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
 ## Inventario
 

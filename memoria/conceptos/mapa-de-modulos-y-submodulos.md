@@ -33,13 +33,13 @@ Ver detalle en [[autenticacion]].
 
 Gobernanza del entorno de trabajo, aislamiento por obra y persistencia de estado.
 
-- **2.1. Selector de Proyectos (`/proyectos`, `/app/proyectos`)**: Grid de tarjetas de obras asignadas al usuario, filtro de búsqueda client-side, indicador de avance y selector activo (`ProjectSelectorController`, `SelectorProyectos.tsx`).
+- **2.1. Selector de Proyectos (`/proyectos`, `/app/proyectos`)**: La SPA sirve el grid de tarjetas de obras asignadas, filtro de búsqueda client-side, indicador de avance y selector activo (frontend/src/shell/rutas.tsx:290-296, SelectorProyectos.tsx); ProjectSelectorController conserva el fallback PHP (public/index.php:123-125).
 - **2.2. AppShell & Navegación Global (`BarraLateral.tsx`)**: Menú lateral adaptable (rail de escritorio, drawer colapsable para tablet y móvil), enlaces filtrados por RBAC.
 - **2.3. Gestor de Contexto Temporal de Semanas (`ContextoSemana.tsx`, `/context/week`)**:
   - Selector de semana operativa activa.
   - **Creación de nueva semana** (`/api/context/weeks/create`).
   - **Eliminación de última semana** (`/api/context/weeks/delete-last`).
-- **2.4. Conmutador de Tema Claro / Oscuro (`ConmutadorTema.tsx`)**: Alternancia instantánea de tokens OKLCH sobre `html[data-theme]` con persistencia local.
+- **2.4. Conmutador de Tema Claro / Oscuro (ConmutadorTema.tsx)**: Alternancia de tokens sobre html[data-aia-theme], persistida en localStorage; claro es el fallback si no hay preferencia válida (frontend/src/shell/tema.ts:5-18,34-40).
 - **2.5. Menú de Cuenta y Perfil (`MenuCuenta.tsx`)**: Datos de usuario, rol vigente en la obra y cierre de sesión seguro.
 
 Ver detalle en [[selector-de-proyectos]] y [[nucleo-y-runtime]].
@@ -52,9 +52,9 @@ Ver detalle en [[selector-de-proyectos]] y [[nucleo-y-runtime]].
 > `programa-general` es el cronograma maestro y contractual de la obra. `programa-general-actualizar` es el importador y actualizador a nuevas versiones desde MS Project / Excel. Ver [[programa-general-actualizar-es-otra-herramienta]].
 
 - **3.1. Programa General — Cronograma Maestro (`/programa-general`)**:
-  - Grilla Handsontable full-bleed con estructura jerárquica EDT/WBS.
-  - Fechas de línea base contractual, fechas reprogramadas, avance teórico y real ejecutado.
-  - Matriz de chips de filtrado por 9 estados operativos (alerta restricciones, debe iniciar, adelantada, en curso, atrasada crítica, atrasada, terminada, no requerida).
+  - Tabla React con jerarquía EDT/WBS; permite alternar entre ocho y trece columnas, con tarjetas para viewport móvil (frontend/src/modules/programa-general/components/ProgramaTable.tsx:19-23; ProgramaGeneralPage.tsx:340-350).
+  - Fechas de línea base contractual, fechas reprogramadas, avance teórico y real ejecutado. El modo de 13 columnas incluye el inicio relativo a la semana vigente (frontend/src/modules/programa-general/components/ProgramaTable.tsx:64).
+  - Barra de ocho señales/filtros: Atrasada, Con Alerta, Debe Iniciar, En Curso, Actividad Futura, Terminada, Fuera de Ventana y Sin Datos (frontend/src/modules/programa-general/components/ProgramaSignalsBar.tsx:33-96).
   - Control de edición temporal por RBAC: edición de semanas pasadas bloqueada salvo para roles Admin y Director (`canEditPastGeneralProgram`).
   - Estandarización y preview de Breadcrumbs EDT (`/api/pg/breadcrumb-preview`, `/api/pg/breadcrumb-estandarizar`).
 - **3.2. Actualizador del Programa General — Cargue de Reprogramaciones (`/programa-general-actualizar`)**:
@@ -93,7 +93,8 @@ Plan de Trabajo Semanal (Weekly Work Plan - WWP) y ciclos de aprendizaje lean.
   - Motor de Auto-programación (`/api/semanal/auto-program`) y consulta de bitácora (`/api/semanal/auto-program-log`).
   - Máquina de estados de la semana (Planificación → Compromiso → Seguimiento → Cierre).
   - Modal de Cierre y Confirmación de Compromisos (`#modal_cerrar_compromisos`).
-  - Modal de Monitoreo de Cambios (`_changeMonitorModal.php`).
+  - Modal de Monitoreo de Cambios (_changeMonitorModal.php).
+  - En semanas confirmadas, las filas TNP conservan cambios de planificación permitidos para esa categoría; además omiten validaciones CNC y cálculos PAC/P_Completado que sí aplican a filas planificadas (src/Controllers/Api/SemanalApiController.php:310-346; public/js/modules/programacion_semanal/hot.js:3083-3088).
   - Modal de Reapertura Controlada de Semana (`modal_reabrir.php`, `/api/semanal/reabrir`).
 - **5.2. Submódulo CNP — Causas de No Programación (`/programacion-semanal/cnp`)**:
   - Registro de actividades listas en la intermedia que no fueron llevadas al plan semanal.

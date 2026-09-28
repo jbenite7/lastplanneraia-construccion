@@ -57,6 +57,7 @@ const EXPECTED_STATE_TOKEN = {
   '/programa-general': {
     selector: '#pgLegend .signal-chip[data-filter="atrasada"]',
     token: '--ds-state-tint-red',
+    darkValue: 'rgb(67, 20, 20)',
   },
   '/programacion-semanal': {
     property: '--ps-critical-bg',
@@ -128,6 +129,13 @@ test('el body de cada ruta de la Tarea 3 usa su fondo oscuro, no el fallback cla
               colors.actual,
               `${route}: el tinte calculado de «Atrasada» debe coincidir con ${stateToken.token}`,
             ).toBe(colors.expected);
+            if (stateToken.darkValue) {
+              expect.soft(
+                colors.expected,
+                `${route}: ${stateToken.token} debe resolver en oscuro a ${stateToken.darkValue}; ` +
+                  'si resuelve a otro valor, una regla perdió su condición de tema',
+              ).toBe(stateToken.darkValue);
+            }
           }
         } else {
           const tokenValue = await page.evaluate(
