@@ -612,6 +612,19 @@ describe('ProgramaDrawer Contextual LPS', () => {
       confirmar.mockRestore();
     });
 
+    it('la X del encabezado con cambios pide confirmación y no cierra si se cancela', () => {
+      const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const { onCerrar } = montar();
+      fireEvent.change(screen.getByLabelText(/Avance Real/i), { target: { value: '40' } });
+      fireEvent.click(screen.getByRole('button', { name: /Cerrar panel/i }));
+      expect(confirmar).toHaveBeenCalledTimes(1);
+      expect(onCerrar).not.toHaveBeenCalled();
+      confirmar.mockReturnValue(true);
+      fireEvent.click(screen.getByRole('button', { name: /Cerrar panel/i }));
+      expect(onCerrar).toHaveBeenCalledTimes(1);
+      confirmar.mockRestore();
+    });
+
     it('sin cambios, Esc y el velo cierran directo sin preguntar', () => {
       const confirmar = vi.spyOn(window, 'confirm');
       const { onCerrar, container } = montar();
