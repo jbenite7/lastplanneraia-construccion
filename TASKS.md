@@ -2097,9 +2097,36 @@ estado por defecto mientras Felipe no reparta.
   la corrida original no quedó registrada; **no se comprobó ejecutando el test**, sino leyendo su
   código, y el CI de `main` (`1fb4c341`) lo da en `pasa`. Cierra la sesión de software e
   infraestructura; nada que arreglar en el test.
-- [ ] **30 proyectos sin cronograma consolidado** — medido al verificar `linea-base-contractual`: no
-  es deuda de la migración, que es correcta, sino un hueco de datos. Los 30 sin línea base no tienen
-  **ni una fila** en `programa_consolidado`. Cerrarlo es decisión de negocio.
+- [x] 2026-09-28 — **30 proyectos sin cronograma consolidado: la exclusión de BI se ANULÓ, no hay
+  nada que construir.** Medido al verificar `linea-base-contractual`: no es deuda de la migración,
+  que es correcta, sino un hueco de datos. Los 30 sin línea base no tienen **ni una fila** en
+  `programa_consolidado`. Felipe decidió el 2026-09-28 excluirlos de BI y de la línea base, **con un
+  supuesto mío sin respaldo** («BI promedia ceros sin decirlo»), y el mismo día lo anuló tras la
+  medición. **Medido en la base de DESARROLLO, solo lectura** (127 proyectos, 93 con cronograma, 34
+  sin él, 30 de esos sin línea base): (1) **28 de los 30 están `Activo=0`/`Acceso=0`**, y
+  `BiProjectScope::authorizedProjects` exige `Activo = 1`, así que ya están fuera de BI; (2) de los 2
+  activos, solo el `59` es alcanzable (dos usuarios Admin; el otro, `999970`, es de fixture y no
+  tiene miembros); (3) **sumar el 59 a otro proyecto no cambia nada**: 8 de 9 informes de
+  `ControlTowerService::getBrief` dan resultado idéntico con y sin él, y el noveno (`pdc`) cambia porque
+  el 59 sí tiene una fila de plan de compras, no por ceros. **No se midió producción** (pide
+  `/visto-prod`), ni otra semana que la 11, ni el `59` en otros módulos. Lo que sí apareció fue otro
+  defecto, más grande: ver los dos pendientes siguientes.
+- [x] 2026-09-28 — **«Críticas atrasadas» salía siempre en «Alto riesgo», incluso con 0.** Lo destapó
+  esta medición: `ControlTowerService::kpi()` deriva el estado del **texto de la acción**, y este
+  indicador llevaba la acción fija «Escalar». En los 25 proyectos con más datos, los 15 con 0 y los
+  10 con más de 0 decían «Alto riesgo». Regla decidida por Felipe el 2026-09-28: 0 = OK; más de 0 =
+  Alto riesgo. Arreglado en `accionCriticasAtrasadas()` para los tres scorecards que lo muestran
+  (overview, programa-general y curva-s), con `tests/test_bi_criticas_atrasadas_estado.php` (nivel
+  `puro`, visto rojo antes del arreglo y verde después).
+- [ ] **El estado de los demás KPI de BI tampoco depende del valor: mismo patrón que «Críticas
+  atrasadas», sin arreglar y sin regla de negocio decidida.** Verificado el 2026-09-28 ejecutando
+  `kpi()`: (a) la acción «Medio» produce estado «OK», así que un `Medio` calculado —desviación entre 0
+  y −5 pp, PAC entre 60 y 80, `ControlTowerService` líneas ~819, ~845 y ~907— **nunca se muestra como
+  Medio**; (b) «Compromisos en riesgo» (acción fija «Revisar») y «PDC en riesgo» («Revisar compras»)
+  salen **siempre «Medio»**, y «Bloqueadas», «Restricciones no listas» («Liberar»), «Contratistas en
+  alerta» («Intervenir») y «¿Qué hacer?» salen **siempre «OK»**, sea cual sea el valor. Arreglarlo
+  cambia lo que ve el usuario en todos los tableros y necesita los umbrales de Felipe por indicador;
+  la causa común es que `kpi()` lee el texto de la acción en vez del valor.
 
 - [ ] **Ficha de trampa pendiente: «el guard que valida su declaración, no su efecto».** Es la
   tercera vez que se mide la misma familia en este repo —hermana de
