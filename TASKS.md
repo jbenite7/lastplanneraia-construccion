@@ -1360,13 +1360,16 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   servicio (`DevDoorController`) pasa hoy por `ProjectAccessService`, que fija la semana con
   `ProjectLandingService::resolve()`. **(b) sí existe un camino real que deja la sesión sin semana,
   y es por diseño**: `POST /context/clear-week` (`ContextController::clearWeek`, ruta
-  `public/index.php:366`), que usa `public/js/core/ContextManager.js:81`. Lo que evita el 500 es
-  `ProgramaGeneralController` (~líneas 190-215), que repone la semana con `sanitizeWeek()` o, si el
-  proyecto no tiene semanas activas, redirige a `/programa-general-actualizar`. Ese código existe
-  desde `0767a64e` (2026-03-25), **antes** del bug, así que el arreglo no está ahí.
-  **Lo que NO se sabe:** qué cambió entre el 2026-08-31 y hoy para que el 500 desaparezca. Sospecho
-  de `ProjectSqlGuard` (siete commits del 2026-08-29 al 2026-09-03, el último `ae61cf94`, #25), porque
-  el mensaje original venía de ahí, pero **no lo bisecé**: es una sospecha, no un hallazgo. **Tampoco
+  `public/index.php:366`), que usa `public/js/core/ContextManager.js:81`. **Por qué ya no hay 500 (verificado, corrige dos versiones anteriores de este cierre):** el
+  2026-09-24 la ruta `/programa-general` **pasó al shell de React** (`e28d12dc`, `SpaRouter::RUTAS_EXACTAS_MIGRADAS`).
+  Esa dirección ya no la atiende `ProgramaGeneralController::index()`: con un registro temporal dentro de
+  `healWeeklyContext()` no escribió nada en la petición, y la respuesta de `GET /programa-general` pesa
+  ~1 KB (cascarón de la SPA). Es decir, **el 500 no se arregló: la pantalla PHP dejó de servir esa
+  dirección**, seis días después del bug (2026-08-31). El código de `ProgramaGeneralController` que antes
+  citaba aquí como «lo que evita el 500» **es código muerto para esa ruta**.
+  **Lo que NO se sabe:** si la causa raíz original —el alias ambiguo en `ProjectSqlGuard`— sigue viva en
+  otras pantallas PHP que dependan de la semana. Las otras 21 dieron 200 con la semana quitada, y por
+  `fetch` solo se ve el HTML, no sus peticiones de datos. **Tampoco
   se probó** el caso «proyecto nuevo sin cronograma» (lo cubre el código leído, no una corrida) ni se
   reprodujo con el helper `login()`/`selectProject()` de Playwright del spec original. Si el 500
   reaparece, este ítem se reabre. **Pregunta de producto que queda**: la invariante «siempre debe
@@ -1380,9 +1383,12 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   entrar a `/programa-general` muestra «Semana 4 Vigente» **sin barra ni selector**; (3) recargando otra
   vez sigue igual; (4) poniendo la semana 4 a mano por `POST /context/week` la barra y el selector
   vuelven. **No hay 500 y no hay pérdida de datos**; es una pantalla degradada en la que el usuario no
-  tiene a mano el selector para volver a elegir semana. **Causa sin atribuir**: el controlador
-  (`ProgramaGeneralController`, ~líneas 196-212) escribe la semana repuesta en `$_SESSION['semana']`, y
-  aun así la sesión parece no recuperarla; no se investigó más. **Falta**: saber si se llega a este estado
+  tiene a mano el selector para volver a elegir semana. **Causa (verificada):** la pantalla es la de
+  React desde el 2026-09-24. La SPA calcula «Semana 4» por su cuenta (`/api/programa-general/context`) pero
+  **no la guarda en la sesión**: con solo pedir el HTML, `/api/session` sigue devolviendo la semana nula, y el
+  shell oculta a propósito la barra cuando la sesión no tiene semana (`BarraContexto`: `if (semana === null) return null`;
+  contrato en `SessionApiController::activeWeek`). No es un fallo del PHP, es una pieza que le falta a la
+  pantalla nueva de S05. **Falta**: saber si se llega a este estado
   por un camino real (quién llama a `clear-week` además del botón: `public/js/core/ContextManager.js:81`),
   y si las otras pantallas que dependen de la semana quedan igual (solo se vio esta y se verificó el estado
   HTTP en las demás, no la cabecera). Decisión de producto pendiente de Felipe: qué debe ver el usuario.
