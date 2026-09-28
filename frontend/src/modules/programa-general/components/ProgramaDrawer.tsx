@@ -33,7 +33,6 @@ export interface DatosGuardarActividad {
   codigo_actividad?: string | null;
   Responsable_AIA: string;
   Sub_Contratista: string;
-  Observaciones?: string | null;
   [key: string]: unknown;
 }
 
@@ -75,7 +74,6 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   const [avanceReal, setAvanceReal] = useState(actividad.avanceRealPct.toString());
   const [profesional, setProfesional] = useState(actividad.Responsable_AIA || '');
   const [subcontratista, setSubcontratista] = useState(actividad.Sub_Contratista || '');
-  const [observaciones, setObservaciones] = useState(actividad.Observaciones || '');
   const [sosDeclarado, setSosDeclarado] = useState(actividad.alerta_crisis === 1);
 
   useEffect(() => {
@@ -86,10 +84,9 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
       cantidadPpto !== (actividad.cantidad_ppto?.toString() || '') ||
       avanceReal !== actividad.avanceRealPct.toString() ||
       profesional !== (actividad.Responsable_AIA || '') ||
-      subcontratista !== (actividad.Sub_Contratista || '') ||
-      observaciones !== (actividad.Observaciones || '')
+      subcontratista !== (actividad.Sub_Contratista || '')
     );
-  }, [actividad, fechaInicio, fechaFin, unidad, cantidadPpto, avanceReal, profesional, subcontratista, observaciones, onDirtyChange]);
+  }, [actividad, fechaInicio, fechaFin, unidad, cantidadPpto, avanceReal, profesional, subcontratista, onDirtyChange]);
 
   // Sincronizar estado cuando cambia la actividad seleccionada (navegación secuencial)
   useEffect(() => {
@@ -100,7 +97,6 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
     setAvanceReal(actividad.avanceRealPct.toString());
     setProfesional(actividad.Responsable_AIA || '');
     setSubcontratista(actividad.Sub_Contratista || '');
-    setObservaciones(actividad.Observaciones || '');
     setSosDeclarado(actividad.alerta_crisis === 1);
   }, [actividad]);
 
@@ -113,7 +109,6 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
     avanceReal,
     profesional,
     subcontratista,
-    observaciones,
     actividad,
   });
 
@@ -126,7 +121,6 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
       avanceReal,
       profesional,
       subcontratista,
-      observaciones,
       actividad,
     };
   });
@@ -148,7 +142,6 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
       codigo_actividad: cur.actividad.codigo_actividad,
       Responsable_AIA: cur.profesional,
       Sub_Contratista: cur.subcontratista,
-      Observaciones: cur.observaciones || null,
     });
   }, [onGuardar]);
 
@@ -627,7 +620,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                 <div className="timeline-item">
                   <div className="timeline-meta">
                     <span>{actividad.Responsable_AIA || 'AIA'}</span>
-                    <span>Observación guardada</span>
+                    <span>Observación registrada (solo lectura)</span>
                   </div>
                   <div className="timeline-text">{actividad.Observaciones}</div>
                 </div>
@@ -636,21 +629,6 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                   Sin observaciones previas registradas.
                 </div>
               )}
-            </div>
-
-            <div className="form-field-group">
-              <label className="form-label" htmlFor="drawerObservaciones">
-                Nueva Observación Técnica
-              </label>
-              <textarea
-                id="drawerObservaciones"
-                className="form-input-pro"
-                style={{ height: '54px', padding: '6px', resize: 'none' }}
-                placeholder="Escribir una nueva observación técnica..."
-                value={observaciones}
-                disabled={!puedeEditar}
-                onChange={(e) => setObservaciones(e.target.value)}
-              ></textarea>
             </div>
 
             <button

@@ -112,7 +112,8 @@ describe('ProgramaDrawer Contextual LPS', () => {
     expect(screen.getByText('Externos')).toBeInTheDocument();
   });
 
-  it('muestra la sección de Bitácora SOS y permite escribir notas técnicas', () => {
+  it('no ofrece escribir observaciones: el guardado no las lleva y el legado nunca las editó', () => {
+    const onGuardar = vi.fn();
     render(
       <ProgramaDrawer
         actividad={mockAct}
@@ -120,14 +121,20 @@ describe('ProgramaDrawer Contextual LPS', () => {
         indiceActual={1}
         totalActividades={10}
         onCerrar={vi.fn()}
-        onGuardar={vi.fn()}
+        onGuardar={onGuardar}
         onNavigateSeq={vi.fn()}
       />
     );
 
-    expect(screen.getByText(/Bitácora SOS/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Escribir una nueva observación técnica/i)).toBeInTheDocument();
-    expect(screen.getByText(/Declarar Crisis SOS LPS/i)).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/nueva observación/i)).toBeNull();
+    expect(screen.queryByLabelText(/Nueva Observación/i)).toBeNull();
+    expect(document.querySelector('textarea')).toBeNull();
+    // La observación registrada en la fila se ve, en solo lectura.
+    expect(screen.getByText('Lluvia suspendió labores el 18/08.')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Guardar Cambios/i }));
+    expect(onGuardar).toHaveBeenCalledTimes(1);
+    expect(onGuardar.mock.calls[0][0]).not.toHaveProperty('Observaciones');
   });
 
   it('deshabilita Cantidad PPTO cuando la unidad seleccionada es %', () => {
@@ -201,8 +208,8 @@ describe('ProgramaDrawer Contextual LPS', () => {
       />
     );
 
-    const textarea = screen.getByPlaceholderText(/Escribir una nueva observación técnica/i);
-    fireEvent.keyDown(textarea, { key: ']' });
+    const campo = screen.getByLabelText(/Avance Real/i);
+    fireEvent.keyDown(campo, { key: ']' });
     expect(onNav).not.toHaveBeenCalled();
   });
 
