@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { ProgramaDrawer } from './ProgramaDrawer';
 import { ActividadUI } from '../domain/modelo';
@@ -378,5 +378,91 @@ describe('ProgramaDrawer Contextual LPS', () => {
     const deltaOk = container.querySelector('.gauge-delta-val')!;
     expect(deltaOk).not.toBeNull();
     expect(deltaOk.className).toContain('delta-ok');
+  });
+
+  describe('SOS real', () => {
+    it('llama al servidor y no cambia el rótulo por su cuenta: el estado llega con la fila recargada', async () => {
+      let resolver: ((m: string) => void) | undefined;
+      const onDeclararSos = vi.fn(() => new Promise<string>((r) => { resolver = r; }));
+      render(
+        <ProgramaDrawer
+          actividad={mockAct}
+          catalogos={catalogos}
+          indiceActual={1}
+          totalActividades={10}
+          onCerrar={vi.fn()}
+          onGuardar={vi.fn()}
+          onNavigateSeq={vi.fn()}
+          puedeDeclararSos
+          onDeclararSos={onDeclararSos}
+        />
+      );
+
+      const boton = screen.getByRole('button', { name: /Declarar Crisis SOS/i });
+      fireEvent.click(boton);
+      expect(onDeclararSos).toHaveBeenCalledWith(101);
+      // Mientras vuela: deshabilitado y sin rótulo de alerta activa inventado.
+      expect(screen.getByRole('button', { name: /Registrando/i })).toBeDisabled();
+      expect(screen.queryByText(/Alerta SOS LPS Activa/i)).toBeNull();
+
+      await act(async () => { resolver?.('Alerta registrada'); });
+      expect(screen.getByRole('status')).toHaveTextContent('Alerta registrada');
+      // El prop no cambió (el servidor aún no devolvió la fila recargada): sigue sin declararse activa.
+      expect(screen.queryByText(/Alerta SOS LPS Activa/i)).toBeNull();
+    });
+
+    it('muestra el error del servidor y no declara nada', async () => {
+      const onDeclararSos = vi.fn().mockRejectedValue(new Error('Token de seguridad inválido.'));
+      render(
+        <ProgramaDrawer
+          actividad={mockAct}
+          catalogos={catalogos}
+          indiceActual={1}
+          totalActividades={10}
+          onCerrar={vi.fn()}
+          onGuardar={vi.fn()}
+          onNavigateSeq={vi.fn()}
+          puedeDeclararSos
+          onDeclararSos={onDeclararSos}
+        />
+      );
+      fireEvent.click(screen.getByRole('button', { name: /Declarar Crisis SOS/i }));
+      expect(await screen.findByRole('alert')).toHaveTextContent('Token de seguridad inválido.');
+      expect(screen.getByRole('button', { name: /Declarar Crisis SOS/i })).toBeEnabled();
+    });
+
+    it('sin permiso de escritura del cajón LPS el botón queda deshabilitado', () => {
+      render(
+        <ProgramaDrawer
+          actividad={mockAct}
+          catalogos={catalogos}
+          indiceActual={1}
+          totalActividades={10}
+          onCerrar={vi.fn()}
+          onGuardar={vi.fn()}
+          onNavigateSeq={vi.fn()}
+          puedeDeclararSos={false}
+          onDeclararSos={vi.fn()}
+        />
+      );
+      expect(screen.getByRole('button', { name: /Declarar Crisis SOS/i })).toBeDisabled();
+    });
+
+    it('con la alerta ya activa en la fila lo dice y no ofrece volver a declararla', () => {
+      render(
+        <ProgramaDrawer
+          actividad={{ ...mockAct, alerta_crisis: 1 }}
+          catalogos={catalogos}
+          indiceActual={1}
+          totalActividades={10}
+          onCerrar={vi.fn()}
+          onGuardar={vi.fn()}
+          onNavigateSeq={vi.fn()}
+          puedeDeclararSos
+          onDeclararSos={vi.fn()}
+        />
+      );
+      expect(screen.getByRole('button', { name: /Alerta SOS LPS Activa/i })).toBeDisabled();
+    });
   });
 });

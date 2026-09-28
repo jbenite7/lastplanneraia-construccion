@@ -216,6 +216,21 @@ export const ProgramaGeneralPage: React.FC = () => {
     }
   };
 
+  const handleDeclararSos = useCallback(async (uniqueId: number): Promise<string> => {
+    if (!contexto) throw new Error('Contexto de Programa General no disponible.');
+    if (!contexto.csrf_drawer) throw new Error('Falta el token de seguridad del cajón LPS. Recarga la página.');
+    const respuesta = await api.declararSos({ unique_id: uniqueId, csrfToken: contexto.csrf_drawer });
+    const mensaje = respuesta.data.wasActive ? `La alerta ya estaba activa. ${respuesta.mensaje}` : respuesta.mensaje;
+    // El estado de la alerta sale del servidor (programa_consolidado.alerta_crisis), no se supone.
+    try {
+      const raw = await api.obtenerActividades(contexto.semana.numero);
+      setActividades(normalizarActividades(raw, contexto.semana.numero));
+    } catch {
+      return `${mensaje} No se pudo recargar el estado de la actividad: usa Recargar.`;
+    }
+    return mensaje;
+  }, [api, contexto]);
+
   const handleExportCsv = useCallback(() => {
     if (!contexto) return;
     try {
@@ -361,6 +376,8 @@ export const ProgramaGeneralPage: React.FC = () => {
           onDirtyChange={setBorradorDrawer}
           onNavigateSeq={handleNavigateSeq}
           puedeEditar={contexto.permisos.puedeEditar && !actualizandoEjecucion}
+          puedeDeclararSos={contexto.permisos.writeDrawer && Boolean(contexto.csrf_drawer)}
+          onDeclararSos={handleDeclararSos}
         />
       )}
 

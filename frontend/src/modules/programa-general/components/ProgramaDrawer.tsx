@@ -46,6 +46,10 @@ export interface ProgramaDrawerProps {
   onDirtyChange?: (dirty: boolean) => void;
   onNavigateSeq: (direccion: number) => void;
   puedeEditar?: boolean;
+  /** `permisos.writeDrawer` (`lps.programacion_semanal.editar`): el mismo que exige el backend del SOS. */
+  puedeDeclararSos?: boolean;
+  /** Registra la crisis en el servidor; resuelve con el mensaje del servidor o rechaza con su error. */
+  onDeclararSos?: (uniqueId: number) => Promise<string>;
 }
 
 interface RecursoLeanItem {
@@ -66,6 +70,8 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   onDirtyChange,
   onNavigateSeq,
   puedeEditar = true,
+  puedeDeclararSos = false,
+  onDeclararSos,
 }) => {
   const [fechaInicio, setFechaInicio] = useState(actividad.Fecha_Inicio || '');
   const [fechaFin, setFechaFin] = useState(actividad.Fecha_Fin || '');
@@ -74,7 +80,9 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   const [avanceReal, setAvanceReal] = useState(actividad.avanceRealPct.toString());
   const [profesional, setProfesional] = useState(actividad.Responsable_AIA || '');
   const [subcontratista, setSubcontratista] = useState(actividad.Sub_Contratista || '');
-  const [sosDeclarado, setSosDeclarado] = useState(actividad.alerta_crisis === 1);
+  const [sosEnviando, setSosEnviando] = useState(false);
+  const [sosMensaje, setSosMensaje] = useState<string | null>(null);
+  const [sosError, setSosError] = useState<string | null>(null);
 
   useEffect(() => {
     onDirtyChange?.(
@@ -97,8 +105,13 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
     setAvanceReal(actividad.avanceRealPct.toString());
     setProfesional(actividad.Responsable_AIA || '');
     setSubcontratista(actividad.Sub_Contratista || '');
-    setSosDeclarado(actividad.alerta_crisis === 1);
   }, [actividad]);
+
+  // Al cambiar de actividad (navegación secuencial) el mensaje SOS de la anterior no aplica.
+  useEffect(() => {
+    setSosMensaje(null);
+    setSosError(null);
+  }, [actividad.unique_id]);
 
   // Mantener referencia al estado actual para atajos de teclado sin closures obsoletos
   const stateRef = useRef({
@@ -144,6 +157,23 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
       Sub_Contratista: cur.subcontratista,
     });
   }, [onGuardar]);
+
+  const alertaActiva = actividad.alerta_crisis === 1;
+
+  const handleDeclararSos = async () => {
+    if (!onDeclararSos || !puedeDeclararSos || sosEnviando || alertaActiva) return;
+    setSosEnviando(true);
+    setSosMensaje(null);
+    setSosError(null);
+    try {
+      const mensaje = await onDeclararSos(actividad.unique_id);
+      setSosMensaje(mensaje);
+    } catch (err: unknown) {
+      setSosError(err instanceof Error ? err.message : 'No se pudo registrar la crisis SOS.');
+    } finally {
+      setSosEnviando(false);
+    }
+  };
 
   // Atajos de teclado: [, ], Esc, ⌘S / Ctrl+S
   useEffect(() => {
@@ -634,12 +664,18 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
             <button
               type="button"
               className="btn-sos-trigger"
-              onClick={() => setSosDeclarado(true)}
-              disabled={!puedeEditar}
+              onClick={() => { void handleDeclararSos(); }}
+              disabled={!puedeDeclararSos || !onDeclararSos || sosEnviando || alertaActiva}
             >
               <i className="fas fa-bell" aria-hidden="true"></i>{' '}
-              {sosDeclarado || actividad.alerta_crisis === 1 ? 'Alerta SOS LPS Activa' : 'Declarar Crisis SOS LPS'}
+              {alertaActiva ? 'Alerta SOS LPS Activa' : sosEnviando ? 'Registrando crisis SOS…' : 'Declarar Crisis SOS LPS'}
             </button>
+            {sosMensaje && (
+              <p className="drawer-sos-feedback" role="status">{sosMensaje}</p>
+            )}
+            {sosError && (
+              <p className="drawer-sos-feedback drawer-sos-feedback--error" role="alert">{sosError}</p>
+            )}
           </div>
         </div>
 

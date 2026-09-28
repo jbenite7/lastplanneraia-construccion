@@ -1561,6 +1561,16 @@
     border-color: var(--ds-active-state-solid-red);
   }
 
+  .drawer-sos-feedback {
+    margin: 6px 0 0;
+    font-size: 11px;
+    color: var(--ds-active-text-secondary);
+  }
+
+  .drawer-sos-feedback--error {
+    color: var(--ds-active-state-solid-red-text);
+  }
+
   /* Drawer Footer */
   .drawer-pro-footer {
     padding: 12px 18px;

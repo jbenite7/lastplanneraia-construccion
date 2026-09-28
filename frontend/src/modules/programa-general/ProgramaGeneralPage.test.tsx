@@ -57,12 +57,14 @@ const mockContexto = {
     subcontratistas: [{ id: 1, nombre: 'Excavaciones del Norte S.A.S.' }],
   },
   csrf_token: 'csrf123',
+  csrf_drawer: 'csrf-drawer',
 };
 
 const mockGuardar = vi.fn().mockResolvedValue({ ok: true });
 const mockCorteXlsx = vi.fn().mockResolvedValue({ ok: true, url: 'http://localhost/corte.xlsx' });
 const mockActualizarEjecucion = vi.fn().mockResolvedValue({ respuesta: 'BIEN' });
 const mockObtenerActividades = vi.fn().mockResolvedValue(mockActividadesRaw);
+const mockDeclararSos = vi.fn().mockResolvedValue({ mensaje: 'Alerta registrada', data: { alertId: 7, wasActive: false } });
 
 vi.mock('./api/programaGeneralApi', () => ({
   programaGeneralApi: () => ({
@@ -71,6 +73,7 @@ vi.mock('./api/programaGeneralApi', () => ({
     guardarActividad: mockGuardar,
     generarCorteXlsx: mockCorteXlsx,
     actualizarEjecucion: mockActualizarEjecucion,
+    declararSos: mockDeclararSos,
   }),
 }));
 
@@ -235,5 +238,19 @@ describe('ProgramaGeneralPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Actualizar Ejecución' }));
     await waitFor(() => expect(mockActualizarEjecucion).toHaveBeenCalledTimes(1));
     confirmar.mockRestore();
+  });
+
+  it('declara SOS con el token del cajón y pinta el estado que devuelve el servidor al recargar', async () => {
+    mockDeclararSos.mockClear();
+    render(<ProgramaGeneralPage />);
+    fireEvent.click((await screen.findAllByText('Excavación mecánica de zapatas'))[0]);
+    mockObtenerActividades.mockResolvedValueOnce(
+      mockActividadesRaw.map((row) => (row.unique_id === 101 ? { ...row, alerta_crisis: 1 } : row))
+    );
+    const llamadasAntes = mockObtenerActividades.mock.calls.length;
+    fireEvent.click(screen.getByRole('button', { name: /Declarar Crisis SOS/i }));
+    await waitFor(() => expect(mockDeclararSos).toHaveBeenCalledWith({ unique_id: 101, csrfToken: 'csrf-drawer' }));
+    await waitFor(() => expect(mockObtenerActividades.mock.calls.length).toBeGreaterThan(llamadasAntes));
+    expect(await screen.findByRole('button', { name: /Alerta SOS LPS Activa/i })).toBeDisabled();
   });
 });

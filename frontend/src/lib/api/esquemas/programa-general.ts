@@ -64,6 +64,8 @@ export const esquemaContextoPgBase = z.object({
   }),
   csrf_token: z.string(),
   csrf_shell: z.string().optional(),
+  /** Token de la clave `lps_drawer`: el único que acepta `POST /api/lps/crisis/register`. */
+  csrf_drawer: z.string().optional(),
 });
 
 export const esquemaContextoPg = z.preprocess((val: unknown) => {
@@ -115,6 +117,7 @@ export const esquemaContextoPg = z.preprocess((val: unknown) => {
       },
       csrf_token: typeof csrf.programaGeneral === 'string' ? csrf.programaGeneral : String(obj.csrf_token ?? ''),
       csrf_shell: typeof csrf.shell === 'string' ? csrf.shell : undefined,
+      csrf_drawer: typeof csrf.drawer === 'string' ? csrf.drawer : undefined,
     };
   }
   return obj;
