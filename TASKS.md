@@ -17,9 +17,9 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 513 |
+| hecha | 514 |
 | en progreso | 8 |
-| pendiente | 160 |
+| pendiente | 159 |
 | sin señal | 182 |
 | descartada | 48 |
 
@@ -878,11 +878,11 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### S05-DEUDA · S05 — Deuda del cierre de la ronda 1.2 (abierto)
 
-- **S05 — Deuda del cierre de la ronda 1.2** (abierto): 0 de 8 hechas · `2026-09-26-s05-deuda-cierre.md`
+- **S05 — Deuda del cierre de la ronda 1.2** (abierto): 1 de 8 hechas · `2026-09-26-s05-deuda-cierre.md`
   - sin señal · 0 · Worktree y línea de partida
   - sin señal · 1 · Prueba del tinte crítico con valor fijo en oscuro (deuda 1)
   - sin señal · 2 · Contraste de los íconos inactivos del riel en tema claro (deuda 2)
-  - pendiente · 3 · Columna de inicio relativo y CSV con el número crudo (deuda 3)
+  - hecha · 3 · Columna de inicio relativo y CSV con el número crudo (deuda 3)
   - sin señal · 4 · Áreas válidas en los documentos del frente TNP (deuda 4)
   - sin señal · 5 · Pase de veracidad de la wiki (deuda 5)
   - sin señal · 6 · Ingest de los aprendizajes de la ronda 1.2
@@ -941,6 +941,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - cerrado_sin_archivos · `plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas.md`: dice «plan cerrado»; git dice «1 de 2 archivos que mandaba crear no existieron nunca en ninguna rama: docs/design-system/manifests/dashboard.json»
 - cerrado_sin_archivos · `plans/2026-08-30-s01-login-react.md`: dice «plan cerrado»; git dice «3 de 26 archivos que mandaba crear no existieron nunca en ninguna rama: frontend/src/lib/api/frontera.test.ts, frontend/src/lib/api/esquemas/sesion.test.ts, src/Controllers/Core/SpaHostController.php»
 - parece_cerrado · `plans/2026-09-23-s05-programa-general-react.md`: dice «plan vigente»; git dice «las 8 tareas con señal están hechas según git»
+- parece_cerrado · `plans/2026-09-26-s05-deuda-cierre.md`: dice «plan abierto»; git dice «las 1 tareas con señal están hechas según git; 7 sin señal»
 - spec_cerrado_plan_vivo · `specs/2026-07-23-a16-comparativo-versiones-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-07-22-roadmap-pdc-v2.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-03-reparto-trabajo-pendiente-design.md`: dice «spec derogada»; git dice «1 plan suyo sigue vivo: 2026-08-03-usabilidad-altas-y-medias.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-11-plan-cierre-hasta-produccion-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-11-cierre-hasta-produccion.md»
@@ -1414,6 +1415,30 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   llama `escalarAlertasActivas()` internamente. Se dejaron intactos por estar fuera del alcance de esa
   tarea. Revisar al recortar `LpsService`, para no dejar código muerto ni retirar por error el camino
   que el escalamiento sí usa.
+
+- [ ] **S05 — ronda de rediseño de Programa General, después de cerrar la deuda de la ronda 1.2.**
+  Decisión de Felipe del 2026-09-28: **manda lo que está en `main`** (paridad 1:1 con el legado,
+  PR #58 y #61, goldens aprobados el 2026-09-26) y el rediseño va **después**. Orden: cuando el
+  PR #63 (`codex/s05-deuda-cierre`) quede en `main`, correr un `/impeccable critique` nuevo sobre lo
+  que hay en `main` y proponer la ronda de rediseño con spec y mockup para su visto.
+  Insumo, no spec aprobada: la crítica del 2026-09-23
+  (`.impeccable/critique/2026-09-23T13-58-16Z__frontend-src-modules-programa-general.md`, 17/40),
+  hecha sobre el piloto de la rama local `codex/s05-programa-general-react`, **anterior a la ronda
+  1.2 y nunca integrada**: parte de sus hallazgos puede estar ya resuelta en `main`. Ese mismo día
+  Felipe había elegido para el rediseño: dirección completa (banda de cabecera, franja de señales,
+  bandera de gravedad y tinte por fila, avance con Δ, filtros desde el encabezado, edición en celda,
+  cajón superpuesto, meta ≥ 20 filas visibles a 1180×820), orden por cronograma con señales, y
+  alcance Programa General + el shell de T01 que se ve en esa pantalla. Esas decisiones se
+  re-confirman contra la crítica nueva, no se ejecutan tal cual.
+- [ ] **Design system — frente aparte (decisión de Felipe, 2026-09-23).** Tres puntos que salieron
+  de la crítica de S05 y afectan a otras pantallas, así que no van dentro de S05: (1) el primario en
+  oscuro (`--ds-color-domain-corporate-on-dark`) queda en 4,87:1 frente a 13,1:1 de los botones
+  secundarios, y la acción principal se ve apagada; (2) no hay token de 13 px para el cuerpo de
+  controles (se ha tomado prestado `--ds-table-chapter-font-size`); (3) no existe estilo `:disabled`
+  para `.aia-btn` en `public/css/design-system/components/buttons.css`, así que un botón deshabilitado
+  no se distingue. Además, deuda de la herramienta: `scripts/design-system-audit.mjs:25` (`scanRoots`)
+  no incluye `frontend/src/**`, así que el gate del design system no revisa el CSS de React
+  (verificado en `main` el 2026-09-28).
 
 ## Pendiente de decisión: despliegue a producción
 
