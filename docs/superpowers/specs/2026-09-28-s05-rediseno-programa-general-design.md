@@ -7,7 +7,7 @@ fecha: 2026-09-28
 superficie: programa-general
 rutas: ["/programa-general"]
 depende_de: [S05, S05-DEUDA]
-version: 1.0
+version: 1.1
 areas: [lps, design-system]
 fuente: "crítica de diseño sobre main del 2026-09-28 (.impeccable/critique/2026-09-28T13-49-37Z__frontend-src-modules-programa-general.md), decisiones de Felipe del 2026-09-23 y del 2026-09-28, y el frente goals/s05-cajon-verdad (PR #65)"
 resumen: "Ronda de rediseño de Programa General sobre lo que hay en main: la pantalla responde qué se cae esta semana sin perder el orden del cronograma — cabecera en una banda, tabla densa sobre el contrato del DS, riesgo visible en la fila, edición solo en el cajón."
@@ -98,8 +98,10 @@ banda, franja, tabla. Bajo 1180 px, objetivos de 44 px sin excepción (PRODUCT.m
   `aia-toolbar`, `aia-table-shell`, `state-tooltip.js`, `[data-density]`). Sin hex, sin estilos
   inline, sin `!important`. Íconos que se dibujen (hoy seis no tienen glifo).
 - Ambos temas contractuales; goldens nuevos solo con aprobación de Felipe.
-- **Abiertas, para el visto:** (a) si «Fuera de ventana» se atenúa o se oculta por defecto dentro de
-  la vista de cronograma puro; (b) si el modo proyector del DS entra en esta ronda.
+- **Decididas por Felipe el 2026-09-28** (antes abiertas): (a) «Fuera de ventana» va **atenuado** por
+  defecto, en su lugar del cronograma, sin bandera ni tinte; el chip de Contexto lo oculta con un clic.
+  (b) El modo proyector del DS **no entra en esta ronda**: va en la siguiente, junto al frente aparte
+  de tokens del DS.
 
 ## Archivos relacionados
 
