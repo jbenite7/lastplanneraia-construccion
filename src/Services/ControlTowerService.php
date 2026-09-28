@@ -776,7 +776,7 @@ class ControlTowerService
             $this->kpi('¿Podemos?', (int) ($s['activities_can_do_count'] ?? 0), 'count', 'Actividades listas'),
             $this->kpi('¿Se hará?', (int) ($s['activities_will_do_count'] ?? 0), 'count', 'Compromisos activos'),
             $this->kpi('Críticas atrasadas', (int) ($s['critical_late_count'] ?? 0), 'count', $this->accionCriticasAtrasadas((int) ($s['critical_late_count'] ?? 0))),
-            $this->kpiConteo('Bloqueadas (restricciones)', (int) ($s['hard_restriction_blocked_count'] ?? 0), 'Liberar'),
+            $this->kpiBloqueadas((int) ($s['hard_restriction_blocked_count'] ?? 0), (int) ($s['activities_to_do_count'] ?? 0)),
             $this->kpiConteo('Compromisos en riesgo', (int) ($s['weekly_commitments_at_risk_count'] ?? 0), 'Revisar'),
             $this->kpiConteo('PDC en riesgo', (int) ($s['pdc_at_risk_count'] ?? 0), 'Revisar compras'),
             $this->kpiConteo('Contratistas en alerta', (int) ($s['contractors_at_risk_count'] ?? 0), 'Intervenir'),
@@ -3778,6 +3778,36 @@ class ControlTowerService
     {
         $kpi = $this->kpi($name, $conteo, 'count', $conteo > 0 ? $accion : null);
         $kpi['status'] = $conteo > 0 ? 'Medio' : 'OK';
+
+        return $kpi;
+    }
+
+    /**
+     * «Bloqueadas (restricciones)»: el estado sigue el PORCENTAJE de las actividades de la ventana de 6 semanas
+     * que tienen alguna restricción DURA sin liberar; el valor que se muestra sigue siendo el conteo.
+     *
+     * Cortes decididos por Felipe el 2026-09-29, PROVISIONALES: menos de 10% verde, de 10% a 49% amarillo
+     * («Medio») y 50% o más rojo («Alto riesgo»). Con la regla de conteo salía amarillo en 24 de 25 proyectos de
+     * desarrollo, y un indicador amarillo casi siempre deja de avisar. Solo aplica a restricciones duras: el
+     * conteo sale de `hard_restrictions_ready`, que mira únicamente columnas duras.
+     * Cubierto por tests/test_bi_bloqueadas_porcentaje.php.
+     */
+    private function kpiBloqueadas(int $bloqueadas, int $enVentana): array
+    {
+        // Aritmética entera: no se redondea hacia arriba (99 de 1000 = 9,9% sigue en verde).
+        if ($enVentana <= 0) {
+            // Sin denominador no hay porcentaje; si aun así llegan bloqueadas, no se esconden.
+            $estado = $bloqueadas > 0 ? 'Medio' : 'OK';
+        } elseif ($bloqueadas * 100 < $enVentana * 10) {
+            $estado = 'OK';
+        } elseif ($bloqueadas * 100 < $enVentana * 50) {
+            $estado = 'Medio';
+        } else {
+            $estado = 'Alto riesgo';
+        }
+
+        $kpi = $this->kpi('Bloqueadas (restricciones)', $bloqueadas, 'count', $estado === 'OK' ? null : 'Liberar');
+        $kpi['status'] = $estado;
 
         return $kpi;
     }
