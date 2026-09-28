@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { ProgramaGeneralPage } from './ProgramaGeneralPage';
+import { ApiError } from '../../lib/api/cliente';
 
 const mockActividadesRaw = [
   {
@@ -293,5 +294,15 @@ describe('ProgramaGeneralPage', () => {
     expect(mockObtenerActividades.mock.calls.length).toBe(llamadas);
     expect(screen.getByLabelText('Avance Real')).toHaveValue(40);
     confirmar.mockRestore();
+  });
+
+  it('un SOS rechazado muestra un mensaje entendible, no la ruta ni el código crudo', async () => {
+    mockDeclararSos.mockRejectedValueOnce(new ApiError('/api/lps/crisis/register respondió 403', { tipo: 'http', status: 403, codigo: 'HTTP_403' }));
+    render(<ProgramaGeneralPage />);
+    fireEvent.click((await screen.findAllByText('Excavación mecánica de zapatas'))[0]);
+    fireEvent.click(screen.getByRole('button', { name: /Declarar Crisis SOS/i }));
+    const alerta = await screen.findByRole('alert');
+    expect(alerta).not.toHaveTextContent('/api/');
+    expect(alerta).toHaveTextContent(/permiso|token de seguridad/i);
   });
 });

@@ -4,6 +4,7 @@ import { ContextoPg } from '../../lib/api/esquemas/programa-general';
 import { ActividadUI, normalizarActividades } from './domain/modelo';
 import { calcularConteosSenales, contarTareasVisibles, filtrarActividades } from './domain/filtros';
 import { generarContenidoCsv13Cols, dispararDescargaCsv } from './domain/exportarCsv';
+import { mensajeErrorSos } from './domain/erroresSos';
 import { ProgramaToolbar } from './components/ProgramaToolbar';
 import { ProgramaSignalsBar } from './components/ProgramaSignalsBar';
 import { ProgramaFilters } from './components/ProgramaFilters';
@@ -244,7 +245,12 @@ export const ProgramaGeneralPage: React.FC = () => {
   const handleDeclararSos = useCallback(async (uniqueId: number): Promise<string> => {
     if (!contexto) throw new Error('Contexto de Programa General no disponible.');
     if (!contexto.csrf_drawer) throw new Error('Falta el token de seguridad del cajón LPS. Recarga la página.');
-    const respuesta = await api.declararSos({ unique_id: uniqueId, csrfToken: contexto.csrf_drawer });
+    let respuesta: Awaited<ReturnType<typeof api.declararSos>>;
+    try {
+      respuesta = await api.declararSos({ unique_id: uniqueId, csrfToken: contexto.csrf_drawer });
+    } catch (err: unknown) {
+      throw new Error(mensajeErrorSos(err));
+    }
     const mensaje = respuesta.data.wasActive ? `La alerta ya estaba activa. ${respuesta.mensaje}` : respuesta.mensaje;
     // El estado de la alerta sale del servidor (programa_consolidado.alerta_crisis), no se supone.
     try {
