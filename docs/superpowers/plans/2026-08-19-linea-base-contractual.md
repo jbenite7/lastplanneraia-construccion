@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-19-linea-base-contractual.md
@@ -912,10 +912,68 @@ posteriores —`Measure runtime budgets` y `Check runtime budgets`— por fin se
 
 ---
 
-## Estado verificado — sigue vigente
+## Estado verificado — cerrado
 
-Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+Verificado contra el código y el historial de git el 2026-09-28. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill: el plan se cierra con trabajo vivo, y ese trabajo pasa a `TASKS.md`.
 
-**Qué falta:** Tarea 3 falta (no existe tests/test_linea_base_rotulo.php ni la clave contractual_finish_scope) y la Tarea 5 se resolvio por otra via (migracion SQL) sin el script que el plan manda
+**Evidencia:** tareas 1, 2, 4, 6 y 7 hechas (la 4 y la 7 por otra vía); la 3 sigue sin hacer y la aplicación en producción de la 5 sigue pendiente, y las dos pasan a `TASKS.md`. Detalle en `## Cierre`.
+
+Historia: el 2026-08-25 esta sección decía «falta la Tarea 3 y la 5 se resolvió por otra vía». Las dos cosas siguen siendo ciertas el 2026-09-28.
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
+
+## Cierre
+
+**Fecha:** 2026-09-28. **Lo cierra:** la sesión de infraestructura, por delegación de Felipe del
+2026-09-28 para barrer los planes abiertos cuya spec ya está cerrada o derogada. Es decisión de esa
+sesión, no de Felipe.
+
+**Por qué se cierra:** su spec, `docs/superpowers/specs/2026-08-19-linea-base-contractual-design.md`,
+está `cerrado`. El núcleo del frente —que la fecha contractual salga de la línea base declarada y no
+se borre al reprogramar— está en `main` desde el merge `9eac5a64` (2026-08-24). Lo que sigue vivo no
+se pierde: pasa a `TASKS.md` como pendiente suelto, citando este plan.
+
+**Cómo se verificó:** contra el código y `git log` de `origin/main` (`46eb29a4`), sin tocar ninguna
+base de datos. Las casillas no son evidencia y no se marcan retroactivamente (`AGENTS.md`
+§Verificación).
+
+**Qué quedó hecho, con evidencia:**
+
+| Tarea | Resultado | Evidencia |
+|---|---|---|
+| 1 · servicio que lee y siembra | hecha | `29714cf3` crea `src/Services/LineaBaseContractualService.php`; `39a32b7d` hace que `sembrarSiFalta` diga si escribió de verdad |
+| 2 · el cronograma lee la línea base declarada | hecha | `d4bfeda3`: `src/Services/ControlTowerService.php` lee `declaradaDe()` y rotula la fuente `declared_project_baseline`; existe `tests/test_linea_base_sobrevive_reprogramacion.php` |
+| 4 · sembrar al consolidar la primera semana | hecha, por otra vía | `e0d93833` la puso en `nueva_semana.php`; `06dca377` (2026-08-31) la movió a `WeekAdministrationService`, y `tests/test_linea_base_sembrado_al_consolidar.php` se reescribió para el camino nuevo |
+| 6 · auditoría del PDC | hecha | `0225773b`: `docs/superpowers/evidencia/2026-08-19-auditoria-linea-base-pdc.md` |
+| 7 · cerrar contra el CI | hecha, por otra vía | llegó a `main` por el merge directo `9eac5a64` (consolidación P1), no por un PR propio; la primera corrida de `main` con los gates en verde es posterior (`TASKS.md`, entradas con las corridas `32787664690` y `33902983755`). Nadie escribió su cierre con SHA; este lo sustituye |
+
+**Qué se descarta:**
+
+- **La forma de la Tarea 5, no su objetivo.** El script `scripts/sembrar-linea-base-contractual.php`
+  con `--dry-run` y `--aplicar`, y su prueba, nunca existieron. En su lugar está la migración
+  `database/migrations/20260819_sembrar_linea_base_contractual.sql` (`d4bfeda3`): un `UPDATE`
+  write-once e idempotente, autorizado por Felipe el 2026-08-19 para dev según su cabecera, que el
+  fixture de CI también aplica. En dev ya hizo su trabajo
+  (`docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion.md:241`). No se vuelve a escribir el
+  script.
+
+**Qué pasa a `TASKS.md`** (entradas en §Diferibles, fechadas 2026-09-28):
+
+- **Tarea 3 · el gráfico dice de quién es la fecha.** No existe `contractual_finish_scope` en el
+  código ni `tests/test_linea_base_rotulo.php`; «Fin contractual» se pinta sin rótulo en
+  `views/bi/control-tower.php` y `public/js/modules/bi-spa.js`, que siguen en PHP. Además la
+  definición de la métrica contradice la spec: `ControlTowerService.php:1955` y
+  `src/Services/Bi/MetricDictionaryService.php:424` dicen «del alcance filtrado», y la spec dice que
+  bajo filtro la fecha es siempre la del proyecto.
+- **Tarea 5 · la migración en producción.** Está en el paquete pendiente de «Pendiente de decisión:
+  despliegue a producción» de `TASKS.md`, donde consta «la primera no la revisé». En pruebas no está
+  claro si se aplicó. Antes de aplicarla en producción hace falta revisarla, y la aplicación exige
+  `/visto-prod` de Felipe más dry-run, respaldo verificable y gate según
+  `docs/global-tables-architecture.md`.
+- **Hallazgo de la Tarea 6 sin dueño.** La auditoría concluye que `PlanFechasService::calcular()`
+  «NO CONSERVA la línea base» (`2026-08-19-auditoria-linea-base-pdc.md:275`), con evidencia de código
+  y sin verificación con datos. No se encontró dónde se escaló.
+
+**Observación, no tarea:** `tests/test_bi_programa_general_chart_values.php` se modificó en P1 pese a
+la restricción del plan de no tocarlo, con motivo: aseveraba el contrato viejo
+`first_available_snapshot_per_project`.
