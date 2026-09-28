@@ -775,7 +775,7 @@ class ControlTowerService
             $this->kpi('¿Qué hacer?', (int) ($s['activities_to_do_count'] ?? 0), 'count', 'Priorizar frentes'),
             $this->kpi('¿Podemos?', (int) ($s['activities_can_do_count'] ?? 0), 'count', 'Actividades listas'),
             $this->kpi('¿Se hará?', (int) ($s['activities_will_do_count'] ?? 0), 'count', 'Compromisos activos'),
-            $this->kpi('Críticas atrasadas', (int) ($s['critical_late_count'] ?? 0), 'count', 'Escalar'),
+            $this->kpi('Críticas atrasadas', (int) ($s['critical_late_count'] ?? 0), 'count', $this->accionCriticasAtrasadas((int) ($s['critical_late_count'] ?? 0))),
             $this->kpi('Bloqueadas (restricciones)', (int) ($s['hard_restriction_blocked_count'] ?? 0), 'count', 'Liberar'),
             $this->kpi('Compromisos en riesgo', (int) ($s['weekly_commitments_at_risk_count'] ?? 0), 'count', 'Revisar'),
             $this->kpi('PDC en riesgo', (int) ($s['pdc_at_risk_count'] ?? 0), 'count', 'Revisar compras'),
@@ -817,7 +817,7 @@ class ControlTowerService
             $this->kpi('% Avance físico', $realPct, '%', null),
             $this->kpi('% Avance teórico', $theoreticalPct, '%', null),
             $this->kpi('Desviación vs plan', $deviation, 'pp', $deviation < -5 ? 'Alto riesgo' : ($deviation < 0 ? 'Medio' : 'OK')),
-            $this->kpi('Críticas atrasadas', $criticalLate, 'count', 'Escalar'),
+            $this->kpi('Críticas atrasadas', $criticalLate, 'count', $this->accionCriticasAtrasadas($criticalLate)),
             $this->kpi('Total actividades', count($data), 'count', null),
         ];
     }
@@ -906,7 +906,7 @@ class ControlTowerService
                 '%',
                 ($s['pct_desviacion'] ?? 0) < -0.05 ? 'Alto riesgo' : (($s['pct_desviacion'] ?? 0) < 0 ? 'Medio' : 'OK'),
             ),
-            $this->kpi('Críticas atrasadas', (int) ($s['critical_late'] ?? 0), 'count', 'Escalar'),
+            $this->kpi('Críticas atrasadas', (int) ($s['critical_late'] ?? 0), 'count', $this->accionCriticasAtrasadas((int) ($s['critical_late'] ?? 0))),
         ];
     }
 
@@ -3751,6 +3751,19 @@ class ControlTowerService
     private function inClause(array $ids): string
     {
         return implode(',', array_fill(0, count($ids), '?'));
+    }
+
+    /**
+     * La acción de «Críticas atrasadas» solo existe si hay críticas atrasadas.
+     *
+     * `kpi()` deriva el estado del TEXTO de la acción, no del valor. Con la acción fija «Escalar» el
+     * indicador salía «Alto riesgo» siempre, incluso con 0 (medido el 2026-09-28: 25 de 25 proyectos con
+     * datos). Regla decidida por Felipe el 2026-09-28: 0 = OK; más de 0 = Alto riesgo.
+     * Cubierto por tests/test_bi_criticas_atrasadas_estado.php.
+     */
+    private function accionCriticasAtrasadas(int $criticasAtrasadas): ?string
+    {
+        return $criticasAtrasadas > 0 ? 'Escalar' : null;
     }
 
     private function kpi(string $name, float|int $value, string $unit, ?string $action): array
