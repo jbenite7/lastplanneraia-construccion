@@ -266,4 +266,19 @@ describe('ProgramaGeneralPage', () => {
     await waitFor(() => expect(screen.queryByRole('dialog', { name: /Editor Contextual LPS/i })).not.toBeInTheDocument());
     await waitFor(() => expect(container.querySelector('tr[data-unique-id="101"]')).toHaveFocus());
   });
+
+  it('navegar con ] sin editar no deja un borrador fantasma: Esc cierra sin preguntar', async () => {
+    const segunda = { ...mockActividadesRaw[1], unique_id: 102, Actividad: 'Acero de refuerzo', unidad: 'ton', cantidad_ppto: 12.5, Ejecutado: 0, Responsable_AIA: 'Ing. Carlos Restrepo' };
+    mockObtenerActividades.mockResolvedValueOnce([...mockActividadesRaw, segunda]);
+    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    render(<ProgramaGeneralPage />);
+    fireEvent.click((await screen.findAllByText('Excavación mecánica de zapatas'))[0]);
+    await screen.findByRole('dialog', { name: /Editor Contextual LPS/i });
+    fireEvent.keyDown(window, { key: ']' });
+    await screen.findByText('Actividad 2 de 2');
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(confirmar).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: /Editor Contextual LPS/i })).not.toBeInTheDocument());
+    confirmar.mockRestore();
+  });
 });

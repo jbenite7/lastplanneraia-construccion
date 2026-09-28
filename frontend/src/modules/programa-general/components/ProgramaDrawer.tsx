@@ -80,14 +80,18 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
   const [sosMensaje, setSosMensaje] = useState<string | null>(null);
   const [sosError, setSosError] = useState<string | null>(null);
 
+  // Actividad con la que se cargaron los campos. Al navegar con [ ] la prop cambia un render antes
+  // de que el efecto de sincronización recargue los campos; comparar contra `actividad` en ese
+  // render intermedio daba un borrador fantasma (y un Esc rápido pedía confirmar sin cambios).
+  const [base, setBase] = useState(actividad);
   const dirty =
-    fechaInicio !== (actividad.Fecha_Inicio || '') ||
-    fechaFin !== (actividad.Fecha_Fin || '') ||
-    unidad !== (actividad.unidad || 'm³') ||
-    cantidadPpto !== (actividad.cantidad_ppto?.toString() || '') ||
-    avanceReal !== actividad.avanceRealPct.toString() ||
-    profesional !== (actividad.Responsable_AIA || '') ||
-    subcontratista !== (actividad.Sub_Contratista || '');
+    fechaInicio !== (base.Fecha_Inicio || '') ||
+    fechaFin !== (base.Fecha_Fin || '') ||
+    unidad !== (base.unidad || 'm³') ||
+    cantidadPpto !== (base.cantidad_ppto?.toString() || '') ||
+    avanceReal !== base.avanceRealPct.toString() ||
+    profesional !== (base.Responsable_AIA || '') ||
+    subcontratista !== (base.Sub_Contratista || '');
 
   useEffect(() => {
     onDirtyChange?.(dirty);
@@ -95,6 +99,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
 
   // Sincronizar estado cuando cambia la actividad seleccionada (navegación secuencial)
   useEffect(() => {
+    setBase(actividad);
     setFechaInicio(actividad.Fecha_Inicio || '');
     setFechaFin(actividad.Fecha_Fin || '');
     setUnidad(actividad.unidad || 'm³');
@@ -125,7 +130,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
     avanceReal,
     profesional,
     subcontratista,
-    actividad,
+    actividad: base,
     dirty,
   });
 
@@ -138,7 +143,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
       avanceReal,
       profesional,
       subcontratista,
-      actividad,
+      actividad: base,
       dirty,
     };
   });
