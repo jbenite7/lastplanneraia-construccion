@@ -33,6 +33,18 @@ export interface ResultadoSesion {
   error: ApiError | null;
   recargar: () => Promise<void>;
   /**
+   * Relee `/api/session` **en silencio**: reemplaza el arranque en su sitio, sin pasar por `cargando`,
+   * sin subir `generacion` y sin abortar nada. Existe para el caso en que una pantalla acaba de guardar
+   * la semana en la sesión (Programa General tras «quitar semana») y la barra del shell debe enterarse
+   * sin que la pantalla se remonte ni pierda sus filtros, que es lo que provocaría `recargar()`.
+   *
+   * Es deliberadamente más débil que `recargar()`: solo aplica una respuesta **autenticada** y solo si
+   * ningún `recargar()` empezó mientras tanto (la generación manda); cualquier otra cosa —fallo de red,
+   * sesión anónima, respuesta tardía— se ignora sin ruido, y el estado de sesión lo sigue decidiendo
+   * la siguiente petición real. No sirve para cambiar de proyecto ni de usuario.
+   */
+  refrescarSemana: () => Promise<void>;
+  /**
    * Cierra sesión de forma CSRF-idempotente vía el único `ControlActividad` del árbol (Tarea 6,
    * T01). Nunca construyas tu propio POST a `/api/auth/logout` — este es el único camino. El
    * `ResultadoCierreSesion` resuelto distingue "el servidor confirmó" de "no logramos confirmarlo"
@@ -153,6 +165,21 @@ function useArranqueSesion(): Omit<ResultadoSesion, 'cerrarSesion' | 'logoutSinC
     }
   }, []);
 
+  const refrescarSemana = useCallback(async () => {
+    const generacionAlPedir = generacionRef.current;
+    try {
+      const resultado = await pedir('/api/session', EsquemaArranque);
+      // Un recargar() que empezó mientras esperábamos manda: su resultado es el vigente.
+      if (generacionRef.current !== generacionAlPedir) return;
+      // Solo una sesión autenticada refresca la semana; expiración o anonimato los detecta la próxima
+      // petición real, no esta relectura auxiliar.
+      if (resultado.state !== 'authenticated') return;
+      setArranque(resultado);
+    } catch {
+      // Silencioso a propósito: la pantalla ya cargó y un fallo aquí no debe degradarla.
+    }
+  }, []);
+
   useEffect(() => {
     void recargar();
   }, [recargar]);
@@ -170,7 +197,7 @@ function useArranqueSesion(): Omit<ResultadoSesion, 'cerrarSesion' | 'logoutSinC
 
   const autenticado = arranque?.state === 'authenticated' ? arranque : null;
 
-  return { estado, arranque, autenticado, error, recargar, generacion, señal, csrfTokenAutenticado };
+  return { estado, arranque, autenticado, error, recargar, refrescarSemana, generacion, señal, csrfTokenAutenticado };
 }
 
 const ContextoSesion = createContext<ResultadoSesion | null>(null);
