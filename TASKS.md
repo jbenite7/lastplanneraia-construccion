@@ -1324,6 +1324,24 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   navegación React antes de migrar los módulos de programación.
 - [ ] **Definir QA y goldens durante la convivencia:** decidir por cada módulo si su golden PHP se
   archiva o se reemplaza al cruzar a React, y mantener cobertura extremo a extremo en ambos mundos.
+- [ ] **Deuda del retiro de VIEW-34 (2026-09-29): Programa General en React sin regresión visual por
+  capturas.** El retiro (`c69d367d`, corregido en `25c5e349`) borró el spec visual del piloto y
+  `test:visual:pilot` ahora corre `tests/browser/s05-programa-general-react.spec.mjs`, que no
+  compara capturas; los goldens viejos son de la vista PHP retirada. Felipe aceptó la deuda el
+  2026-09-29. Se cierra con la Tarea 11 del plan de S05 (los ocho goldens que aprueba Felipe). Tampoco
+  se miden ya los siete matices de estado que medía `test:hue:pilot`, retirado en el mismo commit.
+- [ ] **Deuda del retiro de VIEW-34: guardias de CSS compartido sin reemplazo nombrado.** El
+  contrato viejo comprobaba `.pdc-legend-item` (envolver sin partir palabras, en `buttons.css`),
+  `.aia-btn` con `min-height: var(--ds-target-min)` y `#pgLegend.pdc-legend-autoscaling` (44px, en
+  `legacy-bridge.css`); `programacion_intermedia.view.php` sigue usando `.pdc-legend-item`. Se borró
+  además «la tabla de presentación de PG proyecta el contrato» de `ops-state-contract.test.mjs`, que
+  comparaba estados contra `docs/design-system/state-semantics.json`: hoy ningún test de `frontend/`
+  lee ese JSON. Reponer las aserciones donde sigan vivos los componentes.
+- [ ] **Deuda del retiro de VIEW-34: inventario y documentación desactualizados.**
+  `docs/design-system/ui-groups-inventory.json` declara `styleApi: .aia-table-shell` para la grilla
+  editable, pero `ProgramaTable.tsx` y `ProgramaCards.tsx` usan `programa-table-pro`;
+  `docs/qa/workflows.md` (líneas 832, 834 y 1746) y `database/audit/query-inventory.json:367` siguen
+  listando `/programa-general/filtros`, `/programa-general/set-filtro` y `ProgramaGeneralController`.
 - [x] 2026-09-28 — **`/programa-general` responde 500 si se entra sin semana en sesión: NO SE
   REPRODUCE en `main` (`a70f7bb6`); causa del 500 original sin atribuir. Ver «Cierre» al final del
   ítem, que dice qué se probó y qué no.** Descubierto el
