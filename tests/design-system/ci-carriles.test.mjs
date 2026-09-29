@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, renameSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 import {
@@ -11,6 +12,7 @@ import {
   clasificar,
   calcularSalida,
   clasificarRuta,
+  formatearResumen,
   formatearSalida,
   gatesPara,
   rutasDelCambio,
@@ -435,4 +437,63 @@ test('formatearSalida: una linea por gate, temas JSON valido y carriles', () => 
   const completa = formatearSalida(calcularSalida({}, () => ''));
   assert.match(completa, /^carriles=completo$/m);
   assert.match(completa, /^temas=\["light","dark"\]$/m);
+});
+
+// ---------------------------------------------------------------------------
+// CLI real en subproceso: stdout solo con las banderas, resumen aparte
+// ---------------------------------------------------------------------------
+
+const SCRIPT = fileURLToPath(new URL('../../scripts/ci-carriles.mjs', import.meta.url));
+
+function correrCli(entorno) {
+  return spawnSync(process.execPath, [SCRIPT], {
+    env: { PATH: process.env.PATH, ...entorno },
+    encoding: 'utf8',
+  });
+}
+
+test('CLI real: push sale 0 e imprime una linea por cada clave, temas y carriles', () => {
+  const r = correrCli({ EVENT_NAME: 'push' });
+  assert.equal(r.status, 0, r.stderr);
+  const lineas = r.stdout.trim().split('\n');
+  assert.equal(lineas.length, GATE_KEYS.length + 2);
+  for (const k of [...GATE_KEYS, 'temas', 'carriles']) {
+    assert.equal(lineas.filter((l) => l.startsWith(`${k}=`)).length, 1, `falta ${k}`);
+  }
+  assert.equal(r.stdout, formatearSalida(calcularSalida({ EVENT_NAME: 'push' })));
+});
+
+test('CLI real: con GITHUB_STEP_SUMMARY añade la tabla al archivo y no ensucia stdout', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ci-carriles-resumen-'));
+  try {
+    const resumen = join(dir, 'summary.md');
+    writeFileSync(resumen, 'previo\n');
+    const r = correrCli({ EVENT_NAME: 'push', GITHUB_STEP_SUMMARY: resumen });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stdout, formatearSalida(calcularSalida({ EVENT_NAME: 'push' })));
+    const texto = readFileSync(resumen, 'utf8');
+    assert.ok(texto.startsWith('previo\n'), 'debe añadir, no sobrescribir');
+    assert.match(texto, /^## Selector de carriles$/m);
+    assert.match(texto, /^Carriles detectados: completo$/m);
+    for (const k of GATE_KEYS) assert.match(texto, new RegExp(`^\\| ${k} \\| corre \\|$`, 'm'));
+    assert.match(texto, /^Temas: light, dark$/m);
+    assert.doesNotMatch(r.stdout, /Selector de carriles/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('formatearResumen: distingue gate que corre de gate omitido por carril no tocado', () => {
+  const salida = calcularSalida(PR, () => 'docs/a.md\0');
+  const texto = formatearResumen(salida);
+  assert.match(texto, /^Carriles detectados: docs$/m);
+  for (const k of GATE_KEYS) {
+    assert.match(texto, new RegExp(`^\\| ${k} \\| omitido \\(carril no tocado\\) \\|$`, 'm'));
+  }
+  assert.match(texto, /^Temas: light$/m);
+});
+
+test('CLI real: sin GITHUB_STEP_SUMMARY no falla ni escribe archivos', () => {
+  const r = correrCli({ EVENT_NAME: 'push' });
+  assert.equal(r.status, 0);
 });

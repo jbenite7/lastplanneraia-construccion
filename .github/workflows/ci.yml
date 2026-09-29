@@ -67,7 +67,19 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           BEFORE_SHA: ${{ github.event.before }}
           HEAD_SHA: ${{ github.sha }}
-        run: node scripts/ci-carriles.mjs >> "$GITHUB_OUTPUT"
+        run: |
+          set -euo pipefail
+          # Sin tubería: si el selector falla, su código de salida corta el paso.
+          node scripts/ci-carriles.mjs > "$RUNNER_TEMP/carriles.out"
+          # Un selector mudo o incompleto dejaría los gates omitidos en silencio y la corrida
+          # en verde: aquí se exige una línea por cada clave antes de volcar nada.
+          for clave in static frontend runtime php_runtime phpstan_pdc css_minify e2e lab pilot temas carriles; do
+            if ! grep -q "^${clave}=" "$RUNNER_TEMP/carriles.out"; then
+              echo "::error::El selector de carriles no imprimió la clave ${clave}."
+              exit 1
+            fi
+          done
+          cat "$RUNNER_TEMP/carriles.out" >> "$GITHUB_OUTPUT"
 
   design-system-static:
     runs-on: ubuntu-latest

@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
-import { GATE_KEYS } from '../../scripts/ci-carriles.mjs';
+import { GATE_KEYS, calcularSalida, formatearSalida } from '../../scripts/ci-carriles.mjs';
 import { parseJobSteps } from './workflow-contract-parser.mjs';
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
@@ -69,12 +69,68 @@ test('cambios calcula el diff con historial completo y datos del evento por env'
   assert.equal(carriles.env?.BEFORE_SHA, '${{ github.event.before }}');
   assert.equal(carriles.env?.HEAD_SHA, '${{ github.sha }}');
   assert.ok(!carriles.run.includes('${{'), 'el run no debe interpolar datos del evento');
-  assert.match(carriles.run, /node scripts\/ci-carriles\.mjs >> "\$GITHUB_OUTPUT"/);
+  assert.match(carriles.run, /node scripts\/ci-carriles\.mjs > "\$RUNNER_TEMP\/carriles\.out"/);
+  assert.match(carriles.run, /cat "\$RUNNER_TEMP\/carriles\.out" >> "\$GITHUB_OUTPUT"/);
+  for (const clave of [...GATE_KEYS, 'temas', 'carriles']) {
+    assert.ok(new RegExp(`\\b${clave}\\b`).test(carriles.run), `el run no valida la clave ${clave}`);
+  }
 
   const cuerpo = sinComentarios(jobLines(workflow, 'cambios')).join('\n');
   assert.match(cuerpo, /^    runs-on: ubuntu-latest$/m);
   assert.match(cuerpo, /^    timeout-minutes: 5$/m);
   assert.match(cuerpo, /^    permissions:\n {6}contents: read$/m);
+});
+
+// Ejecuta de verdad el `run` del paso `carriles` con un `node` falso al frente del PATH.
+const correrCarriles = async (cuerpoNodeFalso) => {
+  const workflow = await read('.github/workflows/ci.yml');
+  const { run } = parseJobSteps(workflow, 'cambios').find(({ id }) => id === 'carriles');
+  const dir = await mkdtemp(join(tmpdir(), 'carriles-ci-'));
+  try {
+    const bin = join(dir, 'bin');
+    await mkdir(bin);
+    await writeFile(join(bin, 'node'), `#!/bin/sh\n${cuerpoNodeFalso}\n`);
+    await chmod(join(bin, 'node'), 0o755);
+    const salida = join(dir, 'github-output');
+    await writeFile(salida, '');
+    const env = {
+      PATH: `${bin}:${process.env.PATH}`,
+      RUNNER_TEMP: dir,
+      GITHUB_OUTPUT: salida,
+    };
+    const r = spawnSync('bash', ['-c', run], { cwd: dir, env, encoding: 'utf8' });
+    return { code: r.status, stdout: r.stdout, stderr: r.stderr, volcado: await readFile(salida, 'utf8') };
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+};
+
+test('cambios falla en rojo si el selector no imprime nada y no vuelca nada a GITHUB_OUTPUT', async () => {
+  const r = await correrCarriles('exit 0');
+  assert.notEqual(r.code, 0, 'un selector mudo no puede dar verde');
+  assert.equal(r.volcado, '');
+});
+
+test('cambios falla en rojo si al selector le falta una clave', async () => {
+  const completa = formatearSalida(calcularSalida({ EVENT_NAME: 'push' }));
+  const sinE2e = completa.split('\n').filter((l) => !l.startsWith('e2e=')).join('\n');
+  const r = await correrCarriles(`cat <<'FIN'\n${sinE2e}FIN`);
+  assert.notEqual(r.code, 0);
+  assert.equal(r.volcado, '');
+});
+
+test('cambios falla en rojo si el selector sale con error aunque haya impreso todo', async () => {
+  const completa = formatearSalida(calcularSalida({ EVENT_NAME: 'push' }));
+  const r = await correrCarriles(`cat <<'FIN'\n${completa}FIN\nexit 3`);
+  assert.notEqual(r.code, 0);
+  assert.equal(r.volcado, '');
+});
+
+test('cambios vuelca a GITHUB_OUTPUT las lineas validas del selector y sale 0', async () => {
+  const completa = formatearSalida(calcularSalida({ EVENT_NAME: 'push' }));
+  const r = await correrCarriles(`cat <<'FIN'\n${completa}FIN`);
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(r.volcado, completa);
 });
 
 test('los jobs existentes dependen de cambios y respetan su bandera', async () => {

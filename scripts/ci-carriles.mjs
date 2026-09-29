@@ -5,7 +5,7 @@
 // banderas en stdout (el workflow lo redirige a $GITHUB_OUTPUT).
 
 import { execFileSync } from 'node:child_process';
-import { realpathSync } from 'node:fs';
+import { appendFileSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 export const GATE_KEYS = Object.freeze([
@@ -190,6 +190,24 @@ export function formatearSalida({ gates, temas, carriles }) {
   return `${lineas.join('\n')}\n`;
 }
 
+// Resumen para la pestaña del job (variable GITHUB_STEP_SUMMARY): qué carriles
+// detectó el selector y qué hará cada gate. No va a stdout.
+export function formatearResumen({ gates, temas, carriles }) {
+  const listaTemas = temas && temas.length > 0 ? temas : ['light'];
+  const lineas = [
+    '## Selector de carriles',
+    '',
+    `Carriles detectados: ${carriles.join(', ')}`,
+    '',
+    '| Gate | Estado |',
+    '| --- | --- |',
+    ...GATE_KEYS.map((k) => `| ${k} | ${gates[k] === true ? 'corre' : 'omitido (carril no tocado)'} |`),
+    '',
+    `Temas: ${listaTemas.join(', ')}`,
+  ];
+  return `${lineas.join('\n')}\n`;
+}
+
 function esModuloPrincipal() {
   try {
     return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
@@ -201,6 +219,15 @@ function esModuloPrincipal() {
 if (esModuloPrincipal()) {
   const salida = calcularSalida(process.env);
   process.stdout.write(formatearSalida(salida));
+  // El resumen es un extra: si no se puede escribir, la salida de los gates ya
+  // salió y el CI no debe caer por eso.
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    try {
+      appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n${formatearResumen(salida)}`);
+    } catch (error) {
+      process.stderr.write(`[ci-carriles] no pude escribir el resumen: ${error.message}\n`);
+    }
+  }
   const activos = GATE_KEYS.filter((k) => salida.gates[k]);
   process.stderr.write(
     `[ci-carriles] carriles: ${salida.carriles.join(', ')} | gates: ${activos.join(', ') || 'ninguno'} | temas: ${salida.temas.join(', ')}\n`,
