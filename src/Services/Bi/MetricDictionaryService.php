@@ -421,7 +421,7 @@ class MetricDictionaryService
             'estado_ejecucion' => 'descriptiva',
             'report_key' => 'programa-general',
             'metric_name' => 'Variación probable de fecha final P50',
-            'definition' => 'Diferencia en días calendario entre la fecha final P50 simulada y la fecha final contractual del alcance filtrado.',
+            'definition' => 'Diferencia en días calendario entre la fecha final P50 simulada y la fecha final contractual declarada del proyecto.',
             'formula' => 'DATEDIFF(forecast_finish_p50, contractual_finish)',
             'unit' => 'días calendario',
             'execution_source' => 'ControlTowerService::programaDelayForecast',

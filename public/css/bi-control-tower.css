@@ -716,6 +716,11 @@
     margin: 0;
   }
 
+  /* `display: grid` de arriba gana al [hidden] del navegador: sin esto el bloque de dos fechas siempre se vería. */
+  .bi-delay-dates[hidden] {
+    display: none;
+  }
+
   .bi-delay-dates > div {
     min-width: 0;
     border: 1px solid var(--ds-active-border);
