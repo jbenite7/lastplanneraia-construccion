@@ -186,6 +186,25 @@ class ProgramaGeneralContextService
         ];
     }
 
+    /**
+     * La semana que hay que escribir en la sesión: la que esta pantalla resolvió, si la sesión aún no la tiene.
+     *
+     * `build()` resuelve la semana (la de la sesión, o la última si falta o está fuera de rango) pero no la
+     * escribe. Tras «quitar semana» la pantalla cargaba con su semana propia y el resto del shell seguía sin
+     * ninguna: la barra de cabecera y el selector no aparecían porque `/api/session` devolvía `week: null`.
+     *
+     * Devuelve null cuando no hay nada que guardar: la sesión ya la tiene, o el proyecto no tiene semanas
+     * (nunca se escribe un 0).
+     */
+    public static function semanaPorGuardar(array $session, int $semanaResuelta): ?int
+    {
+        if ($semanaResuelta <= 0) {
+            return null;
+        }
+
+        return (int) ($session['semana'] ?? 0) === $semanaResuelta ? null : $semanaResuelta;
+    }
+
     private ?RbacService $rbacService = null;
 
     private function getRbac(): RbacService
