@@ -9,7 +9,9 @@ import path from 'node:path';
 // los 15 manifiestos declarados en docs/design-system/manifests/inventory.json,
 // no solo un subconjunto, asi que las pruebas referenciadas por cualquiera de
 // ellos deben existir tambien en este fixture o el gate falla por "missing test".
-import { referencedTestFiles, repositoryRoot } from './manifest-sources.mjs';
+import {
+  referencedSourceFiles, referencedTestFiles, repositoryRoot,
+} from './manifest-sources.mjs';
 
 export { repositoryRoot };
 
@@ -39,6 +41,15 @@ export function createCloseoutFixture() {
     // mismo inodo que su fuente -- copiarlo encima de si mismo revienta con
     // ERR_FS_CP_EINVAL. El symlink ya lo deja visible, asi que no hace falta copia.
     if (!existsSync(source) || existsSync(dest)) continue;
+    mkdirSync(path.dirname(dest), { recursive: true });
+    cpSync(source, dest);
+  }
+  // El gate lee SpaRouter para registrar rutas migradas y también exige que
+  // las fuentes declaradas por los manifiestos existan en el repo temporal.
+  const scopedSources = new Set([...referencedSourceFiles(), 'src/Core/SpaRouter.php']);
+  for (const file of scopedSources) {
+    const source = path.join(repositoryRoot, file);
+    const dest = path.join(fixtureRoot, file);
     mkdirSync(path.dirname(dest), { recursive: true });
     cpSync(source, dest);
   }

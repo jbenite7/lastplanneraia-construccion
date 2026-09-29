@@ -38,12 +38,15 @@ final class DesignSystemHeadComponent
     public const CORE_VENDORS = ['bootstrap', 'jquery', 'font-awesome', 'aia-fonts'];
 
     /**
-     * Vendors cuyo CSS enlaza la propia vista, no este head. El array queda
-     * vacio desde el 2026-09-29: la única vista que enlazaba toastr fue retirada
-     * con S05; Tom Select ya viaja por sus adjuntos gobernados.
+     * Vendors cuya hoja enlaza la vista: no se agregan al bundle ni a un adjunto,
+     * porque eso extendería el CSS a otras vistas o lo duplicaría. El contrato
+     * de partición exige que no tengan adjunto y que alguna vista los enlace.
+     * AdminLTE salió de esta categoría tras el caso 6-adminlte-login: su hoja
+     * externa sin capa vencía al sistema; ahora se entrega dentro de vendor.
+     * La lista está vacía desde el 2026-09-29: S05 retiró la única vista que
+     * cargaba toastr; Tom Select ya usa su adjunto gobernado.
      *
-     * `scripts/design-system-entrypoint-partition.mjs` verifica que todo vendor
-     * añadido aquí no tenga adjunto y aparezca en un `<link>` de una vista.
+     * @var list<string>
      */
     public const VIEW_OWNED_VENDORS = [];
 
@@ -148,10 +151,12 @@ final class DesignSystemHeadComponent
 
             return $cache[$moduleId] = null;
         }
+        /** @var list<string> $viewOwnedVendors */
+        $viewOwnedVendors = self::VIEW_OWNED_VENDORS;
         foreach ($vendors as $vendor) {
             if (!is_string($vendor)
                 || (!in_array($vendor, self::CORE_VENDORS, true)
-                    && !in_array($vendor, self::VIEW_OWNED_VENDORS, true)
+                    && !self::vendorListContains($vendor, $viewOwnedVendors)
                     && !in_array($vendor, self::SCRIPT_ONLY_VENDORS, true)
                     && !isset(self::VENDOR_ATTACHMENTS[$vendor]))
             ) {
@@ -162,6 +167,12 @@ final class DesignSystemHeadComponent
         }
 
         return $cache[$moduleId] = $vendors;
+    }
+
+    /** @param list<string> $vendors */
+    private static function vendorListContains(string $vendor, array $vendors): bool
+    {
+        return in_array($vendor, $vendors, true);
     }
 
     public static function renderScript(string $url): string

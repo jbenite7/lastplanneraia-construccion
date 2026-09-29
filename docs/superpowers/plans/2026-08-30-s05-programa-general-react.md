@@ -1951,7 +1951,12 @@ existen en este HEAD; las invariantes React heredadas aún señalan `!important`
 Playwright/HTTP contra el sitio servido quedaron sin correr porque requieren una ventana coordinada.
 Estos límites y sus códigos de salida quedan registrados en el informe. No se ejecutó DML ni se
 regeneraron baselines; las casillas históricas no se marcaron retroactivamente. El commit con el
-mensaje `refactor(programa-general): retire legacy surface` fue bloqueado por el hook pre-commit
-(RC=1): exige regenerar `TASKS.md` con un script alojado fuera de este worktree. No se ejecutó ese
-script, no se modificó `TASKS.md` ni se desactivó el hook. Los cambios de Tarea 13 quedan staged;
-HEAD permanece en `903174c6c00b5be0c3e5b38e199b554d1020fc59` y el informe registra el bloqueo.
+mensaje `refactor(programa-general): retire legacy surface` sí se creó en `c69d367d014df62739a3dc0bd4e0f1dba6d59293`.
+El primer intento había sido bloqueado por el hook pre-commit (RC=1), pero luego se ejecutó el
+generador `scripts/tasks-md.mjs` y se completó el commit. `TASKS.md` sí cambió: la Tarea 13 quedó
+hecha, el conteo S05 pasó de 11 a 12 tareas hechas y el total cambió de 563 a 564. La afirmación
+anterior de que el commit seguía bloqueado, que `TASKS.md` no cambió y que HEAD era
+`903174c6c00b5be0c3e5b38e199b554d1020fc59` describía un estado intermedio.
+
+La revisión posterior detectó seis regresiones del retiro; esta corrección de sprint las resolvió y
+dejó su evidencia en `.superpowers/sdd/2026-09-29-retiro-view-34/informe-correccion.md`.
