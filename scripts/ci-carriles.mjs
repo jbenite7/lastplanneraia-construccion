@@ -29,6 +29,8 @@ export const CARRILES = Object.freeze([
   'front-src',
   'front-bundle',
   'apps',
+  'tests-ds',
+  'tests-php',
   'todo',
 ]);
 
@@ -45,8 +47,11 @@ const REGLAS = [
   // Documentación pura: no toca el producto.
   [/^(docs|goals|memoria|decisiones|\.obsidian)\//, 'docs'],
   [/^ROADMAP\.md$/, 'docs'],
+  [/^TASKS\.md$/, 'docs'],
   // Núcleo del design system.
   [/^public\/css\/tokens\.css$/, 'ds-core'],
+  [/^public\/css\/(styles|buttons|access|handsontable-module|handsontable-header-global|auth-react|project-selector-react)\.css$/, 'ds-core'],
+  [/^src\/Controllers\/Core\/DesignSystemAssetController\.php$/, 'ds-core'],
   [/^public\/css\/aia-design-system\.css$/, 'ds-core'],
   [/^public\/css\/design-system\//, 'ds-core'],
   [/^public\/js\/modules\/aia_ui\//, 'ds-core'],
@@ -54,6 +59,12 @@ const REGLAS = [
   // Laboratorio del design system.
   [/^views\/design-system\//, 'ds-lab'],
   [/^src\/Controllers\/Internal\/DesignSystemLabController\.php$/, 'ds-lab'],
+  [/^src\/Security\/DesignSystemLabAccessPolicy\.php$/, 'ds-lab'],
+  // Pruebas: las del design system y las de PHP corren su propio carril;
+  // el resto de tests/ (browser, fixtures, scripts...) cae en `todo`.
+  [/^tests\/design-system\//, 'tests-ds'],
+  [/^tests\/test_[^/]*\.php$/, 'tests-php'],
+  [/^tests\/unit\//, 'tests-php'],
   // Apps con bundle propio (antes que views/ y php).
   [/^views\/plan-compras\//, 'apps'],
   [/^(pdc-app|ct-app)\//, 'apps'],
@@ -65,6 +76,7 @@ const REGLAS = [
   [/^public\/(css|js|dist-css)\//, 'ds-modulo'],
   [/^views\//, 'ds-modulo'],
   // Backend PHP y su configuración.
+  [/^public\/index\.php$/, 'php'],
   [/^(src|admin|database)\//, 'php'],
   [/^composer\.(json|lock)$/, 'php'],
   [/^phpunit\.xml$/, 'php'],
@@ -88,12 +100,14 @@ export function clasificar(rutas) {
 const MATRIZ = {
   docs: [],
   'front-src': ['static', 'frontend'],
-  'ds-modulo': ['static', 'php_runtime', 'css_minify', 'e2e'],
+  'ds-modulo': ['static', 'php_runtime', 'css_minify', 'e2e', 'lab'],
   'ds-lab': ['static', 'php_runtime', 'css_minify', 'e2e', 'lab'],
   'ds-core': ['static', 'php_runtime', 'css_minify', 'e2e', 'lab', 'pilot'],
   php: ['static', 'php_runtime', 'phpstan_pdc', 'e2e'],
-  'front-bundle': ['static', 'frontend', 'php_runtime', 'e2e', 'pilot'],
+  'front-bundle': ['static', 'frontend', 'php_runtime', 'e2e', 'pilot', 'lab'],
   apps: ['static', 'phpstan_pdc'],
+  'tests-ds': ['static'],
+  'tests-php': ['static', 'php_runtime'],
   todo: GATE_KEYS.filter((k) => k !== 'runtime'),
 };
 

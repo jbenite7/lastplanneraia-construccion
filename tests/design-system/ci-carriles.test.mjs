@@ -23,6 +23,7 @@ const RUTAS = {
     'memoria/index.md',
     'decisiones/0001.md',
     'ROADMAP.md',
+    'TASKS.md',
     '.obsidian/app.json',
     './docs/a.md',
   ],
@@ -35,10 +36,19 @@ const RUTAS = {
     'src/View/Components/DesignSystemHeadComponent.php',
     'src/View/Components/DesignSystemComponent.php',
     'src/View/Components/BiAccessComponent.php',
+    'public/css/styles.css',
+    'public/css/buttons.css',
+    'public/css/access.css',
+    'public/css/handsontable-module.css',
+    'public/css/handsontable-header-global.css',
+    'public/css/auth-react.css',
+    'public/css/project-selector-react.css',
+    'src/Controllers/Core/DesignSystemAssetController.php',
   ],
   'ds-lab': [
     'views/design-system/lab.view.php',
     'src/Controllers/Internal/DesignSystemLabController.php',
+    'src/Security/DesignSystemLabAccessPolicy.php',
   ],
   'ds-modulo': [
     'goals/design-system-nucleo-gobernanza/x.md',
@@ -74,19 +84,25 @@ const RUTAS = {
     'phpstan.neon',
     'phpunit.xml',
     'admin/index.php',
+    'public/index.php',
     'admin/views/x.view.php',
     'admin/public/css/x.css',
     '.superpowers/sdd/otro-frente/plan.md',
   ],
+  'tests-ds': ['tests/design-system/ci-carriles.test.mjs', 'tests/design-system/x.mjs'],
+  'tests-php': ['tests/test_x.php', 'tests/unit/XTest.php', 'tests/unit/Sub/YTest.php'],
   todo: [
     '.github/workflows/ci.yml',
     'scripts/ci-carriles.mjs',
-    'tests/test_x.php',
+    'tests/browser/x.mjs',
+    'tests/fixtures/x',
+    'tests/scripts/x.sh',
+    'tests/test_x.mjs',
+    'tests/test_x.php/sub',
     'package.json',
     'docker/php/Dockerfile',
     'e2e/x.mjs',
     'carpeta-nueva/x',
-    'public/index.php',
   ],
 };
 
@@ -102,7 +118,7 @@ test('todos los carriles esperados existen en CARRILES', () => {
   for (const carril of Object.keys(RUTAS)) {
     assert.ok(CARRILES.includes(carril), carril);
   }
-  assert.equal(CARRILES.length, 9);
+  assert.equal(CARRILES.length, 11);
   assert.equal(GATE_KEYS.length, 9);
 });
 
@@ -124,8 +140,8 @@ const TABLA = [
   [['front-src'], ['static', 'frontend'], ['light']],
   [
     ['ds-modulo'],
-    ['static', 'runtime', 'php_runtime', 'css_minify', 'e2e'],
-    ['light'],
+    ['static', 'runtime', 'php_runtime', 'css_minify', 'e2e', 'lab'],
+    ['light', 'dark'],
   ],
   [
     ['ds-lab'],
@@ -144,10 +160,12 @@ const TABLA = [
   ],
   [
     ['front-bundle'],
-    ['static', 'frontend', 'runtime', 'php_runtime', 'e2e', 'pilot'],
+    ['static', 'frontend', 'runtime', 'php_runtime', 'e2e', 'pilot', 'lab'],
     ['light', 'dark'],
   ],
   [['apps'], ['static', 'runtime', 'phpstan_pdc'], ['light']],
+  [['tests-ds'], ['static'], ['light']],
+  [['tests-php'], ['static', 'runtime', 'php_runtime'], ['light']],
   [['todo'], [...GATE_KEYS], ['light', 'dark']],
 ];
 
@@ -162,6 +180,15 @@ for (const [carriles, esperadas, temas] of TABLA) {
     for (const k of GATE_KEYS) assert.equal(typeof r.gates[k], 'boolean');
   });
 }
+
+test('php y apps no encienden lab ni el tema oscuro', () => {
+  for (const carril of ['php', 'apps', 'tests-ds', 'tests-php', 'front-src', 'docs']) {
+    const r = gatesPara(new Set([carril]));
+    assert.equal(r.gates.lab, false, carril);
+    assert.equal(r.gates.pilot, false, carril);
+    assert.deepEqual(r.temas, ['light'], carril);
+  }
+});
 
 test('gatesPara: completo:true enciende las nueve', () => {
   const r = gatesPara(new Set(['docs']), { completo: true });
