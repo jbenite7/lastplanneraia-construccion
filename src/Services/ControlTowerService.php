@@ -1952,7 +1952,7 @@ class ControlTowerService
             'availability' => $available,
             'metrics' => [
                 'metric_key' => 'pg_finish_variance_days_p50',
-                'definition' => 'Fecha final P50 simulada menos fecha final contractual del alcance filtrado.',
+                'definition' => 'Fecha final P50 simulada menos fecha final contractual declarada del proyecto.',
                 'unit' => 'días calendario',
                 'sign_convention' => [
                     'positive' => 'Terminación probable posterior al fin contractual.',
@@ -1964,6 +1964,11 @@ class ControlTowerService
                 'reason' => $reason,
                 'contractual_finish' => $contractualFinish,
                 'contractual_finish_basis' => 'declared_project_baseline',
+                'contractual_dates' => $this->fechasContractualesDelAlcance(
+                    $context['contractual_baseline_by_project'] ?? [],
+                    $contractualFinish,
+                    $filters,
+                ),
                 'forecast' => $forecast,
                 'forecast_distribution_basis' => 'completion_date_samples_by_simulation',
                 'portfolio_aggregation' => 'max_completion_date_per_simulation_then_percentiles',
@@ -2080,6 +2085,59 @@ class ControlTowerService
             is_string($date) && $this->dateFromString($date) !== null
         ));
         return $dates ? max($dates) : null;
+    }
+
+    /**
+     * Las dos fechas de «Variación probable de fecha final»: la del proyecto entero y la del alcance filtrado.
+     *
+     * La del filtro NO es contractual: nadie declara una fecha por contratista. Es hasta cuándo terminaban las
+     * actividades del filtro en el PRIMER programa registrado (`contractual_baseline_by_project`, que ya llega
+     * filtrada). Por eso se rotula «según el primer programa» y no compite con la declarada. Sale de las filas
+     * del primer corte y no de lo vigente, para no repetir el defecto de la línea base deducida: al reprogramar,
+     * cruzar con la semana consultada la hacía desaparecer.
+     *
+     * Diferencia = proyecto menos filtro, en días: positiva si el filtro terminaba antes. Sin filtro, o sin
+     * filas del primer corte, no se inventa una fecha ni una diferencia.
+     *
+     * @param array<int, array<int|string, array<string, mixed>>> $primerCortePorProyecto
+     * @param array<string, mixed> $filters
+     * @return array<string, mixed>
+     */
+    private function fechasContractualesDelAlcance(array $primerCortePorProyecto, ?string $projectFinish, array $filters): array
+    {
+        $filtered = false;
+        foreach (['desde', 'hasta', 'sub', 'resp', 'etapa'] as $key) {
+            if (trim((string) ($filters[$key] ?? '')) !== '') {
+                $filtered = true;
+                break;
+            }
+        }
+
+        $firstProgramFinish = null;
+        if ($filtered) {
+            $fines = [];
+            foreach ($primerCortePorProyecto as $rows) {
+                foreach ($rows as $row) {
+                    $fines[] = $row['Fecha_Fin'] ?? null;
+                }
+            }
+            $firstProgramFinish = $this->maxForecastDate($fines);
+        }
+
+        $difference = null;
+        $projectDate = $projectFinish !== null ? $this->dateFromString($projectFinish) : null;
+        $filterDate = $firstProgramFinish !== null ? $this->dateFromString($firstProgramFinish) : null;
+        if ($projectDate !== null && $filterDate !== null) {
+            $difference = (int) $filterDate->diff($projectDate)->format('%r%a');
+        }
+
+        return [
+            'filtered' => $filtered,
+            'project_finish' => $projectFinish,
+            'first_program_finish' => $firstProgramFinish,
+            'first_program_basis' => 'first_program_of_filtered_scope',
+            'difference_days' => $difference,
+        ];
     }
 
     private function forecastUnavailableReason(array $projects, array $progress): string

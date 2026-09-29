@@ -352,6 +352,11 @@
             <canvas id="programa-dias-retraso" height="170" aria-label="Variación probable de la fecha final en días"></canvas>
             <div id="programa-delay-summary" class="bi-delay-summary" aria-live="polite">
                 <p id="programa-delay-status" class="bi-delay-status">Calculando proyección...</p>
+                <dl id="programa-delay-scope-dates" class="bi-delay-dates" aria-label="Fechas del proyecto y del filtro" hidden>
+                    <div><dt>Proyecto (toda la obra)</dt><dd id="programa-delay-scope-project">--</dd></div>
+                    <div><dt>Fin según el primer programa (filtro)</dt><dd id="programa-delay-scope-filter">--</dd></div>
+                    <div><dt>Diferencia</dt><dd id="programa-delay-scope-diff">--</dd></div>
+                </dl>
                 <dl class="bi-delay-dates">
                     <div><dt>Fin contractual</dt><dd id="programa-delay-contractual">--</dd></div>
                     <div><dt>Fin más probable</dt><dd id="programa-delay-p50">--</dd></div>

@@ -524,6 +524,30 @@ function renderProgramaGeneral(data) {
   setText('programa-critical-count', String(scoreValue(rows, 'Críticas atrasadas')));
 }
 
+// La diferencia se dice con palabras y respecto al proyecto: un signo suelto no dice hacia dónde mira.
+function scopeDifferenceText(days) {
+  if (!Number.isFinite(days)) return '--';
+  if (days === 0) return 'El mismo día que el fin del proyecto';
+  const unit = Math.abs(days) === 1 ? 'día' : 'días';
+  return `${formatInteger(Math.abs(days))} ${unit} ${days > 0 ? 'antes' : 'después'} del fin del proyecto`;
+}
+
+// Con filtro se muestran las dos fechas; sin filtro, una sola (la de «Fin contractual», como siempre).
+// La del filtro no es contractual —nadie declara una fecha por contratista—: sale del primer programa.
+function renderProgramaScopeDates(dates) {
+  const box = document.getElementById('programa-delay-scope-dates');
+  if (!box) return;
+  const filtered = dates?.filtered === true;
+  box.hidden = !filtered;
+  if (!filtered) return;
+
+  const project = String(dates.project_finish || '').trim();
+  setText('programa-delay-scope-project', project ? formatShortDate(project) : 'Sin línea base declarada');
+  const filterFinish = String(dates.first_program_finish || '').trim();
+  setText('programa-delay-scope-filter', filterFinish ? formatShortDate(filterFinish) : 'Sin fecha en el primer programa');
+  setText('programa-delay-scope-diff', scopeDifferenceText(finiteNumber(dates.difference_days)));
+}
+
 function renderProgramaDelay(chart) {
   const canvas = document.getElementById('programa-dias-retraso');
   const metrics = chart?.metrics || {};
@@ -544,7 +568,10 @@ function renderProgramaDelay(chart) {
     ? `${days > 0 ? 'Terminación posterior' : (days < 0 ? 'Terminación anticipada' : 'Terminación en fecha')}: ${formatInteger(Math.abs(days))} días frente al fin contractual en el escenario P50.`
     : (metrics?.reason || 'No hay historia suficiente para proyectar la fecha final.');
   setText('programa-delay-status', statusText);
-  setText('programa-delay-contractual', formatShortDate(metrics?.contractual_finish));
+  setText('programa-delay-contractual', metrics?.contractual_finish
+    ? formatShortDate(metrics.contractual_finish)
+    : '-- (Sin línea base declarada)');
+  renderProgramaScopeDates(metrics?.contractual_dates);
   setText('programa-delay-p50', formatShortDate(metrics?.forecast?.p50_finish));
   setText('programa-delay-optimistic', formatShortDate(metrics?.forecast?.p10_finish));
   setText('programa-delay-pessimistic', formatShortDate(metrics?.forecast?.p90_finish));
