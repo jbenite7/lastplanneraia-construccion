@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: goal-doc
-estado: vigente
+estado: cerrado
 fecha: 2026-09-28
 areas: [proceso]
 fuente: goals/ci-por-carriles/goal.md
@@ -36,7 +36,7 @@ Mergeado a `main` por orden de Felipe: PR #82 (`981ae3d2`) y PR #83 (`5e3b8e16`,
 |---|---|
 | R1 | 132 tests del selector y del workflow (RC=0) y tres PR de prueba con el selector leído en el registro: `docs` → ninguno (#84), `front-src` → `static`, `frontend` (#85), `ds-modulo` → `static`, `php_runtime`, `css_minify`, `e2e`, `lab` (#86) |
 | R2 | test de ruta sin dueño; y #82, que al tocar `.github/**` cayó en `todo` con las nueve banderas |
-| R3 | **Pendiente de lectura:** corrida de `main` `36596525901` sobre `981ae3d2` |
+| R3 | corrida de `main` `36596525901` sobre `981ae3d2`: selector `completo` (las nueve banderas y los dos temas), ningún gate omitido en `light`, 0 pasos fallidos o cancelados, `success` en 964 s. **No se probó una ráfaga:** el merge de #83 no lanzó corrida (solo tocó un `.md` de raíz), así que la concurrencia por SHA no se ejerció bajo cancelación |
 | R4 | #82: la pata `dark` omitió los gates independientes del tema (PHPStan, grants, suite PHP, admin-db, e2e, presupuestos, persistencia y el chequeo del CSS minificado) y bajó de ~730 s a 410 s |
 | R5 | test que ejecuta el `run` del resumen con `bash` en 6 escenarios; la tabla renderizada en GitHub no se leyó (la API no la expone) |
 | R6 | contratos en verde en local (24 de 24, RC=0; PHP de frontera 68 comprobaciones) y `design-system-static` en verde en el CI de #82 |

@@ -41,6 +41,7 @@ que no depende del tema.
 | #85 | 1 archivo de `frontend/src` | 198 s | 189 s |
 | #86 | 1 CSS de módulo (laboratorio en los dos temas) | 911 s | 1.292 s |
 | #82 | el propio CI (carril `todo`) | 994 s | 1.393 s |
+| `main` tras el merge | corrida de `push`: selector `completo`, nueve gates y dos temas | 964 s | 1.341 s |
 
 El ahorro grande está en los PR chicos. Con CSS o vistas el reloj casi no baja, porque D6 hace correr el
 laboratorio, y con lo compartido sube ~1 minuto por el job `cambios`, aunque la suma de jobs baja

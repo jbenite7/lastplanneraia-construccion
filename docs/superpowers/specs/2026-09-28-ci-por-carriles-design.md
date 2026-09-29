@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: abierto
+estado: cerrado
 id: CI-CARRILES
 fecha: 2026-09-28
 superficie: ci
@@ -15,7 +15,8 @@ resumen: "El CI corre todo en cada PR (~15 min) aunque el cambio toque una sola 
 
 # CI por carriles — evaluar lo que se edita
 
-**Estado: propuesta 1.2.** La 1.1 la aprobó Felipe en el chat el 2026-09-28 (con A2 y A3 como se
+**Estado: cerrada el 2026-09-29.** Se implementó y se mergeó (PR #82, `981ae3d2`); la medición real está
+en la decisión de la wiki y en el `## Cierre` del plan. Historia: propuesta 1.2. La 1.1 la aprobó Felipe en el chat el 2026-09-28 (con A2 y A3 como se
 recomendaban); la 1.2 recoge dos decisiones suyas del mismo día (D6 y D7), tomadas tras la revisión final
 de la rama. El sello formal `/aprobar` es de Felipe y no lo escribe ningún agente. La aprobación de la
 spec no autoriza implementación; eso es el visto del plan (paso 04).

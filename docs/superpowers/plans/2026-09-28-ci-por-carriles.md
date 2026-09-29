@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: abierto
+estado: cerrado
 id: P-CI-CARRILES
 fecha: 2026-09-28
 areas: [proceso, design-system]
@@ -204,4 +204,4 @@ Cierre del 2026-09-29. El plan se ejecutó en sesión de Claude (subagentes por 
 
 Integración: `main` se mezcló en la rama (`e7435961`) y se reverificó antes de publicar; la wiki se ingirió en `8fb3c854`. Costo de la sesión: sin dato (2026-09-29), porque el script está en `~/.claude`.
 
-Estado de la condición de hecho: R1, R2, R4, R5, R6, R7 y R8 con evidencia de corridas reales; **R3 (la corrida de `main` completa y sin cancelarse) pendiente de lectura** de la corrida `36596525901`.
+Estado de la condición de hecho: R1 a R8 con evidencia. R3 se leyó el mismo día: la corrida `36596525901` de `main` sobre `981ae3d2` fue completa (selector `completo`, nueve banderas, dos temas), sin ningún gate omitido en `light` ni pasos fallidos o cancelados, y terminó en `success` en 964 s. La concurrencia por SHA no se ejerció bajo una ráfaga de merges con código.
