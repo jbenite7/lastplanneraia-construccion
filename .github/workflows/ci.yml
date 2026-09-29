@@ -578,28 +578,52 @@ jobs:
           G_PILOT_LAB_GATES: ${{ steps.pilot-lab-gates.outcome }}
           G_KEYBOARD_REFLOW_EVIDENCE: ${{ steps.keyboard-reflow-evidence.outcome }}
           G_PG_PERSISTENCE_RBAC: ${{ steps.pg-persistence-rbac.outcome }}
+          THEME: ${{ matrix.theme }}
+          CARRILES: ${{ needs.cambios.outputs.carriles }}
+          F_PHP_RUNTIME: ${{ needs.cambios.outputs.php_runtime }}
+          F_PHPSTAN_PDC: ${{ needs.cambios.outputs.phpstan_pdc }}
+          F_E2E: ${{ needs.cambios.outputs.e2e }}
+          F_PILOT: ${{ needs.cambios.outputs.pilot }}
+          F_LAB: ${{ needs.cambios.outputs.lab }}
           G_FULL_APP_FLOW_MS: ${{ steps.full-app-flow.outputs.duration_ms }}
           G_SEMANAL_ROLES_PHASES_MS: ${{ steps.semanal-roles-phases.outputs.duration_ms }}
           G_RUNTIME_BUDGET_CHECK_MS: ${{ steps.runtime-budget-check.outputs.duration_ms }}
         run: |
+          # `skipped` tiene tres causas distintas y no se puede leer igual: el gate corre solo en la
+          # pata light y esta es dark; su carril no fue tocado (bandera distinta de true); o su
+          # bandera estaba en true y aun así no corrió (algo anterior lo impidió). Cualquier otro
+          # resultado se imprime tal cual: un omitido nunca se presenta como success.
+          estado() {
+            if [ "$1" != "skipped" ]; then
+              echo "$1"
+            elif [ "$3" = "light" ] && [ "$THEME" = "dark" ]; then
+              echo "corre solo en light"
+            elif [ "$2" != "true" ]; then
+              echo "omitido (carril no tocado)"
+            else
+              echo "no corrió (paso anterior falló)"
+            fi
+          }
           {
             echo "## Resultado de los gates del piloto"
             echo ""
+            echo "Carriles detectados: ${CARRILES:-sin dato}"
+            echo ""
             echo "| Gate | Resultado |"
             echo "| --- | --- |"
-            echo "| Enforce PHPStan baseline | ${G_PHPSTAN_BASELINE} |"
-            echo "| Enforce PHPStan level 6 on the PDC module | ${G_PHPSTAN_PDC} |"
-            echo "| Atestar grants efectivos de runtime | ${G_RUNTIME_GRANTS} |"
-            echo "| Correr la suite PHP completa que el CI puede honrar | ${G_PHP_SUITE} |"
-            echo "| Correr fixtures de migración con admin efímero | ${G_PHP_ADMIN_DB} |"
-            echo "| Enforce full-app-flow gate | ${G_FULL_APP_FLOW} |"
-            echo "| Enforce semanal roles and phases gate | ${G_SEMANAL_ROLES_PHASES} |"
-            echo "| Measure runtime budgets | ${G_RUNTIME_BUDGET_MEASURE} |"
-            echo "| Check runtime budgets against the baseline | ${G_RUNTIME_BUDGET_CHECK} |"
-            echo "| Run laboratory gates | ${G_LABORATORY_GATES} |"
-            echo "| Run pilot lab gates (Programa General) | ${G_PILOT_LAB_GATES} |"
-            echo "| Collect keyboard and reflow evidence (no bloqueante) | ${G_KEYBOARD_REFLOW_EVIDENCE} |"
-            echo "| Run Programa General persistence and RBAC gate | ${G_PG_PERSISTENCE_RBAC} |"
+            echo "| Enforce PHPStan baseline | $(estado "${G_PHPSTAN_BASELINE}" "${F_PHP_RUNTIME}" light) |"
+            echo "| Enforce PHPStan level 6 on the PDC module | $(estado "${G_PHPSTAN_PDC}" "${F_PHPSTAN_PDC}" light) |"
+            echo "| Atestar grants efectivos de runtime | $(estado "${G_RUNTIME_GRANTS}" "${F_PHP_RUNTIME}" light) |"
+            echo "| Correr la suite PHP completa que el CI puede honrar | $(estado "${G_PHP_SUITE}" "${F_PHP_RUNTIME}" light) |"
+            echo "| Correr fixtures de migración con admin efímero | $(estado "${G_PHP_ADMIN_DB}" "${F_PHP_RUNTIME}" light) |"
+            echo "| Enforce full-app-flow gate | $(estado "${G_FULL_APP_FLOW}" "${F_E2E}" light) |"
+            echo "| Enforce semanal roles and phases gate | $(estado "${G_SEMANAL_ROLES_PHASES}" "${F_E2E}" light) |"
+            echo "| Measure runtime budgets | $(estado "${G_RUNTIME_BUDGET_MEASURE}" "${F_PILOT}" light) |"
+            echo "| Check runtime budgets against the baseline | $(estado "${G_RUNTIME_BUDGET_CHECK}" "${F_PILOT}" light) |"
+            echo "| Run laboratory gates | $(estado "${G_LABORATORY_GATES}" "${F_LAB}") |"
+            echo "| Run pilot lab gates (Programa General) | $(estado "${G_PILOT_LAB_GATES}" "${F_PILOT}") |"
+            echo "| Collect keyboard and reflow evidence (no bloqueante) | $(estado "${G_KEYBOARD_REFLOW_EVIDENCE}" "${F_LAB}") |"
+            echo "| Run Programa General persistence and RBAC gate | $(estado "${G_PG_PERSISTENCE_RBAC}" "${F_E2E}" light) |"
           } >> "$GITHUB_STEP_SUMMARY"
           # G7/G8 (P2 Tarea 6): los recibos y presupuestos ya se generan; lo unico que faltaba
           # era volcarlos donde se leen sin abrir logs. `full-app-flow`/`semanal-roles-phases`
@@ -630,7 +654,11 @@ jobs:
             " >> "$GITHUB_STEP_SUMMARY"
           else
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "_Sin \`test-output/design-system-runtime-budget.json\`: \`Measure runtime budgets\` no llegó a escribirlo._" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$G_RUNTIME_BUDGET_MEASURE" = "skipped" ]; then
+              echo "_\`Measure runtime budgets\`: $(estado "$G_RUNTIME_BUDGET_MEASURE" "$F_PILOT" light)._" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "_Sin \`test-output/design-system-runtime-budget.json\`: \`Measure runtime budgets\` no llegó a escribirlo._" >> "$GITHUB_STEP_SUMMARY"
+            fi
           fi
           failed=0
           for outcome in "$G_PHPSTAN_BASELINE" "$G_PHPSTAN_PDC" "$G_RUNTIME_GRANTS" "$G_PHP_SUITE" "$G_PHP_ADMIN_DB" "$G_FULL_APP_FLOW" \
