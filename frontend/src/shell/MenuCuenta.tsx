@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { IconoBarraLateral } from './navegacion/IconoBarraLateral';
 
 type PropiedadesMenuCuenta = {
   nombre: string;
@@ -54,6 +55,8 @@ export function MenuCuenta({ nombre, cerrarSesion }: PropiedadesMenuCuenta) {
         aria-label={`Cuenta · ${nombre}`}
         onClick={alternar}
       >
+        {/* En el riel colapsado la etiqueta se oculta: sin glifo el botón quedaba vacío. */}
+        <IconoBarraLateral nombre="user" />
         <span className="aia-sidebar__label">Cuenta · {nombre}</span>
       </button>
 
