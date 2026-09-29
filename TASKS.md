@@ -1376,7 +1376,7 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   haber una semana» no se impone a nivel de sesión, porque `clear-week` existe a propósito; hoy
   la sostiene cada pantalla al reponerla. Es de Felipe decidir si eso basta. **Actualización: la
   pregunta de arriba se contesta peor de lo que parecía, ver el pendiente siguiente.**
-- [ ] **Tras «quitar semana», Programa General carga pero sin la barra verde de cabecera ni el selector
+- [x] **Tras «quitar semana», Programa General carga pero sin la barra verde de cabecera ni el selector
   de semana, y no se arregla al recargar (2026-09-28).** Visto en el navegador, en un Apache efímero sobre
   `main`, con la puerta de servicio (`test.R`, `PDC Sandbox E2E`): (1) con la semana puesta (semana 1) la
   pantalla trae la barra verde con el breadcrumb y el selector; (2) tras `POST /context/clear-week` y
@@ -1397,6 +1397,21 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   por un camino real (quién llama a `clear-week` además del botón: `public/js/core/ContextManager.js:81`),
   y si las otras pantallas que dependen de la semana quedan igual (solo se vio esta y se verificó el estado
   HTTP en las demás, no la cabecera). Decisión de producto pendiente de Felipe: qué debe ver el usuario.
+  **CERRADO el 2026-09-29 (rama `feat/pg-guarda-semana`), sin esperar al sprint de S05:** por decisión de
+  Felipe la construyó la sesión de software en `main`, pequeña y aparte, porque la rama de Codex iba 194
+  commits por detrás. `ProgramaGeneralContextApiController::show()` escribe `$_SESSION['semana']` con la semana
+  que resuelve el servicio cuando la sesión no la tiene (`ProgramaGeneralContextService::semanaPorGuardar()`,
+  pura; `tests/test_pg_context_guarda_semana.php`, 9 casos). Visto en un Apache efímero: sin semana → la
+  pantalla resuelve 4 → `/api/session` devuelve 4 y no cambia en una segunda petición; con la semana 1 puesta a
+  mano no la pisa; recargando aparecen la barra verde y el selector «Semana 4».
+- [ ] **Programa General, primera entrada tras «quitar semana»: la barra y el selector aparecen solo al
+  recargar (2026-09-29).** Consecuencia del cierre anterior: el shell lee `/api/session` **antes** de que la
+  pantalla pida su contexto y escriba la semana, así que en esa primera carga sigue sin barra; a la siguiente
+  navegación o recarga sí. Cerrarlo del todo exige que el shell releea la sesión cuando la pantalla acaba de
+  guardar la semana, y `useSesion().recargar()` es pesado a propósito (vacía el arranque, sube `generacion`,
+  deja el estado en «cargando»): remontaría la pantalla, un parpadeo en esa única entrada. No hay bucle
+  (la segunda vez la sesión ya trae la semana). **Decisión de UX de Felipe:** aceptar la barra desde la segunda
+  carga, o pagar el parpadeo para que salga a la primera.
 - [x] **La rama "sin sesión" de `NotificationController::getUnread()`/`::markAsRead()` era código
   muerto por esta puerta — retirada en T02 Tarea 9 (2026-08-31).** Ambos métodos comprobaban
   `$_SESSION['usuario']` y, si faltaba, respondían `403 {"error":"No autorizado"}` — pero
