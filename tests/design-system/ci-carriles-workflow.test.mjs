@@ -137,17 +137,15 @@ test('los jobs existentes dependen de cambios y respetan su bandera', async () =
   const workflow = await read('.github/workflows/ci.yml');
   const estatico = sinComentarios(jobLines(workflow, 'design-system-static')).join('\n');
   assert.match(estatico, /^    needs: cambios$/m);
-  assert.match(estatico, /^    if: needs\.cambios\.outputs\.static == 'true'$/m);
+  assert.equal(estatico.match(/^    if: (.*)$/m)?.[1], "needs.cambios.outputs.static == 'true'");
 
   const runtime = sinComentarios(jobLines(workflow, 'design-system-runtime')).join('\n');
   assert.match(runtime, /^    needs: \[cambios, design-system-static\]$/m);
   const condicion = runtime.match(/^    if: (.*)$/m)?.[1];
-  assert.ok(condicion, 'runtime no declara if');
-  assert.match(condicion, /!cancelled\(\)/);
-  assert.match(condicion, /needs\.cambios\.result == 'success'/);
-  assert.match(condicion, /needs\.cambios\.outputs\.runtime == 'true'/);
-  assert.match(condicion, /needs\.design-system-static\.result == 'success'/);
-  assert.match(condicion, /needs\.design-system-static\.result == 'skipped'/);
+  assert.equal(
+    condicion,
+    "${{ !cancelled() && needs.cambios.result == 'success' && needs.cambios.outputs.runtime == 'true' && (needs.design-system-static.result == 'success' || needs.design-system-static.result == 'skipped') }}",
+  );
   assert.doesNotMatch(condicion, /failure/);
 });
 
@@ -169,37 +167,34 @@ test('el workflow no usa las palabras vetadas ni en comentarios', async () => {
 const LUZ = "matrix.theme == 'light'";
 const salida = (clave) => `needs.cambios.outputs.${clave} == 'true'`;
 
-// [id o nombre del paso, banderas que su `if` debe contener, ¿solo en la pata clara?]
+// [id o nombre del paso, bandera de la que cuelga, ¿solo en la pata clara?]
 const RUNTIME_POR_PASO = [
-  ['Verify the comment-free CSS matches its source', ['css_minify'], true],
-  ['phpstan-baseline', ['php_runtime'], true],
-  ['runtime-grants', ['php_runtime'], true],
-  ['php-suite', ['php_runtime'], true],
-  ['php-admin-db', ['php_runtime'], true],
-  ['phpstan-pdc', ['phpstan_pdc'], true],
-  ['full-app-flow', ['e2e'], true],
-  ['semanal-roles-phases', ['e2e'], true],
-  ['pg-persistence-rbac', ['e2e'], true],
-  ['runtime-budget-measure', ['pilot'], true],
-  ['runtime-budget-check', ['pilot'], true],
-  ['blocking-runtime', ['lab'], false],
-  ['keyboard-reflow-evidence', ['lab'], false],
-  ['pilot-lab-gates', ['pilot'], false],
+  ['Verify the comment-free CSS matches its source', 'css_minify', true],
+  ['phpstan-baseline', 'php_runtime', true],
+  ['runtime-grants', 'php_runtime', true],
+  ['php-suite', 'php_runtime', true],
+  ['php-admin-db', 'php_runtime', true],
+  ['phpstan-pdc', 'phpstan_pdc', true],
+  ['full-app-flow', 'e2e', true],
+  ['semanal-roles-phases', 'e2e', true],
+  ['pg-persistence-rbac', 'e2e', true],
+  ['runtime-budget-measure', 'pilot', true],
+  ['runtime-budget-check', 'pilot', true],
+  ['blocking-runtime', 'lab', false],
+  ['keyboard-reflow-evidence', 'lab', false],
+  ['pilot-lab-gates', 'pilot', false],
 ];
 
 const buscar = (steps, clave) => steps.find((paso) => paso.id === clave || paso.name === clave);
 
-test('cada gate del runtime lleva su `if` con su bandera y, si no depende del tema, corre solo en la pata clara', async () => {
+test('cada gate del runtime lleva su `if` exacto con su bandera y, si no depende del tema, corre solo en la pata clara', async () => {
   const workflow = await read('.github/workflows/ci.yml');
   const steps = parseJobSteps(workflow, 'design-system-runtime');
-  for (const [clave, banderas, soloLuz] of RUNTIME_POR_PASO) {
+  for (const [clave, bandera, soloLuz] of RUNTIME_POR_PASO) {
     const paso = buscar(steps, clave);
     assert.ok(paso, `falta el paso ${clave}`);
-    assert.ok(paso.if, `el paso ${clave} no declara if`);
-    for (const bandera of banderas) {
-      assert.ok(paso.if.includes(salida(bandera)), `${clave}: su if no lee ${bandera} (${paso.if})`);
-    }
-    assert.equal(paso.if.includes(LUZ), soloLuz, `${clave}: la condición de la pata clara no es la esperada (${paso.if})`);
+    const esperado = soloLuz ? `${LUZ} && ${salida(bandera)}` : salida(bandera);
+    assert.equal(paso.if, esperado, `${clave}: if inesperado`);
   }
 });
 
@@ -356,6 +351,27 @@ test('bandera en true y resultado skipped en la pata light: no corrió (paso ant
   assert.equal(fila(resumen, 'Run laboratory gates'), '| Run laboratory gates | no corrió (paso anterior falló) |');
   assert.equal(fila(resumen, 'Enforce full-app-flow gate'), '| Enforce full-app-flow gate | success |');
   assert.equal(code, 0, 'un omitido no es rojo');
+});
+
+test('el veredicto recorre exactamente las doce variables G_ del resumen, en su orden', async () => {
+  const { run } = await resumenRun();
+  const lista = run.match(/for outcome in ([\s\S]*?); do/)?.[1].replace(/\s*\\\n\s*/g, ' ').trim();
+  const esperada = [
+    'G_PHPSTAN_BASELINE', 'G_PHPSTAN_PDC', 'G_RUNTIME_GRANTS', 'G_PHP_SUITE', 'G_PHP_ADMIN_DB', 'G_FULL_APP_FLOW',
+    'G_SEMANAL_ROLES_PHASES', 'G_RUNTIME_BUDGET_MEASURE', 'G_RUNTIME_BUDGET_CHECK',
+    'G_LABORATORY_GATES', 'G_PILOT_LAB_GATES', 'G_PG_PERSISTENCE_RBAC',
+  ].map((v) => `"$${v}"`).join(' ');
+  assert.equal(lista, esperada);
+});
+
+test('cancelled se imprime como cancelled: no se confunde con omitido ni con no corrió', async () => {
+  const { code, resumen } = await correrResumen({
+    banderas: { e2e: true },
+    resultados: { G_FULL_APP_FLOW: 'cancelled' },
+  });
+  assert.equal(fila(resumen, 'Enforce full-app-flow gate'), '| Enforce full-app-flow gate | cancelled |');
+  assert.doesNotMatch(fila(resumen, 'Enforce full-app-flow gate'), /omitido|no corrió/);
+  assert.equal(code, 0, 'solo failure es rojo');
 });
 
 test('success se imprime como success y no como omitido', async () => {
