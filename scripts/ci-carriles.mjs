@@ -1,6 +1,12 @@
 // Selector puro de carriles del CI: ruta -> carril -> banderas de gate.
 // Sin dependencias ni E/S: lo consumen el script de diff y el workflow.
 // Regla de oro: ante la duda, `todo` (correr todos los gates).
+// Sin argumentos, como CLI, calcula las rutas del diff con git y escribe las
+// banderas en stdout (el workflow lo redirige a $GITHUB_OUTPUT).
+
+import { execFileSync } from 'node:child_process';
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 export const GATE_KEYS = Object.freeze([
   'static',
@@ -103,4 +109,87 @@ export function gatesPara(carriles, { completo = false } = {}) {
   gates.runtime = NECESITAN_RUNTIME.some((k) => gates[k]);
   const temas = gates.lab || gates.pilot ? ['light', 'dark'] : ['light'];
   return { gates, temas };
+}
+
+// ---------------------------------------------------------------------------
+// CLI: rutas del diff y salida para el workflow
+// ---------------------------------------------------------------------------
+
+const SHA_VALIDO = /^[0-9a-f]{40,64}$/i;
+const SHA_EN_CEROS = /^0+$/;
+
+// git por defecto: sin shell, salida como texto. Lanza si git falla.
+function gitPorDefecto(args) {
+  return execFileSync('git', args, {
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+}
+
+// Rutas que cambia el evento, o `null` si el diff no se puede calcular
+// (SHA ausente, en ceros, mal formado, inexistente o git fallido).
+export function rutasDelCambio(entorno = {}, git = gitPorDefecto) {
+  const { EVENT_NAME: evento, BASE_SHA, BEFORE_SHA, HEAD_SHA } = entorno;
+  let anterior;
+  if (evento === 'pull_request') anterior = BASE_SHA;
+  else if (evento === 'push') anterior = BEFORE_SHA;
+  else return null;
+
+  // Validar antes de llamar a git: además de descartar los ceros de una rama
+  // nueva, impide que un valor raro se lea como opción de git.
+  for (const sha of [anterior, HEAD_SHA]) {
+    if (typeof sha !== 'string' || !SHA_VALIDO.test(sha) || SHA_EN_CEROS.test(sha)) return null;
+  }
+  try {
+    const bruto = git(['diff', '--name-only', '--no-renames', '-z', anterior, HEAD_SHA, '--']);
+    return String(bruto).split('\0').filter((ruta) => ruta !== '');
+  } catch {
+    return null;
+  }
+}
+
+// Nunca lanza: cualquier duda se resuelve corriendo todo.
+// Hoy solo `pull_request` se selecciona por carriles; `push` y
+// `workflow_dispatch` corren completo aunque `rutasDelCambio` sepa diffear push.
+export function calcularSalida(entorno = {}, git = gitPorDefecto) {
+  let rutas = null;
+  try {
+    if (entorno.EVENT_NAME === 'pull_request') rutas = rutasDelCambio(entorno, git);
+  } catch {
+    rutas = null;
+  }
+  if (rutas === null || rutas.length === 0) {
+    const { gates, temas } = gatesPara(new Set(['todo']), { completo: true });
+    return { gates, temas, carriles: ['completo'] };
+  }
+  const conjunto = clasificar(rutas);
+  const { gates, temas } = gatesPara(conjunto);
+  return { gates, temas, carriles: CARRILES.filter((c) => conjunto.has(c)) };
+}
+
+export function formatearSalida({ gates, temas, carriles }) {
+  const lineas = GATE_KEYS.map((k) => `${k}=${gates[k] === true}`);
+  const listaTemas = temas && temas.length > 0 ? temas : ['light'];
+  lineas.push(`temas=${JSON.stringify(listaTemas)}`);
+  lineas.push(`carriles=${carriles.join(',')}`);
+  return `${lineas.join('\n')}\n`;
+}
+
+function esModuloPrincipal() {
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (esModuloPrincipal()) {
+  const salida = calcularSalida(process.env);
+  process.stdout.write(formatearSalida(salida));
+  const activos = GATE_KEYS.filter((k) => salida.gates[k]);
+  process.stderr.write(
+    `[ci-carriles] carriles: ${salida.carriles.join(', ')} | gates: ${activos.join(', ') || 'ninguno'} | temas: ${salida.temas.join(', ')}\n`,
+  );
+  process.exit(0);
 }

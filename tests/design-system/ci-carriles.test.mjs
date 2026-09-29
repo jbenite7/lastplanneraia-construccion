@@ -1,12 +1,19 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, renameSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import test from 'node:test';
 
 import {
   CARRILES,
   GATE_KEYS,
   clasificar,
+  calcularSalida,
   clasificarRuta,
+  formatearSalida,
   gatesPara,
+  rutasDelCambio,
 } from '../../scripts/ci-carriles.mjs';
 
 const RUTAS = {
@@ -190,4 +197,215 @@ test('gatesPara: un carril desconocido cae a la fila todo', () => {
   const r = gatesPara(new Set(['carril-inventado']));
   assert.deepEqual(activas(r), [...GATE_KEYS]);
   assert.deepEqual([...r.temas].sort(), ['dark', 'light']);
+});
+
+// ---------------------------------------------------------------------------
+// CLI: rutas del diff, salida y fallo hacia la corrida completa
+// ---------------------------------------------------------------------------
+
+const SHA_A = 'a'.repeat(40);
+const SHA_B = 'b'.repeat(40);
+const CEROS = '0'.repeat(40);
+const PR = { EVENT_NAME: 'pull_request', BASE_SHA: SHA_A, HEAD_SHA: SHA_B };
+
+const todasVerdes = (gates) => GATE_KEYS.every((k) => gates[k] === true);
+const todasFalsas = (gates) => GATE_KEYS.every((k) => gates[k] === false);
+
+test('calcularSalida: pull_request solo con documentacion no activa ningun gate', () => {
+  const git = () => 'docs/a.md\0docs/b.md\0';
+  const salida = calcularSalida(PR, git);
+  assert.ok(todasFalsas(salida.gates));
+  assert.deepEqual(salida.carriles, ['docs']);
+  assert.deepEqual(salida.temas, ['light']);
+});
+
+test('rutasDelCambio: pull_request diffea BASE_SHA contra HEAD_SHA con -z y sin renombrados', () => {
+  let recibidos;
+  const rutas = rutasDelCambio(PR, (args) => {
+    recibidos = args;
+    return 'docs/a.md\0docs/b.md\0';
+  });
+  assert.deepEqual(rutas, ['docs/a.md', 'docs/b.md']);
+  assert.ok(recibidos.includes('--name-only'));
+  assert.ok(recibidos.includes('--no-renames'));
+  assert.ok(recibidos.includes('-z'));
+  assert.ok(recibidos.indexOf(SHA_A) < recibidos.indexOf(SHA_B));
+});
+
+test('rutasDelCambio: push diffea BEFORE_SHA contra HEAD_SHA', () => {
+  let recibidos;
+  const rutas = rutasDelCambio(
+    { EVENT_NAME: 'push', BEFORE_SHA: SHA_A, HEAD_SHA: SHA_B },
+    (args) => {
+      recibidos = args;
+      return 'src/x.php\0';
+    },
+  );
+  assert.deepEqual(rutas, ['src/x.php']);
+  assert.ok(recibidos.indexOf(SHA_A) < recibidos.indexOf(SHA_B));
+});
+
+test('calcularSalida: push, workflow_dispatch y evento ausente corren todo', () => {
+  const git = () => 'docs/a.md\0';
+  for (const EVENT_NAME of ['push', 'workflow_dispatch', undefined]) {
+    const salida = calcularSalida(
+      { EVENT_NAME, BEFORE_SHA: SHA_A, BASE_SHA: SHA_A, HEAD_SHA: SHA_B },
+      git,
+    );
+    assert.ok(todasVerdes(salida.gates), `evento ${EVENT_NAME}`);
+    assert.deepEqual(salida.carriles, ['completo']);
+    assert.deepEqual([...salida.temas].sort(), ['dark', 'light']);
+  }
+});
+
+test('rutasDelCambio: SHA en ceros, ausente o mal formado da null sin invocar git', () => {
+  const git = () => assert.fail('no debio llamar a git');
+  assert.equal(
+    rutasDelCambio({ EVENT_NAME: 'push', BEFORE_SHA: CEROS, HEAD_SHA: SHA_B }, git),
+    null,
+  );
+  assert.equal(rutasDelCambio({ ...PR, BASE_SHA: undefined }, git), null);
+  assert.equal(rutasDelCambio({ ...PR, HEAD_SHA: '' }, git), null);
+  assert.equal(rutasDelCambio({ ...PR, BASE_SHA: '--output=/tmp/x' }, git), null);
+  assert.equal(rutasDelCambio({ EVENT_NAME: 'workflow_dispatch', HEAD_SHA: SHA_B }, git), null);
+});
+
+test('calcularSalida: SHA en ceros o inexistente cae a la corrida completa', () => {
+  const ceros = calcularSalida({ ...PR, BASE_SHA: CEROS }, () => 'docs/a.md\0');
+  assert.ok(todasVerdes(ceros.gates));
+  assert.deepEqual(ceros.carriles, ['completo']);
+  // Inexistente: git real, en un repositorio temporal que no conoce esos SHA.
+  const { dir, limpiar } = repoTemporal();
+  try {
+    const gitReal = gitEn(dir);
+    assert.equal(rutasDelCambio(PR, gitReal), null);
+    const salida = calcularSalida(PR, gitReal);
+    assert.ok(todasVerdes(salida.gates));
+    assert.deepEqual(salida.carriles, ['completo']);
+  } finally {
+    limpiar();
+  }
+});
+
+test('calcularSalida: un git que lanza no se propaga y corre todo', () => {
+  const salida = calcularSalida(PR, () => {
+    throw new Error('git roto');
+  });
+  assert.ok(todasVerdes(salida.gates));
+  assert.deepEqual(salida.carriles, ['completo']);
+});
+
+test('calcularSalida: diff vacio corre todo (no hay evidencia para omitir)', () => {
+  for (const vacio of ['', '\0']) {
+    const salida = calcularSalida(PR, () => vacio);
+    assert.ok(todasVerdes(salida.gates));
+    assert.deepEqual(salida.carriles, ['completo']);
+  }
+});
+
+function repoTemporal() {
+  const dir = mkdtempSync(join(tmpdir(), 'ci-carriles-'));
+  const git = (...args) =>
+    execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...args], {
+      cwd: dir,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+  git('init', '-q');
+  git('config', 'commit.gpgsign', 'false');
+  return { dir, git, limpiar: () => rmSync(dir, { recursive: true, force: true }) };
+}
+
+function gitEn(dir) {
+  return (args) =>
+    execFileSync('git', args, { cwd: dir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+}
+
+function escribir(dir, ruta, texto = 'x\n') {
+  const destino = join(dir, ruta);
+  mkdirSync(dirname(destino), { recursive: true });
+  writeFileSync(destino, texto);
+}
+
+// Crea un repositorio con dos commits: `antes` prepara el primero y `cambio` el segundo.
+function conDosCommits(antes, cambio) {
+  const repo = repoTemporal();
+  antes(repo.dir);
+  repo.git('add', '-A');
+  repo.git('commit', '-q', '-m', 'uno');
+  const base = repo.git('rev-parse', 'HEAD');
+  cambio(repo.dir);
+  repo.git('add', '-A');
+  repo.git('commit', '-q', '-m', 'dos');
+  const head = repo.git('rev-parse', 'HEAD');
+  return { ...repo, entorno: { EVENT_NAME: 'pull_request', BASE_SHA: base, HEAD_SHA: head } };
+}
+
+test('git real: ruta con espacios, acentos y comillas llega integra y clasifica como docs', () => {
+  const ruta = 'docs/con espacio/año "raro".md';
+  const repo = conDosCommits(
+    (d) => escribir(d, 'README-base.txt'),
+    (d) => escribir(d, ruta),
+  );
+  try {
+    const rutas = rutasDelCambio(repo.entorno, gitEn(repo.dir));
+    assert.deepEqual(rutas, [ruta]);
+    assert.equal(clasificarRuta(rutas[0]), 'docs');
+    const salida = calcularSalida(repo.entorno, gitEn(repo.dir));
+    assert.deepEqual(salida.carriles, ['docs']);
+    assert.ok(todasFalsas(salida.gates));
+  } finally {
+    repo.limpiar();
+  }
+});
+
+test('git real: un renombrado entre carriles activa ambos (php y docs)', () => {
+  const repo = conDosCommits(
+    (d) => escribir(d, 'src/a.php', '<?php // a\n'),
+    (d) => {
+      mkdirSync(join(d, 'docs'), { recursive: true });
+      renameSync(join(d, 'src/a.php'), join(d, 'docs/a.md'));
+    },
+  );
+  try {
+    const rutas = rutasDelCambio(repo.entorno, gitEn(repo.dir));
+    assert.deepEqual([...rutas].sort(), ['docs/a.md', 'src/a.php']);
+    const { carriles } = calcularSalida(repo.entorno, gitEn(repo.dir));
+    assert.ok(carriles.includes('php'));
+    assert.ok(carriles.includes('docs'));
+  } finally {
+    repo.limpiar();
+  }
+});
+
+test('git real: un archivo borrado cuenta como ruta y da php', () => {
+  const repo = conDosCommits(
+    (d) => escribir(d, 'src/x.php', '<?php // x\n'),
+    (d) => unlinkSync(join(d, 'src/x.php')),
+  );
+  try {
+    assert.deepEqual(rutasDelCambio(repo.entorno, gitEn(repo.dir)), ['src/x.php']);
+    const salida = calcularSalida(repo.entorno, gitEn(repo.dir));
+    assert.deepEqual(salida.carriles, ['php']);
+    assert.equal(salida.gates.php_runtime, true);
+  } finally {
+    repo.limpiar();
+  }
+});
+
+test('formatearSalida: una linea por gate, temas JSON valido y carriles', () => {
+  const salida = calcularSalida(PR, () => 'src/x.php\0docs/a.md\0');
+  const lineas = formatearSalida(salida).trim().split('\n');
+  assert.equal(lineas.length, GATE_KEYS.length + 2);
+  for (const k of GATE_KEYS) {
+    const linea = lineas.find((l) => l.startsWith(`${k}=`));
+    assert.ok(linea, `falta ${k}`);
+    assert.equal(linea, `${k}=${salida.gates[k]}`);
+  }
+  const temas = JSON.parse(lineas.find((l) => l.startsWith('temas=')).slice('temas='.length));
+  assert.ok(Array.isArray(temas) && temas.includes('light'));
+  assert.equal(lineas.find((l) => l.startsWith('carriles=')), 'carriles=docs,php');
+  const completa = formatearSalida(calcularSalida({}, () => ''));
+  assert.match(completa, /^carriles=completo$/m);
+  assert.match(completa, /^temas=\["light","dark"\]$/m);
 });
