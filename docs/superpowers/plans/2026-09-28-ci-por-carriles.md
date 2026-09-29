@@ -187,3 +187,21 @@ Condiciones por paso (`B` = `needs.cambios.outputs`; «luz» = `matrix.theme == 
 - **Cobertura de la spec:** R1 → T1–T2; R2 → T1–T2; R3 → T3 y T6; R4 → T4; R5 → T5; R6 → T3–T5; R7 → T6; R8 → T4 y T6. D1 (`main` completo) → T2 (`completo` en `push`) y T3; D2 → T1–T3; D3 → reglas de T1; D4 y D5 → Global Constraints.
 - **Consistencia de tipos:** las nueve claves de `GATE_KEYS` de la Tarea 1 son las mismas de la tabla de la Tarea 4 y de los `outputs` de la Tarea 3; no hay bandera aparte para la imagen: `foundation.test.mjs` ejecuta PHP con docker compose dentro de `static`, así que la imagen y PHP `puro` corren siempre que corre `static` (la fila de la spec quedó corregida en consecuencia).
 - **Proporción:** las decisiones que el ejecutor no puede tomar solo (rutas, banderas, nombres, condiciones por paso) están escritas; los cuerpos de funciones y el YAML completo no.
+
+## Cierre
+
+Cierre del 2026-09-29. El plan se ejecutó en sesión de Claude (subagentes por tarea, revisión por tarea, revisión final de la rama con Opus y una única ola de correcciones). Mergeado a `main` por orden de Felipe en el PR #82 (`981ae3d2`).
+
+| Tarea | Commits | Verificación |
+|---|---|---|
+| 1 Selector puro | `676c53aa`, `faf3da22` | `ci-carriles.test.mjs`; una ronda de corrección por una desviación de la spec |
+| 2 CLI con fallo hacia «todo» | `beae8268` | repositorio temporal real: espacios, renombrados, borrados, SHA en ceros |
+| 3 Job `cambios`, concurrencia, matriz | `e2c19220` | test de contrato del workflow; 15 mutaciones en copia temporal, todas detectadas |
+| 4 `if:` por paso | `9753b2b7` | 6 mutaciones detectadas; contratos existentes en verde |
+| 5 Resumen que dice qué se omitió | `6ad515ce` | ejecuta el `run` real con `bash` en 6 escenarios |
+| Ola final de correcciones | `37b52f35`, `a7fc59e3`, `d09dcdd0` | 8 hallazgos de la revisión final, todos atendidos |
+| 6 Corridas reales | PR #82, #84, #85, #86 | ver la decisión de la wiki; mediciones en el comentario del #82 |
+
+Integración: `main` se mezcló en la rama (`e7435961`) y se reverificó antes de publicar; la wiki se ingirió en `8fb3c854`. Costo de la sesión: sin dato (2026-09-29), porque el script está en `~/.claude`.
+
+Estado de la condición de hecho: R1, R2, R4, R5, R6, R7 y R8 con evidencia de corridas reales; **R3 (la corrida de `main` completa y sin cancelarse) pendiente de lectura** de la corrida `36596525901`.

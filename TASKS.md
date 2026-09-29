@@ -887,7 +887,6 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - **Informe de sprint S05-DEUDA** (abierto): 0 de 0 hechas · `2026-09-26-s05-deuda-cierre-informe.md`
 - **Informe del mockup S05 · Programa General** (vigente): 0 de 0 hechas · `2026-09-28-s05-rediseno-mockup-informe.md`
 - goal abierto · Goal — BI Control Tower / Programa General (Radar y Cronograma) · `goals/bi-control-tower-gemini/goal.md`
-- goal abierto · Goal: CI por carriles · `goals/ci-por-carriles/goal.md`
 - goal abierto · Núcleo y gobernanza del Design System AIA · `goals/design-system-nucleo-gobernanza/goal.md`
 - goal abierto · organizar-la-casa · `goals/organizar-la-casa/goal.md`
 - goal abierto · Goal — Paridad del shell React y RLS · `goals/paridad-shell-react-rls/goal.md`

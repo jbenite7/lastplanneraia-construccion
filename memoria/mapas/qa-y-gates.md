@@ -138,7 +138,10 @@ Hay rojos que ya estaban ahí. Lee primero:
 
 ## Trampas del CI (`.github/workflows/ci.yml`)
 
-Decisión abierta que las origina: [[ci-por-carriles-el-pr-corre-lo-que-alcanza-y-main-corre-todo]].
+Decisión vigente que las origina (desde el 2026-09-29): [[ci-por-carriles-el-pr-corre-lo-que-alcanza-y-main-corre-todo]].
+Desde entonces un PR corre solo los gates de los carriles que su diff alcanza y `main` corre la suite
+completa; las columnas «Lo corre el CI» de la tabla de niveles describen esa suite completa, no lo
+que corre un PR pequeño.
 
 - [[el-gate-de-laboratorio-tambien-revisa-pantallas-de-producto]] — `test:design-system:runtime` no
   es solo la página del laboratorio: mide siete pantallas de producto y recorre 25 rutas.
