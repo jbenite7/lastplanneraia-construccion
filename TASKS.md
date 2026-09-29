@@ -1404,7 +1404,7 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   pura; `tests/test_pg_context_guarda_semana.php`, 9 casos). Visto en un Apache efímero: sin semana → la
   pantalla resuelve 4 → `/api/session` devuelve 4 y no cambia en una segunda petición; con la semana 1 puesta a
   mano no la pisa; recargando aparecen la barra verde y el selector «Semana 4».
-- [ ] **Programa General, primera entrada tras «quitar semana»: la barra y el selector aparecen solo al
+- [x] **Programa General, primera entrada tras «quitar semana»: la barra y el selector aparecen solo al
   recargar (2026-09-29).** Consecuencia del cierre anterior: el shell lee `/api/session` **antes** de que la
   pantalla pida su contexto y escriba la semana, así que en esa primera carga sigue sin barra; a la siguiente
   navegación o recarga sí. Cerrarlo del todo exige que el shell releea la sesión cuando la pantalla acaba de
@@ -1412,6 +1412,17 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   deja el estado en «cargando»): remontaría la pantalla, un parpadeo en esa única entrada. No hay bucle
   (la segunda vez la sesión ya trae la semana). **Decisión de UX de Felipe:** aceptar la barra desde la segunda
   carga, o pagar el parpadeo para que salga a la primera.
+  **CERRADO el 2026-09-29 (rama `fix/shell-semana-primera-entrada`), con una tercera vía que evita el
+  parpadeo:** Felipe pidió corregirlo («ese bug está terrible»). En vez de `recargar()`, el proveedor de sesión
+  gana `refrescarSemana()`, una relectura **silenciosa** de `/api/session` que reemplaza el arranque en su sitio:
+  sin pasar por «cargando», sin subir `generacion`, sin remontar la pantalla, así que **no se pierden los
+  filtros**. Solo aplica una respuesta autenticada y solo si ningún `recargar()` empezó mientras tanto; un
+  fallo de red o una sesión anónima se ignoran sin ruido. `ProgramaGeneralPage` avisa una sola vez
+  (`alCargarContexto`, sin acoplarse al proveedor) y la ruta (`RutaProgramaGeneral`) llama a
+  `refrescarSemana()` solo si el shell aún no tiene semana. Pruebas: `SesionProvider.refrescarSemana.test.tsx`
+  (4), `rutas.programaGeneralSemana.test.tsx` (2; demuestra 1 solo montaje y el filtro intacto, y se comprobó
+  que **falla** con la relectura anulada) y 2 en `ProgramaGeneralPage.test.tsx`. Visto en un Apache efímero:
+  «quitar semana» y entrar a `/programa-general` muestra la barra con «Semana 4» a la primera, sin recargar.
 - [x] **La rama "sin sesión" de `NotificationController::getUnread()`/`::markAsRead()` era código
   muerto por esta puerta — retirada en T02 Tarea 9 (2026-08-31).** Ambos métodos comprobaban
   `$_SESSION['usuario']` y, si faltaba, respondían `403 {"error":"No autorizado"}` — pero
