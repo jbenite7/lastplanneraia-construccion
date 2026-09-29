@@ -7,18 +7,23 @@ fecha: 2026-09-28
 superficie: ci
 rutas: [".github/workflows/ci.yml"]
 depende_de: []
-version: 1.1
-areas: [ci, design-system]
+version: 1.2
+areas: [proceso, design-system]
 fuente: "petición de Felipe del 2026-09-28 («que en cada corrida evalúe lo que de verdad se está editando, no todo»), medición de las últimas 100 corridas de ci.yml y de la corrida 36507477142, decisión D1 de Felipe del mismo día, y tres inventarios de `buscador` (gates por rutas, tests fuera de src, pantallas por carpeta) con las afirmaciones críticas recomprobadas por la sesión principal"
 resumen: "El CI corre todo en cada PR (~15 min) aunque el cambio toque una sola zona. Se propone dividirlo en carriles por rutas con `if:` por paso: el PR corre solo lo que su diff alcanza (y todo lo que ningún carril reclame), el push a main corre la suite completa sin cancelarse, y los gates que no dependen del tema corren una vez."
 ---
 
 # CI por carriles — evaluar lo que se edita
 
-**Estado: propuesta 1.1, aprobada por Felipe en el chat el 2026-09-28** (respuesta a la encuesta, con A2 y
-A3 como se recomendaban). El sello formal `/aprobar` es de Felipe y no lo escribe ningún agente: si la
-compuerta de la sesión lo exige antes de crear el plan, queda pendiente de su mano. La aprobación de la
+**Estado: propuesta 1.2.** La 1.1 la aprobó Felipe en el chat el 2026-09-28 (con A2 y A3 como se
+recomendaban); la 1.2 recoge dos decisiones suyas del mismo día (D6 y D7), tomadas tras la revisión final
+de la rama. El sello formal `/aprobar` es de Felipe y no lo escribe ningún agente. La aprobación de la
 spec no autoriza implementación; eso es el visto del plan (paso 04).
+Cambios de 1.1 a 1.2: el gate del laboratorio también vigila pantallas de producto (fondo oscuro de ocho
+rutas y CSS sin capa en ~25), así que se enciende con CSS, vistas y bundle (D6); `TASKS.md` pasa a `docs` y
+`tests/**` se parte en `tests-ds` y `tests-php` (D7); el selector no puede afirmar «el laboratorio es una
+vista PHP» como razón para omitirlo; y se corrige V4: una pata de matriz que no se crea no cuenta como
+verde para un check obligatorio.
 Cambios de 1.0 a 1.1: cerrados V1, V2 y V6 con evidencia; carriles rehechos (el carril `docs` tiene dos
 excepciones reales, y el bundle React y el laboratorio del design system quedan en carriles distintos);
 el selector será nuevo, no el enrutador existente; matriz gate × carril explícita.
@@ -65,14 +70,17 @@ nombres ni `id` citados por los tests, y no aparecen las palabras `deploy`, `pro
 
 | Carril | Rutas que lo activan |
 |---|---|
-| `docs` | `docs/**` salvo `docs/design-system/**` y `docs/security/**`; `goals/**` salvo `goals/design-system-nucleo-gobernanza/**`; `memoria/**`; `decisiones/**`; `.obsidian/**` |
-| `php` | `src/**` (salvo `src/View/Components/**`), `admin/**`, `database/**`, `composer.*`, `phpstan*.neon`, `phpunit.xml`, **`docs/security/**`** y **`.superpowers/**`** (ver hechos: un test PHP lee esos archivos) |
-| `ds-core` | `public/css/tokens.css`, `public/css/aia-design-system.css`, `public/css/design-system/**`, `public/js/modules/aia_ui/**`, `src/View/Components/**`, `docs/design-system/**` |
+| `docs` | `docs/**` salvo `docs/design-system/**` y `docs/security/**`; `goals/**` salvo `goals/design-system-nucleo-gobernanza/**`; `memoria/**`; `decisiones/**`; `.obsidian/**`; **`TASKS.md`** (D7: ningún gate lo lee) |
+| `php` | `src/**` (salvo `src/View/Components/**` y los archivos del design system de más abajo), `admin/**`, `database/**`, `composer.*`, `phpstan*.neon`, `phpunit.xml`, **`public/index.php`** (el front controller), **`docs/security/**`** y **`.superpowers/**`** (ver hechos: un test PHP lee esos archivos) |
+| `ds-core` | `public/css/tokens.css`, `public/css/aia-design-system.css`, `public/css/design-system/**`, las hojas que el núcleo o el shell React cargan (`public/css/styles.css`, `buttons.css`, `access.css`, `handsontable-module.css`, `handsontable-header-global.css`, `auth-react.css`, `project-selector-react.css`), `public/js/modules/aia_ui/**`, `src/View/Components/**`, `src/Controllers/Core/DesignSystemAssetController.php` (sirve el CSS del núcleo y del laboratorio), `docs/design-system/**` |
+| `ds-lab` | `views/design-system/**`, `src/Controllers/Internal/DesignSystemLabController.php`, `src/Security/DesignSystemLabAccessPolicy.php`. Mismos gates que `ds-modulo` (con D6 el laboratorio ya corre en ambos); se mantiene como carril propio por legibilidad. |
 | `ds-modulo` | el resto de `public/css/**`, `public/js/**` y `views/**` |
+| `tests-ds` | `tests/design-system/**` (solo `static`: es donde corren esos tests) |
+| `tests-php` | `tests/test_*.php` y `tests/unit/**` (`static`, que corre el nivel `puro`, y PHP `http` + `admin-db` para el nivel `db`/`http`) |
 | `front-src` | `frontend/**` |
 | `front-bundle` | `public/app/**` (el bundle React versionado que sirven `/login`, `/proyectos` y `/programa-general`) |
 | `apps` | `pdc-app/**`, `ct-app/**`, `views/plan-compras/**`, `public/pdc-app/**` |
-| `todo` | `.github/**`, `package*.json`, `docker*`, `docker/**`, `scripts/**`, `tests/**`, `e2e/**`, `playwright.config.mjs`, `biome.json`, y **cualquier ruta que ningún otro carril reclame** |
+| `todo` | `.github/**`, `package*.json`, `docker*`, `docker/**`, `scripts/**`, `tests/**` **salvo** `tests/design-system/**`, `tests/test_*.php` y `tests/unit/**` (es decir `tests/browser/**`, `tests/fixtures/**`, `tests/scripts/**` y demás siguen corriendo todo), `e2e/**`, `playwright.config.mjs`, `biome.json`, y **cualquier ruta que ningún otro carril reclame** |
 
 ### Matriz gate × carril (✔ = corre)
 
@@ -91,12 +99,22 @@ compose la construiría sin la caché de GitHub. Que `front-src` la omita es una
 | PHPStan del PDC | ✔ | — | — | — | — | ✔ | — |
 | `css:minify:check` | — | ✔ | ✔ | — | — | — | — |
 | e2e funcionales: `full-app-flow`, `semanal-roles-phases`, `pg-interactions` | ✔ | ✔ | ✔ † | — | ✔ | — | — |
-| laboratorio (`test:design-system:runtime`) + teclado/reflow, **dos temas** | — | ✔ | solo si toca `views/design-system/**` | — | — | — | — |
+| laboratorio (`test:design-system:runtime`) + teclado/reflow, **dos temas** | — (†† ver D6) | ✔ | ✔ (D6) | — | ✔ (D6) | — (†† ver D6) | — |
 | piloto de Programa General + presupuesto de runtime, **dos temas** | — | ✔ | — | — | ✔ | — | — |
+
+Los carriles `tests-ds` y `tests-php` (D7) solo disparan lo que su nombre indica: `tests-ds` → `static`;
+`tests-php` → `static` (que corre PHP `puro`) más PHP `http` + `admin-db` + PHPStan baseline + grants.
+`ds-lab` tiene las mismas banderas que `ds-modulo`.
+†† D6: el laboratorio **no** se enciende con un PR de solo `src/**` (carril `php`) ni de solo `pdc-app/ct-app`
+(carril `apps`). Es una brecha aceptada por Felipe: la cubre la corrida completa de `main` (D1), y queda
+anotada como riesgo en §7.
 
 Además: `concurrency` cancela solo en `pull_request`; la pata `dark` ejecuta únicamente los gates que
 leen `E2E_THEME` (laboratorio visual, piloto visual, teclado/reflow); `Summarize gate results` imprime
-`omitido (carril X no tocado)` en vez de dejar `skipped` mudo; el job `cambios` hace `fetch-depth: 0`.
+`omitido (carril X no tocado)` en vez de dejar `skipped` mudo; el job `cambios` hace `fetch-depth: 0`, valida
+que su salida traiga todas las claves **antes** de volcarla (si el script no imprimiera nada, el job falla
+en rojo y no apaga todo en verde) y escribe su propia tabla en el resumen de la corrida, para que un PR sin
+job de runtime también diga qué omitió (R5).
 
 ## 4. Hechos y vacíos
 
@@ -108,7 +126,10 @@ leen `E2E_THEME` (laboratorio visual, piloto visual, teclado/reflow); `Summarize
 - La suite `static` lee `docs/design-system/**`, `public/css`, `public/js`, `views`, `src`, `admin`, `pdc-app/src`, `ct-app/src`, `frontend/src`, `goals/design-system-nucleo-gobernanza/`, `DESIGN.md`, `GEMINI.md` y `README.md`. Ningún barrido recorre la raíz del repo, y ninguno mira `docs/**`, `goals/**`, `memoria/**` ni `decisiones/**` fuera de lo listado.
 - ✓ **Excepción del carril `docs`:** `tests/test_project_scope_schema_contract.php:374-405` (nivel `db`, entra en `--nivel=http`, gate `php-suite`) falla si falta `docs/security/rls-runtime-boundary.md` o si le quitas alguno de siete literales, y exige tres archivos de `.superpowers/sdd/2026-08-28-rls-aplicacion-fail-closed/` (versionados: `git ls-files .superpowers` devuelve 5 archivos).
 - Cinco `.md` de la raíz (`DESIGN.md`, `README.md`, `GEMINI.md`, `CLAUDE.md`, `AGENTS.md`) sí alteran gates de `static` (`design-doc-wiring.test.mjs`, `linen-removal.test.mjs`), pero `paths-ignore: '*.md'` hace que un PR solo de raíz no corra CI; el daño aparece en el siguiente PR con código.
-- ✓ `/programa-general`, `/login` y `/proyectos` (GET) los sirve el shell React: `SpaRouter::RUTAS_EXACTAS_MIGRADAS` y `public/index.php:416` cortan con `exit` antes del router PHP. Las demás pantallas de los e2e (`/programacion-*`, CNP/CNC/CIC, `/profesionales`, `/subcontratistas`, `/indicadores`, `/control-cambios`) son vistas PHP con `public/js` y `public/css`. El laboratorio (`/internal/design-system`) es una vista PHP que no carga el bundle React.
+- ✓ `/programa-general`, `/login` y `/proyectos` (GET) los sirve el shell React: `SpaRouter::RUTAS_EXACTAS_MIGRADAS` y `public/index.php:416` cortan con `exit` antes del router PHP. Las demás pantallas de los e2e (`/programacion-*`, CNP/CNC/CIC, `/profesionales`, `/subcontratistas`, `/indicadores`, `/control-cambios`) son vistas PHP con `public/js` y `public/css`. La **página** del laboratorio (`/internal/design-system`) es una vista PHP que no carga el bundle React.
+- ✓ **Pero el gate «laboratorio» no es solo esa página:** `npm run test:design-system:runtime` (`package.json:18`, el único gate bloqueante, sin `continue-on-error`) incluye `design-system-body-canvas-dark.mjs`, que revisa el fondo oscuro de `/programa-general`, `/programacion-semanal`, `/programacion-intermedia`, `/indicadores`, `/profesionales`, `/subcontratistas` y `/control-cambios`, y `design-system-unlayered-delivery.mjs`, que recorre ~25 rutas de producto y falla ante CSS sin capa o un 500. Esto lo destapó la revisión final de la rama (la spec 1.1 lo daba por una vista PHP y lo omitía en `ds-modulo`).
+- ✓ Ningún gate lee `TASKS.md` (dos tests lo nombran solo en comentarios): puede ir al carril `docs`.
+- ✓ Simulación del selector 1.1 sobre los últimos 40 merges de `main` (2026-09-28): 34 disparan CI; 30 caen en `todo` (22 llevan `TASKS.md`, y `tests/browser/**` aparece 93 veces). Con `TASKS.md` en `docs` serían 8 de 34 los que evitan `todo`; partiendo además `tests/test_*.php`, `tests/unit/**` y `tests/design-system/**`, 14 de 34.
 - ✓ El bundle `public/app` está versionado (3 archivos en git) y el CI **nunca** corre `frontend:build`: un cambio en `frontend/src` sin rebuild commiteado no cambia lo que ven los e2e. No existe un gate «bundle commiteado == construido» (oportunidad, fuera de alcance).
 - El código llega horneado a las imágenes de CI (`docker/php/Dockerfile:34` `COPY . /var/www/html`, sin volúmenes en `docker-compose.ci.yml`); `.dockerignore` deja dentro solo `docs/design-system` y `docs/security` de todo `docs/`.
 - Los tokens (`tokens.css`, `aia-design-system.css`) los cargan la SPA, las vistas PHP y el laboratorio: de ahí el carril `ds-core` que dispara casi todo.
@@ -126,7 +147,7 @@ leen `E2E_THEME` (laboratorio visual, piloto visual, teclado/reflow); `Summarize
 | V1 | ¿Algún gate lee `docs/**`, `goals/**`, etc.? | **Cerrado 2026-09-28.** Sí: `docs/security/**` y `.superpowers/**` (carril `php`). El resto no. |
 | V2 | ¿Qué dispara cada e2e? | **Cerrado 2026-09-28** con la matriz de §3; las celdas † siguen conservadoras. |
 | V3 | ¿Quién corre `pdc-app/` y `ct-app/`? | Abierto → decisión A3. Esta spec solo los enruta. |
-| V4 | ¿`main` tiene checks obligatorios? El 404 no lo confirma ni lo descarta. Con `if:` por paso, un omitido cuenta como éxito para GitHub, así que el diseño es seguro en ambos casos. | Abierto. Lo cierra Felipe (ajustes del repositorio); no bloquea. |
+| V4 | ¿`main` tiene checks obligatorios? El 404 no lo confirma ni lo descarta. **Corregido en 1.2:** un job omitido cuenta como éxito, pero una pata de matriz que no se crea (por ejemplo `design-system-runtime (dark)` en un PR sin `lab` ni `pilot`) **no existe**, y un check obligatorio con ese nombre quedaría esperando para siempre. Además, si `cambios` fallara, `static` y `runtime` quedan `skipped` y cuentan como éxito. | Abierto. Lo cierra Felipe (ajustes del repositorio). Si hay checks obligatorios: exigir `cambios` y no exigir las patas de la matriz por nombre. |
 | V5 | Tiempos objetivo por carril (R7). | Abierto. Se mide en el paso 05 con corridas reales. |
 | V6 | ¿Un `if:` altera el fingerprint entre patas? | **Cerrado 2026-09-28:** no. |
 | V7 | Base del diff en `push` (revisión anterior) y en el primer push de una rama nueva o tras un force-push ajeno. Debe fallar hacia «todo». | Abierto. Lo cierra el ejecutor en el plan, con test. |
@@ -143,6 +164,10 @@ leen `E2E_THEME` (laboratorio visual, piloto visual, teclado/reflow); `Summarize
 - **D4 (Felipe, 2026-09-28), antes A2:** no se toca `paths-ignore` en esta spec. Los cinco `.md` de la raíz siguen sin disparar CI; cambiarlo altera la regla de AGENTS.md sobre quién ordena los merges de `AGENTS.md` y `CLAUDE.md`. Queda anotado como riesgo conocido.
 - **D5 (Felipe, 2026-09-28), antes A3:** `pdc-app/` y `ct-app/` no reciben gate propio aquí; su gate sería una spec aparte. Esta spec solo los enruta (carril `apps` → `static` y PHPStan del PDC).
 
+- **D6 (Felipe, 2026-09-28), tras la revisión final:** el laboratorio se enciende cuando el PR toca CSS, vistas o el bundle React (carriles `ds-core`, `ds-modulo`, `ds-lab` y `front-bundle`); no se enciende con solo `src/**` ni con solo `pdc-app`/`ct-app`. La brecha de esos dos carriles la cubre `main` completo (D1) y queda como riesgo aceptado.
+- **D7 (Felipe, 2026-09-28):** `TASKS.md` pasa a `docs`; `tests/test_*.php` y `tests/unit/**` van a `tests-php`; `tests/design-system/**` va a `tests-ds`. `tests/browser/**`, `tests/fixtures/**`, `.github/**` y el resto siguen en `todo`.
+- **D8 (sesión, código, por hallazgos de la revisión final):** `public/index.php` (front controller) → `php`; las siete hojas CSS que cargan el núcleo o el shell (`styles.css`, `buttons.css`, `access.css`, `handsontable-module.css`, `handsontable-header-global.css`, `auth-react.css`, `project-selector-react.css`) y `DesignSystemAssetController.php` → `ds-core`; `DesignSystemLabAccessPolicy.php` y `DesignSystemLabController.php` → `ds-lab`; el job `cambios` valida su salida antes de volcarla y escribe su tabla en el resumen (I2, I3).
+
 **Abiertas para Felipe:** ninguna.
 
 ## 6. Fuera de alcance
@@ -158,6 +183,9 @@ de PHPStan; actualizar los conteos de `CLAUDE.md`.
 - **Un recibo omitido rompe su subida.** Mitigación: R8.
 - **Romper un test de contrato al reformatear el YAML.** Mitigación: R6 y no cambiar sangrías ni nombres de pasos citados.
 - **Los filtros envejecen** cuando cambia la estructura del repo. Mitigación: el default es «todo» y el selector tiene test de casos.
+- **Brecha aceptada (D6):** un PR de solo `src/**` o de solo `pdc-app`/`ct-app` no corre el laboratorio, que revisa fondos oscuros y CSS sin capa en pantallas de producto; el rojo, si lo hay, aparece en `main` tras el merge. Mitigación: `main` completo (D1) y la corrida de `main` no se cancela (R3).
+- **Checks obligatorios y patas de matriz (V4):** si Felipe activa checks obligatorios, no debe exigir `design-system-runtime (dark)` por nombre, y sí `cambios`.
+- **El ahorro real depende de la mezcla de PR:** en la simulación, la mayoría de los merges recientes tocan `tests/browser/**` o cosas compartidas. R7 se mide en corridas reales antes de prometer una cifra.
 
 ## 8. Preguntas para investigar
 

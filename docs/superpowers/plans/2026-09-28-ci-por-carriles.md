@@ -4,7 +4,7 @@ tipo: plan
 estado: abierto
 id: P-CI-CARRILES
 fecha: 2026-09-28
-areas: [ci, design-system]
+areas: [proceso, design-system]
 fuente: docs/superpowers/specs/2026-09-28-ci-por-carriles-design.md
 ejecutor: claude
 aprobacion: "Felipe, en el chat, 2026-09-28: plan aprobado; ejecuta Claude en esta sesión (subagent-driven) en vez del ejecutor por defecto. El sello formal `/aprobar`, si la compuerta lo exige, es de su mano."
