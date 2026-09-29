@@ -2522,10 +2522,13 @@ Ninguno se comprobó en el navegador: la evidencia es código y `git log` sobre 
   hecho. No medido bajo carga real. Guarda barata propuesta: saltar la semana si
   `COUNT(*) FROM cip WHERE Semana = ?` ya iguala el número de responsables de esa semana.
   Hallazgo de la revisión final de F0, 2026-08-24.
-- [ ] **BI · `scripts/higiene/reparar-mojibake-causas.php` no está acotado por `project_id`** —
+- [x] **BI · `scripts/higiene/reparar-mojibake-causas.php` no está acotado por `project_id`** —
   escribe a través de todos los proyectos. Defendible para higiene global de catálogo, pero
   contradice la regla general de aislamiento del repo; falta un comentario que lo declare
   explícito. Hallazgo de la revisión final de F0, 2026-08-24.
+  **CERRADO el 2026-09-29:** el script ya corría bajo `SystemScopeRunner` (alcance de sistema con motivo),
+  con dry-run por defecto y `AUTORIZADO_POR_FELIPE=1` para escribir; lo que faltaba era el comentario,
+  que ahora declara que el alcance global es deliberado y por qué no se acota. Sin cambio de comportamiento.
 - [ ] **BI · dos tests de F0 salen "sospechosos" para el runner por el mismo patrón** —
   `tests/test_causa_atribucion.php` y `tests/test_causas_codificacion.php` imprimen `"PASA: ..."`,
   y `PASA` (con A) no contiene ninguna señal reconocida por `SENALES_DE_COMPROBACION` (`pass`,

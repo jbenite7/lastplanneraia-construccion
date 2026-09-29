@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 // Repara textos de causa con codificación rota en programacion_semanal. Dry-run por defecto.
 //
+// Alcance: GLOBAL a propósito, no acotado por project_id. Es higiene del catálogo de causas: la
+// codificación rota («Diseńos») es un defecto de los datos, no de un proyecto, y repararlo proyecto
+// por proyecto dejaría el mismo texto roto en unos y arreglado en otros. Por eso corre bajo
+// SystemScopeRunner (alcance de sistema declarado y con motivo) y no bajo ProjectScope. No lo acotes
+// para «cumplir» el aislamiento por proyecto de AGENTS.md: esta es la excepción justificada, y la
+// protegen tres cosas: dry-run por defecto, AUTORIZADO_POR_FELIPE=1 para escribir, y reemplazos
+// fijos con LIKE BINARY que solo tocan el texto roto conocido.
+//
 // Importante: las comparaciones usan LIKE BINARY. Con LIKE normal, la colación
 // utf8mb4_general_ci de estas columnas trata "ń" (U+0144) y "ñ" (U+00F1) como
 // equivalentes, así que un LIKE '%Diseńos%' sin BINARY también matchea filas que
