@@ -337,6 +337,12 @@
     min-height: 0;
     padding: var(--ds-space-4) var(--ds-space-3) !important;
     overflow-y: auto;
+    /* Se desplaza (rueda, teclado, táctil) pero no dibuja la barra nativa de 15 px sobre el riel. */
+    scrollbar-width: none;
+  }
+
+  .aia-sidebar__nav::-webkit-scrollbar {
+    display: none;
   }
 
   .aia-sidebar__group {
@@ -615,20 +621,24 @@
     border-block-start: var(--ds-border-width) solid var(--ds-active-border);
   }
 
-  /* Iconos con presencia y jerarquía: reposo en secundario, hover/activo encienden. */
+  /* Iconos con presencia y jerarquía: reposo en secundario, hover/activo encienden.
+     Los colores son los del RIEL (`--ds-active-nav-text*`), no los de la página
+     (`--ds-active-text-*`): el riel es verde de marca en claro y casi negro en oscuro sin
+     importar el tema de la página, así que un gris zinc de página quedaba a 1.12:1 sobre el
+     verde (revisión visual 2026-09-29; guard: tests/design-system/sidebar-legibilidad.test.mjs). */
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__nav .aia-icon__glyph {
     width: 1.25rem;
     height: 1.25rem;
   }
 
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link .aia-icon {
-    color: var(--ds-active-text-secondary);
+    color: var(--ds-active-nav-text-muted);
     transition: color 150ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:hover .aia-icon,
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:focus-visible .aia-icon {
-    color: var(--ds-active-text-primary);
+    color: var(--ds-active-nav-text);
   }
 
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link[aria-current="page"] .aia-icon {

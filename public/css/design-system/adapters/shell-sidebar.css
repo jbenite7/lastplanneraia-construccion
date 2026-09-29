@@ -277,6 +277,16 @@
     background: transparent;
   }
 
+  /* Pero el ítem ACTIVO sí lleva fondo propio. El `transparent` de arriba (0,2,1) le ganaba a
+     `.aia-sidebar__link[aria-current="page"]` (0,2,0) y le borraba el fondo, mientras el texto
+     seguía en `--ds-active-action-text` (casi negro en oscuro): oscuro sobre oscuro, ilegible
+     (revisión visual 2026-09-29). En claro `--ds-active-action-primary` es el mismo verde del
+     riel, así que no cambia de píxel; en oscuro devuelve la píldora verde con texto oscuro.
+     Guard: tests/design-system/sidebar-legibilidad.test.mjs. */
+  body.aia-shell--sidebar .aia-sidebar__link[aria-current="page"] {
+    background: var(--ds-active-action-primary);
+  }
+
   .shell-week-dialog__copy,
   .shell-week-dialog__preview {
     margin-block: var(--ds-space-2) var(--ds-space-3);
@@ -513,13 +523,13 @@
   }
 
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link .aia-icon {
-    color: var(--ds-active-text-secondary);
+    color: var(--ds-active-nav-text-muted);
     transition: color 150ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:hover .aia-icon,
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:focus-visible .aia-icon {
-    color: var(--ds-active-text-primary);
+    color: var(--ds-active-nav-text);
   }
 
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link[aria-current="page"] .aia-icon {
