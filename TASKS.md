@@ -19,7 +19,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 |---|---|
 | hecha | 557 |
 | en progreso | 4 |
-| pendiente | 154 |
+| pendiente | 160 |
 | sin señal | 148 |
 | descartada | 48 |
 
@@ -832,6 +832,16 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 5 · Pase de veracidad de la wiki (deuda 5)
   - sin señal · 6 · Ingest de los aprendizajes de la ronda 1.2
   - sin señal · 7 · Verificación final, revisión e informe
+
+### CI-CARRILES · CI por carriles — evaluar lo que se edita (abierto)
+
+- **P-CI-CARRILES · CI por carriles** (abierto): 0 de 6 hechas · `2026-09-28-ci-por-carriles.md`
+  - pendiente · 1 · Selector puro de carriles y gates
+  - pendiente · 2 · CLI del selector con fallo hacia «todo»
+  - pendiente · 3 · Job `cambios`, concurrencia y matriz de temas
+  - pendiente · 4 · `if:` por paso en los jobs static y runtime
+  - pendiente · 5 · Resumen que dice qué se omitió
+  - pendiente · 6 · Prueba en corridas reales y cierre del frente
 
 ### S05-REDISENO · S05 — Rediseño de Programa General (ronda sobre `main`) (abierto)
 
