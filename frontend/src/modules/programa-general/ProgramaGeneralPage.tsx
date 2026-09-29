@@ -13,7 +13,19 @@ import { ProgramaCards } from './components/ProgramaCards';
 import { ProgramaDrawer } from './components/ProgramaDrawer';
 import './programa-general.css';
 
-export const ProgramaGeneralPage: React.FC = () => {
+type PropiedadesProgramaGeneral = {
+  /**
+   * Se llama una sola vez, cuando el contexto inicial ya cargó. El servidor guarda la semana en la
+   * sesión al servir ese contexto, pero el shell ya había leído su sesión antes y no la conoce: quien
+   * monta la página lo usa para que el shell relea la semana en silencio. La página no depende del
+   * proveedor de sesión; solo avisa.
+   */
+  alCargarContexto?: () => void;
+};
+
+export const ProgramaGeneralPage: React.FC<PropiedadesProgramaGeneral> = ({ alCargarContexto }) => {
+  const alCargarContextoRef = useRef(alCargarContexto);
+  alCargarContextoRef.current = alCargarContexto;
   const [contexto, setContexto] = useState<ContextoPg | null>(null);
   const [actividades, setActividades] = useState<ActividadUI[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -100,6 +112,7 @@ export const ProgramaGeneralPage: React.FC = () => {
         if (cancelado || controller.signal.aborted) return;
         setContexto(ctx);
         setActividades(normalizarActividades(rawAct, ctx.semana.numero));
+        alCargarContextoRef.current?.();
       } catch (err: unknown) {
         if (!cancelado && !controller.signal.aborted) {
           const msg = err instanceof Error ? err.message : 'Error cargando Programa General';
