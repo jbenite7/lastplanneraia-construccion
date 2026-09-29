@@ -39,6 +39,11 @@ class ProgramaGeneralContextApiController extends BaseController
 
         try {
             $context = $this->contextService->build($scope, $_SESSION);
+            // La pantalla ya eligió esta semana: se guarda para que el shell (barra y selector) la vea.
+            $semana = ProgramaGeneralContextService::semanaPorGuardar($_SESSION, (int) ($context['week']['number'] ?? 0));
+            if ($semana !== null) {
+                $_SESSION['semana'] = $semana;
+            }
             echo json_encode([
                 'success' => true,
                 'data' => $context,
