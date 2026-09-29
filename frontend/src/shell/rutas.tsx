@@ -472,3 +472,5 @@ function RutasSegunSesion() {
       );
   }
 }
+
+// prueba descartable del carril front-src, no se mergea
