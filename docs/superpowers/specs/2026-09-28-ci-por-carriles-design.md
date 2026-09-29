@@ -19,8 +19,8 @@ resumen: "El CI corre todo en cada PR (~15 min) aunque el cambio toque una sola 
 recomendaban); la 1.2 recoge dos decisiones suyas del mismo día (D6 y D7), tomadas tras la revisión final
 de la rama. El sello formal `/aprobar` es de Felipe y no lo escribe ningún agente. La aprobación de la
 spec no autoriza implementación; eso es el visto del plan (paso 04).
-Cambios de 1.1 a 1.2: el gate del laboratorio también vigila pantallas de producto (fondo oscuro de ocho
-rutas y CSS sin capa en ~25), así que se enciende con CSS, vistas y bundle (D6); `TASKS.md` pasa a `docs` y
+Cambios de 1.1 a 1.2: el gate del laboratorio también vigila pantallas de producto (fondo oscuro de siete
+rutas y CSS sin capa en 25, medido el 2026-09-29), así que se enciende con CSS, vistas y bundle (D6); `TASKS.md` pasa a `docs` y
 `tests/**` se parte en `tests-ds` y `tests-php` (D7); el selector no puede afirmar «el laboratorio es una
 vista PHP» como razón para omitirlo; y se corrige V4: una pata de matriz que no se crea no cuenta como
 verde para un check obligatorio.
@@ -127,7 +127,7 @@ job de runtime también diga qué omitió (R5).
 - ✓ **Excepción del carril `docs`:** `tests/test_project_scope_schema_contract.php:374-405` (nivel `db`, entra en `--nivel=http`, gate `php-suite`) falla si falta `docs/security/rls-runtime-boundary.md` o si le quitas alguno de siete literales, y exige tres archivos de `.superpowers/sdd/2026-08-28-rls-aplicacion-fail-closed/` (versionados: `git ls-files .superpowers` devuelve 5 archivos).
 - Cinco `.md` de la raíz (`DESIGN.md`, `README.md`, `GEMINI.md`, `CLAUDE.md`, `AGENTS.md`) sí alteran gates de `static` (`design-doc-wiring.test.mjs`, `linen-removal.test.mjs`), pero `paths-ignore: '*.md'` hace que un PR solo de raíz no corra CI; el daño aparece en el siguiente PR con código.
 - ✓ `/programa-general`, `/login` y `/proyectos` (GET) los sirve el shell React: `SpaRouter::RUTAS_EXACTAS_MIGRADAS` y `public/index.php:416` cortan con `exit` antes del router PHP. Las demás pantallas de los e2e (`/programacion-*`, CNP/CNC/CIC, `/profesionales`, `/subcontratistas`, `/indicadores`, `/control-cambios`) son vistas PHP con `public/js` y `public/css`. La **página** del laboratorio (`/internal/design-system`) es una vista PHP que no carga el bundle React.
-- ✓ **Pero el gate «laboratorio» no es solo esa página:** `npm run test:design-system:runtime` (`package.json:18`, el único gate bloqueante, sin `continue-on-error`) incluye `design-system-body-canvas-dark.mjs`, que revisa el fondo oscuro de `/programa-general`, `/programacion-semanal`, `/programacion-intermedia`, `/indicadores`, `/profesionales`, `/subcontratistas` y `/control-cambios`, y `design-system-unlayered-delivery.mjs`, que recorre ~25 rutas de producto y falla ante CSS sin capa o un 500. Esto lo destapó la revisión final de la rama (la spec 1.1 lo daba por una vista PHP y lo omitía en `ds-modulo`).
+- ✓ **Pero el gate «laboratorio» no es solo esa página:** `npm run test:design-system:runtime` (`package.json:18`, el único gate bloqueante, sin `continue-on-error`) incluye `design-system-body-canvas-dark.mjs`, que revisa el fondo oscuro de `/programa-general`, `/programacion-semanal`, `/programacion-intermedia`, `/indicadores`, `/profesionales`, `/subcontratistas` y `/control-cambios`, y `design-system-unlayered-delivery.mjs`, que recorre las 25 rutas de `docs/design-system/unlayered-delivery-inventory.json` (22 autenticadas y 3 públicas) y falla ante CSS sin capa o un 500. Esto lo destapó la revisión final de la rama (la spec 1.1 lo daba por una vista PHP y lo omitía en `ds-modulo`).
 - ✓ Ningún gate lee `TASKS.md` (dos tests lo nombran solo en comentarios): puede ir al carril `docs`.
 - ✓ Simulación del selector 1.1 sobre los últimos 40 merges de `main` (2026-09-28): 34 disparan CI; 30 caen en `todo` (22 llevan `TASKS.md`, y `tests/browser/**` aparece 93 veces). Con `TASKS.md` en `docs` serían 8 de 34 los que evitan `todo`; partiendo además `tests/test_*.php`, `tests/unit/**` y `tests/design-system/**`, 14 de 34.
 - ✓ El bundle `public/app` está versionado (3 archivos en git) y el CI **nunca** corre `frontend:build`: un cambio en `frontend/src` sin rebuild commiteado no cambia lo que ven los e2e. No existe un gate «bundle commiteado == construido» (oportunidad, fuera de alcance).
@@ -138,7 +138,7 @@ job de runtime también diga qué omitió (R5).
 - ✓ Tres subidas de recibos usan `if-no-files-found: error` (`ci.yml:333,375,422`): si su gate se omite, su subida debe omitirse con la misma condición.
 - No hay ni `dorny/paths-filter` ni `on.paths` en ningún workflow; solo `paths-ignore` en `ci.yml`.
 - `pdc-app/` y `ct-app/` no tienen gate propio en el CI. Casi todo `tests/browser/` y `e2e/` fuera de los especificados no corre en CI. 41 tests PHP sueltos y 1 PHPUnit (nivel `datos-proyecto`) nunca corren en CI.
-- La API de GitHub responde 404 a protección de rama y a rulesets de `main`.
+- ✓ **`main` no está protegido (medido el 2026-09-29):** `gh api repos/jbenite7/lastplanneraia-construccion/branches/main` devuelve `protected: false`, el endpoint de protección responde «Branch not protected» y `rules/branches/main` devuelve `[]`. Las versiones 1.0 a 1.2 decían que la API respondía 404 y que eso «no descartaba» checks obligatorios; era un error: se consultó `jbenite7/lps-aia`, un nombre que no existe (el repo es `jbenite7/lastplanneraia-construccion`).
 
 **Vacíos:**
 
@@ -147,7 +147,7 @@ job de runtime también diga qué omitió (R5).
 | V1 | ¿Algún gate lee `docs/**`, `goals/**`, etc.? | **Cerrado 2026-09-28.** Sí: `docs/security/**` y `.superpowers/**` (carril `php`). El resto no. |
 | V2 | ¿Qué dispara cada e2e? | **Cerrado 2026-09-28** con la matriz de §3; las celdas † siguen conservadoras. |
 | V3 | ¿Quién corre `pdc-app/` y `ct-app/`? | Abierto → decisión A3. Esta spec solo los enruta. |
-| V4 | ¿`main` tiene checks obligatorios? El 404 no lo confirma ni lo descarta. **Corregido en 1.2:** un job omitido cuenta como éxito, pero una pata de matriz que no se crea (por ejemplo `design-system-runtime (dark)` en un PR sin `lab` ni `pilot`) **no existe**, y un check obligatorio con ese nombre quedaría esperando para siempre. Además, si `cambios` fallara, `static` y `runtime` quedan `skipped` y cuentan como éxito. | Abierto. Lo cierra Felipe (ajustes del repositorio). Si hay checks obligatorios: exigir `cambios` y no exigir las patas de la matriz por nombre. |
+| V4 | ¿`main` tiene checks obligatorios? | **Cerrado 2026-09-29:** no. `main` no está protegido y no hay reglas (ver hechos). Queda una trampa **latente**: si algún día se activan, un job omitido cuenta como éxito, pero una pata de matriz que no se crea (por ejemplo `design-system-runtime (dark)` en un PR sin `lab` ni `pilot`) **no existe** y un check obligatorio con ese nombre esperaría para siempre; y con `cambios` en rojo, `static` y `runtime` quedan `skipped` y cuentan como éxito. Entonces habría que exigir `cambios` y no las patas por nombre. |
 | V5 | Tiempos objetivo por carril (R7). | Abierto. Se mide en el paso 05 con corridas reales. |
 | V6 | ¿Un `if:` altera el fingerprint entre patas? | **Cerrado 2026-09-28:** no. |
 | V7 | Base del diff en `push` (revisión anterior) y en el primer push de una rama nueva o tras un force-push ajeno. Debe fallar hacia «todo». | Abierto. Lo cierra el ejecutor en el plan, con test. |
@@ -184,7 +184,7 @@ de PHPStan; actualizar los conteos de `CLAUDE.md`.
 - **Romper un test de contrato al reformatear el YAML.** Mitigación: R6 y no cambiar sangrías ni nombres de pasos citados.
 - **Los filtros envejecen** cuando cambia la estructura del repo. Mitigación: el default es «todo» y el selector tiene test de casos.
 - **Brecha aceptada (D6):** un PR de solo `src/**` o de solo `pdc-app`/`ct-app` no corre el laboratorio, que revisa fondos oscuros y CSS sin capa en pantallas de producto; el rojo, si lo hay, aparece en `main` tras el merge. Mitigación: `main` completo (D1) y la corrida de `main` no se cancela (R3).
-- **Checks obligatorios y patas de matriz (V4):** si Felipe activa checks obligatorios, no debe exigir `design-system-runtime (dark)` por nombre, y sí `cambios`.
+- **Checks obligatorios y patas de matriz (V4, latente):** hoy `main` no los exige; si Felipe los activa, no debe exigir `design-system-runtime (dark)` por nombre, y sí `cambios`.
 - **El ahorro real depende de la mezcla de PR:** en la simulación, la mayoría de los merges recientes tocan `tests/browser/**` o cosas compartidas. R7 se mide en corridas reales antes de prometer una cifra.
 
 ## 8. Preguntas para investigar
