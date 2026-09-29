@@ -17,10 +17,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 559 |
+| hecha | 563 |
 | en progreso | 4 |
 | pendiente | 154 |
-| sin señal | 152 |
+| sin señal | 148 |
 | descartada | 48 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -833,15 +833,9 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 6 · Ingest de los aprendizajes de la ronda 1.2
   - sin señal · 7 · Verificación final, revisión e informe
 
-### CI-CARRILES · CI por carriles — evaluar lo que se edita (abierto)
+### CI-CARRILES · CI por carriles — evaluar lo que se edita (cerrado)
 
-- **P-CI-CARRILES · CI por carriles** (abierto): 2 de 6 hechas · `2026-09-28-ci-por-carriles.md`
-  - hecha · 1 · Selector puro de carriles y gates
-  - sin señal · 2 · CLI del selector con fallo hacia «todo»
-  - hecha · 3 · Job `cambios`, concurrencia y matriz de temas
-  - sin señal · 4 · `if:` por paso en los jobs static y runtime
-  - sin señal · 5 · Resumen que dice qué se omitió
-  - sin señal · 6 · Prueba en corridas reales y cierre del frente
+- **P-CI-CARRILES · CI por carriles** (cerrado): 6 de 6 hechas · `2026-09-28-ci-por-carriles.md`
 
 ### S05-REDISENO · S05 — Rediseño de Programa General (ronda sobre `main`) (abierto)
 
@@ -887,7 +881,6 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - **Informe de sprint S05-DEUDA** (abierto): 0 de 0 hechas · `2026-09-26-s05-deuda-cierre-informe.md`
 - **Informe del mockup S05 · Programa General** (vigente): 0 de 0 hechas · `2026-09-28-s05-rediseno-mockup-informe.md`
 - goal abierto · Goal — BI Control Tower / Programa General (Radar y Cronograma) · `goals/bi-control-tower-gemini/goal.md`
-- goal abierto · Goal: CI por carriles · `goals/ci-por-carriles/goal.md`
 - goal abierto · Núcleo y gobernanza del Design System AIA · `goals/design-system-nucleo-gobernanza/goal.md`
 - goal abierto · organizar-la-casa · `goals/organizar-la-casa/goal.md`
 - goal abierto · Goal — Paridad del shell React y RLS · `goals/paridad-shell-react-rls/goal.md`
@@ -907,7 +900,6 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - cerrado_sin_archivos · `plans/2026-08-30-s01-login-react.md`: dice «plan cerrado»; git dice «3 de 26 archivos que mandaba crear no existieron nunca en ninguna rama: frontend/src/lib/api/frontera.test.ts, frontend/src/lib/api/esquemas/sesion.test.ts, src/Controllers/Core/SpaHostController.php»
 - parece_cerrado · `plans/2026-09-23-s05-programa-general-react.md`: dice «plan vigente»; git dice «las 8 tareas con señal están hechas según git»
 - parece_cerrado · `plans/2026-09-26-s05-deuda-cierre.md`: dice «plan abierto»; git dice «las 1 tareas con señal están hechas según git; 7 sin señal»
-- parece_cerrado · `plans/2026-09-28-ci-por-carriles.md`: dice «plan abierto»; git dice «las 2 tareas con señal están hechas según git; 4 sin señal»
 - spec_cerrado_plan_vivo · `specs/2026-07-23-a16-comparativo-versiones-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-07-22-roadmap-pdc-v2.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-19-runtime-budgets-al-ci-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-19-runtime-budgets-al-ci.md»
 - spec_vivo_planes_cerrados · `specs/2026-08-26-v0-del-producto-design.md`: dice «spec vigente»; git dice «sus 2 planes están cerrados o derogados»
