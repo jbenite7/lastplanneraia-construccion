@@ -88,6 +88,32 @@ describe('ProgramaGeneralPage', () => {
     await act(async () => { resolverLista?.(mockActividadesRaw); });
     expect(await screen.findByRole('button', { name: 'Recargar' })).toBeInTheDocument();
   });
+  // El servidor guarda la semana en la sesión al servir /api/programa-general/context; el shell ya había
+  // leído su sesión antes y no la conoce. La página avisa UNA vez, cuando ese contexto ya cargó, para que
+  // el shell relea en silencio (`refrescarSemana`) sin remontarla ni perder filtros.
+  it('avisa una sola vez, tras cargar el contexto, para que el shell relea la semana', async () => {
+    const alCargarContexto = vi.fn();
+    render(<ProgramaGeneralPage alCargarContexto={alCargarContexto} />);
+
+    expect(await screen.findByText('Semana 34 Vigente')).toBeInTheDocument();
+    expect(alCargarContexto).toHaveBeenCalledTimes(1);
+
+    // Una recarga manual no vuelve a avisar: la semana ya está guardada.
+    fireEvent.click(await screen.findByRole('button', { name: 'Recargar' }));
+    await waitFor(() => expect(mockObtenerActividades).toHaveBeenCalled());
+    expect(alCargarContexto).toHaveBeenCalledTimes(1);
+  });
+
+  it('no avisa si la carga del contexto falla', async () => {
+    mockObtenerActividades.mockRejectedValueOnce(new Error('sin red'));
+    const alCargarContexto = vi.fn();
+    render(<ProgramaGeneralPage alCargarContexto={alCargarContexto} />);
+
+    await waitFor(() => expect(mockObtenerActividades).toHaveBeenCalled());
+    await act(async () => { await Promise.resolve(); });
+    expect(alCargarContexto).not.toHaveBeenCalled();
+  });
+
   it('monta la página mostrando el título, semana y grilla de actividades', async () => {
     render(<ProgramaGeneralPage />);
 

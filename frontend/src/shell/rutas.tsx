@@ -309,6 +309,24 @@ function RutaProyectos() {
  * pantalla anterior mientras `recargar()` vuelve a resolver sesión o
  * proyecto: cada estado se pinta desde cero.
  */
+/**
+ * Programa General dentro del shell. El servidor guarda la semana en la sesión al servir el contexto de
+ * la pantalla, pero el shell ya había leído su sesión antes y, tras «quitar semana», sigue sin ella: la
+ * barra y el selector no salen a la primera. Cuando la pantalla avisa que cargó, si el shell aún no
+ * tiene semana se la relee en silencio (`refrescarSemana`, no `recargar`: nada se vacía ni se remonta,
+ * así que la pantalla conserva sus filtros).
+ */
+function RutaProgramaGeneral() {
+  const { autenticado, refrescarSemana } = useSesion();
+  return (
+    <ProgramaGeneralPage
+      alCargarContexto={() => {
+        if (autenticado?.week == null) void refrescarSemana();
+      }}
+    />
+  );
+}
+
 function RutasSegunSesion() {
   const { estado, arranque, autenticado, recargar, cerrarSesion, logoutSinConfirmar, generacion } = useSesion();
 
@@ -447,8 +465,8 @@ function RutasSegunSesion() {
             element={<AppShell cerrarSesion={cerrarSesion} generacionSesion={generacion} recargar={recargar} sesion={autenticado} />}
             path="*"
           >
-            <Route path="programa-general" element={<ProgramaGeneralPage />} />
-            <Route path="app/programa-general" element={<ProgramaGeneralPage />} />
+            <Route path="programa-general" element={<RutaProgramaGeneral />} />
+            <Route path="app/programa-general" element={<RutaProgramaGeneral />} />
           </Route>
         </Routes>
       );
