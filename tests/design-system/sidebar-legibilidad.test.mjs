@@ -5,8 +5,9 @@
 //      sigue el tema de la PÁGINA) sobre un riel que siempre es verde (`--ds-nav-bg-light`):
 //      contraste 1.12:1. Los íconos son SVG con aria-hidden, así que axe no los mide.
 //   2. Tema oscuro: `body.aia-shell--sidebar .aia-sidebar__link { background: transparent }` (guard
-//      de theme-claro-tokens.test.mjs) tiene más especificidad que la regla del enlace activo y le
-//      borraba el fondo, pero el texto seguía en `--ds-active-action-text` (casi negro): ilegible.
+//      de theme-claro-tokens.test.mjs), en la capa `legacy-overrides` (la última), anulaba el fondo
+//      del enlace activo y del hover, pero el texto seguía en el color pensado para ir SOBRE ese
+//      fondo (`--ds-active-action-text`, casi negro): ilegible.
 //   3. La barra de scroll nativa (15 px) se veía sobre el riel. El riel debe poder desplazarse por
 //      rueda, teclado y táctil, pero sin dibujar la barra.
 //
@@ -119,20 +120,34 @@ test('los íconos del riel colapsado se leen sobre el fondo del riel en los dos 
 });
 
 // 2 -------------------------------------------------------------------------
-test('el ítem activo del riel conserva un fondo propio que gana al `background: transparent` del adaptador', () => {
+test('el ítem activo y el hover del riel llevan texto del RIEL, no el de la página ni el "sobre relleno"', () => {
+  // Causa: `body.aia-shell--sidebar .aia-sidebar__link { background: transparent }` vive en la capa
+  // `legacy-overrides` (la última) y anula el relleno del activo y del hover, pero el `color` de
+  // esos estados sigue viniendo de capas inferiores y está pensado para leerse SOBRE ese relleno:
+  // `--ds-active-action-text` (casi negro en oscuro) o `--ds-active-text-primary` (#18181b en claro).
+  // Convención ya decidida en project-selector-react.css: el activo se marca con anillo + texto del
+  // riel, sin relleno («lo que aprobó el golden canónico»). Aquí se generaliza a todo el shell.
   const lista = reglas(ADAPTADOR);
   const base = lista.find((r) => /^body\.aia-shell--sidebar \.aia-sidebar__link$/.test(r.selector) && declara(r.cuerpo, 'background') === 'transparent');
   assert.ok(base, 'el guard de theme-claro-tokens (background: transparent del enlace) debe seguir existiendo');
+
   const activo = lista.find((r) => /^body\.aia-shell--sidebar \.aia-sidebar__link\[aria-current="page"\]$/.test(r.selector));
-  assert.ok(activo, 'falta `body.aia-shell--sidebar .aia-sidebar__link[aria-current="page"]` con fondo propio: el transparent lo deja sin fondo');
-  assert.equal(declara(activo.cuerpo, 'background'), 'var(--ds-active-action-primary)');
-  // El texto activo (--ds-active-action-text) se lee sobre ese fondo en los dos temas.
-  for (const tema of ['claro', 'oscuro']) {
-    const fondo = rgbDe(resolver('--ds-active-action-primary', tema));
-    const texto = rgbDe(resolver('--ds-active-action-text', tema));
-    assert.ok(fondo && texto, `tokens del ítem activo no resuelven a #hex en ${tema}`);
+  assert.ok(activo, 'falta `body.aia-shell--sidebar .aia-sidebar__link[aria-current="page"]` con el color del riel');
+  assert.equal(declara(activo.cuerpo, 'color'), 'var(--ds-active-nav-text)');
+  assert.equal(declara(activo.cuerpo, 'background'), null, 'el activo no lleva relleno: se marca con anillo, como en project-selector-react.css');
+  assert.match(declara(activo.cuerpo, 'box-shadow') ?? '', /--aia-green-light/, 'el activo se marca con el anillo del sistema (--aia-green-light)');
+
+  const hover = lista.find((r) => /^body\.aia-shell--sidebar \.aia-sidebar__link:hover:not\(\[aria-disabled="true"\]\)$/.test(r.selector));
+  assert.ok(hover, 'falta el color del hover del enlace del riel: el de la base (--ds-active-text-primary) queda a 2:1 sobre el verde');
+  assert.equal(declara(hover.cuerpo, 'color'), 'var(--ds-active-nav-text)');
+
+  // El color del riel se lee sobre el fondo del riel en los dos temas.
+  const fondoClaro = rgbDe(resolver('--ds-nav-bg-light', 'claro'));
+  for (const [tema, fondo] of [['claro', fondoClaro], ['oscuro', [0, 0, 0]]]) {
+    const texto = rgbDe(resolver('--ds-active-nav-text', tema));
+    assert.ok(texto, `--ds-active-nav-text (${tema}) no resuelve a #hex`);
     const ratio = contraste(texto, fondo);
-    assert.ok(ratio >= 4.5, `ítem activo, tema ${tema}: texto sobre fondo da ${ratio.toFixed(2)}:1 (mínimo 4.5:1)`);
+    assert.ok(ratio >= 4.5, `texto del riel, tema ${tema}: ${ratio.toFixed(2)}:1 (mínimo 4.5:1)`);
   }
 });
 

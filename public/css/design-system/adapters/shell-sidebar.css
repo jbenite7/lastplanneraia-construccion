@@ -277,14 +277,24 @@
     background: transparent;
   }
 
-  /* Pero el ítem ACTIVO sí lleva fondo propio. El `transparent` de arriba (0,2,1) le ganaba a
-     `.aia-sidebar__link[aria-current="page"]` (0,2,0) y le borraba el fondo, mientras el texto
-     seguía en `--ds-active-action-text` (casi negro en oscuro): oscuro sobre oscuro, ilegible
-     (revisión visual 2026-09-29). En claro `--ds-active-action-primary` es el mismo verde del
-     riel, así que no cambia de píxel; en oscuro devuelve la píldora verde con texto oscuro.
+  /* El `transparent` de arriba está en la capa `legacy-overrides` (la última de
+     `aia-design-system.css`), así que anula el relleno del ítem ACTIVO y el del HOVER de la base
+     (`components/navigation.css`). Pero el `color` de esos dos estados sigue viniendo de capas
+     inferiores y está pensado para leerse SOBRE ese relleno: `--ds-active-action-text` (casi
+     negro en oscuro) en el activo y `--ds-active-text-primary` (#18181b en claro) en el hover.
+     Resultado medido el 2026-09-29: activo oscuro sobre oscuro (1.21:1) y hover a 2.04:1 sobre el
+     verde. Se aplica en todo el shell lo que `project-selector-react.css` ya decidió para
+     «Tus proyectos» (y aprobó el golden canónico): el activo se marca con anillo, sin relleno, y
+     ambos estados llevan el color del RIEL, que no sigue el tema de la página. En colapsado el
+     anillo ya existe (más abajo); aquí se extiende al expandido.
      Guard: tests/design-system/sidebar-legibilidad.test.mjs. */
   body.aia-shell--sidebar .aia-sidebar__link[aria-current="page"] {
-    background: var(--ds-active-action-primary);
+    color: var(--ds-active-nav-text);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--aia-green-light) 35%, transparent);
+  }
+
+  body.aia-shell--sidebar .aia-sidebar__link:hover:not([aria-disabled="true"]) {
+    color: var(--ds-active-nav-text);
   }
 
   .shell-week-dialog__copy,
