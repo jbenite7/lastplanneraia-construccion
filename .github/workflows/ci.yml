@@ -136,10 +136,13 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Instalar dependencias del frontend
+        if: needs.cambios.outputs.frontend == 'true'
         run: npm ci --prefix frontend
       - name: Comprobar tipos del frontend
+        if: needs.cambios.outputs.frontend == 'true'
         run: npm run frontend:typecheck
       - name: Correr las pruebas del frontend
+        if: needs.cambios.outputs.frontend == 'true'
         run: npm run frontend:test
       # --build-arg COMPOSER_INSTALL_FLAGS="" para que la imagen traiga PHPUnit, que es
       # dependencia de desarrollo y sin ella el runner del paso siguiente aborta con 2 en
@@ -268,6 +271,7 @@ jobs:
       # veta en este archivo: ese guard existe para que el CI no tenga camino de
       # despliegue, y un guard que se ablanda por comodidad deja de valer.
       - name: Verify the comment-free CSS matches its source
+        if: matrix.theme == 'light' && needs.cambios.outputs.css_minify == 'true'
         run: npm run css:minify:check
       # El espejo de CSS viaja versionado desde 10dd634e, asi que el arbol ya
       # esta completo al construir; el build va tras la verificacion igualmente.
@@ -307,14 +311,17 @@ jobs:
       # gate corre siempre; «Summarize gate results» al final decide si el job queda en rojo.
       - name: Enforce PHPStan baseline
         id: phpstan-baseline
+        if: matrix.theme == 'light' && needs.cambios.outputs.php_runtime == 'true'
         continue-on-error: true
         run: npm run test:design-system:phpstan
       - name: Enforce PHPStan level 6 on the PDC module
         id: phpstan-pdc
+        if: matrix.theme == 'light' && needs.cambios.outputs.phpstan_pdc == 'true'
         continue-on-error: true
         run: npm run test:pdc:phpstan
       - name: Atestar grants efectivos de runtime
         id: runtime-grants
+        if: matrix.theme == 'light' && needs.cambios.outputs.php_runtime == 'true'
         continue-on-error: true
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php scripts/security/audit-runtime-db-grants.php --live
       # Sustituye a los tres tests que antes se listaban aquí a mano (test_global_table_safety,
@@ -324,6 +331,7 @@ jobs:
       # contrato pasó a comprobar que el CI lo ejecuta en vez de que lo nombra.
       - name: Correr la suite PHP completa que el CI puede honrar
         id: php-suite
+        if: matrix.theme == 'light' && needs.cambios.outputs.php_runtime == 'true'
         continue-on-error: true
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php scripts/run-php-tests.php --nivel=http
       # Lane no acumulativa para el único contrato que crea/elimina tablas legacy. La app y la
@@ -331,6 +339,7 @@ jobs:
       # este step y docker compose las inyecta únicamente en el proceso exec, no en el servicio.
       - name: Correr fixtures de migración con admin efímero
         id: php-admin-db
+        if: matrix.theme == 'light' && needs.cambios.outputs.php_runtime == 'true'
         continue-on-error: true
         env:
           DB_USER: root
@@ -358,6 +367,7 @@ jobs:
       # `exitCode`: el acta la levanta el script, el veredicto lo da el recibo.
       - name: Enforce full-app-flow gate
         id: full-app-flow
+        if: matrix.theme == 'light' && needs.cambios.outputs.e2e == 'true'
         continue-on-error: true
         env:
           APP_URL: http://127.0.0.1:18081
@@ -373,7 +383,7 @@ jobs:
           node -e "const r=require('./docs/design-system/evidence/full-app-flow.json'); console.log('duration_ms=' + (r.durationMs ?? ''));" >> "$GITHUB_OUTPUT"
           node -e "const r=require('./docs/design-system/evidence/full-app-flow.json'); if (r.exitCode !== 0) { console.error('full-app-flow en rojo: exitCode ' + r.exitCode); process.exit(1); }"
       - name: Preserve the full-app-flow receipt
-        if: always()
+        if: always() && steps.full-app-flow.outcome != 'skipped'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: full-app-flow-receipt-${{ matrix.theme }}
@@ -404,6 +414,7 @@ jobs:
       # recibo y propaga su `exitCode`. Sin ella, el paso saldria verde con el gate en rojo.
       - name: Enforce semanal roles and phases gate
         id: semanal-roles-phases
+        if: matrix.theme == 'light' && needs.cambios.outputs.e2e == 'true'
         continue-on-error: true
         env:
           APP_URL: http://127.0.0.1:18081
@@ -415,7 +426,7 @@ jobs:
           node -e "const r=require('./docs/design-system/evidence/semanal-roles-phases.json'); console.log('duration_ms=' + (r.durationMs ?? ''));" >> "$GITHUB_OUTPUT"
           node -e "const r=require('./docs/design-system/evidence/semanal-roles-phases.json'); if (r.exitCode !== 0) { console.error('semanal-roles-phases en rojo: exitCode ' + r.exitCode); process.exit(1); }"
       - name: Preserve the semanal roles and phases receipt
-        if: always()
+        if: always() && steps.semanal-roles-phases.outcome != 'skipped'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: semanal-roles-phases-receipt-${{ matrix.theme }}
@@ -426,6 +437,7 @@ jobs:
         run: git checkout -- docs/design-system/evidence/semanal-roles-phases.json && git status --porcelain
       - name: Measure runtime budgets
         id: runtime-budget-measure
+        if: matrix.theme == 'light' && needs.cambios.outputs.pilot == 'true'
         continue-on-error: true
         env:
           APP_URL: http://127.0.0.1:18081
@@ -456,13 +468,14 @@ jobs:
       # indice a mano, que es justo lo que este mecanismo existe para impedir.
       - name: Check runtime budgets against the baseline
         id: runtime-budget-check
+        if: matrix.theme == 'light' && needs.cambios.outputs.pilot == 'true'
         continue-on-error: true
         run: |
           node scripts/design-system/gate-receipt.mjs runtime-budgets
           node -e "const r=require('./docs/design-system/evidence/runtime-budgets.json'); console.log('duration_ms=' + (r.durationMs ?? ''));" >> "$GITHUB_OUTPUT"
           node -e "const r=require('./docs/design-system/evidence/runtime-budgets.json'); if (r.exitCode !== 0) { console.error('runtime-budgets en rojo: exitCode ' + r.exitCode); process.exit(1); }"
       - name: Preserve the runtime-budgets receipt
-        if: always()
+        if: always() && steps.runtime-budget-check.outcome != 'skipped'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: runtime-budgets-receipt-${{ matrix.theme }}
@@ -480,11 +493,13 @@ jobs:
       # medidos esta jornada fueron en pasos ANTERIORES a este, ya cubiertos arriba.
       - name: Run laboratory gates
         id: blocking-runtime
+        if: needs.cambios.outputs.lab == 'true'
         env:
           E2E_BASE_URL: http://127.0.0.1:18081
         run: npm run test:design-system:runtime
       - name: Run pilot lab gates (Programa General)
         id: pilot-lab-gates
+        if: needs.cambios.outputs.pilot == 'true'
         continue-on-error: true
         env:
           E2E_BASE_URL: http://127.0.0.1:18081
@@ -512,6 +527,7 @@ jobs:
           retention-days: 7
       - name: Collect keyboard and reflow evidence
         id: keyboard-reflow-evidence
+        if: needs.cambios.outputs.lab == 'true'
         continue-on-error: true
         env:
           E2E_BASE_URL: http://127.0.0.1:18081
@@ -528,6 +544,7 @@ jobs:
           retention-days: 7
       - name: Run Programa General persistence and RBAC gate
         id: pg-persistence-rbac
+        if: matrix.theme == 'light' && needs.cambios.outputs.e2e == 'true'
         continue-on-error: true
         env:
           APP_URL: http://127.0.0.1:18081

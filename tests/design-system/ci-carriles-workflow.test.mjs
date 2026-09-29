@@ -105,3 +105,85 @@ test('el workflow no usa las palabras vetadas ni en comentarios', async () => {
   const workflow = await read('.github/workflows/ci.yml');
   assert.doesNotMatch(workflow, /deploy|production|pull_request_target/i);
 });
+
+// --- Tarea 4: cada gate cuelga de su bandera --------------------------------------------------
+const LUZ = "matrix.theme == 'light'";
+const salida = (clave) => `needs.cambios.outputs.${clave} == 'true'`;
+
+// [id o nombre del paso, banderas que su `if` debe contener, ¿solo en la pata clara?]
+const RUNTIME_POR_PASO = [
+  ['Verify the comment-free CSS matches its source', ['css_minify'], true],
+  ['phpstan-baseline', ['php_runtime'], true],
+  ['runtime-grants', ['php_runtime'], true],
+  ['php-suite', ['php_runtime'], true],
+  ['php-admin-db', ['php_runtime'], true],
+  ['phpstan-pdc', ['phpstan_pdc'], true],
+  ['full-app-flow', ['e2e'], true],
+  ['semanal-roles-phases', ['e2e'], true],
+  ['pg-persistence-rbac', ['e2e'], true],
+  ['runtime-budget-measure', ['pilot'], true],
+  ['runtime-budget-check', ['pilot'], true],
+  ['blocking-runtime', ['lab'], false],
+  ['keyboard-reflow-evidence', ['lab'], false],
+  ['pilot-lab-gates', ['pilot'], false],
+];
+
+const buscar = (steps, clave) => steps.find((paso) => paso.id === clave || paso.name === clave);
+
+test('cada gate del runtime lleva su `if` con su bandera y, si no depende del tema, corre solo en la pata clara', async () => {
+  const workflow = await read('.github/workflows/ci.yml');
+  const steps = parseJobSteps(workflow, 'design-system-runtime');
+  for (const [clave, banderas, soloLuz] of RUNTIME_POR_PASO) {
+    const paso = buscar(steps, clave);
+    assert.ok(paso, `falta el paso ${clave}`);
+    assert.ok(paso.if, `el paso ${clave} no declara if`);
+    for (const bandera of banderas) {
+      assert.ok(paso.if.includes(salida(bandera)), `${clave}: su if no lee ${bandera} (${paso.if})`);
+    }
+    assert.equal(paso.if.includes(LUZ), soloLuz, `${clave}: la condición de la pata clara no es la esperada (${paso.if})`);
+  }
+});
+
+test('los tres pasos del frontend del job static cuelgan de la bandera frontend y el resto no lleva if', async () => {
+  const workflow = await read('.github/workflows/ci.yml');
+  const steps = parseJobSteps(workflow, 'design-system-static');
+  const frontend = ['Instalar dependencias del frontend', 'Comprobar tipos del frontend', 'Correr las pruebas del frontend'];
+  for (const nombre of frontend) {
+    const paso = buscar(steps, nombre);
+    assert.ok(paso, `falta el paso ${nombre}`);
+    assert.equal(paso.if, salida('frontend'), `${nombre}: if inesperado`);
+  }
+  for (const paso of steps.filter((p) => !frontend.includes(p.name))) {
+    assert.equal(paso.if, undefined, `el paso ${paso.name ?? paso.uses ?? paso.run} no debería llevar if`);
+  }
+});
+
+test('los recibos solo se suben si su gate corrió, y la evidencia no bloqueante conserva su condición', async () => {
+  const workflow = await read('.github/workflows/ci.yml');
+  const steps = parseJobSteps(workflow, 'design-system-runtime');
+  const recibos = [
+    ['Preserve the full-app-flow receipt', 'full-app-flow'],
+    ['Preserve the semanal roles and phases receipt', 'semanal-roles-phases'],
+    ['Preserve the runtime-budgets receipt', 'runtime-budget-check'],
+  ];
+  for (const [nombre, gate] of recibos) {
+    const paso = buscar(steps, nombre);
+    assert.ok(paso, `falta el paso ${nombre}`);
+    assert.equal(paso.if, `always() && steps.${gate}.outcome != 'skipped'`, `${nombre}: if inesperado`);
+    assert.equal(paso.with?.['if-no-files-found'], 'error');
+  }
+  assert.equal(
+    buscar(steps, 'Preserve non-blocking evidence failures')?.if,
+    "steps.keyboard-reflow-evidence.outcome == 'failure'",
+  );
+  assert.equal(buscar(steps, 'blocking-runtime')?.['continue-on-error'], undefined);
+});
+
+test('los pasos de restauración y el resumen siguen corriendo siempre', async () => {
+  const workflow = await read('.github/workflows/ci.yml');
+  const steps = parseJobSteps(workflow, 'design-system-runtime');
+  for (const paso of steps.filter((p) => p.name?.startsWith('Restore the worktree'))) {
+    assert.equal(paso.if, 'always()', `${paso.name}: debe seguir con always()`);
+  }
+  assert.equal(buscar(steps, 'Summarize gate results')?.if, 'always()');
+});
