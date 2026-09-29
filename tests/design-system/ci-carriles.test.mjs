@@ -16,6 +16,8 @@ const RUTAS = {
     'memoria/index.md',
     'decisiones/0001.md',
     'ROADMAP.md',
+    '.obsidian/app.json',
+    './docs/a.md',
   ],
   'ds-core': [
     'docs/design-system/README.md',
@@ -24,6 +26,8 @@ const RUTAS = {
     'public/css/design-system/core.css',
     'public/js/modules/aia_ui/theme-toggle.js',
     'src/View/Components/DesignSystemHeadComponent.php',
+    'src/View/Components/DesignSystemComponent.php',
+    'src/View/Components/BiAccessComponent.php',
   ],
   'ds-lab': [
     'views/design-system/lab.view.php',
@@ -47,7 +51,11 @@ const RUTAS = {
     'ct-app/src/x.ts',
     'public/pdc-app/x.js',
   ],
-  'front-src': ['frontend/src/shell/rutas.tsx'],
+  'front-src': [
+    'frontend/src/shell/rutas.tsx',
+    'frontend/package.json',
+    'frontend/vite.config.ts',
+  ],
   'front-bundle': ['public/app/assets/index-C767lz-p.js'],
   php: [
     'docs/security/rls-runtime-boundary.md',
@@ -57,6 +65,11 @@ const RUTAS = {
     'database/fixtures/x.sql',
     'composer.lock',
     'phpstan.neon',
+    'phpunit.xml',
+    'admin/index.php',
+    'admin/views/x.view.php',
+    'admin/public/css/x.css',
+    '.superpowers/sdd/otro-frente/plan.md',
   ],
   todo: [
     '.github/workflows/ci.yml',
@@ -66,6 +79,7 @@ const RUTAS = {
     'docker/php/Dockerfile',
     'e2e/x.mjs',
     'carpeta-nueva/x',
+    'public/index.php',
   ],
 };
 
@@ -170,4 +184,10 @@ test('invariantes: runtime es el OR de sus dependientes y dark solo con lab o pi
       assert.equal(r.temas.includes('dark'), r.gates.lab || r.gates.pilot);
     }
   }
+});
+
+test('gatesPara: un carril desconocido cae a la fila todo', () => {
+  const r = gatesPara(new Set(['carril-inventado']));
+  assert.deepEqual(activas(r), [...GATE_KEYS]);
+  assert.deepEqual([...r.temas].sort(), ['dark', 'light']);
 });

@@ -33,18 +33,18 @@ const REGLAS = [
   // Excepciones dentro de las carpetas de documentación.
   [/^docs\/design-system\//, 'ds-core'],
   [/^docs\/security\//, 'php'],
-  [/^\.superpowers\/sdd\/2026-08-28-rls-aplicacion-fail-closed\//, 'php'],
+  [/^\.superpowers\//, 'php'],
   [/^goals\/design-system-nucleo-gobernanza\//, 'ds-modulo'],
   [/^(DESIGN|GEMINI|README|AGENTS|CLAUDE)\.md$/, 'ds-modulo'],
   // Documentación pura: no toca el producto.
-  [/^(docs|goals|memoria|decisiones)\//, 'docs'],
+  [/^(docs|goals|memoria|decisiones|\.obsidian)\//, 'docs'],
   [/^ROADMAP\.md$/, 'docs'],
   // Núcleo del design system.
   [/^public\/css\/tokens\.css$/, 'ds-core'],
   [/^public\/css\/aia-design-system\.css$/, 'ds-core'],
   [/^public\/css\/design-system\//, 'ds-core'],
   [/^public\/js\/modules\/aia_ui\//, 'ds-core'],
-  [/^src\/View\/Components\/DesignSystemHeadComponent\.php$/, 'ds-core'],
+  [/^src\/View\/Components\//, 'ds-core'],
   // Laboratorio del design system.
   [/^views\/design-system\//, 'ds-lab'],
   [/^src\/Controllers\/Internal\/DesignSystemLabController\.php$/, 'ds-lab'],
@@ -53,14 +53,15 @@ const REGLAS = [
   [/^(pdc-app|ct-app)\//, 'apps'],
   [/^public\/pdc-app\//, 'apps'],
   // Frontend React del shell.
-  [/^frontend\/src\//, 'front-src'],
+  [/^frontend\//, 'front-src'],
   [/^public\/app\//, 'front-bundle'],
   // Módulos de producto (CSS, JS y vistas).
   [/^public\/(css|js|dist-css)\//, 'ds-modulo'],
   [/^views\//, 'ds-modulo'],
   // Backend PHP y su configuración.
-  [/^(src|admin\/src|database)\//, 'php'],
+  [/^(src|admin|database)\//, 'php'],
   [/^composer\.(json|lock)$/, 'php'],
+  [/^phpunit\.xml$/, 'php'],
   [/^phpstan[^/]*\.neon$/, 'php'],
 ];
 
