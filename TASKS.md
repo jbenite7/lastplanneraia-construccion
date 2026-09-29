@@ -17,10 +17,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 560 |
+| hecha | 559 |
 | en progreso | 4 |
 | pendiente | 154 |
-| sin señal | 151 |
+| sin señal | 152 |
 | descartada | 48 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -835,13 +835,13 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### CI-CARRILES · CI por carriles — evaluar lo que se edita (abierto)
 
-- **P-CI-CARRILES · CI por carriles** (abierto): 3 de 6 hechas · `2026-09-28-ci-por-carriles.md`
+- **P-CI-CARRILES · CI por carriles** (abierto): 2 de 6 hechas · `2026-09-28-ci-por-carriles.md`
   - hecha · 1 · Selector puro de carriles y gates
   - sin señal · 2 · CLI del selector con fallo hacia «todo»
   - hecha · 3 · Job `cambios`, concurrencia y matriz de temas
   - sin señal · 4 · `if:` por paso en los jobs static y runtime
   - sin señal · 5 · Resumen que dice qué se omitió
-  - hecha · 6 · Prueba en corridas reales y cierre del frente
+  - sin señal · 6 · Prueba en corridas reales y cierre del frente
 
 ### S05-REDISENO · S05 — Rediseño de Programa General (ronda sobre `main`) (abierto)
 
@@ -907,7 +907,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - cerrado_sin_archivos · `plans/2026-08-30-s01-login-react.md`: dice «plan cerrado»; git dice «3 de 26 archivos que mandaba crear no existieron nunca en ninguna rama: frontend/src/lib/api/frontera.test.ts, frontend/src/lib/api/esquemas/sesion.test.ts, src/Controllers/Core/SpaHostController.php»
 - parece_cerrado · `plans/2026-09-23-s05-programa-general-react.md`: dice «plan vigente»; git dice «las 8 tareas con señal están hechas según git»
 - parece_cerrado · `plans/2026-09-26-s05-deuda-cierre.md`: dice «plan abierto»; git dice «las 1 tareas con señal están hechas según git; 7 sin señal»
-- parece_cerrado · `plans/2026-09-28-ci-por-carriles.md`: dice «plan abierto»; git dice «las 3 tareas con señal están hechas según git; 3 sin señal»
+- parece_cerrado · `plans/2026-09-28-ci-por-carriles.md`: dice «plan abierto»; git dice «las 2 tareas con señal están hechas según git; 4 sin señal»
 - spec_cerrado_plan_vivo · `specs/2026-07-23-a16-comparativo-versiones-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-07-22-roadmap-pdc-v2.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-19-runtime-budgets-al-ci-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-19-runtime-budgets-al-ci.md»
 - spec_vivo_planes_cerrados · `specs/2026-08-26-v0-del-producto-design.md`: dice «spec vigente»; git dice «sus 2 planes están cerrados o derogados»
