@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActividadUI } from '../domain/modelo';
+import { ActividadUI, parsearTextoActividad } from '../domain/modelo';
 import { obtenerConfigEstado } from '../domain/presentacionEstados';
 
 export interface ProgramaCardsProps {
@@ -25,13 +25,16 @@ export const ProgramaCards: React.FC<ProgramaCardsProps> = ({
         if (act.esCapitulo) {
           return (
             <div key={`cap-card-${act.unique_id}`} className="card-chapter-header">
-              <i className="far fa-folder" aria-hidden="true"></i> {act.Actividad}
+              <i className="far fa-folder" aria-hidden="true"></i>{' '}
+              {parsearTextoActividad(act.Actividad).titulo}
             </div>
           );
         }
 
         const isSelected = actividadSeleccionadaId === act.unique_id;
         const estadoCfg = obtenerConfigEstado(act.Estado);
+        // La base trae HTML heredado (<b>, <small>): igual que la tabla, se limpia antes de pintar.
+        const parsed = parsearTextoActividad(act.Actividad);
         const pptoStr =
           act.cantidad_ppto !== null && act.cantidad_ppto !== undefined
             ? `${act.cantidad_ppto.toFixed(1)} ${act.unidad ?? ''}`.trim()
@@ -52,7 +55,7 @@ export const ProgramaCards: React.FC<ProgramaCardsProps> = ({
             tabIndex={0}
             role="button"
             aria-selected={isSelected}
-            aria-label={`${act.codigo_actividad || ''} ${act.Actividad}`.trim()}
+            aria-label={`${act.codigo_actividad || ''} ${parsed.titulo}`.trim()}
             onKeyDown={handleKeyDown}
           >
             <div className="card-topline">
@@ -73,7 +76,8 @@ export const ProgramaCards: React.FC<ProgramaCardsProps> = ({
               </span>
             </div>
             <h3 className="card-title">
-              {act.Actividad}
+              {parsed.titulo}
+              {parsed.subtitulo && <span className="activity-subtitle">{parsed.subtitulo}</span>}
               {act.plazoVencido && (
                 <span
                   className="cell-alert"

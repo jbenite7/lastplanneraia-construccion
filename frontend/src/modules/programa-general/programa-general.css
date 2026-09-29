@@ -1087,6 +1087,13 @@
     line-height: 1.3;
   }
 
+  /* El subtítulo («Capítulo, obra») va en su propia línea, como en la tabla. */
+  .card-title .activity-subtitle {
+    display: block;
+    margin-block-start: var(--ds-space-1);
+    font-weight: 400;
+  }
+
   .card-metrics {
     display: flex;
     justify-content: space-between;

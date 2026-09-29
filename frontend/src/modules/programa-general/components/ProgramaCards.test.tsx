@@ -65,6 +65,31 @@ describe('ProgramaCards', () => {
     expect(screen.getByTitle('Plazo vencido hace 3 días')).toBeInTheDocument();
   });
 
+  it('limpia el HTML heredado de los títulos y de los capítulos (nunca lo muestra como texto)', () => {
+    // Texto exacto que llega de la base y que se veía crudo en móvil (captura de Felipe, 2026-09-29).
+    const sucias: ActividadUI[] = [
+      {
+        ...mockActividades[0],
+        unique_id: 2,
+        Actividad: '<b>PRELIMINARES, </b> <small>[Capítulo: DAPORTO TORRE 3]</small>',
+      },
+      {
+        ...mockActividades[1],
+        unique_id: 102,
+        Actividad:
+          '<b>LOCALIZACIÓN Y REPLANTEO, </b> <small>[Capítulo: PRELIMINARES, DAPORTO TORRE 3]</small>',
+      },
+    ];
+    const { container } = render(<ProgramaCards actividades={sucias} onSelectActividad={vi.fn()} />);
+
+    expect(container.textContent).not.toMatch(/<\/?(b|small)>/i);
+    expect(screen.getByText('PRELIMINARES')).toBeInTheDocument();
+    expect(screen.getByText('LOCALIZACIÓN Y REPLANTEO')).toBeInTheDocument();
+    expect(screen.getByText('PRELIMINARES, DAPORTO TORRE 3')).toBeInTheDocument();
+    // El nombre accesible tampoco arrastra etiquetas.
+    expect(screen.getByRole('button', { name: /LOCALIZACIÓN Y REPLANTEO/ }).getAttribute('aria-label')).not.toMatch(/</);
+  });
+
   it('dispara onSelectActividad al hacer clic en una tarjeta', () => {
     const onSelect = vi.fn();
     render(
