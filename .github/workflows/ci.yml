@@ -21,14 +21,59 @@ on:
 permissions:
   contents: read
 
+# CI por carriles: en `pull_request` el grupo es la rama y una corrida nueva cancela la anterior
+# (solo importa el último commit). En `push` el grupo lleva el SHA y nada se cancela: con un
+# grupo por rama y `cancel-in-progress: false`, GitHub descartaría la corrida pendiente más vieja
+# de una ráfaga de merges, y esa corrida es la única evidencia de ese commit.
 concurrency:
-  group: design-system-${{ github.ref }}
-  cancel-in-progress: true
+  group: design-system-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Decide qué gates alcanza el diff (`scripts/ci-carriles.mjs`). Ante la duda el script devuelve
+  # `todo`, así que un job omitido siempre es una decisión explícita y no un descuido. Los datos
+  # del evento entran por `env:` y nunca interpolados en `run:`.
+  cambios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      static: ${{ steps.carriles.outputs.static }}
+      frontend: ${{ steps.carriles.outputs.frontend }}
+      runtime: ${{ steps.carriles.outputs.runtime }}
+      php_runtime: ${{ steps.carriles.outputs.php_runtime }}
+      phpstan_pdc: ${{ steps.carriles.outputs.phpstan_pdc }}
+      css_minify: ${{ steps.carriles.outputs.css_minify }}
+      e2e: ${{ steps.carriles.outputs.e2e }}
+      lab: ${{ steps.carriles.outputs.lab }}
+      pilot: ${{ steps.carriles.outputs.pilot }}
+      temas: ${{ steps.carriles.outputs.temas }}
+      carriles: ${{ steps.carriles.outputs.carriles }}
+    steps:
+      # Historial completo: el diff base..HEAD necesita los dos extremos.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      # En un PR, `github.sha` es el commit de merge: el diff base..HEAD es exactamente el del PR.
+      - name: Calcular los carriles del diff
+        id: carriles
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: node scripts/ci-carriles.mjs >> "$GITHUB_OUTPUT"
+
   design-system-static:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    needs: cambios
+    if: needs.cambios.outputs.static == 'true'
     # Sin esto, `docker-compose.override.yml` monta sobre /var/www/html la ruta absoluta de la
     # máquina de desarrollo, que en un runner NO EXISTE. Docker no protesta: crea el directorio
     # vacío y lo monta igual, así que el código desaparece del contenedor y los cuatro tests de
@@ -142,7 +187,10 @@ jobs:
     # PARALELO, asi que el reloj de cada una no deberia moverse; el margen cubre
     # que compartan runners y cache de gha, no que se sumen.
     timeout-minutes: 90
-    needs: design-system-static
+    needs: [cambios, design-system-static]
+    # Corre si el diff alcanza el runtime y `design-system-static` pasó o se omitió; si falló, no
+    # corre. `!cancelled()` evita que el `skipped` de static arrastre a este job.
+    if: ${{ !cancelled() && needs.cambios.result == 'success' && needs.cambios.outputs.runtime == 'true' && (needs.design-system-static.result == 'success' || needs.design-system-static.result == 'skipped') }}
     # D16 (spec temas 2026-08-28): el carril corre los DOS temas completos, no
     # solo el visual. Se desdobla el job entero y no un paso a proposito -- los
     # gates de a11y, teclado, reflow y presupuesto tambien viven aqui, y un tema
@@ -153,7 +201,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        theme: [light, dark]
+        theme: ${{ fromJSON(needs.cambios.outputs.temas || '["light","dark"]') }}
     env:
       # Lo consumen los carriles visuales (`*.visual.mjs`) para elegir QUE
       # escenarios del manifiesto corre esta pata. Sin el correrian los 44 en
