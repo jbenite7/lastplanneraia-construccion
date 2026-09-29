@@ -137,9 +137,11 @@ test('visual regression contract keeps the pilot matrix tied to the active React
   assert.ok(manifest.tests.includes(pilotTest), `${pilotTest} must stay declared by the pilot manifest`);
   assert.equal(
     packageJson.scripts['test:visual:pilot'],
-    `playwright test ${pilotTest} --workers=1`,
-    'the visual pilot script must run the active Programa General spec',
+    `playwright test ${pilotTest} --grep-invert "Ronda 1.2|Servidor Real Docker" --workers=1`,
+    'the visual pilot script must run the active Programa General spec without the suites that need the real Da Porto project',
   );
+  assert.match(source, /test\.describe\('Ronda 1\.2/, 'the excluded suite names must still exist in the spec');
+  assert.match(source, /test\.describe\('S05 Programa General React — Servidor Real Docker/, 'the excluded suite names must still exist in the spec');
   assert.equal(packageJson.scripts['test:hue:pilot'], undefined, 'the retired hue-only pilot script must not remain available');
   const pilotGate = parseJobSteps(workflow, 'design-system-runtime')
     .find(({ name }) => name === 'Run pilot lab gates (Programa General)');
