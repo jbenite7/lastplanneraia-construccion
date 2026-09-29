@@ -2254,7 +2254,7 @@ Ninguno se comprobó en el navegador: la evidencia es código y `git log` sobre 
   existe (`src/Controllers/Api/ControlCambiosApiController.php:71`, `opcion=nuevo`) y la vista no
   tiene botón; su estado vacío lleva texto provisional (C-33) que depende de esto. **Decidir antes si
   va en PHP o dentro de S15.** Tarea 26 del mismo plan.
-- [ ] 2026-09-28 — **El gráfico no dice de quién es la fecha contractual.** No existe
+- [x] 2026-09-28 — **El gráfico no dice de quién es la fecha contractual.** No existe
   `contractual_finish_scope` ni `tests/test_linea_base_rotulo.php`; «Fin contractual» sale sin rótulo
   (`views/bi/control-tower.php:356`). Y la definición de la métrica contradice la spec:
   `src/Services/ControlTowerService.php:1955` y `src/Services/Bi/MetricDictionaryService.php:424`
@@ -2270,6 +2270,15 @@ Ninguno se comprobó en el navegador: la evidencia es código y `git log` sobre 
   (`docs/superpowers/specs/2026-08-19-linea-base-contractual-design.md`, sección «El filtro no es un descuido»)
   dice que el filtro existe a propósito para que, al filtrar, la fecha corresponda a las actividades filtradas;
   lo que sí falta es el rótulo que diga de quién es cada fecha, y esta decisión lo resuelve.
+  **CERRADO el 2026-09-28 (rama `feat/bi-dos-fechas-contractuales`).** Segunda decisión de Felipe, la misma
+  tarde: la fecha del filtro no es contractual —nadie declara una fecha por contratista—, así que se calcula
+  como el fin de las actividades del filtro **en el primer programa registrado** y se rotula «Fin según el primer
+  programa (filtro)»; sin filas en el primer corte dice «Sin fecha en el primer programa». Se lee de las filas del
+  primer corte (`contractual_baseline_by_project`) y no de lo vigente, para no repetir el defecto que borraba la
+  fecha al reprogramar. Va en `metrics.contractual_dates`; prueba `tests/test_bi_dos_fechas_contractuales.php`.
+  Se corrigieron las dos definiciones que decían «del alcance filtrado». **Ubicación:** el bloque va en el resumen
+  de la tarjeta, debajo del gráfico y encima de «Fin contractual», no sobre el lienzo; con filtro aparece, sin
+  filtro sigue una sola fecha. El bloque de «Fin contractual» sin fecha dice ahora «Sin línea base declarada».
 - [ ] 2026-09-28 — **La siembra de la línea base contractual falta en producción.**
   `database/migrations/20260819_sembrar_linea_base_contractual.sql` ya corrió en dev y está en el
   paquete de «Pendiente de decisión: despliegue a producción», donde quien lo anotó dejó escrito
