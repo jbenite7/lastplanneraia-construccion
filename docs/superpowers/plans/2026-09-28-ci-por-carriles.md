@@ -187,3 +187,5 @@ Condiciones por paso (`B` = `needs.cambios.outputs`; «luz» = `matrix.theme == 
 - **Cobertura de la spec:** R1 → T1–T2; R2 → T1–T2; R3 → T3 y T6; R4 → T4; R5 → T5; R6 → T3–T5; R7 → T6; R8 → T4 y T6. D1 (`main` completo) → T2 (`completo` en `push`) y T3; D2 → T1–T3; D3 → reglas de T1; D4 y D5 → Global Constraints.
 - **Consistencia de tipos:** las nueve claves de `GATE_KEYS` de la Tarea 1 son las mismas de la tabla de la Tarea 4 y de los `outputs` de la Tarea 3; no hay bandera aparte para la imagen: `foundation.test.mjs` ejecuta PHP con docker compose dentro de `static`, así que la imagen y PHP `puro` corren siempre que corre `static` (la fila de la spec quedó corregida en consecuencia).
 - **Proporción:** las decisiones que el ejecutor no puede tomar solo (rutas, banderas, nombres, condiciones por paso) están escritas; los cuerpos de funciones y el YAML completo no.
+
+<!-- prueba descartable del carril docs, no se mergea -->
