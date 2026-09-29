@@ -44,10 +44,12 @@ devuelve).
   | `datos-proyecto` | datos o evidencia que el CI no tiene | 41 | no |
   | `admin-db` | admin efímero que puede crear tablas | 1 | sí, paso `php-admin-db` |
 
-**Conteo actual medido el 2026-09-26:** 159 scripts `tests/test_*.php` y 32 clases PHPUnit; la tabla
-reparte los scripts por su primera etiqueta `@requiere` leída en las 40 primeras líneas. Como
-historia, el universo pasó por 126, 96, 99, 101, 117 (2026-08-24) y 139 scripts más 17 clases
-PHPUnit el 2026-09-03 sobre `093e0d44`. Estas cifras caducan: vuelve a medirlas antes de usarlas.
+**Conteo actual medido el 2026-09-29:** 164 scripts `tests/test_*.php` y 32 clases PHPUnit (con
+`ls -1 tests/test_*.php | wc -l` y `ls -1 tests/unit/*Test.php | wc -l`); la tabla de niveles de
+abajo sigue siendo la del 2026-09-26 (159 scripts) y no se repartió de nuevo. Como historia, el
+universo pasó por 126, 96, 99, 101, 117 (2026-08-24), 139 scripts más 17 clases PHPUnit el
+2026-09-03 sobre `093e0d44`, y 159 más 32 el 2026-09-26. Estas cifras caducan: vuelve a medirlas
+antes de usarlas.
 
 ```bash
 ls -1 tests/test_*.php | wc -l
@@ -133,6 +135,19 @@ Hay rojos que ya estaban ahí. Lee primero:
   capas; leer solo el candado de semana produce sospechas falsas de brecha.
 - [[regla-inalcanzable-parece-regla-sin-probar]] — antes de saltar una prueba por falta de un
   caso, averigua quién lo impide: si es el propio producto, la regla está muerta en esa vista.
+
+## Trampas del CI (`.github/workflows/ci.yml`)
+
+Decisión abierta que las origina: [[ci-por-carriles-el-pr-corre-lo-que-alcanza-y-main-corre-todo]].
+
+- [[el-gate-de-laboratorio-tambien-revisa-pantallas-de-producto]] — `test:design-system:runtime` no
+  es solo la página del laboratorio: mide siete pantallas de producto y recorre 25 rutas.
+- [[la-concurrencia-por-rama-deja-merges-de-main-sin-veredicto]] — 5 de los últimos 25 merges a
+  `main` se cancelaron entre sí.
+- [[un-check-obligatorio-no-cubre-una-pata-de-matriz-que-no-existe]] — latente: hoy `main` no exige
+  checks; si los exigiera, no debe hacerlo por el nombre de una pata de matriz.
+- [[un-404-de-github-puede-ser-el-nombre-del-repo]] — el repo se llama
+  `jbenite7/lastplanneraia-construccion`, no `lps-aia`.
 
 ## Matriz local antes del push
 

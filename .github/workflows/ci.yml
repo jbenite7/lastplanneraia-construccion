@@ -21,14 +21,72 @@ on:
 permissions:
   contents: read
 
+# CI por carriles: en `pull_request` el grupo es la rama y una corrida nueva cancela la anterior
+# (solo importa el último commit). En `push` el grupo lleva el SHA y nada se cancela: con un
+# grupo por rama y `cancel-in-progress: false`, GitHub descartaría la corrida pendiente más vieja
+# de una ráfaga de merges, y esa corrida es la única evidencia de ese commit.
 concurrency:
-  group: design-system-${{ github.ref }}
-  cancel-in-progress: true
+  group: design-system-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Decide qué gates alcanza el diff (`scripts/ci-carriles.mjs`). Ante la duda el script devuelve
+  # `todo`, así que un job omitido siempre es una decisión explícita y no un descuido. Los datos
+  # del evento entran por `env:` y nunca interpolados en `run:`.
+  cambios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      static: ${{ steps.carriles.outputs.static }}
+      frontend: ${{ steps.carriles.outputs.frontend }}
+      runtime: ${{ steps.carriles.outputs.runtime }}
+      php_runtime: ${{ steps.carriles.outputs.php_runtime }}
+      phpstan_pdc: ${{ steps.carriles.outputs.phpstan_pdc }}
+      css_minify: ${{ steps.carriles.outputs.css_minify }}
+      e2e: ${{ steps.carriles.outputs.e2e }}
+      lab: ${{ steps.carriles.outputs.lab }}
+      pilot: ${{ steps.carriles.outputs.pilot }}
+      temas: ${{ steps.carriles.outputs.temas }}
+      carriles: ${{ steps.carriles.outputs.carriles }}
+    steps:
+      # Historial completo: el diff base..HEAD necesita los dos extremos.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      # En un PR, `github.sha` es el commit de merge: el diff base..HEAD es el del PR, o un
+      # superconjunto si `main` avanzó desde que se abrió. Corre de más, nunca de menos.
+      - name: Calcular los carriles del diff
+        id: carriles
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          # Sin tubería: si el selector falla, su código de salida corta el paso.
+          node scripts/ci-carriles.mjs > "$RUNNER_TEMP/carriles.out"
+          # Un selector mudo o incompleto dejaría los gates omitidos en silencio y la corrida
+          # en verde: aquí se exige una línea por cada clave antes de volcar nada.
+          for clave in static frontend runtime php_runtime phpstan_pdc css_minify e2e lab pilot temas carriles; do
+            if ! grep -q "^${clave}=" "$RUNNER_TEMP/carriles.out"; then
+              echo "::error::El selector de carriles no imprimió la clave ${clave}."
+              exit 1
+            fi
+          done
+          cat "$RUNNER_TEMP/carriles.out" >> "$GITHUB_OUTPUT"
+
   design-system-static:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    needs: cambios
+    if: needs.cambios.outputs.static == 'true'
     # Sin esto, `docker-compose.override.yml` monta sobre /var/www/html la ruta absoluta de la
     # máquina de desarrollo, que en un runner NO EXISTE. Docker no protesta: crea el directorio
     # vacío y lo monta igual, así que el código desaparece del contenedor y los cuatro tests de
@@ -91,10 +149,13 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Instalar dependencias del frontend
+        if: needs.cambios.outputs.frontend == 'true'
         run: npm ci --prefix frontend
       - name: Comprobar tipos del frontend
+        if: needs.cambios.outputs.frontend == 'true'
         run: npm run frontend:typecheck
       - name: Correr las pruebas del frontend
+        if: needs.cambios.outputs.frontend == 'true'
         run: npm run frontend:test
       # --build-arg COMPOSER_INSTALL_FLAGS="" para que la imagen traiga PHPUnit, que es
       # dependencia de desarrollo y sin ella el runner del paso siguiente aborta con 2 en
@@ -142,7 +203,10 @@ jobs:
     # PARALELO, asi que el reloj de cada una no deberia moverse; el margen cubre
     # que compartan runners y cache de gha, no que se sumen.
     timeout-minutes: 90
-    needs: design-system-static
+    needs: [cambios, design-system-static]
+    # Corre si el diff alcanza el runtime y `design-system-static` pasó o se omitió; si falló, no
+    # corre. `!cancelled()` evita que el `skipped` de static arrastre a este job.
+    if: ${{ !cancelled() && needs.cambios.result == 'success' && needs.cambios.outputs.runtime == 'true' && (needs.design-system-static.result == 'success' || needs.design-system-static.result == 'skipped') }}
     # D16 (spec temas 2026-08-28): el carril corre los DOS temas completos, no
     # solo el visual. Se desdobla el job entero y no un paso a proposito -- los
     # gates de a11y, teclado, reflow y presupuesto tambien viven aqui, y un tema
@@ -153,7 +217,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        theme: [light, dark]
+        theme: ${{ fromJSON(needs.cambios.outputs.temas || '["light","dark"]') }}
     env:
       # Lo consumen los carriles visuales (`*.visual.mjs`) para elegir QUE
       # escenarios del manifiesto corre esta pata. Sin el correrian los 44 en
@@ -220,6 +284,7 @@ jobs:
       # veta en este archivo: ese guard existe para que el CI no tenga camino de
       # despliegue, y un guard que se ablanda por comodidad deja de valer.
       - name: Verify the comment-free CSS matches its source
+        if: matrix.theme == 'light' && needs.cambios.outputs.css_minify == 'true'
         run: npm run css:minify:check
       # El espejo de CSS viaja versionado desde 10dd634e, asi que el arbol ya
       # esta completo al construir; el build va tras la verificacion igualmente.
@@ -259,14 +324,17 @@ jobs:
       # gate corre siempre; «Summarize gate results» al final decide si el job queda en rojo.
       - name: Enforce PHPStan baseline
         id: phpstan-baseline
+        if: matrix.theme == 'light' && needs.cambios.outputs.php_runtime == 'true'
         continue-on-error: true
         run: npm run test:design-system:phpstan
       - name: Enforce PHPStan level 6 on the PDC module
         id: phpstan-pdc
+        if: matrix.theme == 'light' && needs.cambios.outputs.phpstan_pdc == 'true'
         continue-on-error: true
         run: npm run test:pdc:phpstan
       - name: Atestar grants efectivos de runtime
         id: runtime-grants
+        if: matrix.theme == 'light' && needs.cambios.outputs.php_runtime == 'true'
         continue-on-error: true
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php scripts/security/audit-runtime-db-grants.php --live
       # Sustituye a los tres tests que antes se listaban aquí a mano (test_global_table_safety,
@@ -276,6 +344,7 @@ jobs:
       # contrato pasó a comprobar que el CI lo ejecuta en vez de que lo nombra.
       - name: Correr la suite PHP completa que el CI puede honrar
         id: php-suite
+        if: matrix.theme == 'light' && needs.cambios.outputs.php_runtime == 'true'
         continue-on-error: true
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php scripts/run-php-tests.php --nivel=http
       # Lane no acumulativa para el único contrato que crea/elimina tablas legacy. La app y la
@@ -283,6 +352,7 @@ jobs:
       # este step y docker compose las inyecta únicamente en el proceso exec, no en el servicio.
       - name: Correr fixtures de migración con admin efímero
         id: php-admin-db
+        if: matrix.theme == 'light' && needs.cambios.outputs.php_runtime == 'true'
         continue-on-error: true
         env:
           DB_USER: root
@@ -310,6 +380,7 @@ jobs:
       # `exitCode`: el acta la levanta el script, el veredicto lo da el recibo.
       - name: Enforce full-app-flow gate
         id: full-app-flow
+        if: matrix.theme == 'light' && needs.cambios.outputs.e2e == 'true'
         continue-on-error: true
         env:
           APP_URL: http://127.0.0.1:18081
@@ -325,7 +396,7 @@ jobs:
           node -e "const r=require('./docs/design-system/evidence/full-app-flow.json'); console.log('duration_ms=' + (r.durationMs ?? ''));" >> "$GITHUB_OUTPUT"
           node -e "const r=require('./docs/design-system/evidence/full-app-flow.json'); if (r.exitCode !== 0) { console.error('full-app-flow en rojo: exitCode ' + r.exitCode); process.exit(1); }"
       - name: Preserve the full-app-flow receipt
-        if: always()
+        if: always() && steps.full-app-flow.outcome != 'skipped'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: full-app-flow-receipt-${{ matrix.theme }}
@@ -356,6 +427,7 @@ jobs:
       # recibo y propaga su `exitCode`. Sin ella, el paso saldria verde con el gate en rojo.
       - name: Enforce semanal roles and phases gate
         id: semanal-roles-phases
+        if: matrix.theme == 'light' && needs.cambios.outputs.e2e == 'true'
         continue-on-error: true
         env:
           APP_URL: http://127.0.0.1:18081
@@ -367,7 +439,7 @@ jobs:
           node -e "const r=require('./docs/design-system/evidence/semanal-roles-phases.json'); console.log('duration_ms=' + (r.durationMs ?? ''));" >> "$GITHUB_OUTPUT"
           node -e "const r=require('./docs/design-system/evidence/semanal-roles-phases.json'); if (r.exitCode !== 0) { console.error('semanal-roles-phases en rojo: exitCode ' + r.exitCode); process.exit(1); }"
       - name: Preserve the semanal roles and phases receipt
-        if: always()
+        if: always() && steps.semanal-roles-phases.outcome != 'skipped'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: semanal-roles-phases-receipt-${{ matrix.theme }}
@@ -378,6 +450,7 @@ jobs:
         run: git checkout -- docs/design-system/evidence/semanal-roles-phases.json && git status --porcelain
       - name: Measure runtime budgets
         id: runtime-budget-measure
+        if: matrix.theme == 'light' && needs.cambios.outputs.pilot == 'true'
         continue-on-error: true
         env:
           APP_URL: http://127.0.0.1:18081
@@ -408,13 +481,14 @@ jobs:
       # indice a mano, que es justo lo que este mecanismo existe para impedir.
       - name: Check runtime budgets against the baseline
         id: runtime-budget-check
+        if: matrix.theme == 'light' && needs.cambios.outputs.pilot == 'true'
         continue-on-error: true
         run: |
           node scripts/design-system/gate-receipt.mjs runtime-budgets
           node -e "const r=require('./docs/design-system/evidence/runtime-budgets.json'); console.log('duration_ms=' + (r.durationMs ?? ''));" >> "$GITHUB_OUTPUT"
           node -e "const r=require('./docs/design-system/evidence/runtime-budgets.json'); if (r.exitCode !== 0) { console.error('runtime-budgets en rojo: exitCode ' + r.exitCode); process.exit(1); }"
       - name: Preserve the runtime-budgets receipt
-        if: always()
+        if: always() && steps.runtime-budget-check.outcome != 'skipped'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: runtime-budgets-receipt-${{ matrix.theme }}
@@ -432,11 +506,13 @@ jobs:
       # medidos esta jornada fueron en pasos ANTERIORES a este, ya cubiertos arriba.
       - name: Run laboratory gates
         id: blocking-runtime
+        if: needs.cambios.outputs.lab == 'true'
         env:
           E2E_BASE_URL: http://127.0.0.1:18081
         run: npm run test:design-system:runtime
       - name: Run pilot lab gates (Programa General)
         id: pilot-lab-gates
+        if: needs.cambios.outputs.pilot == 'true'
         continue-on-error: true
         env:
           E2E_BASE_URL: http://127.0.0.1:18081
@@ -464,6 +540,7 @@ jobs:
           retention-days: 7
       - name: Collect keyboard and reflow evidence
         id: keyboard-reflow-evidence
+        if: needs.cambios.outputs.lab == 'true'
         continue-on-error: true
         env:
           E2E_BASE_URL: http://127.0.0.1:18081
@@ -480,6 +557,7 @@ jobs:
           retention-days: 7
       - name: Run Programa General persistence and RBAC gate
         id: pg-persistence-rbac
+        if: matrix.theme == 'light' && needs.cambios.outputs.e2e == 'true'
         continue-on-error: true
         env:
           APP_URL: http://127.0.0.1:18081
@@ -513,28 +591,52 @@ jobs:
           G_PILOT_LAB_GATES: ${{ steps.pilot-lab-gates.outcome }}
           G_KEYBOARD_REFLOW_EVIDENCE: ${{ steps.keyboard-reflow-evidence.outcome }}
           G_PG_PERSISTENCE_RBAC: ${{ steps.pg-persistence-rbac.outcome }}
+          THEME: ${{ matrix.theme }}
+          CARRILES: ${{ needs.cambios.outputs.carriles }}
+          F_PHP_RUNTIME: ${{ needs.cambios.outputs.php_runtime }}
+          F_PHPSTAN_PDC: ${{ needs.cambios.outputs.phpstan_pdc }}
+          F_E2E: ${{ needs.cambios.outputs.e2e }}
+          F_PILOT: ${{ needs.cambios.outputs.pilot }}
+          F_LAB: ${{ needs.cambios.outputs.lab }}
           G_FULL_APP_FLOW_MS: ${{ steps.full-app-flow.outputs.duration_ms }}
           G_SEMANAL_ROLES_PHASES_MS: ${{ steps.semanal-roles-phases.outputs.duration_ms }}
           G_RUNTIME_BUDGET_CHECK_MS: ${{ steps.runtime-budget-check.outputs.duration_ms }}
         run: |
+          # `skipped` tiene tres causas distintas y no se puede leer igual: el gate corre solo en la
+          # pata light y esta es dark; su carril no fue tocado (bandera distinta de true); o su
+          # bandera estaba en true y aun así no corrió (algo anterior lo impidió). Cualquier otro
+          # resultado se imprime tal cual: un omitido nunca se presenta como success.
+          estado() {
+            if [ "$1" != "skipped" ]; then
+              echo "$1"
+            elif [ "$3" = "light" ] && [ "$THEME" = "dark" ]; then
+              echo "corre solo en light"
+            elif [ "$2" != "true" ]; then
+              echo "omitido (carril no tocado)"
+            else
+              echo "no corrió (paso anterior falló)"
+            fi
+          }
           {
             echo "## Resultado de los gates del piloto"
             echo ""
+            echo "Carriles detectados: ${CARRILES:-sin dato}"
+            echo ""
             echo "| Gate | Resultado |"
             echo "| --- | --- |"
-            echo "| Enforce PHPStan baseline | ${G_PHPSTAN_BASELINE} |"
-            echo "| Enforce PHPStan level 6 on the PDC module | ${G_PHPSTAN_PDC} |"
-            echo "| Atestar grants efectivos de runtime | ${G_RUNTIME_GRANTS} |"
-            echo "| Correr la suite PHP completa que el CI puede honrar | ${G_PHP_SUITE} |"
-            echo "| Correr fixtures de migración con admin efímero | ${G_PHP_ADMIN_DB} |"
-            echo "| Enforce full-app-flow gate | ${G_FULL_APP_FLOW} |"
-            echo "| Enforce semanal roles and phases gate | ${G_SEMANAL_ROLES_PHASES} |"
-            echo "| Measure runtime budgets | ${G_RUNTIME_BUDGET_MEASURE} |"
-            echo "| Check runtime budgets against the baseline | ${G_RUNTIME_BUDGET_CHECK} |"
-            echo "| Run laboratory gates | ${G_LABORATORY_GATES} |"
-            echo "| Run pilot lab gates (Programa General) | ${G_PILOT_LAB_GATES} |"
-            echo "| Collect keyboard and reflow evidence (no bloqueante) | ${G_KEYBOARD_REFLOW_EVIDENCE} |"
-            echo "| Run Programa General persistence and RBAC gate | ${G_PG_PERSISTENCE_RBAC} |"
+            echo "| Enforce PHPStan baseline | $(estado "${G_PHPSTAN_BASELINE}" "${F_PHP_RUNTIME}" light) |"
+            echo "| Enforce PHPStan level 6 on the PDC module | $(estado "${G_PHPSTAN_PDC}" "${F_PHPSTAN_PDC}" light) |"
+            echo "| Atestar grants efectivos de runtime | $(estado "${G_RUNTIME_GRANTS}" "${F_PHP_RUNTIME}" light) |"
+            echo "| Correr la suite PHP completa que el CI puede honrar | $(estado "${G_PHP_SUITE}" "${F_PHP_RUNTIME}" light) |"
+            echo "| Correr fixtures de migración con admin efímero | $(estado "${G_PHP_ADMIN_DB}" "${F_PHP_RUNTIME}" light) |"
+            echo "| Enforce full-app-flow gate | $(estado "${G_FULL_APP_FLOW}" "${F_E2E}" light) |"
+            echo "| Enforce semanal roles and phases gate | $(estado "${G_SEMANAL_ROLES_PHASES}" "${F_E2E}" light) |"
+            echo "| Measure runtime budgets | $(estado "${G_RUNTIME_BUDGET_MEASURE}" "${F_PILOT}" light) |"
+            echo "| Check runtime budgets against the baseline | $(estado "${G_RUNTIME_BUDGET_CHECK}" "${F_PILOT}" light) |"
+            echo "| Run laboratory gates | $(estado "${G_LABORATORY_GATES}" "${F_LAB}") |"
+            echo "| Run pilot lab gates (Programa General) | $(estado "${G_PILOT_LAB_GATES}" "${F_PILOT}") |"
+            echo "| Collect keyboard and reflow evidence (no bloqueante) | $(estado "${G_KEYBOARD_REFLOW_EVIDENCE}" "${F_LAB}") |"
+            echo "| Run Programa General persistence and RBAC gate | $(estado "${G_PG_PERSISTENCE_RBAC}" "${F_E2E}" light) |"
           } >> "$GITHUB_STEP_SUMMARY"
           # G7/G8 (P2 Tarea 6): los recibos y presupuestos ya se generan; lo unico que faltaba
           # era volcarlos donde se leen sin abrir logs. `full-app-flow`/`semanal-roles-phases`
@@ -565,7 +667,11 @@ jobs:
             " >> "$GITHUB_STEP_SUMMARY"
           else
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "_Sin \`test-output/design-system-runtime-budget.json\`: \`Measure runtime budgets\` no llegó a escribirlo._" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$G_RUNTIME_BUDGET_MEASURE" = "skipped" ]; then
+              echo "_\`Measure runtime budgets\`: $(estado "$G_RUNTIME_BUDGET_MEASURE" "$F_PILOT" light)._" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "_Sin \`test-output/design-system-runtime-budget.json\`: \`Measure runtime budgets\` no llegó a escribirlo._" >> "$GITHUB_STEP_SUMMARY"
+            fi
           fi
           failed=0
           for outcome in "$G_PHPSTAN_BASELINE" "$G_PHPSTAN_PDC" "$G_RUNTIME_GRANTS" "$G_PHP_SUITE" "$G_PHP_ADMIN_DB" "$G_FULL_APP_FLOW" \
