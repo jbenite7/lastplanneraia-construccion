@@ -161,8 +161,8 @@ true on 2026-08-11. Both suites coexist and both run through the same entry poin
 - `tests/unit/*Test.php` — PHPUnit 12 classes (`composer.json`, `phpunit.xml`, autoload-dev
   `Tests\Unit\`). **Every class must declare a `#[Group(...)]`** naming its level, or
   `scripts/run-php-tests.php` aborts — a test without a declared level would otherwise run where its
-  dependencies don't exist. Migration is incremental: **139 loose scripts and 17 PHPUnit classes** as of 2026-09-03
-  (it said 117 and 5 on 2026-08-25). There is also a fifth level, `admin-db`, **not cumulative**: it exists for
+  dependencies don't exist. Migration is incremental: **164 loose scripts and 32 PHPUnit classes** as of 2026-09-29
+  (it said 139 and 17 on 2026-09-03, and 117 and 5 on 2026-08-25). There is also a fifth level, `admin-db`, **not cumulative**: it exists for
   fixtures that create and drop legacy tables with an ephemeral admin (`LPS_ADMIN_DB_LANE=1`,
   `scripts/lib/php-test-lane-manifest.php`), and CI runs it in its own step.
   (This line said "103 loose scripts, 1 PHPUnit class" — true on 2026-08-18, stale since. The
