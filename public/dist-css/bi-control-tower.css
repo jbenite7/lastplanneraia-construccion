@@ -548,6 +548,9 @@
     gap: var(--spacing-xs);
     margin: 0;
   }
+  .bi-delay-dates[hidden] {
+    display: none;
+  }
   .bi-delay-dates > div {
     min-width: 0;
     border: 1px solid var(--ds-active-border);
