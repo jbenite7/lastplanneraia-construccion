@@ -26,26 +26,3 @@ test('cada item de leyenda de PI declara un fondo de la familia solida', async (
       `la leyenda de ${estado} sigue usando la familia de tintes`);
   }
 });
-
-// Estados de Programa General segun moduleMappings de state-semantics.json
-// (module: "programa-general"). El chip de leyenda vive en `.pg-filter-chip`,
-// no en `.pdc-legend-item` (PG construyo su propio selector), pero el
-// contrato es el mismo: debe pintar el solido de su hue, no el tinte.
-const ESTADOS_PG = [
-  'actividad-futura', 'en-curso', 'terminada', 'fuera-de-ventana',
-  'debe-iniciar', 'atrasada', 'sin-datos',
-];
-
-test('cada item de leyenda de PG declara un fondo de la familia solida', async () => {
-  const css = await read('public/css/programa-general.css');
-  for (const estado of ESTADOS_PG) {
-    const regla = new RegExp(
-      `\\.pg-filter-chip\\.${estado}\\s*\\{[^}]*\\}`, 'm');
-    const bloque = css.match(regla);
-    assert.ok(bloque, `no hay regla de leyenda para ${estado}`);
-    assert.match(bloque[0], /--ds-state-solid-/,
-      `la leyenda de ${estado} no usa la familia solida`);
-    assert.doesNotMatch(bloque[0], /--ds-state-tint-/,
-      `la leyenda de ${estado} sigue usando la familia de tintes`);
-  }
-});

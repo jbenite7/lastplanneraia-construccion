@@ -21,7 +21,6 @@
     "torre-piloto.json"
   ],
   "sharedHeadConsumers": [
-    "views/programa-general/programa_general.view.php",
     "views/programacion-intermedia/programacion_intermedia.view.php"
   ],
   "modules": [

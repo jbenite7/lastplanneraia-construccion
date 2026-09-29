@@ -341,21 +341,6 @@
       }
     },
     {
-      "name": "programa-general",
-      "paths": [
-        "views/programa-general/programa_general.view.php",
-        "public/css/programa-general.css",
-        "public/js/modules/programa_general/hot.js"
-      ],
-      "maxViolations": {
-        "hardcoded-hex": 0,
-        "inline-style": 0,
-        "embedded-style-block": 0,
-        "forbidden-font-roboto": 0,
-        "hardcoded-radius": 0
-      }
-    },
-    {
       "name": "programacion-intermedia",
       "paths": [
         "views/programacion-intermedia/programacion_intermedia.view.php",

@@ -241,9 +241,16 @@ test('programación semanal declara las etiquetas de sus dos fases', async () =>
 // modulo rompia el censo- y no la suma.
 test('cada modulo de estados declara una superficie que existe en el front controller', async () => {
   const semantics = await readJson('state-semantics.json');
-  const frontController = await readFile(
-    new URL('../../public/index.php', import.meta.url), 'utf8',
-  );
+  const [frontController, spaRouter] = await Promise.all([
+    readFile(new URL('../../public/index.php', import.meta.url), 'utf8'),
+    readFile(new URL('../../src/Core/SpaRouter.php', import.meta.url), 'utf8'),
+  ]);
+  const spaRoutes = (constant) => {
+    const body = spaRouter.match(new RegExp(`public const ${constant}\\s*=\\s*\\[([^\\]]*)\\]`, 's'))?.[1] || '';
+    return [...body.matchAll(/["']([^"']+)["']/g)].map((match) => match[1]);
+  };
+  const migratedExactRoutes = spaRoutes('RUTAS_EXACTAS_MIGRADAS');
+  const migratedPrefixes = spaRoutes('PREFIJOS_MIGRADOS');
 
   assert.ok(semantics.moduleMappings.length > 0, 'no hay modulos que comprobar');
 
@@ -253,8 +260,13 @@ test('cada modulo de estados declara una superficie que existe en el front contr
       `${entry.module} no declara superficie`,
     );
     // La comprobacion util no es que el campo exista, es que apunte a algo real.
+    const registered = frontController.includes(`'${entry.surface}'`)
+      || frontController.includes(`"${entry.surface}"`)
+      || migratedExactRoutes.includes(entry.surface)
+      || migratedPrefixes.some((prefix) => entry.surface === prefix
+        || entry.surface.startsWith(`${prefix}/`));
     assert.ok(
-      frontController.includes(`'${entry.surface}'`),
+      registered,
       `${entry.module} declara la superficie ${entry.surface}, que no esta en public/index.php`,
     );
   }

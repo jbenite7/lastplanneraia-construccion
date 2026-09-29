@@ -519,7 +519,6 @@ jobs:
         run: |
           npm run test:visual:pilot
           npm run test:a11y:pilot
-          npm run test:hue:pilot
       # Va AQUI, pegado al gate y no al final del job, porque `test-output/` es un
       # directorio compartido que cada suite sobrescribe. `pilot-lab-gates` no
       # bloquea (continue-on-error), asi que el job sigue, «Collect keyboard and

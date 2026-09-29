@@ -4,14 +4,21 @@
   "designSystemVersion": "1.1.0",
   "moduleId": "programa-general",
   "routes": [
-    "/programa-general",
-    "/programa-general/filtros",
-    "/programa-general/set-filtro"
+    "/programa-general"
   ],
   "sources": [
-    "views/programa-general/programa_general.view.php",
-    "public/css/programa-general.css",
-    "public/js/modules/programa_general/hot.js"
+    "frontend/src/modules/programa-general/ProgramaGeneralPage.tsx",
+    "frontend/src/modules/programa-general/programa-general.css",
+    "frontend/src/modules/programa-general/api/programaGeneralApi.ts",
+    "frontend/src/modules/programa-general/components/ProgramaToolbar.tsx",
+    "frontend/src/modules/programa-general/components/ProgramaFilters.tsx",
+    "frontend/src/modules/programa-general/components/ProgramaTable.tsx",
+    "frontend/src/modules/programa-general/components/ProgramaCards.tsx",
+    "frontend/src/modules/programa-general/components/ProgramaSignalsBar.tsx",
+    "frontend/src/modules/programa-general/components/ProgramaDrawer.tsx",
+    "frontend/src/modules/programa-general/domain/presentacionEstados.ts",
+    "src/Controllers/Api/ProgramaGeneralContextApiController.php",
+    "src/Services/ProgramaGeneralContextService.php"
   ],
   "components": [
     "shell",
@@ -20,18 +27,15 @@
     "button",
     "field",
     "state",
+    "severity-rail",
     "card",
     "table-shell",
-    "overlay",
-    "handsontable-adapter"
+    "search",
+    "filter",
+    "feedback",
+    "live-region"
   ],
-  "vendors": [
-    "bootstrap",
-    "handsontable",
-    "toastr",
-    "font-awesome",
-    "jquery-ui"
-  ],
+  "vendors": [],
   "layouts": [
     "mobile",
     "tablet",
@@ -48,21 +52,38 @@
     "A",
     "D",
     "R",
-    "C",
-    "V"
+    "DCV",
+    "OT",
+    "G",
+    "S",
+    "SG",
+    "V",
+    "C-denied"
   ],
   "persistence": {
-    "filters": "session",
-    "projectContext": "session",
-    "testDataRestored": true
+    "filters": "URL query parameters",
+    "projectContext": "session project and active week",
+    "returnMarker": "scoped LPS return marker"
   },
   "exceptions": [],
   "tests": [
+    "frontend/src/modules/programa-general/ProgramaGeneralPage.test.tsx",
+    "frontend/src/modules/programa-general/components/ProgramaToolbar.test.tsx",
+    "frontend/src/modules/programa-general/components/ProgramaFilters.test.tsx",
+    "frontend/src/modules/programa-general/components/ProgramaTable.test.tsx",
+    "frontend/src/modules/programa-general/components/ProgramaCards.test.tsx",
+    "frontend/src/modules/programa-general/components/ProgramaDrawer.test.tsx",
+    "frontend/src/modules/programa-general/api/programaGeneralApi.test.ts",
+    "frontend/src/modules/programa-general/domain/presentacionEstados.test.ts",
+    "tests/browser/s05-programa-general-react.spec.mjs",
     "tests/test_programa_general_sprint_contract.mjs",
     "tests/browser/programa-general-design-system.mjs",
-    "tests/browser/programa-general.visual.mjs",
-    "tests/browser/design-system-compliance.mjs",
-    "e2e/tests/workflows/pg-interactions.spec.mjs"
+    "tests/design-system/programa-general-cajon-tokens.test.mjs",
+    "tests/design-system/programa-general-sin-tokens-locales.test.mjs",
+    "tests/test_programa_general_action_policy.php",
+    "tests/test_programa_general_context_contract.php",
+    "tests/test_programa_general_restriction_contract.php",
+    "tests/test_spa_frontera.php"
   ],
   "evidence": [
     "tests/browser/__screenshots__/programa-general.visual.mjs/"

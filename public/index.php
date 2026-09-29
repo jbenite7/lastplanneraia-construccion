@@ -132,9 +132,6 @@ if ($devDoorIsOpen) {
 
 
 // Programacion
-$router->get('/programa-general', [\App\Controllers\Programacion\ProgramaGeneralController::class, 'index']);
-$router->post('/programa-general/filtros', [\App\Controllers\Programacion\ProgramaGeneralController::class, 'getFilters']);
-$router->get('/programa-general/set-filtro', [\App\Controllers\Programacion\ProgramaGeneralController::class, 'setFilter']);
 $router->get('/programacion-semanal', [\App\Controllers\Programacion\ProgramacionSemanalController::class, 'index']);
 $router->get('/programacion-semanal/cnp', [\App\Controllers\Programacion\ProgramacionSemanalController::class, 'cnp']);
 $router->get('/programacion-semanal/cnc', [\App\Controllers\Programacion\ProgramacionSemanalController::class, 'cnc']);

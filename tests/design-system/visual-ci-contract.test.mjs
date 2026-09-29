@@ -125,13 +125,29 @@ test('visual regression contract covers the approved laboratory matrix', async (
   assertPilotMatrix(manifest.scenarios, LABORATORY_SCENARIOS_PER_VIEWPORT, declaredViewports);
 });
 
-test('visual regression contract covers the Programa General pilot matrix', async () => {
-  const [source, manifest] = await Promise.all([
-    read('tests/browser/programa-general.visual.mjs'),
+test('visual regression contract keeps the pilot matrix tied to the active React spec', async () => {
+  const pilotTest = 'tests/browser/s05-programa-general-react.spec.mjs';
+  const [source, manifest, packageJson, workflow] = await Promise.all([
+    read(pilotTest),
     readJson('docs/design-system/manifests/programa-general.json'),
+    readJson('package.json'),
+    read('.github/workflows/ci.yml'),
   ]);
-  assert.match(source, /toHaveScreenshot/);
-  assert.match(source, /MANIFEST\.scenarios/);
+  assert.match(source, /S05 Programa General React E2E/);
+  assert.ok(manifest.tests.includes(pilotTest), `${pilotTest} must stay declared by the pilot manifest`);
+  assert.equal(
+    packageJson.scripts['test:visual:pilot'],
+    `playwright test ${pilotTest} --grep-invert "Ronda 1.2|Servidor Real Docker" --workers=1`,
+    'the visual pilot script must run the active Programa General spec without the suites that need the real Da Porto project',
+  );
+  assert.match(source, /test\.describe\('Ronda 1\.2/, 'the excluded suite names must still exist in the spec');
+  assert.match(source, /test\.describe\('S05 Programa General React — Servidor Real Docker/, 'the excluded suite names must still exist in the spec');
+  assert.equal(packageJson.scripts['test:hue:pilot'], undefined, 'the retired hue-only pilot script must not remain available');
+  const pilotGate = parseJobSteps(workflow, 'design-system-runtime')
+    .find(({ name }) => name === 'Run pilot lab gates (Programa General)');
+  assert.ok(pilotGate, 'CI must keep the Programa General pilot gate');
+  assert.match(pilotGate.run, /npm run test:visual:pilot/, 'CI must keep running the visual pilot');
+  assert.doesNotMatch(pilotGate.run, /npm run test:hue:pilot/, 'CI must not invoke the retired hue-only pilot');
   assert.equal(
     manifest.scenarios.length,
     requiredViewports.length

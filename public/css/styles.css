@@ -1993,7 +1993,7 @@ table.dataTable thead tr:nth-child(2) th {
    reintroduce un literal y no inventa matiz ni token. Mismo criterio de
    medicion que el pulgar del scroller de aqui abajo, y mismo precedente que
    programacion-intermedia.css:1652, que ya viste con este token el borde de un
-   control, y programa-general.css:241, que lo usa de borde de chip. Los otros
+   control, y la capa React de Programa General, que lo usa de borde de chip. Los otros
    dos tokens de borde del tema quedan descartados por medicion:
    `--ds-color-border-strong` cae a 1,21:1 y `--ds-color-border-default` a
    1,10:1 contra el relleno. Deuda anotada para el design system: hoy no
@@ -3414,8 +3414,8 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   color: var(--ds-active-text-secondary);
 }
 
-/* Fila tintada por estado. Los `--pg-*` los resuelve `public/css/programa-general.css`
-   (@layer module sin subcapa, gana a este archivo) contra la escalera `--ds-state-tint-*`. */
+/* Fila tintada por estado. Los `--pg-*` los resuelve el adaptador compartido
+   de Handsontable contra la escalera `--ds-state-tint-*`. */
 .pg-page #hot-container .handsontable td.pg-state-atrasado,
 .pg-page #hot-container .handsontable td.pg-state-atrasada {
   background-color: var(--ds-state-row-red) !important;

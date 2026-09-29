@@ -81,14 +81,6 @@
       "case": "2-handsontable-doble-carga"
     },
     {
-      "sheet": "/public/vendor/toastr.min.css",
-      "via": "view-link",
-      "unlayeredRules": 43,
-      "sites": [
-        "views/programa-general/programa_general.view.php"
-      ]
-    },
-    {
       "sheet": "/public/vendor/tom-select/tom-select.bootstrap4.min.css",
       "via": "view-link",
       "unlayeredRules": 108,

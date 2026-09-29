@@ -17,8 +17,8 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 563 |
-| en progreso | 4 |
+| hecha | 564 |
+| en progreso | 3 |
 | pendiente | 154 |
 | sin señal | 148 |
 | descartada | 48 |
@@ -384,7 +384,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### S05 — Programa General en React (vigente)
 
-- **S05 Programa General React** (vigente): 11 de 13 hechas · `2026-08-30-s05-programa-general-react.md`
+- **S05 Programa General React** (vigente): 12 de 13 hechas · `2026-08-30-s05-programa-general-react.md`
   - hecha · 1 · Add the scoped context, shared restriction catalog and action policy
   - hecha · 2 · Freeze S05 HTTP contracts and upgrade the shared client
   - hecha · 3 · Normalize legacy rows and present server states/restriction alerts
@@ -397,7 +397,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 10 · Migrate the contextual drawer and all PG actions
   - hecha · 11 · Prove the pilot with intercepted browser, accessibility and design-system gates
   - hecha · 12 · Promote canonical GET/HEAD with a reversible method-aware cut
-  - en progreso · 13 · Retire VIEW-34 exclusively and run the complete no-DML closure
+  - hecha · 13 · Retire VIEW-34 exclusively and run the complete no-DML closure
 - **S05 — Programa General en React** (vigente): 8 de 8 hechas · `2026-09-23-s05-programa-general-react.md`
   - hecha · 1 · Backend PHP — Context Endpoint y Asignaciones en Update
   - hecha · 2 · Frontend — Esquemas Zod y Cliente API Tipado
@@ -899,7 +899,6 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - cerrado_sin_archivos · `plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas.md`: dice «plan cerrado»; git dice «1 de 2 archivos que mandaba crear no existieron nunca en ninguna rama: docs/design-system/manifests/dashboard.json»
 - cerrado_sin_archivos · `plans/2026-08-30-s01-login-react.md`: dice «plan cerrado»; git dice «3 de 26 archivos que mandaba crear no existieron nunca en ninguna rama: frontend/src/lib/api/frontera.test.ts, frontend/src/lib/api/esquemas/sesion.test.ts, src/Controllers/Core/SpaHostController.php»
 - parece_cerrado · `plans/2026-09-23-s05-programa-general-react.md`: dice «plan vigente»; git dice «las 8 tareas con señal están hechas según git»
-- parece_cerrado · `plans/2026-09-26-s05-deuda-cierre.md`: dice «plan abierto»; git dice «las 1 tareas con señal están hechas según git; 7 sin señal»
 - spec_cerrado_plan_vivo · `specs/2026-07-23-a16-comparativo-versiones-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-07-22-roadmap-pdc-v2.md»
 - spec_cerrado_plan_vivo · `specs/2026-08-19-runtime-budgets-al-ci-design.md`: dice «spec cerrado»; git dice «1 plan suyo sigue vivo: 2026-08-19-runtime-budgets-al-ci.md»
 - spec_vivo_planes_cerrados · `specs/2026-08-26-v0-del-producto-design.md`: dice «spec vigente»; git dice «sus 2 planes están cerrados o derogados»
@@ -1325,6 +1324,24 @@ contenedor montado sobre un worktree hace falta copia, no enlace.
   navegación React antes de migrar los módulos de programación.
 - [ ] **Definir QA y goldens durante la convivencia:** decidir por cada módulo si su golden PHP se
   archiva o se reemplaza al cruzar a React, y mantener cobertura extremo a extremo en ambos mundos.
+- [ ] **Deuda del retiro de VIEW-34 (2026-09-29): Programa General en React sin regresión visual por
+  capturas.** El retiro (`c69d367d`, corregido en `25c5e349`) borró el spec visual del piloto y
+  `test:visual:pilot` ahora corre `tests/browser/s05-programa-general-react.spec.mjs`, que no
+  compara capturas; los goldens viejos son de la vista PHP retirada. Felipe aceptó la deuda el
+  2026-09-29. Se cierra con la Tarea 11 del plan de S05 (los ocho goldens que aprueba Felipe). Tampoco
+  se miden ya los siete matices de estado que medía `test:hue:pilot`, retirado en el mismo commit.
+- [ ] **Deuda del retiro de VIEW-34: guardias de CSS compartido sin reemplazo nombrado.** El
+  contrato viejo comprobaba `.pdc-legend-item` (envolver sin partir palabras, en `buttons.css`),
+  `.aia-btn` con `min-height: var(--ds-target-min)` y `#pgLegend.pdc-legend-autoscaling` (44px, en
+  `legacy-bridge.css`); `programacion_intermedia.view.php` sigue usando `.pdc-legend-item`. Se borró
+  además «la tabla de presentación de PG proyecta el contrato» de `ops-state-contract.test.mjs`, que
+  comparaba estados contra `docs/design-system/state-semantics.json`: hoy ningún test de `frontend/`
+  lee ese JSON. Reponer las aserciones donde sigan vivos los componentes.
+- [ ] **Deuda del retiro de VIEW-34: inventario y documentación desactualizados.**
+  `docs/design-system/ui-groups-inventory.json` declara `styleApi: .aia-table-shell` para la grilla
+  editable, pero `ProgramaTable.tsx` y `ProgramaCards.tsx` usan `programa-table-pro`;
+  `docs/qa/workflows.md` (líneas 832, 834 y 1746) y `database/audit/query-inventory.json:367` siguen
+  listando `/programa-general/filtros`, `/programa-general/set-filtro` y `ProgramaGeneralController`.
 - [x] 2026-09-28 — **`/programa-general` responde 500 si se entra sin semana en sesión: NO SE
   REPRODUCE en `main` (`a70f7bb6`); causa del 500 original sin atribuir. Ver «Cierre» al final del
   ítem, que dice qué se probó y qué no.** Descubierto el

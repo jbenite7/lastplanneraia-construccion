@@ -35,6 +35,24 @@ export function referencedTestFiles() {
 }
 
 /**
+ * Fuentes PHP bajo `src/` referenciadas por los manifiestos del inventario.
+ * Los fixtures las copian de forma acotada: compartir todo `src/` ocultaría
+ * dependencias accidentales del contrato respecto al repositorio real.
+ */
+export function referencedSourceFiles() {
+  const inventory = readJson('manifests/inventory.json');
+  const files = new Set();
+  for (const name of inventory.manifests) {
+    if (['inventory.json', 'goal-provenance.json'].includes(name)) continue;
+    const manifest = readJson('manifests', name);
+    for (const file of manifest.sources || []) {
+      if (file.startsWith('src/')) files.add(file);
+    }
+  }
+  return [...files].filter((file) => existsSync(path.join(repositoryRoot, file)));
+}
+
+/**
  * Matriz de viewports exigida, derivada de homologation.json en vez de
  * escrita a mano: es la union de los viewports que declaran las familias
  * gobernadas. Piloto y laboratorio comparten esta misma matriz.

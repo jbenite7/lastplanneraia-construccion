@@ -7,7 +7,6 @@
     "/reportes/{tipo}"
   ],
   "rutas_declaradas_sin_get": [
-    "/programa-general/filtros",
     "/programacion-intermedia/filtros",
     "/programacion-intermedia/shared-constraints/apply",
     "/programacion-intermedia/shared-constraints/preview",

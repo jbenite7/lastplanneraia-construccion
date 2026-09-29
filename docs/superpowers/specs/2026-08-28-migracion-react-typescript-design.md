@@ -74,7 +74,7 @@ vista/partial de `views/` tiene un único propietario en §12.
 | S02 | `2026-08-30-s02-recuperar-clave-react-design.md` | Spec autorrevisada; plan `2026-08-30-s02-recuperar-clave-react.md` escrito; sin decisiones pendientes |
 | S03 | `2026-08-30-s03-restablecer-clave-react-design.md` | Spec autorrevisada; plan `2026-08-30-s03-restablecer-clave-react.md` escrito; sin decisiones pendientes |
 | S04 | `2026-08-30-s04-selector-proyectos-react-design.md` | Spec autorrevisada; plan `2026-08-30-s04-selector-proyectos-react.md` escrito; sin decisiones pendientes |
-| S05 | `2026-08-30-s05-programa-general-react-design.md` | Spec autorrevisada; plan `2026-08-30-s05-programa-general-react.md` escrito; sin decisiones pendientes |
+| S05 | `2026-08-30-s05-programa-general-react-design.md` | Spec autorrevisada; canonical React; Tarea 13 retiró VIEW-34; cierre seguro ejecutado con límites heredados y pasos coordinados pendientes en el informe 2026-09-29 |
 | S06 | `2026-08-30-s06-actualizar-cronograma-react-design.md` | Spec autorrevisada; plan `2026-08-30-s06-actualizar-cronograma-react.md` escrito; sin decisiones pendientes |
 | S07 | `2026-08-30-s07-programacion-intermedia-react-design.md` | Spec autorrevisada; plan `2026-08-30-s07-programacion-intermedia-react.md` escrito; sin decisiones pendientes |
 | S08 | `2026-08-30-s08-programacion-semanal-react-design.md` | Spec autorrevisada; plan `2026-08-30-s08-programacion-semanal-react.md` escrito; sin decisiones pendientes |
@@ -409,7 +409,7 @@ la transición `/dashboard`, contada como superficie por el censo histórico aun
 | S02 | Recuperación | `/password/forgot` | `views/auth/password-forgot.view.php` | Crear formulario React con email, CSRF, estados de envío y respuesta no enumerativa; añadir contrato JSON equivalente sin cambiar correo ni tokens. |
 | S03 | Recuperación | `/password/reset` | `views/auth/password-reset.view.php` | Preservar token en URL, expiración, enlace inválido, validación/confirmación de contraseña, éxito y retorno a login. |
 | S04 | Proyectos | `/proyectos` | `views/core/project_selector.view.php` | Completar el selector React: búsqueda, vacío, tarjetas, proyecto activo, permisos por membresía, destino contextual, cambio de proyecto y BI cuando sea visible. |
-| S05 | Programa General | `/programa-general` | `views/programa-general/programa_general.view.php` | Ejecutar la spec hija: lectura, semana, filtros/conteos, tabla y tarjetas, edición, batch, CSV, corte XLSX, leyenda, alertas y drawer. |
+| S05 | Programa General | `/programa-general` | `frontend/src/modules/programa-general/ProgramaGeneralPage.tsx` | Migrada a React; VIEW-34 retirada el 2026-09-29 en la Tarea 13 del plan S05. |
 | S06 | Cronograma | `/programa-general-actualizar` | `views/programa-general-actualizar/programaGeneralActualizar.view.php` | Migrar importación XLSX, fecha inicial, vista de mapeo, programa completo, autoasociación, revisión pendiente/procesada, validaciones, guardado, eliminación de actualización, bloqueos y retorno a PG. |
 | S07 | Programación Intermedia | `/programacion-intermedia` | `views/programacion-intermedia/programacion_intermedia.view.php` | Migrar look-ahead de seis semanas, estados de siete restricciones, responsables, subcontratistas, filtros, view-all, agrupación por gravedad, batch compartido con preview, CSV/XLSX, leyenda, recarga y drawer. |
 | S08 | Programación Semanal | `/programacion-semanal` | `views/programacion-semanal/programacion_semanal.view.php` | Migrar compromisos, cierre/reapertura, autoprogramación y log, actividad manual, TNP, cantidades y ejecución real, CNC al incumplir, alertas de cambios, tabla/tarjetas, reportes, CSV, leyenda y drawer. |
@@ -474,7 +474,7 @@ que cada spec hija debe reconciliar antes de declarar paridad.
 |---|---|---|---|
 | D01 | Autenticación — 13 rutas UI/transición + 3 API (`/api/session`, `/api/auth/*`) | Público antes de entrar; sesión después; ruta oculta de mantenimiento con control propio | Completar login, actualización forzada, forgot/reset, logout, expiración y mantenimiento. Unificar respuestas JSON sin enumerar cuentas. |
 | D02 | Selector — 2 rutas UI + 2 API de proyectos | Sesión válida y membresía activa del proyecto | Completar búsqueda/estados/destino, cambiar proyecto, limpiar contexto y actualizar capacidades del shell tras seleccionar. |
-| D03 | Programa General — 15 rutas `/programa-general`, `/api/general`, `/api/pg` | `lps.programa_general.ver/editar`, `lps.programa_general_actualizar.editar`; `canManageGeneralProgram`, `canEditPastGeneralProgram` | Ejecutar las cinco entregas de su spec hija y cortar la primera ruta de negocio. |
+| D03 | Programa General — UI React `/programa-general`; APIs compartidas `/api/general`, `/api/pg` y contexto | `lps.programa_general.ver/editar`, `lps.programa_general_actualizar.editar`; `canManageGeneralProgram`, `canEditPastGeneralProgram` | Migrada a React; VIEW-34 y sus filtros PHP retirados en la Tarea 13. Las APIs General/PG compartidas siguen disponibles para sus consumidores. |
 | D04 | Actualizar Cronograma — 1 superficie; reutiliza APIs de PG | `canManageGeneralProgram` y permisos de actualización del endpoint | Extraer bootstrap/contexto, importar XLSX, mapear, autoasociar, confirmar/eliminar y demostrar trazabilidad y bloqueos. |
 | D05 | Programación Intermedia — 8 rutas `/programacion-intermedia`, `/api/pi` | `lps.programacion_intermedia.ver/editar`; `canManageMediumTermProgram`, `canEditConstraints` | Especificar filas/estados exactos, migrar look-ahead y batch compartido, integrar drawer y eliminar filtros de sesión legacy. |
 | D06 | Programación Semanal — 9 rutas `/programacion-semanal`, `/api/semanal` | `lps.programacion_semanal.ver/editar`, `SemanalReabrirPolicy`; `canManageWeeklyProgram`, `canManageWeeks` | Migrar el plan semanal completo, su máquina de estados, semanas abiertas/cerradas, TNP, autoprogramación, cambios y reportes. |
@@ -558,7 +558,7 @@ no durante la construcción del piloto.
 | VIEW-31 | `views/plan-compras/app.view.php` | Host de isla | Desaparece al absorber PDC y mover bootstrap a contrato `/plan-compras/api/contexto`. |
 | VIEW-32 | `views/profesionales/profesionales.view.php` | Pantalla | Módulo `profesionales`; retirar con CRUD/exportación verificados. |
 | VIEW-33 | `views/programa-general-actualizar/programaGeneralActualizar.view.php` | Pantalla | Módulo `actualizar-cronograma`; retirar con importación/mapeo completos. |
-| VIEW-34 | `views/programa-general/programa_general.view.php` | Pantalla | Módulo `programa-general`; sigue su spec hija. |
+| VIEW-34 | *(retirada 2026-09-29)* | Pantalla retirada | La superficie vigente es `frontend/src/modules/programa-general/ProgramaGeneralPage.tsx`; la ruta canónica la sirve React. |
 | VIEW-35 | `views/programacion-intermedia/programacion_intermedia.view.php` | Pantalla | Módulo `programacion-intermedia`; retirar con batch/drawer/reportes. |
 | VIEW-36 | `views/programacion-semanal/CIC.view.php` | Pantalla | Módulo `cic`; retirar con formularios por disciplina. |
 | VIEW-37 | `views/programacion-semanal/CNC.view.php` | Pantalla | Módulo `cnc`; retirar con causas y guardado. |

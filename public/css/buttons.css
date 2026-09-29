@@ -1036,7 +1036,7 @@
    referencia, decision del usuario del 2026-08-04— despertaron y pintaron «En
    Curso» con un borde azul claro sobre tema oscuro.
    Se retiran en vez de acotarlas a claro: la aplicacion es dark-only por
-   contrato (AGENTS.md) y `programa-general.css` ya define los estados del
+   contrato (AGENTS.md) y el CSS React de Programa General ya define los estados del
    modulo con sus propios tokens. */
 
 /* --- Legend state colors --- */

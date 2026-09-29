@@ -97,9 +97,9 @@ try {
         $arreglo["Max_Semana"] = $dataUltima["Semana"];
         $_SESSION["Max_Semana"] = $dataUltima["Semana"];
 
-        // La consulta vive en App\Services\EstadoSemanalService: estaba copiada aqui y en
-        // ProgramaGeneralController, y el 2026-09-02 hubo que arreglarle el mismo fallo de alias a
-        // las dos por separado. Ahora hay un solo sitio donde tocarla.
+        // La consulta vive en App\Services\EstadoSemanalService: estaba copiada aqui y en la
+        // antigua página PHP de Programa General, retirada el 2026-09-29. El 2026-09-02 hubo que
+        // arreglar el mismo fallo de alias en las dos por separado. Ahora hay un solo sitio donde tocarla.
         $dataDetalles = (new \App\Services\EstadoSemanalService($dbInstance))
             ->detallesDeLaSemana($dbName, $projectId, $semana);
 

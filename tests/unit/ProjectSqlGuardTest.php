@@ -973,7 +973,7 @@ final class ProjectSqlGuardTest extends TestCase
      * Nombrar dos veces la MISMA tabla sin alias es ambiguo y se rechaza.
      *
      * No es teoria: es la forma exacta que tenian `src/Legacy/datosGeneralesPagina.php` y
-     * `ProgramaGeneralController` —la misma consulta copiada en dos sitios— y con ella
+     * la antigua página PHP de Programa General —la misma consulta copiada en dos sitios— y con ella
      * `/programacion-semanal` y `/programa-general` reventaban al cargar desde el 2026-08-29.
      * El guard hace bien en fallar cerrado: con dos raices homonimas no puede decidir a cual
      * pertenece cada `project_id = ?`.

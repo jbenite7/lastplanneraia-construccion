@@ -17,9 +17,8 @@
 
 @layer module {
   .pg-page {
-    /* Velos de celda. Misma receta que el piloto
-       (public/css/programa-general.css): un tinte del token de estado sobre
-       transparente, no un rgba suelto. */
+    /* Velos de celda. Misma receta que la piel compartida de Handsontable:
+       un tinte del token de estado sobre transparente, no un rgba suelto. */
     /* 2026-08-06: overlays a transparent a pedido del usuario — los tintes por celda
        (verde editable / gris readonly) rayaban las columnas y rompían la uniformidad
        de fondo por fila. La editabilidad queda señalada por el cursor y el editor. */
@@ -750,10 +749,10 @@
   }
 }
 
-/* El chip nace con `badge-badge-hidden` y el selector de
-   `programa-general.css:231` casa perfectamente con el —el body lleva
-   `pg-page` y el padre es `.pg-status-badges`—, pero esa hoja NO se carga en
-   Actualizar Cronograma: aqui llega `programa-general-actualizar.css`. La
+/* El chip nace con `badge-badge-hidden` y el selector de la antigua hoja de
+   Programa General casaba con él —el body lleva `pg-page` y el padre es
+   `.pg-status-badges`—, pero esa hoja no se carga en Actualizar Cronograma:
+   aquí llega `programa-general-actualizar.css`. La
    regla existia en el repo y nunca se encontraba con su elemento, asi que el
    chip anunciaba un guardado que no habia ocurrido desde que la pantalla
    existe. Medido el 2026-08-11. */

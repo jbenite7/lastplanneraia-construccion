@@ -44,7 +44,6 @@ comprobar(
 
 // 2. Los controladores de página que honran ?semana= lo hacen por la vía validada.
 $paginas = [
-    'src/Controllers/Programacion/ProgramaGeneralController.php',
     'src/Controllers/Programacion/ProgramacionSemanalController.php',
     'src/Controllers/Programacion/ProgramacionIntermediaController.php',
     'src/Controllers/Gestion/IndicadoresController.php',
