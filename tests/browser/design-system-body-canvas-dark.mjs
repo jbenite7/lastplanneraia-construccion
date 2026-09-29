@@ -24,12 +24,11 @@ const VIEWPORT = { width: 1180, height: 820 };
 // visibles a las dos. Se retiran: un guard que navega a una ruta inexistente no
 // mide tema, mide routing, y ya hay suites para eso.
 //
-// El fondo esperado no es uniforme: las rutas con shell (.pg-page/.ps-page/
-// .pi-page) usan --ds-color-bg-page-dark (#111a15); las demas caen al canvas
+// El fondo esperado no es uniforme: las rutas con shell (.ps-page/.pi-page)
+// usan --ds-color-bg-page-dark (#111a15); las demas caen al canvas
 // generico --ds-color-bg-canvas-dark (#0b100d), que es exactamente el valor que
 // la regla rota de Finding 1 dejaba de aplicar.
 const EXPECTED_BODY_BACKGROUND = {
-  '/programa-general': 'rgb(17, 26, 21)', // --ds-color-bg-page-dark via the React .pg-page shell
   '/programacion-semanal': 'rgb(17, 26, 21)', // --ds-color-bg-page-dark via .ps-page
   '/programacion-intermedia': 'rgb(17, 26, 21)', // --ds-color-bg-page-dark via .pi-page
   // Las cinco de abajo son las superficies claras que F1 ataca (spec F1-styles-css.md /
@@ -40,7 +39,7 @@ const EXPECTED_BODY_BACKGROUND = {
   // tienen hoja de módulo. El valor esperado es el canvas oscuro genérico
   // --ds-color-bg-canvas-dark (rgb(11, 16, 13)), porque ninguna de estas cinco usa una
   // clase de "page" con su propio --ds-color-bg-page-dark (no son
-  // .pg-page/.ps-page/.pi-page). Task 3 del plan F1
+  // .ps-page/.pi-page). Task 3 del plan F1
   // remapea --surface-bg a var(--ds-active-bg-canvas), que es justo ese token.
   '/indicadores': 'rgb(11, 16, 13)',
   '/profesionales': 'rgb(11, 16, 13)',
@@ -54,11 +53,6 @@ const EXPECTED_BODY_BACKGROUND = {
 // propiedad local de la pantalla PHP retirada durante la migracion. Las dos
 // rutas legado mantienen la comprobacion de sus propiedades propias.
 const EXPECTED_STATE_TOKEN = {
-  '/programa-general': {
-    selector: '#pgLegend .signal-chip[data-filter="atrasada"]',
-    token: '--ds-state-tint-red',
-    darkValue: 'rgb(67, 20, 20)',
-  },
   '/programacion-semanal': {
     property: '--ps-critical-bg',
     // public/css/programacion-semanal.css, bajo `html.aia-theme-dark body.ps-page`.
@@ -71,7 +65,7 @@ const EXPECTED_STATE_TOKEN = {
   '/programacion-intermedia': {
     property: '--pi-critical-bg',
     // public/css/programacion-intermedia.css, bajo `html.aia-theme-dark .pi-page`.
-    // Mismo ancla que /programa-general.
+    // Mismo ancla que Programación Semanal.
     value: '#431414',
   },
 };

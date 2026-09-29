@@ -12,9 +12,9 @@
 //   rg -n "/api/lps/(comments|crisis)" public/index.php public/js src tests e2e
 //   rg -n "/api/notifications/(unread|read)" public/index.php public/js src frontend tests
 //
-// T02-R (Tarea 12) reutiliza este mismo archivo: sube el censo esperado de VIEW-28 de
-// cuatro a cero y verifica que ya no queden. Hasta entonces el conteo de cuatro es el
-// contrato correcto — no un olvido.
+// T02-R (Tarea 12) reutiliza este mismo archivo para medir el retiro de VIEW-28.
+// El 2026-09-29 bajó de cuatro a tres consumidores porque S05 ya consume el cajón
+// desde React; se actualiza a propósito, no se silencia un cambio accidental.
 
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
@@ -118,14 +118,6 @@ const LPS_DRAWER_JS = 'public/js/modules/lps_drawer.js';
  */
 const VIEW28_CONSUMERS = [
   {
-    modulo: 'PG',
-    vista: 'views/programa-general/programa_general.view.php',
-    includeStatement: "include __DIR__ . '/../partials/drawer_unificado.php';",
-    initSource: 'public/js/modules/programa_general/hot.js',
-    initCall: "window.LPSContextualDrawer.init(hot, 'programa-general', classifyPGRow);",
-    updateContextSource: LPS_DRAWER_JS,
-  },
-  {
     modulo: 'PI',
     vista: 'views/programacion-intermedia/programacion_intermedia.view.php',
     includeStatement: "include __DIR__ . '/../partials/drawer_unificado.php';",
@@ -189,14 +181,14 @@ const ADAPTER_CSS = {
 };
 
 // ---------------------------------------------------------------------------
-// VIEW-28: exactamente cuatro consumidores productivos
+// VIEW-28: exactamente tres consumidores productivos tras retirar S05
 // ---------------------------------------------------------------------------
 
-test('VIEW-28 tiene exactamente los cuatro consumidores productivos esperados (PG/PI/PS/S25)', () => {
-  assert.equal(VIEW28_CONSUMERS.length, 4, 'el censo estructurado debe listar cuatro módulos, ni más ni menos');
+test('VIEW-28 tiene exactamente los tres consumidores productivos esperados (PI/PS/S25)', () => {
+  assert.equal(VIEW28_CONSUMERS.length, 3, 'el censo estructurado debe listar tres módulos, ni más ni menos');
   assert.deepEqual(
     VIEW28_CONSUMERS.map((c) => c.modulo).sort(),
-    ['PG', 'PI', 'PS', 'S25'],
+    ['PI', 'PS', 'S25'],
   );
 });
 
@@ -240,7 +232,6 @@ test('PG/PI/PS delegan updateContext al propio lps_drawer.js (llamada interna, n
 // de esas cadenas dentro de sí mismos es su propio encabezado/nombre, no una llamada.
 const EXPECTED_INCLUDE_CALLERS = [
   'views/dashboard/escalamientos.php',
-  'views/programa-general/programa_general.view.php',
   'views/programacion-intermedia/programacion_intermedia.view.php',
   'views/programacion-semanal/programacion_semanal.view.php',
 ].sort();
@@ -248,19 +239,18 @@ const EXPECTED_INCLUDE_CALLERS = [
 const EXPECTED_SCRIPT_TAG_CALLERS = [...EXPECTED_INCLUDE_CALLERS];
 
 const EXPECTED_GLOBAL_USAGE_CALLERS = [
-  'public/js/modules/programa_general/hot.js',
   'public/js/modules/programacion_intermedia/hot.js',
   'public/js/modules/programacion_semanal/hot.js',
   'views/dashboard/escalamientos.php',
 ].sort();
 
-test('barrido real: exactamente los cuatro archivos esperados incluyen VIEW-28 (drawer_unificado)', () => {
+test('barrido real: exactamente los tres archivos esperados incluyen VIEW-28 (drawer_unificado)', () => {
   const callers = censarSenal('drawer_unificado', [VIEW28_PARTIAL]);
   assert.deepEqual(
     archivosUnicos(callers),
     EXPECTED_INCLUDE_CALLERS,
     `censo de "drawer_unificado" cambió: ${JSON.stringify(callers, null, 2)} — si es un consumidor nuevo legítimo, `
-      + 'actualiza EXPECTED_INCLUDE_CALLERS/VIEW28_CONSUMERS a propósito; si T02-R ya retiró uno, súbele el conteo esperado.',
+      + 'actualiza EXPECTED_INCLUDE_CALLERS/VIEW28_CONSUMERS a propósito; los tres actuales incluyen PI, PS y S25.',
   );
 });
 

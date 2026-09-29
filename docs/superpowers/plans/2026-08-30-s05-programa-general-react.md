@@ -1726,11 +1726,25 @@ never stage the whole screenshot directory because it may contain unrelated cand
   `programa-general-runtime-requests.test.mjs`, `state-tint-ladder.test.mjs` and
   `tests/test_programa_general_sprint_contract.mjs`.
 - Modify current references/comments: `src/View/Components/DesignSystemHeadComponent.php`,
+  `src/Legacy/datosGeneralesPagina.php`, `src/Services/EstadoSemanalService.php`,
+  `public/css/buttons.css`, `public/css/design-system/adapters/legacy-bridge.css`,
+  `public/css/design-system/adapters/programa-general-handsontable.css`,
   `public/css/styles.css`, `public/css/programa-general-actualizar.css`,
   `public/css/programacion-intermedia.css`, `tests/test_bitacora_avance_endpoint.php`,
+  `tests/test_week_context_write_scope.php`, `tests/unit/ProjectSqlGuardTest.php`,
+  `tests/design-system/shell-runtime-react-caller-census.test.mjs`,
+  `tests/design-system/entrypoint-partition.test.mjs`, `tests/test_t02_lps_caller_census.mjs`,
   `docs/design-system/coverage-debt.json`, `exceptions.json`, `manifests/inventory.json`,
-  `ui-groups-inventory.json` and `unlayered-delivery-inventory.json`.
-- Modify: `docs/superpowers/specs/2026-08-28-migracion-react-typescript-design.md` — S05 final status.
+  `ui-groups-inventory.json`, `unlayered-delivery-inventory.json`,
+  `docs/design-system/migration.md` and
+  `docs/design-system/auditoria/herramientas/mapa-modulos.json`.
+- Modify route governance: `scripts/design-system-contracts.mjs` and
+  `tests/design-system/contracts.test.mjs` — the manifest gate recognizes exact SPA routes and
+  its fixture exposes the scoped `src/` sources.
+- Modify: `docs/superpowers/specs/2026-08-28-migracion-react-typescript-design.md` — S05 final
+  status, canonical React surface, and VIEW-34 retirement.
+- Modify: this plan — record Tarea 13 closure and its exact staging paths without changing
+  historical task checkboxes.
 
 **Interfaces:**
 - Canonical route remains React through `SpaRouter`; no PHP view/controller fallback is active.
@@ -1834,8 +1848,8 @@ Stage only the paths named in Task 13 after reviewing `git diff --name-only`; ne
 `git add tests`, `git add frontend`, `git add src` or `git add docs` in a dirty shared worktree.
 
 ```bash
-git add public/index.php docs/design-system/manifests/programa-general.json docs/design-system/coverage-debt.json docs/design-system/exceptions.json docs/design-system/manifests/inventory.json docs/design-system/ui-groups-inventory.json docs/design-system/unlayered-delivery-inventory.json src/View/Components/DesignSystemHeadComponent.php public/css/styles.css public/css/programa-general-actualizar.css public/css/programacion-intermedia.css tests/test_bitacora_avance_endpoint.php tests/test_programa_general_sprint_contract.mjs docs/superpowers/specs/2026-08-28-migracion-react-typescript-design.md
-git add -u views/programa-general/programa_general.view.php public/js/modules/programa_general/hot.js public/css/programa-general.css src/Controllers/Programacion/ProgramaGeneralController.php tests/browser/programa-general-legend-hue.mjs tests/browser/programa-general-legend-modal-dark.mjs tests/browser/programa-general-runtime-requests.mjs tests/browser/programa-general-state-hue.mjs tests/browser/programa-general.visual.mjs tests/browser/design-system-body-canvas-dark.mjs tests/design-system/cascada-lps-a11y.test.mjs tests/design-system/legend-solid-contract.test.mjs tests/design-system/ops-state-contract.test.mjs tests/design-system/pg-severity-rail.test.mjs tests/design-system/programa-general-runtime-requests.test.mjs tests/design-system/state-tint-ladder.test.mjs
+git add -- docs/design-system/auditoria/herramientas/mapa-modulos.json docs/design-system/coverage-debt.json docs/design-system/exceptions.json docs/design-system/manifests/inventory.json docs/design-system/manifests/programa-general.json docs/design-system/migration.md docs/design-system/ui-groups-inventory.json docs/design-system/unlayered-delivery-inventory.json docs/superpowers/plans/2026-08-30-s05-programa-general-react.md docs/superpowers/specs/2026-08-28-migracion-react-typescript-design.md public/css/buttons.css public/css/design-system/adapters/legacy-bridge.css public/css/design-system/adapters/programa-general-handsontable.css public/css/programa-general-actualizar.css public/css/programacion-intermedia.css public/css/styles.css public/index.php scripts/design-system-contracts.mjs src/Legacy/datosGeneralesPagina.php src/Services/EstadoSemanalService.php src/View/Components/DesignSystemHeadComponent.php tests/browser/design-system-body-canvas-dark.mjs tests/design-system/cascada-lps-a11y.test.mjs tests/design-system/contracts.test.mjs tests/design-system/entrypoint-partition.test.mjs tests/design-system/legend-solid-contract.test.mjs tests/design-system/ops-state-contract.test.mjs tests/design-system/shell-runtime-react-caller-census.test.mjs tests/design-system/state-tint-ladder.test.mjs tests/test_bitacora_avance_endpoint.php tests/test_programa_general_sprint_contract.mjs tests/test_t02_lps_caller_census.mjs tests/test_week_context_write_scope.php tests/unit/ProjectSqlGuardTest.php
+git add -u -- public/css/programa-general.css public/js/modules/programa_general/hot.js src/Controllers/Programacion/ProgramaGeneralController.php tests/browser/programa-general-legend-hue.mjs tests/browser/programa-general-legend-modal-dark.mjs tests/browser/programa-general-runtime-requests.mjs tests/browser/programa-general-state-hue.mjs tests/browser/programa-general.visual.mjs tests/design-system/pg-severity-rail.test.mjs tests/design-system/programa-general-runtime-requests.test.mjs views/programa-general/programa_general.view.php
 git commit -m "refactor(programa-general): retire legacy surface"
 ```
 
@@ -1921,3 +1935,23 @@ No business, product, strategy or PM decision is pending for S05. The visual-can
 Task 11 is an obligatory future release gate, not an unresolved architecture choice: without an
 approved artifact, canonical cut does not proceed. No implementation begins from this document in
 the current documentation-only session.
+
+## Cierre de la Tarea 13 — 2026-09-29
+
+VIEW-34, su controlador y sus filtros PHP se retiraron después del barrido de referencias y de
+incorporar la tabla de trazabilidad legacy→React/PHP. `/programa-general` permanece en
+`SpaRouter::RUTAS_EXACTAS_MIGRADAS`; las APIs General, LPS y Report siguen registradas. Los
+resultados de cada comando, los archivos compartidos que se conservaron y las limitaciones del
+cierre están en `.superpowers/sdd/2026-09-29-retiro-view-34/informe.md`.
+
+Los contratos PHP existentes, PHPUnit puro, `tests/test_spa_frontera.php`, Vitest, typecheck,
+build, contratos de retiro/design system y la batería enfocada de inventarios quedaron verdes.
+No están verdes todas las comprobaciones esperadas: tres contratos PHP nombrados por el plan no
+existen en este HEAD; las invariantes React heredadas aún señalan `!important` y estilos inline; y
+Playwright/HTTP contra el sitio servido quedaron sin correr porque requieren una ventana coordinada.
+Estos límites y sus códigos de salida quedan registrados en el informe. No se ejecutó DML ni se
+regeneraron baselines; las casillas históricas no se marcaron retroactivamente. El commit con el
+mensaje `refactor(programa-general): retire legacy surface` fue bloqueado por el hook pre-commit
+(RC=1): exige regenerar `TASKS.md` con un script alojado fuera de este worktree. No se ejecutó ese
+script, no se modificó `TASKS.md` ni se desactivó el hook. Los cambios de Tarea 13 quedan staged;
+HEAD permanece en `903174c6c00b5be0c3e5b38e199b554d1020fc59` y el informe registra el bloqueo.

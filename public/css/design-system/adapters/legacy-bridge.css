@@ -207,7 +207,7 @@
       - Declaraciones normales: lo unico que podria voltearse son las de
         OTRO archivo de @layer module o del resto de styles.css sobre el
         mismo sujeto y la misma propiedad. Barridos los tres candidatos
-        (styles.css, programa-general.css y los bloques @layer module de
+        (styles.css, la antigua hoja del piloto y los bloques @layer module de
         programacion-intermedia.css): los unicos sujetos compartidos son
         `.pg-page .encabezado` y `.pi-page .encabezado`, que fijan
         `background` y `color`, no `width`/`margin`.
@@ -352,7 +352,7 @@
    en este archivo, asi que la declaracion de subcapas VUELVE — y ahora vive por
    encima del primero de ellos, que es el unico sitio donde funciona. Los demas
    escritores de `module` del proyecto (programa-general-handsontable.css:1,
-   programa-general.css:1, lab.css:1, programacion-intermedia.css:4 y :1200,
+   la antigua hoja del piloto:1, lab.css:1, programacion-intermedia.css:4 y :1200,
    bi-control-tower.css:1591) usan `@layer module` SIN subcapa, que no crea
    ninguna y no altera ese orden.
 

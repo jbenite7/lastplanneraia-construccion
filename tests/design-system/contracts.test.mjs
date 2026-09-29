@@ -129,6 +129,7 @@ async function runFixture(mutate, { copyScreenshots = false } = {}) {
   );
   symlinkSync(path.join(root, 'public'), path.join(fixtureRoot, 'public'), 'dir');
   symlinkSync(path.join(root, 'views'), path.join(fixtureRoot, 'views'), 'dir');
+  symlinkSync(path.join(root, 'src'), path.join(fixtureRoot, 'src'), 'dir');
   symlinkSync(path.join(root, 'database'), path.join(fixtureRoot, 'database'), 'dir');
   symlinkSync(path.join(root, 'pdc-app'), path.join(fixtureRoot, 'pdc-app'), 'dir');
   symlinkSync(path.join(root, 'ct-app'), path.join(fixtureRoot, 'ct-app'), 'dir');
@@ -575,6 +576,18 @@ test('pilot manifest routes must exist in the front controller', async () => {
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /programa-general: route not registered \/missing-design-system-route/);
+});
+
+test('routes migrated to the SPA are valid manifest routes', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    manifest.routes = ['/programa-general'];
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.doesNotMatch(result.stderr, /programa-general: route not registered \/programa-general/);
 });
 
 // Comparacion diferencial en vez de `status 0`: aunque el fixture ya pasa limpio sin

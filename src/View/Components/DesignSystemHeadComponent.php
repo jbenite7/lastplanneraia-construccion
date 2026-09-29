@@ -38,46 +38,14 @@ final class DesignSystemHeadComponent
     public const CORE_VENDORS = ['bootstrap', 'jquery', 'font-awesome', 'aia-fonts'];
 
     /**
-     * Vendors cuyo CSS enlaza la propia vista, no este head.
+     * Vendors cuyo CSS enlaza la propia vista, no este head. El array queda
+     * vacio desde el 2026-09-29: la única vista que enlazaba toastr fue retirada
+     * con S05; Tom Select ya viaja por sus adjuntos gobernados.
      *
-     * Ni el agregador ni la partición los importan: `programa_general.view.php`
-     * pone su `<link>` a `/public/vendor/toastr.min.css`,
-     * `programacion_intermedia.view.php` el suyo a
-     * `/public/vendor/tom-select/tom-select.bootstrap4.min.css`. Medido: no hay
-     * una sola regla `toastr` en
-     * `public/css/`, y de Tom Select solo el `border-radius` de
-     * `.ts-control`/`.ts-dropdown` en `theme-overrides.css`, que ya viaja dentro
-     * de `core.css`.
-     *
-     * Por eso no son `VENDOR_ATTACHMENTS`: darles un `attach-*` obligaría a
-     * meter sus hojas en `aia-design-system.css` —`partitionFailures()` exige
-     * igualdad exacta— y eso las cargaría en las ~14 vistas que siguen en
-     * `render()`, un cambio visual global que nadie pidió. Tampoco son
-     * `STANDALONE_ATTACHMENTS`: `render()` no emite esas hojas, así que emitirlas
-     * aquí haría que la vía segmentada cargara MÁS que la actual, y duplicado
-     * sobre el `<link>` que la vista ya trae.
-     *
-     * Declararlos aquí es lo que hace que `renderForModule()` los reconozca y
-     * emita exactamente lo mismo que `render()` para ellos: nada.
-     *
-     * El criterio es verificable y lo ejerce
-     * `scripts/design-system-entrypoint-partition.mjs`: ningún miembro de esta
-     * lista puede tener `attach-<vendor>.css` en la partición ni entrada en
-     * `STANDALONE_ATTACHMENTS`, y debe aparecer en un `<link>` de alguna vista.
-     * Sin ese candado, mover aquí un vendor que sí tiene adjunto (select2, por
-     * ejemplo) dejaba los tres gates en verde mientras `renderForModule()`
-     * perdía su adaptador oscuro.
-     *
-     * `adminlte` SALIO de esta lista el 2026-08-06 (DS-006, caso
-     * `6-adminlte-login`). Era el contraejemplo de la categoria: el `<link>` de
-     * las tres vistas de auth entregaba el vendor SIN capa, y una hoja sin capa
-     * gana a TODAS las capas en declaraciones normales, asi que el design system
-     * no pintaba en toda la superficie. Ahora tiene adjunto propio
-     * —`entrypoints/attach-adminlte.css`, copia local dentro de `layer(vendor)`—
-     * y por tanto ya no puede estar aqui: el candado `view-owned-with-attachment`
-     * lo prohibe, que es exactamente lo que se quiere.
+     * `scripts/design-system-entrypoint-partition.mjs` verifica que todo vendor
+     * añadido aquí no tenga adjunto y aparezca en un `<link>` de una vista.
      */
-    public const VIEW_OWNED_VENDORS = ['toastr'];
+    public const VIEW_OWNED_VENDORS = [];
 
     /**
      * Vendors sin CSS: la vista carga su `<script>` y no hay hoja que emitir.

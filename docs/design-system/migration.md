@@ -2,7 +2,7 @@
 capa: fuente
 tipo: guia
 estado: vigente
-fecha: 2026-07-15
+fecha: 2026-09-29
 areas: [design-system]
 fuente: docs/design-system/migration.md
 resumen: Migracion del design system
@@ -42,7 +42,7 @@ Un modulo esta migrado cuando cumple:
 ## Estado del gate
 
 - Login y Projects tienen contrato de migracion cubierto por Playwright y presupuesto cero por ruta en `exceptions.json`.
-- Programa General tiene contrato de navegador y presupuesto cero por ruta en `exceptions.json`; su CSS de grilla vive en `public/css/programa-general.css`.
+- Programa General está migrado a React y conserva su contrato de navegador en el manifiesto `programa-general.json`; la página y su CSS viven en `frontend/src/modules/programa-general/`. VIEW-34, su controlador y sus rutas de filtros PHP se retiraron el 2026-09-29. El adaptador compartido de Handsontable se conserva porque Actualizar Cronograma (S06) aún consume sus reglas.
 - PDC tiene contrato de navegador y presupuesto cero por ruta en `exceptions.json`; sus reglas propias viven en `public/css/pdc.css`.
 - Contratos tiene contrato de navegador y presupuesto cero por ruta en `exceptions.json`; sus reglas propias viven en `public/css/contratos.css`.
 - Listado de Actividades tiene contrato de navegador y presupuesto cero por ruta en `exceptions.json`; sus reglas propias viven en `public/css/listado-actividades.css`.

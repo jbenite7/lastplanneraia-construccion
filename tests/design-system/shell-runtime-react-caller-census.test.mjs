@@ -86,29 +86,30 @@ test('VIEW-26 (views/errors/error.view.php) tiene exactamente 1 llamador real de
   assert.equal(censo.callers[0].file, 'src/Core/ErrorPage.php');
 });
 
-test('VIEW-29 (views/partials/head_brand.php) tiene exactamente 17 llamadores reales de producción hoy', () => {
+test('VIEW-29 (views/partials/head_brand.php) tiene exactamente 16 llamadores reales de producción hoy', () => {
   // Bajó de 20 a 19 el 2026-09-16: la Tarea 10 de S02 retiró VIEW-02
   // (views/auth/password-forgot.view.php), que incluía este partial, tras el gate
   // explícito de Felipe. Bajó de 19 a 18 el 2026-09-17: la Tarea 10 de S03 retiró
   // VIEW-03 (views/auth/password-reset.view.php), que también lo incluía, con el mismo
   // gate. Bajó de 18 a 17 el 2026-09-28: el retiro de VIEW-11 (views/core/project_selector.view.php,
   // que también lo incluía) por autorización puntual de Felipe. Este censo se actualiza a
-  // propósito, no se silencia.
+  // propósito, no se silencia. Bajó de 17 a 16 el 2026-09-29 al retirar la vista PHP
+  // de Programa General; el censo se corrige a propósito.
   const censo = censarLlamadores('head_brand.php', 'views/partials/head_brand.php');
   assert.equal(
     censo.count,
-    17,
+    16,
     `censo cambió: ${JSON.stringify(censo.callers, null, 2)} — actualiza este test a propósito, no lo silencies`,
   );
   // VIEW-26 es a su vez llamador de VIEW-29: retirar una no retira la otra automáticamente.
   assert.ok(censo.callers.some((c) => c.file === 'views/errors/error.view.php'));
 });
 
-test('VIEW-30 (views/partials/shell_sidebar.php) tiene exactamente 14 llamadores reales de producción hoy', () => {
+test('VIEW-30 (views/partials/shell_sidebar.php) tiene exactamente 13 llamadores reales de producción hoy', () => {
   const censo = censarLlamadores('shell_sidebar.php', 'views/partials/shell_sidebar.php');
   assert.equal(
     censo.count,
-    14,
+    13,
     `censo cambió: ${JSON.stringify(censo.callers, null, 2)} — actualiza este test a propósito, no lo silencies`,
   );
   // Las menciones en comentario de BiViewController.php y PlanComprasController.php no son

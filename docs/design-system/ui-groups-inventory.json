@@ -325,7 +325,7 @@
       "family": "page-structure",
       "label": "Encabezado de página",
       "sources": [
-        "views/programa-general/programa_general.view.php"
+        "frontend/src/modules/programa-general/components/ProgramaToolbar.tsx"
       ],
       "catalogIds": [
         "page-header"
@@ -399,7 +399,7 @@
       "family": "actions",
       "label": "Botón primario",
       "sources": [
-        "views/programa-general/programa_general.view.php"
+        "frontend/src/modules/programa-general/components/ProgramaToolbar.tsx"
       ],
       "catalogIds": [
         "button"
@@ -417,7 +417,7 @@
       "family": "actions",
       "label": "Botón secundario",
       "sources": [
-        "views/programa-general/programa_general.view.php"
+        "frontend/src/modules/programa-general/components/ProgramaToolbar.tsx"
       ],
       "catalogIds": [
         "button"
@@ -659,7 +659,7 @@
       "family": "forms-filters",
       "label": "Fecha y calendario",
       "sources": [
-        "views/programa-general/programa_general.view.php"
+        "frontend/src/modules/programa-general/components/ProgramaToolbar.tsx"
       ],
       "catalogIds": [
         "field",
@@ -718,7 +718,7 @@
       "family": "forms-filters",
       "label": "Búsqueda",
       "sources": [
-        "views/programa-general/programa_general.view.php"
+        "frontend/src/modules/programa-general/components/ProgramaFilters.tsx"
       ],
       "catalogIds": [
         "search"
@@ -754,7 +754,8 @@
       "family": "forms-filters",
       "label": "Filtro por estado",
       "sources": [
-        "views/programa-general/programa_general.view.php"
+        "frontend/src/modules/programa-general/components/ProgramaFilters.tsx",
+        "frontend/src/modules/programa-general/components/ProgramaSignalsBar.tsx"
       ],
       "catalogIds": [
         "state",
@@ -956,7 +957,7 @@
       "family": "states-feedback",
       "label": "Anuncio asíncrono",
       "sources": [
-        "views/programa-general/programa_general.view.php"
+        "frontend/src/modules/programa-general/ProgramaGeneralPage.tsx"
       ],
       "catalogIds": [
         "live-region"
@@ -1029,15 +1030,14 @@
       "family": "data-display",
       "label": "Grilla editable",
       "sources": [
-        "views/programa-general/programa_general.view.php"
+        "frontend/src/modules/programa-general/components/ProgramaTable.tsx",
+        "frontend/src/modules/programa-general/components/ProgramaCards.tsx"
       ],
       "catalogIds": [
-        "table-shell",
-        "handsontable-adapter"
+        "table-shell"
       ],
       "styleApi": [
-        ".aia-table-shell",
-        ".handsontable"
+        ".aia-table-shell"
       ],
       "themes": [
         "dark"
@@ -1142,7 +1142,7 @@
       "family": "overlays",
       "label": "Tooltip",
       "sources": [
-        "public/js/modules/programa_general/hot.js"
+        "public/css/design-system/components/primitives.css"
       ],
       "catalogIds": [
         "popover"
@@ -1218,7 +1218,7 @@
       "family": "vendor-adapters",
       "label": "Handsontable",
       "sources": [
-        "public/js/modules/programa_general/hot.js"
+        "public/css/design-system/adapters/programa-general-handsontable.css"
       ],
       "catalogIds": [
         "handsontable-adapter"

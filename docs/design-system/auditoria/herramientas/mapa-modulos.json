@@ -1,5 +1,5 @@
 {
-  "_nota": "Modulo -> archivos que le pertenecen. Derivado del grafo de <link>/@import (README §grafo) y del grep de vistas; verificado archivo a archivo, no adivinado por nombre.",
+  "_nota": "Modulo -> archivos que le pertenecen. Derivado del grafo de <link>/@import y del barrido de vistas; verificado archivo a archivo. La clave react enumera árboles React; el adaptador programa-general-handsontable.css está asignado a cronograma porque S06 todavía consume sus reglas.",
   "autenticacion": {
     "vistas": [
       "views/auth/"
@@ -19,15 +19,13 @@
     "js": []
   },
   "programa-general": {
-    "vistas": [
-      "views/programa-general/"
-    ],
+    "vistas": [],
     "css": [
-      "public/css/programa-general.css",
-      "public/css/design-system/adapters/programa-general-handsontable.css"
+      "frontend/src/modules/programa-general/programa-general.css"
     ],
-    "js": [
-      "public/js/modules/programa_general"
+    "js": [],
+    "react": [
+      "frontend/src/modules/programa-general/"
     ]
   },
   "cronograma": {
@@ -36,7 +34,8 @@
     ],
     "css": [
       "public/css/programa-general-actualizar.css",
-      "public/css/tom-select-premium-aia.css"
+      "public/css/tom-select-premium-aia.css",
+      "public/css/design-system/adapters/programa-general-handsontable.css"
     ],
     "js": [
       "public/js/modules/programa_actualizar"

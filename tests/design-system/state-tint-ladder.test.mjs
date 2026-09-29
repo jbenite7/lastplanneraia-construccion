@@ -55,7 +55,6 @@ const SHEETS = [
   'public/css/tokens.css',
   'public/css/styles.css',
   'public/css/programacion-intermedia.css',
-  'public/css/programa-general.css',
   'public/css/programacion-semanal.css',
   'public/css/design-system/components/states-feedback.css',
   'public/css/design-system/adapters/legacy-bridge.css',
@@ -119,7 +118,7 @@ test('ninguna hoja nombra un tinte de estado que no exista', async () => {
 // coma es el unico limite fiable de una declaracion.
 const TINT_RECIPE = /color-mix\([^;]*--ds-color-state-\w+-text[^;]*--ds-active-surface-raised[^;]*/g;
 
-for (const sheet of ['public/css/programacion-intermedia.css', 'public/css/programa-general.css']) {
+for (const sheet of ['public/css/programacion-intermedia.css']) {
   test(`${sheet} no reescribe la formula de la paleta`, async () => {
     const css = await read(sheet);
     const duplicated = css.match(TINT_RECIPE) ?? [];

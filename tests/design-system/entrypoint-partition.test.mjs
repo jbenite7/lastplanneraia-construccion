@@ -208,7 +208,9 @@ test('un CORE_VENDOR sin declarar no dispara el gate espejo', () => {
 
 test('las huellas de vendor cubren asset local y CDN', () => {
   const footprints = vendorViewFootprints(root);
-  assert.ok(footprints.toastr.includes('/vendor/toastr.min.css'));
+  // El catálogo conserva las huellas de Toastr para los consumidores que aún lo usan;
+  // la retirada de S05 solo elimina la vista propietaria de Programa General.
+  assert.deepEqual(footprints.toastr, ['/vendor/toastr.min.css', '/vendor/toastr.min.js']);
   // adminlte tiene las dos: la huella de CDN se conserva aunque ninguna vista
   // la use ya (DS-006, 2026-08-06) para cazar una reintroducción del <link>.
   assert.deepEqual(
@@ -251,7 +253,7 @@ test('un VIEW_OWNED_VENDORS que ninguna vista enlaza falla', () => {
   assert.match(failures[0], /^view-owned-without-link: toastr/);
 });
 
-test('los VIEW_OWNED_VENDORS reales (toastr) cumplen el criterio', () => {
+test('no hay vendors de vista sin propietario activo', () => {
   assert.deepEqual(manifestVendorFailures({ root }), []);
 });
 

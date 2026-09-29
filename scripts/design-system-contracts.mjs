@@ -1000,10 +1000,19 @@ const GOLDEN_ROOTS = ['tests/browser/__screenshots__/'];
 const goldenOwners = new Map();
 const goldenContentOwners = new Map();
 const frontController = readFileSync(join(root, 'public/index.php'), 'utf8');
+const spaRouter = readFileSync(join(root, 'src/Core/SpaRouter.php'), 'utf8');
+const spaRoutes = (constant) => {
+  const body = spaRouter.match(new RegExp(`public const ${constant}\\s*=\\s*\\[([^\\]]*)\\]`, 's'))?.[1] || '';
+  return [...body.matchAll(/["']([^"']+)["']/g)].map((match) => match[1]);
+};
+const migratedExactRoutes = spaRoutes('RUTAS_EXACTAS_MIGRADAS');
+const migratedPrefixes = spaRoutes('PREFIJOS_MIGRADOS');
 for (const manifest of manifests) {
   for (const route of manifest.routes || []) {
     const registered = frontController.includes(`'${route}'`)
-      || frontController.includes(`"${route}"`);
+      || frontController.includes(`"${route}"`)
+      || migratedExactRoutes.includes(route)
+      || migratedPrefixes.some((prefix) => route === prefix || route.startsWith(`${prefix}/`));
     if (!registered) failures.push(`${manifest.moduleId}: route not registered ${route}`);
   }
   const scenarioIds = new Set();

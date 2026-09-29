@@ -4,18 +4,17 @@ import test from 'node:test';
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 
-// Las cuatro rejillas de la cascada comparten el mismo chip con el mismo papel.
+// Las tres rejillas PHP que permanecen en la cascada comparten el mismo chip.
 // Si una sola deja de anunciarlo, guardar en esa pantalla no produce ningun
 // anuncio para quien usa lector de pantalla — que es exactamente lo que pasaba
 // en tres de las cuatro hasta el 2026-08-10.
 const VISTAS_CASCADA = [
-  'views/programa-general/programa_general.view.php',
   'views/programa-general-actualizar/programaGeneralActualizar.view.php',
   'views/programacion-intermedia/programacion_intermedia.view.php',
   'views/programacion-semanal/programacion_semanal.view.php',
 ];
 
-test('el chip de guardado se anuncia en las cuatro rejillas de la cascada', async () => {
+test('el chip de guardado se anuncia en las tres rejillas PHP que permanecen', async () => {
   for (const vista of VISTAS_CASCADA) {
     const html = await read(vista);
     const chip = html.match(/<span[^>]*id="save-status"[^>]*>/);

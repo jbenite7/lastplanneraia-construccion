@@ -12,11 +12,11 @@ use TableResolver;
  * version del cronograma acumulada hasta ella.
  *
  * Existe porque la consulta que resuelve eso estaba COPIADA en dos sitios —`src/Legacy/
- * datosGeneralesPagina.php`, que la sirve por AJAX, y `ProgramaGeneralController`, que la pinta en
- * servidor— con las mismas columnas, los mismos cuatro marcadores y el mismo orden. Y no es una
- * duplicacion inofensiva: el 2026-09-02 las dos reventaban con «Alias de tabla de proyecto ambiguo»
- * y hubo que arreglar el mismo fallo dos veces en el mismo turno. Mientras siga copiada, el
- * siguiente que la toque arregla una sola y cree que termino.
+ * datosGeneralesPagina.php`, que la sirve por AJAX, y la antigua página PHP de Programa General,
+ * retirada el 2026-09-29— con las mismas columnas, los mismos cuatro marcadores y el mismo orden.
+ * Y no es una duplicacion inofensiva: el 2026-09-02 las dos reventaban con «Alias de tabla de
+ * proyecto ambiguo» y hubo que arreglar el mismo fallo dos veces en el mismo turno. Mientras siga
+ * copiada, el siguiente que la toque arregla una sola y cree que termino.
  *
  * `BaseController::getWeekStatusVars()` lee `Semanal_Confirmada` de aqui por la misma razon, que
  * ademas es la que su propio comentario declaraba (C-46): el valor que el PHP pinta en la cabecera y

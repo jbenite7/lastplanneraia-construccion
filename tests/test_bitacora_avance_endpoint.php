@@ -83,13 +83,11 @@ $db->query("DELETE FROM pg_avance_edicion_manual WHERE project_id = ? AND unique
 
 $jar = sesion('test.A');
 
-// El token CSRF que exige `requireProgramaGeneralCsrf()` viaja como meta tag en la pagina del
-// modulo (views/programa-general/programa_general.view.php: `<meta name="csrf-token" ...>`), no
-// como campo de formulario `csrf_token`. El endpoint lo espera en `_csrf_token`
-// (GeneralApiController::requireProgramaGeneralCsrf()).
-[, $html] = curlReq(BASE . '/programa-general?db=' . urlencode(DB_PREFIX), null, $jar);
-preg_match('/name="csrf-token"[^>]*content="([^"]+)"/', $html, $m);
-$token = $m[1] ?? '';
+// El contexto de la isla React entrega el token que exige `requireProgramaGeneralCsrf()` en
+// `data.csrf.programaGeneral`; el endpoint lo espera en `_csrf_token`.
+[, $contextJson] = curlReq(BASE . '/api/programa-general/context', null, $jar);
+$context = json_decode($contextJson, true);
+$token = $context['data']['csrf']['programaGeneral'] ?? '';
 if ($token === '') {
     fwrite(STDERR, "ABORT: no se pudo leer el token CSRF de /programa-general\n");
     exit(2);
