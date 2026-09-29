@@ -17,10 +17,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 557 |
+| hecha | 559 |
 | en progreso | 4 |
-| pendiente | 160 |
-| sin señal | 148 |
+| pendiente | 157 |
+| sin señal | 149 |
 | descartada | 48 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -835,13 +835,13 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### CI-CARRILES · CI por carriles — evaluar lo que se edita (abierto)
 
-- **P-CI-CARRILES · CI por carriles** (abierto): 0 de 6 hechas · `2026-09-28-ci-por-carriles.md`
-  - pendiente · 1 · Selector puro de carriles y gates
-  - pendiente · 2 · CLI del selector con fallo hacia «todo»
+- **P-CI-CARRILES · CI por carriles** (abierto): 2 de 6 hechas · `2026-09-28-ci-por-carriles.md`
+  - hecha · 1 · Selector puro de carriles y gates
+  - sin señal · 2 · CLI del selector con fallo hacia «todo»
   - pendiente · 3 · Job `cambios`, concurrencia y matriz de temas
   - pendiente · 4 · `if:` por paso en los jobs static y runtime
   - pendiente · 5 · Resumen que dice qué se omitió
-  - pendiente · 6 · Prueba en corridas reales y cierre del frente
+  - hecha · 6 · Prueba en corridas reales y cierre del frente
 
 ### S05-REDISENO · S05 — Rediseño de Programa General (ronda sobre `main`) (abierto)
 
@@ -887,6 +887,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - **Informe de sprint S05-DEUDA** (abierto): 0 de 0 hechas · `2026-09-26-s05-deuda-cierre-informe.md`
 - **Informe del mockup S05 · Programa General** (vigente): 0 de 0 hechas · `2026-09-28-s05-rediseno-mockup-informe.md`
 - goal abierto · Goal — BI Control Tower / Programa General (Radar y Cronograma) · `goals/bi-control-tower-gemini/goal.md`
+- goal abierto · Goal: CI por carriles · `goals/ci-por-carriles/goal.md`
 - goal abierto · Núcleo y gobernanza del Design System AIA · `goals/design-system-nucleo-gobernanza/goal.md`
 - goal abierto · organizar-la-casa · `goals/organizar-la-casa/goal.md`
 - goal abierto · Goal — Paridad del shell React y RLS · `goals/paridad-shell-react-rls/goal.md`
