@@ -1541,25 +1541,25 @@
 
   .pill-liberado {
     background: var(--ds-active-state-tint-green);
-    color: var(--ds-active-state-solid-green-text);
+    color: var(--ds-color-state-success-text);
     border: 1px solid var(--ds-active-border);
   }
 
   .pill-gestion {
     background: var(--ds-active-state-tint-amber);
-    color: var(--ds-active-state-solid-amber-text);
+    color: var(--ds-color-state-warning-text);
     border: 1px solid var(--ds-active-border);
   }
 
   .pill-bloqueado {
     background: var(--ds-active-state-tint-red);
-    color: var(--ds-active-state-solid-red-text);
+    color: var(--ds-color-state-critical-text);
     border: 1px solid var(--ds-active-border);
   }
 
   .pill-no-aplica {
     background: var(--ds-active-state-tint-neutral);
-    color: var(--ds-active-state-solid-neutral-text);
+    color: var(--ds-active-text-primary);
     border: 1px solid var(--ds-active-border);
   }
 
@@ -1610,7 +1610,7 @@
   .btn-sos-trigger {
     background: var(--ds-active-state-tint-red);
     border: 1px solid var(--ds-active-border);
-    color: var(--ds-active-state-solid-red-text);
+    color: var(--ds-color-state-critical-text);
     padding: 6px 12px;
     border-radius: 4px;
     font-family: var(--ds-font-display);
@@ -1636,7 +1636,7 @@
   }
 
   .drawer-sos-feedback--error {
-    color: var(--ds-active-state-solid-red-text);
+    color: var(--ds-color-state-critical-text);
   }
 
   /* Drawer Footer */
@@ -1719,7 +1719,7 @@
     color: var(--ds-color-text-tertiary);
   }
   .pg-error {
-    color: var(--ds-active-state-solid-red-text);
+    color: var(--ds-color-state-critical-text);
     background: var(--ds-active-state-tint-red);
     border: 1px solid var(--ds-active-border);
     border-radius: 6px;
