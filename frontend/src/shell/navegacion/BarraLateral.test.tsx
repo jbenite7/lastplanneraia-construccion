@@ -532,3 +532,50 @@ test('en modo no autónomo (T01/AppShell), no arma su propio disparador ni velo'
   expect(screen.queryByRole('button', { name: /abrir menú de navegación/i })).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: /cerrar menú de navegación/i })).not.toBeInTheDocument();
 });
+
+// Revisión visual de Programa General (Felipe, 2026-09-29): las etiquetas flotantes del riel
+// colapsado no se veían porque el nav recorta lo que sale por la derecha (overflow-y: auto, que
+// existe para los menús largos). `data-menu-cabe` le dice al CSS cuándo puede soltar ese recorte:
+// solo si el menú entra sin scroll. jsdom no calcula layout, así que las alturas se simulan.
+function simularAlturasNav(scrollHeight: number, clientHeight: number) {
+  vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(scrollHeight);
+  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(clientHeight);
+}
+
+function montarBarra() {
+  return render(
+    <BarraLateral
+      activeId="projects"
+      accountName="Ana"
+      groups={GRUPOS}
+      showChangeProject={false}
+      cuentaPropia={true}
+      cerrarSesion={vi.fn().mockResolvedValue(undefined)}
+    />,
+  );
+}
+
+test('data-menu-cabe es "true" cuando el contenido del nav entra sin scroll', () => {
+  simularAlturasNav(400, 500);
+  const { container } = montarBarra();
+  expect(container.querySelector('aside')).toHaveAttribute('data-menu-cabe', 'true');
+});
+
+test('data-menu-cabe es "false" cuando el menú es más alto que el nav (queda el scroll propio)', () => {
+  simularAlturasNav(900, 500);
+  const { container } = montarBarra();
+  expect(container.querySelector('aside')).toHaveAttribute('data-menu-cabe', 'false');
+});
+
+test('data-menu-cabe se recalcula al cambiar el tamaño de la ventana', () => {
+  simularAlturasNav(400, 500);
+  const { container } = montarBarra();
+  const aside = container.querySelector('aside');
+  expect(aside).toHaveAttribute('data-menu-cabe', 'true');
+
+  simularAlturasNav(900, 500);
+  act(() => {
+    window.dispatchEvent(new Event('resize'));
+  });
+  expect(aside).toHaveAttribute('data-menu-cabe', 'false');
+});

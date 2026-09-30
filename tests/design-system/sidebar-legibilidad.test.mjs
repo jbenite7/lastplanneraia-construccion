@@ -160,3 +160,60 @@ test('el riel se desplaza sin dibujar la barra de scroll', () => {
   assert.ok(webkit && declara(webkit.cuerpo, 'display') === 'none', 'falta `.aia-sidebar__nav::-webkit-scrollbar { display: none }` para Chrome y Safari');
   assert.match(nav.cuerpo, /overflow-y\s*:\s*auto/, 'el riel no debe perder el scroll: overflow-y sigue en auto');
 });
+
+// 4 y 5 -----------------------------------------------------------------------
+// Revisión visual de Programa General (Felipe, 2026-09-29): «comprime la altura de los botones de la
+// sidebar para que quepan en la pantalla sin scroll, en desktop» y «las etiquetas de cada opción
+// (como la de "Expandir menú") no se ven en las demás». Las dos son el mismo diseño original del
+// riel, «cero scroll + flyouts» (comentario de shell-sidebar.css), que el shell React perdió: en
+// #app-shell-nav el nav tiene overflow-y:auto —hay menús largos por rol— y ese overflow recorta las
+// píldoras que salen por la derecha. Solución: comprimir en escritorio para que el menú quepa, y
+// soltar el recorte SOLO cuando el nav mide que cabe (data-menu-cabe, lo pone BarraLateral).
+function bloquesMedia(ruta, condicion) {
+  const texto = leer(ruta).replace(/\/\*[\s\S]*?\*\//g, '');
+  const salida = [];
+  let desde = 0;
+  while ((desde = texto.indexOf(`@media ${condicion}`, desde)) !== -1) {
+    const abre = texto.indexOf('{', desde);
+    let nivel = 1;
+    let j = abre + 1;
+    while (nivel && j < texto.length) {
+      if (texto[j] === '{') nivel += 1;
+      else if (texto[j] === '}') nivel -= 1;
+      j += 1;
+    }
+    salida.push(texto.slice(abre + 1, j - 1));
+    desde = j;
+  }
+  return salida.join('\n');
+}
+const reglasDeTexto = (texto) => [...texto.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ selector: m[1].trim().replace(/\s+/g, ' '), cuerpo: m[2] }));
+
+test('en escritorio los botones del riel miden 36 px (piso WCAG 2.5.8 = 24 px) y el canónico de 44 px no se toca', () => {
+  const escritorio = reglasDeTexto(bloquesMedia(ADAPTADOR, '(min-width: 75rem)'));
+  const aside = escritorio.find((r) => r.selector === 'body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"]' && declara(r.cuerpo, '--ds-sidebar-item-min-height'));
+  assert.ok(aside, 'falta, dentro de `@media (min-width: 75rem)`, la compresión de --ds-sidebar-item-min-height para el aside del shell');
+  const alto = declara(aside.cuerpo, '--ds-sidebar-item-min-height');
+  const px = Number.parseFloat(alto) * (alto.endsWith('rem') ? 16 : 1);
+  assert.ok(px >= 24 && px <= 40, `el alto compacto (${alto} = ${px}px) debe estar entre el piso de WCAG 2.5.8 (24px) y 40px`);
+  const util = escritorio.find((r) => /:is\(\.aia-sidebar__toggle, \.aia-sidebar__utility\)$/.test(r.selector) && declara(r.cuerpo, 'min-height'));
+  assert.ok(util, 'el toggle y las utilidades del pie también se comprimen en escritorio');
+  assert.equal(declara(util.cuerpo, 'min-height'), alto, 'toggle y utilidades miden lo mismo que los ítems');
+  // El canónico (laboratorio del design system, design-system-lab-sidebar.mjs exige 44) no cambia.
+  assert.equal(resolver('--ds-target-min', 'oscuro'), '44px');
+  const base = (declaraciones.get('--ds-sidebar-item-min-height') ?? []).filter((d) => !d.archivo.endsWith('adapters/shell-sidebar.css'));
+  assert.ok(base.length > 0 && base.every((d) => d.valor === 'var(--ds-target-min)'), 'el token base de --ds-sidebar-item-min-height sigue siendo var(--ds-target-min) = 44px fuera del shell de escritorio');
+});
+
+test('el riel colapsado suelta el recorte de sus etiquetas solo cuando el menú cabe', () => {
+  const escritorio = reglasDeTexto(bloquesMedia(ADAPTADOR, '(min-width: 75rem)'));
+  const suelta = escritorio.find((r) => /\[data-sidebar-state="collapsed"\]\[data-menu-cabe="true"\] \.aia-sidebar__nav$/.test(r.selector));
+  assert.ok(suelta, 'falta la regla que suelta el overflow del nav colapsado cuando data-menu-cabe="true"');
+  assert.equal(declara(suelta.cuerpo, 'overflow'), 'visible');
+  // No debe soltarse siempre: un menú largo (25-30 ítems) conserva su scroll propio
+  // (tests/browser/shell-runtime-react-layout.spec.mjs).
+  const incondicional = reglas(ADAPTADOR).filter((r) => /#app-shell-nav \.aia-sidebar__nav$/.test(r.selector) && declara(r.cuerpo, 'overflow') === 'visible');
+  assert.equal(incondicional.length, 0, 'el overflow visible no puede ser incondicional en #app-shell-nav');
+  const base = reglas(ADAPTADOR).find((r) => /#app-shell-nav \.aia-sidebar__nav$/.test(r.selector) && /overflow-y\s*:\s*auto/.test(r.cuerpo));
+  assert.ok(base, 'el scroll propio del nav de React (overflow-y: auto) debe seguir siendo la base');
+});

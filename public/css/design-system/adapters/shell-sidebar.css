@@ -443,6 +443,37 @@
     overflow-x: hidden;
   }
 
+  /* Escritorio (≥1180px). Felipe, revisión visual 2026-09-29: los botones del riel deben caber en
+     pantalla sin scroll, y las etiquetas flotantes de cada opción (la píldora de «Expandir menú»)
+     tienen que verse en las demás. Es el diseño original de este bloque —«cero scroll +
+     flyouts»— que el shell React perdió al recuperar el scroll de arriba, y ese overflow recorta
+     las píldoras que salen por la derecha.
+
+     1) Compresión: 36px en vez de 44px, SOLO en escritorio y SOLO en el shell de la app. 36px
+        sigue por encima del piso de WCAG 2.5.8 (24px, AA); bajo 1180px el objetivo vuelve a
+        44px (DESIGN.md: «bajo 1180px el área táctil sube a 44px»). El token canónico
+        `--ds-target-min` (44px) no se toca: el laboratorio del design system lo exige
+        (tests/browser/design-system-lab-sidebar.mjs). Con 11 ítems el menú pasa de ~587px a
+        ~500px de contenido y entra en 746px de alto.
+     2) Flyouts: el overflow se suelta SOLO si `BarraLateral` mide que el menú cabe
+        (`data-menu-cabe="true"`). Un menú largo (25-30 ítems, otro rol) conserva su scroll propio
+        (tests/browser/shell-runtime-react-layout.spec.mjs); ahí las etiquetas siguen recortadas,
+        que es el mal menor frente a pintar el menú encima del pie.
+     Guard: tests/design-system/sidebar-legibilidad.test.mjs. */
+  @media (min-width: 75rem) {
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] {
+      --ds-sidebar-item-min-height: 2.25rem;
+    }
+
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] :is(.aia-sidebar__toggle, .aia-sidebar__utility) {
+      min-height: 2.25rem;
+    }
+
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"]#app-shell-nav[data-sidebar-state="collapsed"][data-menu-cabe="true"] .aia-sidebar__nav {
+      overflow: visible;
+    }
+  }
+
 
   body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] .aia-sidebar__group ul {
     gap: 2px;

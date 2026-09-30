@@ -146,6 +146,12 @@ export function BarraLateral({
   const disparadorRef = useRef<HTMLButtonElement>(null);
   const asideRef = useRef<HTMLElement | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
+  // ¿El menú entra en el nav sin scroll? El nav conserva `overflow-y: auto` para los menús largos
+  // (25-30 ítems, ver shell-runtime-react-layout.spec.mjs), pero ese overflow recorta las
+  // etiquetas flotantes del riel colapsado, que salen por la derecha. El CSS suelta el recorte
+  // solo si esto es `true` (data-menu-cabe, revisión visual 2026-09-29). Por defecto `true`: jsdom y
+  // el primer render no miden nada y un menú que cabe es el caso normal en escritorio.
+  const [menuCabe, setMenuCabe] = useState(true);
 
   const estado = barraAutonoma
     ? (flotante || colapsadoPropio ? 'collapsed' : 'expanded')
@@ -154,6 +160,22 @@ export function BarraLateral({
     ? () => setColapsadoPropio((valor) => !valor)
     : alAlternarEstadoExterno;
   const abierto = barraAutonoma ? abiertoPropio : Boolean(abiertoEnMovilExterno);
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return undefined;
+    const medir = () => setMenuCabe(nav.scrollHeight <= nav.clientHeight + 1);
+    medir();
+    window.addEventListener('resize', medir);
+    // El alto del nav cambia con el de la ventana y con el pie; `resize` cubre lo primero y el
+    // observador lo segundo (p. ej. el bloque de semana del encabezado al cargar).
+    const observador = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(medir);
+    observador?.observe(nav);
+    return () => {
+      window.removeEventListener('resize', medir);
+      observador?.disconnect();
+    };
+  }, [groups, estado]);
 
   // Ronda de arreglo 1 (Tarea 8, hallazgo Important): al dejar de ser flotante hay que cerrar el
   // drawer propio, igual que `AppShell.tsx:127-129` hace para el suyo. Sin este cierre,
@@ -312,6 +334,7 @@ export function BarraLateral({
         aria-label="Aplicación"
         data-shell-pattern="sidebar"
         data-sidebar-state={estado}
+        data-menu-cabe={menuCabe ? 'true' : 'false'}
         data-shell-drawer-open={abierto ? 'true' : undefined}
         // Ronda de arreglo 1 (Tarea 9b, hallazgo Important del revisor): bajo 1180px, cerrado,
         // el `<aside>` solo se saca de la vista con `transform` (`shell-sidebar.css`) — sin

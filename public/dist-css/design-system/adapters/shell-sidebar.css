@@ -276,6 +276,17 @@
     overflow-y: auto;
     overflow-x: hidden;
   }
+  @media (min-width: 75rem) {
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] {
+      --ds-sidebar-item-min-height: 2.25rem;
+    }
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] :is(.aia-sidebar__toggle, .aia-sidebar__utility) {
+      min-height: 2.25rem;
+    }
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"]#app-shell-nav[data-sidebar-state="collapsed"][data-menu-cabe="true"] .aia-sidebar__nav {
+      overflow: visible;
+    }
+  }
   body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] .aia-sidebar__group ul {
     gap: 2px;
   }
