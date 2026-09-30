@@ -242,3 +242,14 @@ test('un flyout de semana descartado se oculta aunque el cursor o el foco sigan 
   const clases = (sel) => (sel.match(/[.[:][a-zA-Z-]/g) ?? []).length;
   assert.ok(clases(oculta.selector) > clases(abre.selector.split(',')[0]), 'la regla de descarte debe pesar más que la que abre por hover/foco');
 });
+
+test('el panel de semanas deja aire bajo el último renglón sin depender de :last-child', () => {
+  const todas = reglas(ADAPTADOR);
+  // Con la papelera, el último hijo del panel es el renglón (.shell-week-flyout__row), no un
+  // menuitem: un margen colgado de `[role="menuitem"]:last-child` nunca llega a aplicarse y el
+  // último renglón quedaba pegado al borde (reportado por Felipe, 2026-09-29).
+  const colgadas = todas.filter((r) => /\.shell-week-flyout \[role="menuitem"\]:last-child$/.test(r.selector.trim()) && declara(r.cuerpo, 'margin-block-end'));
+  assert.equal(colgadas.length, 0, 'el aire inferior va en el contenedor, no en :last-child');
+  const contenedor = todas.find((r) => /body\.aia-shell--sidebar \.shell-week-flyout$/.test(r.selector.trim()) && declara(r.cuerpo, 'padding-block-end'));
+  assert.ok(contenedor, 'falta padding-block-end en .shell-week-flyout');
+});

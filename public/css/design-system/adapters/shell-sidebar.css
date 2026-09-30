@@ -208,10 +208,6 @@
     margin-block-start: var(--ds-space-2);
   }
 
-  body.aia-shell--sidebar .shell-week-flyout [role="menuitem"]:last-child {
-    margin-block-end: var(--ds-space-2);
-  }
-
   body.aia-shell--sidebar .shell-week-flyout__delete {
     padding: var(--ds-space-1);
     margin-inline-end: var(--ds-space-2);
@@ -732,6 +728,9 @@
     width: max-content;
     min-width: 15rem;
     max-height: min(24rem, calc(100vh - var(--ds-space-8)));
+    /* El aire bajo el último renglón va aquí y no en `[role="menuitem"]:last-child`: con la papelera
+       el último hijo es el renglón, no un menuitem, y ese margen nunca se aplicaba. */
+    padding-block-end: var(--ds-space-2);
     overflow-y: auto;
     border: var(--ds-border-width) solid var(--ds-active-border);
     border-radius: var(--ds-radius-control);
@@ -807,10 +806,6 @@
     text-align: start;
     white-space: nowrap;
     cursor: pointer;
-  }
-
-  body.aia-shell--sidebar .shell-week-flyout [role="menuitem"]:last-child {
-    margin-block-end: var(--ds-space-2);
   }
 
   body.aia-shell--sidebar .shell-week-flyout [role="menuitem"]:hover {
