@@ -11,8 +11,6 @@ export type MenuSemanasRiel = {
   semana: SemanaActiva;
   /** Hay una mutación de semana en curso: se bloquean los ítems para no encadenar peticiones. */
   ocupado?: boolean;
-  /** Fallo del último cambio de semana; se muestra dentro del flyout, no se traga en silencio. */
-  error?: string | null;
   /** `destino` es la ruta del módulo elegido, o `null` si se queda en la página actual. */
   alElegir: (numero: number, destino: string | null) => void;
   alCrear: () => void;
@@ -101,8 +99,6 @@ export function FlyoutSemanas({ menu, titulo, destino, marcarVigente, gestion }:
           </div>
         );
       })}
-
-      {menu.error && <p className="aia-alert aia-alert--error" role="alert">{menu.error}</p>}
     </div>
   );
 }

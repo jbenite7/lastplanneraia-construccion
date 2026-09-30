@@ -66,6 +66,30 @@ describe('DialogosSemana (confirmaciones de crear / eliminar semana)', () => {
     expect(alCerrar).toHaveBeenCalledTimes(1);
   });
 
+  it('lo que el usuario teclea no se pisa si la sesión se revalida con la misma semana', async () => {
+    const alCerrar = vi.fn();
+    const { rerender } = render(<DialogosSemana alCerrar={alCerrar} csrfToken="t" dialogo={{ vista: 'crear' }} recargar={vi.fn()} semana={semana} />);
+    const campo = screen.getByLabelText('Fecha de inicio');
+    await userEvent.clear(campo);
+    await userEvent.type(campo, '2026-10-05');
+
+    rerender(<DialogosSemana alCerrar={alCerrar} csrfToken="t" dialogo={{ vista: 'crear' }} recargar={vi.fn()} semana={{ ...semana, options: [...semana.options] }} />);
+
+    expect(screen.getByLabelText('Fecha de inicio')).toHaveValue('2026-10-05');
+  });
+
+  it('cada apertura de «Crear» arranca con la fecha sugerida, no con la del intento anterior', async () => {
+    const { rerender } = render(<DialogosSemana alCerrar={vi.fn()} csrfToken="t" dialogo={{ vista: 'crear' }} recargar={vi.fn()} semana={semana} />);
+    const campo = screen.getByLabelText('Fecha de inicio');
+    await userEvent.clear(campo);
+    await userEvent.type(campo, '2026-10-05');
+
+    rerender(<DialogosSemana alCerrar={vi.fn()} csrfToken="t" dialogo={null} recargar={vi.fn()} semana={semana} />);
+    rerender(<DialogosSemana alCerrar={vi.fn()} csrfToken="t" dialogo={{ vista: 'crear' }} recargar={vi.fn()} semana={semana} />);
+
+    expect(screen.getByLabelText('Fecha de inicio')).toHaveValue('2026-09-01');
+  });
+
   it('si crear falla, el diálogo sigue abierto', async () => {
     mockCrear.mockResolvedValue(false);
     const alCerrar = vi.fn();

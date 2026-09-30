@@ -30,6 +30,8 @@ type PropiedadesNavegacionLateral = {
   alEjecutarAccion?: (item: ItemBarraLateral) => void;
   /** Flyouts de semana del riel; ver `BarraLateral`. */
   menuSemanas?: MenuSemanasRiel;
+  /** Ver `BarraLateral.descartarFlyout`. */
+  descartarFlyout?: { id: string; n: number } | null;
   /** Estado del rail persistente en escritorio (Tarea 4). `AppShell` es quien lo gobierna. */
   estado?: 'expanded' | 'collapsed';
   alAlternarEstado?: () => void;
@@ -55,6 +57,7 @@ export function NavegacionLateral({
   ref,
   alEjecutarAccion,
   menuSemanas,
+  descartarFlyout,
   estado,
   alAlternarEstado,
   abiertoEnMovil,
@@ -76,6 +79,7 @@ export function NavegacionLateral({
       ref={ref}
       alEjecutarAccion={alEjecutarAccion}
       menuSemanas={menuSemanas}
+      descartarFlyout={descartarFlyout}
       estado={estado}
       alAlternarEstado={alAlternarEstado}
       abiertoEnMovil={abiertoEnMovil}

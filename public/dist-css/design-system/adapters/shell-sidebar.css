@@ -497,6 +497,13 @@
     pointer-events: auto;
     transition-delay: 0s;
   }
+  body.aia-shell--sidebar li.shell-has-week-menu.shell-has-week-menu[data-flyout-descartado="true"] .shell-week-flyout {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    translate: -4px -50%;
+    transition-delay: 0s;
+  }
   body.aia-shell--sidebar .shell-week-flyout__head {
     position: sticky;
     top: 0;

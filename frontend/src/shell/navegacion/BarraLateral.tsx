@@ -85,6 +85,12 @@ type PropiedadesBarraLateral = {
    * ningún flyout — p. ej. la pantalla standalone `/proyectos`, que no tiene semana activa.
    */
   menuSemanas?: MenuSemanasRiel;
+  /**
+   * Oculta el flyout de `id` aunque el cursor o el foco sigan sobre el ítem (lo pide quien acaba de
+   * devolverle el foco, p. ej. `AppShell` al cerrar un diálogo: sin esto el foco reabriría el
+   * flyout por `:focus-within`). Cada cambio de `n` es una orden nueva.
+   */
+  descartarFlyout?: { id: string; n: number } | null;
   estado?: 'expanded' | 'collapsed';
   alAlternarEstado?: () => void;
   abiertoEnMovil?: boolean;
@@ -136,6 +142,7 @@ export function BarraLateral({
   ref,
   alEjecutarAccion,
   menuSemanas,
+  descartarFlyout,
   estado: estadoExterno,
   alAlternarEstado: alAlternarEstadoExterno,
   abiertoEnMovil: abiertoEnMovilExterno,
@@ -163,13 +170,32 @@ export function BarraLateral({
   // de 350 ms es el del legado: un trayecto diagonal hacia el panel cruza brevemente fuera del
   // `<li>` y el cierre por `:hover` puro sería instantáneo.
   const [flyoutAbierto, setFlyoutAbierto] = useState<string | null>(null);
+  // «Descartado» = el usuario pidió cerrarlo (Escape) o quien lo devuelve el foco no quiere verlo.
+  // Quitar la clase `shell-week-open` NO alcanza en un navegador real: `:hover` y `:focus-within`
+  // (adapters/shell-sidebar.css) lo siguen mostrando, así que el descarte viaja como atributo que el
+  // CSS usa para OCULTARLO. Va también en una ref porque los manejadores de foco deben leer el valor
+  // más reciente aunque el efecto que lo fijó y el foco ocurran en el mismo commit.
+  const [flyoutDescartado, setFlyoutDescartado] = useState<string | null>(null);
+  const descartadoRef = useRef<string | null>(null);
   const cierreFlyoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const fijarDescartado = useCallback((itemId: string | null) => {
+    descartadoRef.current = itemId;
+    setFlyoutDescartado(itemId);
+  }, []);
   const cancelarCierreFlyout = useCallback(() => {
     if (cierreFlyoutRef.current !== null) clearTimeout(cierreFlyoutRef.current);
     cierreFlyoutRef.current = null;
   }, []);
+  // Cursor o clic: intención explícita de ver el flyout, así que levanta el descarte.
   const abrirFlyout = useCallback((itemId: string) => {
+    cancelarCierreFlyout();
+    fijarDescartado(null);
+    setFlyoutAbierto(itemId);
+  }, [cancelarCierreFlyout, fijarDescartado]);
+  // Foco: abre, salvo que el ítem esté descartado (p. ej. foco devuelto tras cerrar un diálogo).
+  const abrirFlyoutPorFoco = useCallback((itemId: string) => {
+    if (descartadoRef.current === itemId) return;
     cancelarCierreFlyout();
     setFlyoutAbierto(itemId);
   }, [cancelarCierreFlyout]);
@@ -180,6 +206,39 @@ export function BarraLateral({
     }, 350);
   }, [cancelarCierreFlyout]);
   useEffect(() => cancelarCierreFlyout, [cancelarCierreFlyout]);
+
+  // Escape lo descarta y un toque/clic fuera del ítem lo cierra. Se escucha en el documento porque
+  // un flyout abierto solo por hover no tiene el foco dentro: el teclado nunca llegaría al `<li>`.
+  useEffect(() => {
+    if (flyoutAbierto === null) return undefined;
+    const id = flyoutAbierto;
+    function alTeclado(evento: KeyboardEvent) {
+      if (evento.key !== 'Escape') return;
+      cancelarCierreFlyout();
+      fijarDescartado(id);
+      setFlyoutAbierto(null);
+    }
+    function alPuntero(evento: PointerEvent) {
+      const objetivo = evento.target instanceof Element ? evento.target : null;
+      const dentro = objetivo?.closest('li.shell-has-week-menu')?.querySelector(`[data-destination-id="${id}"]`);
+      if (dentro) return;
+      cancelarCierreFlyout();
+      setFlyoutAbierto(null);
+    }
+    document.addEventListener('keydown', alTeclado);
+    document.addEventListener('pointerdown', alPuntero);
+    return () => {
+      document.removeEventListener('keydown', alTeclado);
+      document.removeEventListener('pointerdown', alPuntero);
+    };
+  }, [flyoutAbierto, cancelarCierreFlyout, fijarDescartado]);
+
+  useEffect(() => {
+    if (!descartarFlyout) return;
+    cancelarCierreFlyout();
+    fijarDescartado(descartarFlyout.id);
+    setFlyoutAbierto(null);
+  }, [descartarFlyout, cancelarCierreFlyout, fijarDescartado]);
 
   const estado = barraAutonoma
     ? (flotante || colapsadoPropio ? 'collapsed' : 'expanded')
@@ -436,13 +495,15 @@ export function BarraLateral({
                   <li
                     key={item.id}
                     className={[tieneFlyout ? 'shell-has-week-menu' : '', flyoutAbierto === item.id ? 'shell-week-open' : ''].filter(Boolean).join(' ') || undefined}
+                    data-flyout-descartado={tieneFlyout && flyoutDescartado === item.id ? 'true' : undefined}
                     onMouseEnter={tieneFlyout ? () => abrirFlyout(item.id) : undefined}
                     onMouseLeave={tieneFlyout ? () => programarCierreFlyout(item.id) : undefined}
-                    onKeyDown={tieneFlyout ? (evento) => {
-                      if (evento.key === 'Escape' && flyoutAbierto === item.id) {
-                        cancelarCierreFlyout();
-                        setFlyoutAbierto(null);
-                      }
+                    onFocus={tieneFlyout ? () => abrirFlyoutPorFoco(item.id) : undefined}
+                    onBlur={tieneFlyout ? (evento) => {
+                      // El foco que se mueve DENTRO del ítem (al flyout) no lo cierra; el que sale, sí.
+                      if (evento.relatedTarget instanceof Node && evento.currentTarget.contains(evento.relatedTarget)) return;
+                      if (descartadoRef.current === item.id) fijarDescartado(null);
+                      programarCierreFlyout(item.id);
                     } : undefined}
                   >
                     {item.href !== null ? (

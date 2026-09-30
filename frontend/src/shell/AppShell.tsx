@@ -34,6 +34,11 @@ type PropiedadesAppShell = {
    * el cajón simplemente nunca ve invalidarse por sesión, que es el comportamiento correcto ahí.
    */
   generacionSesion?: number;
+  /**
+   * Navegación completa a otra página (Intermedia y Semanal siguen siendo PHP). Inyectable porque
+   * jsdom no permite sustituir `window.location`; por defecto, `window.location.assign`.
+   */
+  irA?: (destino: string) => void;
 };
 
 /**
@@ -72,14 +77,17 @@ function CerrarCajonLpsAlNavegar() {
  * el `<nav>` en sí lo sigue renderizando `NavegacionLateral` — un solo landmark de navegación en
  * todo el árbol.
  */
-export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 }: PropiedadesAppShell) {
+export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0, irA = (destino) => window.location.assign(destino) }: PropiedadesAppShell) {
   const [flotante, setFlotante] = useState(() =>
     esBarraLateralFlotante(typeof window === 'undefined' ? Infinity : window.innerWidth),
   );
   const [abierto, setAbierto] = useState(false);
   const [colapsado, setColapsado] = useState(() => leerEstadoRiel() === 'collapsed');
   const [dialogoSemana, setDialogoSemana] = useState<DialogoSemana | null>(null);
-  const { seleccionar, seleccionando, error: errorSemana } = useContextoSemana(sesion.csrfToken, recargar);
+  const { seleccionar, seleccionando, error: errorSemana, limpiarError } = useContextoSemana(sesion.csrfToken, recargar);
+  // Orden al riel de ocultar el flyout de «Semanas del Proyecto» al devolverle el foco (ver abajo).
+  const [descartarFlyout, setDescartarFlyout] = useState<{ id: string; n: number } | null>(null);
+  const habiaDialogoSemana = useRef(false);
   const disparadorRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const contenidoRef = useRef<HTMLElement>(null);
@@ -193,16 +201,32 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
     ? {
         semana: sesion.week,
         ocupado: seleccionando,
-        error: errorSemana,
         alElegir: (numero, destino) => {
           void seleccionar(numero).then((cambio) => {
-            if (cambio && destino !== null && destino !== window.location.pathname) window.location.assign(destino);
+            if (cambio && destino !== null && destino !== window.location.pathname) irA(destino);
           });
         },
         alCrear: () => setDialogoSemana({ vista: 'crear' }),
         alEliminar: (numero) => setDialogoSemana({ vista: 'eliminar', semana: numero }),
       }
     : undefined;
+
+  // Al cerrar la confirmación de crear/eliminar semana el navegador intenta devolver el foco al
+  // botón que la abrió («+ Nueva semana» o la papelera), pero vive en un flyout que ya se ocultó y
+  // el foco cae en `body` (hallazgo 4 de la revisión). Se le devuelve al ítem «Semanas del Proyecto»
+  // y se le ordena al riel no reabrir el flyout por `:focus-within`.
+  useEffect(() => {
+    if (dialogoSemana !== null) {
+      habiaDialogoSemana.current = true;
+      return;
+    }
+    if (!habiaDialogoSemana.current) return;
+    habiaDialogoSemana.current = false;
+    const disparador = navRef.current?.querySelector<HTMLElement>('[data-destination-id="semanas-proyecto"]');
+    if (!disparador) return;
+    setDescartarFlyout((previo) => ({ id: 'semanas-proyecto', n: (previo?.n ?? 0) + 1 }));
+    disparador.focus();
+  }, [dialogoSemana]);
 
   return (
     <>
@@ -239,6 +263,7 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
         ref={navRef}
         sesion={sesion}
         menuSemanas={menuSemanas}
+        descartarFlyout={descartarFlyout}
         estado={colapsado ? 'collapsed' : 'expanded'}
         alAlternarEstado={() => setColapsado((valor) => {
           const siguiente = !valor;
@@ -283,6 +308,15 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
               recargar={recargar}
               semana={sesion.week}
             />
+            {/* El error de un cambio de semana se anuncia aquí y no dentro del flyout: ese panel está
+                oculto por CSS casi siempre, así que un lector de pantalla no lo anunciaría y el
+                mensaje viejo seguiría pegado al reabrirlo. */}
+            {errorSemana && (
+              <p className="aia-alert aia-alert--error" role="alert">
+                {errorSemana}{' '}
+                <button className="aia-btn aia-btn--secondary" onClick={limpiarError} type="button">Cerrar aviso</button>
+              </p>
+            )}
             <LimiteErrorRuta>
               <Outlet />
             </LimiteErrorRuta>

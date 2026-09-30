@@ -43,7 +43,10 @@ function fechaSugerida(semana: SemanaActiva): string {
  * envoltorio `.aia-dialog` trae el ancho y la hoja inferior en móvil del design system.
  */
 export function DialogosSemana({ semana, csrfToken, recargar, dialogo, alCerrar }: PropiedadesDialogosSemana) {
-  const [fechaInicio, setFechaInicio] = useState(() => (semana ? fechaSugerida(semana) : ''));
+  // `null` = el usuario no ha tocado el campo: se muestra la sugerida, que se recalcula sola. Un
+  // estado que copiara la sugerida en un efecto pisaría lo tecleado cada vez que `sesion.week`
+  // cambiara de identidad (hallazgo 6 de la revisión).
+  const [fechaEditada, setFechaEditada] = useState<string | null>(null);
   const dialogoRef = useRef<HTMLDialogElement>(null);
   const { crear, creando, eliminarUltima, eliminando, error } = useContextoSemana(csrfToken, recargar);
   const visible = dialogo !== null && semana !== null;
@@ -54,15 +57,13 @@ export function DialogosSemana({ semana, csrfToken, recargar, dialogo, alCerrar 
     elemento.showModal();
   }, [visible]);
 
-  // Cada apertura de «Crear» arranca con la fecha sugerida, no con la del intento anterior.
-  const vistaActual = dialogo?.vista;
-  useEffect(() => {
-    if (vistaActual === 'crear' && semana) setFechaInicio(fechaSugerida(semana));
-  }, [vistaActual, semana]);
+  // Cada apertura de «Crear» arranca con la sugerida, no con lo tecleado en el intento anterior.
+  if (dialogo === null && fechaEditada !== null) setFechaEditada(null);
 
   if (dialogo === null || semana === null) return null;
 
   const semanaActiva = semana;
+  const fechaInicio = fechaEditada ?? fechaSugerida(semanaActiva);
   const siguienteSemana = Math.max(...semanaActiva.options.map((opcion) => opcion.number), semanaActiva.current) + 1;
 
   async function confirmarCrear() {
@@ -92,7 +93,7 @@ export function DialogosSemana({ semana, csrfToken, recargar, dialogo, alCerrar 
             <h3 id="shellWeekCreateTitle">Crear Semana {siguienteSemana}</h3>
             <p className="shell-week-dialog__copy" id="shellWeekCreateDesc">La nueva semana se convierte en la semana activa del proyecto.</p>
             <label className="shell-week-dialog__label" htmlFor="shellWeekCreateDate">Fecha de inicio</label>
-            <input className="shell-week-dialog__date" id="shellWeekCreateDate" onChange={(evento) => setFechaInicio(evento.target.value)} type="date" value={fechaInicio} />
+            <input className="shell-week-dialog__date" id="shellWeekCreateDate" onChange={(evento) => setFechaEditada(evento.target.value)} type="date" value={fechaInicio} />
             {error && <p className="aia-alert aia-alert--error" role="alert">{error}</p>}
             <div className="shell-week-dialog__actions">
               <button className="aia-btn" disabled={creando || fechaInicio === ''} onClick={() => void confirmarCrear()} type="button">{creando ? 'Creando…' : 'Crear semana'}</button>

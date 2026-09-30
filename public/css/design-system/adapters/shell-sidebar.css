@@ -767,6 +767,18 @@
     transition-delay: 0s;
   }
 
+  /* Descarte explícito (Escape, o foco devuelto tras cerrar un diálogo): el ítem sigue con el cursor
+     o el foco encima, así que `:hover` y `:focus-within` lo mostrarían. El atributo lo pone
+     BarraLateral y esta regla pesa más (clase duplicada) que las tres que lo abren. Se levanta al
+     volver a entrar con el cursor, al hacer clic o al sacar el foco del ítem. */
+  body.aia-shell--sidebar li.shell-has-week-menu.shell-has-week-menu[data-flyout-descartado="true"] .shell-week-flyout {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    translate: -4px -50%;
+    transition-delay: 0s;
+  }
+
   body.aia-shell--sidebar .shell-week-flyout__head {
     position: sticky;
     top: 0;

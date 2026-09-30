@@ -77,7 +77,9 @@ export function useContextoSemana(csrfToken: string, recargar: () => Promise<voi
     }
   }
 
-  return { seleccionando, creando, eliminando, error, idDialogoCrear, seleccionar, crear, eliminarUltima };
+  const limpiarError = () => setError(null);
+
+  return { seleccionando, creando, eliminando, error, idDialogoCrear, seleccionar, crear, eliminarUltima, limpiarError };
 }
 
 function mensajeDeCreacion(causa: unknown): string {

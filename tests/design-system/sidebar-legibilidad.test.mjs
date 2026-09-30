@@ -227,3 +227,18 @@ test('el modal de semanas se centra en escritorio con margin: auto sobre .aia-di
   assert.ok(regla, 'falta, dentro de `@media (min-width: 75rem)`, la regla que centra el <dialog> de semanas');
   assert.equal(declara(regla.cuerpo, 'margin'), 'auto');
 });
+
+test('un flyout de semana descartado se oculta aunque el cursor o el foco sigan sobre el ítem', () => {
+  const todas = reglas(ADAPTADOR);
+  const oculta = todas.find((r) => /\[data-flyout-descartado="true"\] \.shell-week-flyout$/.test(r.selector.trim()));
+  assert.ok(oculta, 'falta la regla que oculta .shell-week-flyout con [data-flyout-descartado="true"]');
+  assert.equal(declara(oculta.cuerpo, 'visibility'), 'hidden');
+  assert.equal(declara(oculta.cuerpo, 'opacity'), '0');
+  assert.equal(declara(oculta.cuerpo, 'pointer-events'), 'none');
+  // Debe ganar a las reglas que lo abren por :hover, .shell-week-open y :focus-within (misma capa):
+  // o bien va después, o bien pesa más. Se exige mayor especificidad de clases duplicando la del li.
+  const abre = todas.find((r) => /li\.shell-has-week-menu:hover \.shell-week-flyout/.test(r.selector));
+  assert.ok(abre, 'no se encontró la regla que abre el flyout por hover');
+  const clases = (sel) => (sel.match(/[.[:][a-zA-Z-]/g) ?? []).length;
+  assert.ok(clases(oculta.selector) > clases(abre.selector.split(',')[0]), 'la regla de descarte debe pesar más que la que abre por hover/foco');
+});

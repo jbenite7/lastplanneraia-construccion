@@ -726,7 +726,7 @@ test('el flyout se abre al pasar el cursor y se cierra 350 ms después de salir 
   }
 });
 
-test('el botón «Semanas del Proyecto» abre el flyout (teclado/táctil) en vez de disparar la acción, y Escape lo cierra', async () => {
+test('el botón «Semanas del Proyecto» abre el flyout (teclado/táctil) en vez de disparar la acción', async () => {
   const alEjecutarAccion = vi.fn();
   render(
     <BarraLateral
@@ -747,8 +747,126 @@ test('el botón «Semanas del Proyecto» abre el flyout (teclado/táctil) en vez
   // Un segundo clic NO lo cierra: el cursor ya lo había abierto al pasar por encima.
   await userEvent.click(boton);
   expect(li).toHaveClass('shell-week-open');
-  await userEvent.keyboard('{Escape}');
-  expect(li).not.toHaveClass('shell-week-open');
-  expect(boton).toHaveAttribute('aria-expanded', 'false');
   expect(alEjecutarAccion).not.toHaveBeenCalled();
+});
+
+// Hallazgos 1 y 2 de la revisión independiente (2026-09-29). En un navegador real
+// `li.shell-has-week-menu:focus-within` y `:hover` mantienen el panel visible aunque falte la clase
+// `shell-week-open`, así que cerrar de verdad exige un atributo que el CSS use para OCULTARLO:
+// `data-flyout-descartado`. jsdom no aplica CSS; por eso se prueba el atributo (y el CSS en el guard).
+function montarConSemanas() {
+  const alEjecutarAccion = vi.fn();
+  render(
+    <>
+      <button type="button">Fuera del riel</button>
+      <BarraLateral
+        activeId="programa-general"
+        accountName="Ana"
+        groups={GRUPOS_SEMANAS}
+        showChangeProject={false}
+        menuSemanas={{ semana: SEMANA, alElegir: vi.fn(), alCrear: vi.fn(), alEliminar: vi.fn() }}
+        alEjecutarAccion={alEjecutarAccion}
+      />
+    </>,
+  );
+  const boton = screen.getByRole('button', { name: 'Semanas del Proyecto' });
+  return { boton, li: boton.closest('li') as HTMLElement, fuera: screen.getByRole('button', { name: 'Fuera del riel' }) };
+}
+
+test('Escape con el foco dentro del ítem DESCARTA el flyout (no basta quitar la clase)', async () => {
+  const { boton, li } = montarConSemanas();
+  await userEvent.click(boton);
+  expect(li).toHaveClass('shell-week-open');
+
+  await userEvent.keyboard('{Escape}');
+
+  expect(li).not.toHaveClass('shell-week-open');
+  expect(li).toHaveAttribute('data-flyout-descartado', 'true');
+  expect(boton).toHaveAttribute('aria-expanded', 'false');
+});
+
+test('Escape también descarta un flyout abierto solo por hover, con el foco fuera del riel', () => {
+  const { li, fuera } = montarConSemanas();
+  fuera.focus();
+  fireEvent.mouseEnter(li);
+  expect(li).toHaveClass('shell-week-open');
+
+  fireEvent.keyDown(document.body, { key: 'Escape' });
+
+  expect(li).not.toHaveClass('shell-week-open');
+  expect(li).toHaveAttribute('data-flyout-descartado', 'true');
+});
+
+test('volver a pasar el cursor tras descartar lo reabre', () => {
+  const { li } = montarConSemanas();
+  fireEvent.mouseEnter(li);
+  fireEvent.keyDown(document.body, { key: 'Escape' });
+  expect(li).toHaveAttribute('data-flyout-descartado', 'true');
+
+  fireEvent.mouseLeave(li);
+  fireEvent.mouseEnter(li);
+
+  expect(li).not.toHaveAttribute('data-flyout-descartado');
+  expect(li).toHaveClass('shell-week-open');
+});
+
+test('abierto por clic/Enter, se cierra cuando el foco sale del ítem (teclado)', () => {
+  vi.useFakeTimers();
+  try {
+    const { boton, li, fuera } = montarConSemanas();
+    fireEvent.click(boton);
+    expect(li).toHaveClass('shell-week-open');
+
+    fireEvent.focusOut(li, { relatedTarget: fuera });
+    act(() => vi.advanceTimersByTime(400));
+
+    expect(li).not.toHaveClass('shell-week-open');
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test('el foco que se mueve DENTRO del ítem (a un elemento del flyout) no lo cierra', () => {
+  vi.useFakeTimers();
+  try {
+    const { boton, li } = montarConSemanas();
+    fireEvent.click(boton);
+    const semana1 = within(li).getByRole('menuitem', { name: /Semana 1/ });
+
+    fireEvent.focusOut(boton, { relatedTarget: semana1 });
+    act(() => vi.advanceTimersByTime(400));
+
+    expect(li).toHaveClass('shell-week-open');
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test('un toque fuera del ítem cierra el flyout; uno dentro no', () => {
+  const { boton, li, fuera } = montarConSemanas();
+  fireEvent.click(boton);
+
+  fireEvent.pointerDown(within(li).getByRole('menuitem', { name: /Semana 1/ }));
+  expect(li).toHaveClass('shell-week-open');
+
+  fireEvent.pointerDown(fuera);
+  expect(li).not.toHaveClass('shell-week-open');
+});
+
+test('descartarFlyout desde fuera oculta el flyout aunque el foco vuelva al ítem', () => {
+  const props = {
+    activeId: 'programa-general',
+    accountName: 'Ana',
+    groups: GRUPOS_SEMANAS,
+    showChangeProject: false,
+    menuSemanas: { semana: SEMANA, alElegir: vi.fn(), alCrear: vi.fn(), alEliminar: vi.fn() },
+    alEjecutarAccion: vi.fn(),
+  };
+  const { rerender } = render(<BarraLateral {...props} />);
+  const li = screen.getByRole('button', { name: 'Semanas del Proyecto' }).closest('li') as HTMLElement;
+  expect(li).not.toHaveAttribute('data-flyout-descartado');
+
+  rerender(<BarraLateral {...props} descartarFlyout={{ id: 'semanas-proyecto', n: 1 }} />);
+
+  expect(li).toHaveAttribute('data-flyout-descartado', 'true');
 });
