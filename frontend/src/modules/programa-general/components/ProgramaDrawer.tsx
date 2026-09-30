@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ActividadUI, parsearTextoActividad, formatearFechaObra } from '../domain/modelo';
 import { calcularDesviacionFisica } from '../domain/validacion';
 import { obtenerConfigEstado } from '../domain/presentacionEstados';
+import { CodigoActividad } from './CodigoActividad';
 import { recursosConDato, type ConfigRestriccionesPg } from '../domain/recursos';
 
 export interface CatalogoProfesional {
@@ -311,7 +312,7 @@ export const ProgramaDrawer: React.FC<ProgramaDrawerProps> = ({
                 <span className="drawer-act-subtitle">{parsedAct.subtitulo}</span>
               )}
             </div>
-            <span className="drawer-act-code cell-code">{actividad.codigo_actividad || '-'}</span>
+            <CodigoActividad actividad={actividad} className="drawer-act-code" />
           </div>
 
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '2px' }}>

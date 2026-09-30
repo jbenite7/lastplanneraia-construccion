@@ -86,6 +86,19 @@ describe('ProgramaTable', () => {
     container.querySelectorAll<HTMLTableCellElement>('thead th').forEach((th) => expect(th.style.width).toBe(''));
   });
 
+  it('sin código guardado, la columna CÓD. muestra la numeración WBS del cronograma como calculada', () => {
+    const sinCodigo: ActividadUI = {
+      ...(mockActividades.find((a) => !a.esCapitulo) as ActividadUI),
+      unique_id: 555,
+      Consecutivo_en_Programa: '555',
+      codigo_actividad: '',
+      Id: '1.2.5.1',
+    };
+    render(<ProgramaTable actividades={[sinCodigo]} actividadSeleccionadaId={null} onSelectActividad={vi.fn()} />);
+
+    expect(screen.getByText('1.2.5.1')).toHaveClass('cell-code', 'cell-code--calculado');
+  });
+
   it('declara trece columnas en colgroup en modo completo', () => {
     const { container } = render(
       <ProgramaTable actividades={[]} actividadSeleccionadaId={null} onSelectActividad={vi.fn()} modo13Cols />,

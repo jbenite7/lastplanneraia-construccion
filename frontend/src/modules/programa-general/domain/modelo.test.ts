@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizarActividades, parsearTextoActividad, formatearFechaObra, formatearCantidadPresupuesto } from './modelo';
+import { normalizarActividades, parsearTextoActividad, formatearFechaObra, formatearCantidadPresupuesto, resolverCodigoActividad } from './modelo';
 import { FilaActividadPg } from '../../../lib/api/esquemas/programa-general';
 
 describe('Dominio S05: modelo y normalizacion de actividades', () => {
@@ -188,3 +188,26 @@ describe('formatearCantidadPresupuesto', () => {
   });
 });
 
+
+describe('resolverCodigoActividad (columna CÓD.)', () => {
+  it('prefiere el código guardado de la actividad', () => {
+    expect(resolverCodigoActividad({ codigo_actividad: 'EST-01', Id: '1.2.5.1' })).toEqual({ texto: 'EST-01', calculado: false });
+  });
+
+  it('si no hay código guardado, usa la numeración WBS del cronograma y la marca como calculada', () => {
+    for (const vacio of [undefined, null, '', '   ']) {
+      expect(resolverCodigoActividad({ codigo_actividad: vacio, Id: '1.2.5.1' })).toEqual({ texto: '1.2.5.1', calculado: true });
+    }
+  });
+
+  it('descarta un Id que no es una numeración WBS', () => {
+    for (const id of [undefined, '', 'abc', '1..2', '1.2.', '.1', '1.a']) {
+      expect(resolverCodigoActividad({ codigo_actividad: '', Id: id })).toEqual({ texto: '', calculado: false });
+    }
+  });
+
+  it('recorta espacios del código guardado y del Id', () => {
+    expect(resolverCodigoActividad({ codigo_actividad: '  EST-01 ', Id: '1' }).texto).toBe('EST-01');
+    expect(resolverCodigoActividad({ codigo_actividad: null, Id: ' 1.3 ' }).texto).toBe('1.3');
+  });
+});

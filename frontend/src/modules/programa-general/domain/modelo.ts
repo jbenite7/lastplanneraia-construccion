@@ -93,6 +93,31 @@ export function normalizarActividades(
   });
 }
 
+export interface CodigoActividadMostrado {
+  texto: string;
+  /** `true` cuando no es un código guardado sino la numeración WBS del cronograma. */
+  calculado: boolean;
+}
+
+/** Numeración WBS: enteros separados por puntos («1», «1.2», «1.2.5.1»). */
+const PATRON_WBS = /^\d+(\.\d+)*$/;
+
+/**
+ * Código a mostrar en la columna CÓD.: el que la actividad tiene guardado; si no hay, la numeración
+ * WBS que trae el cronograma en `Id` (medido el 2026-09-29 en Da Porto: las 324 filas la traen,
+ * única, ordenada y sin huérfanos); y si tampoco, vacío. Nunca se persiste: el guardado del cajón
+ * sigue enviando solo `codigo_actividad`.
+ */
+export function resolverCodigoActividad(
+  fila: Pick<FilaActividadPg, 'codigo_actividad' | 'Id'>,
+): CodigoActividadMostrado {
+  const guardado = (fila.codigo_actividad ?? '').trim();
+  if (guardado !== '') return { texto: guardado, calculado: false };
+  const wbs = (fila.Id ?? '').trim();
+  if (PATRON_WBS.test(wbs)) return { texto: wbs, calculado: true };
+  return { texto: '', calculado: false };
+}
+
 export interface TextoActividadParseado {
   titulo: string;
   subtitulo: string | null;

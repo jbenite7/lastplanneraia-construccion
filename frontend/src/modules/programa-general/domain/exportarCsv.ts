@@ -1,4 +1,4 @@
-import { ActividadUI } from './modelo';
+import { ActividadUI, resolverCodigoActividad } from './modelo';
 
 export const CABECERAS_CSV_13_COLS = [
   'ID',
@@ -60,7 +60,7 @@ export function generarContenidoCsv13Cols(actividades: ActividadUI[]): string {
 
     const fila = [
       act.unique_id,
-      act.codigo_actividad || act.Consecutivo_en_Programa || '',
+      resolverCodigoActividad(act).texto || act.Consecutivo_en_Programa || '',
       act.Actividad,
       act.esRutaCritica ? 'Sí' : 'No',
       act.Fecha_Inicio || '',

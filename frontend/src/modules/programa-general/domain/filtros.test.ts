@@ -224,4 +224,18 @@ describe('Dominio S05: filtros y senales', () => {
     expect(contarTareasVisibles(visibles)).toBeLessThanOrEqual(conteos.total);
     expect(contarTareasVisibles(visibles)).toBe(conteos.atrasadas);
   });
+
+  it('la búsqueda encuentra por la numeración WBS cuando la actividad no tiene código guardado', () => {
+    const sinCodigo: ActividadUI = {
+      ...(actividadesMock.find((a) => !a.esCapitulo) as ActividadUI),
+      unique_id: 900,
+      Actividad: 'Actividad sin código propio',
+      codigo_actividad: '',
+      Id: '9.8.7',
+    };
+
+    const encontradas = filtrarActividades([sinCodigo], '9.8.7', 'Todos');
+
+    expect(encontradas.map((a) => a.unique_id)).toEqual([900]);
+  });
 });

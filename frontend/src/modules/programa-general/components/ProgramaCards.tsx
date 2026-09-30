@@ -1,6 +1,7 @@
 import React from 'react';
-import { ActividadUI, parsearTextoActividad } from '../domain/modelo';
+import { ActividadUI, parsearTextoActividad, resolverCodigoActividad } from '../domain/modelo';
 import { obtenerConfigEstado } from '../domain/presentacionEstados';
+import { CodigoActividad } from './CodigoActividad';
 
 export interface ProgramaCardsProps {
   actividades: ActividadUI[];
@@ -55,12 +56,12 @@ export const ProgramaCards: React.FC<ProgramaCardsProps> = ({
             tabIndex={0}
             role="button"
             aria-selected={isSelected}
-            aria-label={`${act.codigo_actividad || ''} ${parsed.titulo}`.trim()}
+            aria-label={`${resolverCodigoActividad(act).texto} ${parsed.titulo}`.trim()}
             onKeyDown={handleKeyDown}
           >
             <div className="card-topline">
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <code className="cell-code">{act.codigo_actividad || '-'}</code>
+                <CodigoActividad actividad={act} />
                 {act.esRutaCritica && (
                   <span className="badge-rc badge-rc-pill" title="Ruta Crítica">
                     RC

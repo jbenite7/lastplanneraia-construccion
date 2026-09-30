@@ -90,6 +90,18 @@ describe('ProgramaCards', () => {
     expect(screen.getByRole('button', { name: /LOCALIZACIÓN Y REPLANTEO/ }).getAttribute('aria-label')).not.toMatch(/</);
   });
 
+  it('sin código guardado, la tarjeta muestra la numeración WBS como calculada', () => {
+    const sinCodigo: ActividadUI = {
+      ...(mockActividades.find((a) => !a.esCapitulo) as ActividadUI),
+      unique_id: 556,
+      codigo_actividad: '',
+      Id: '3.4',
+    };
+    render(<ProgramaCards actividades={[sinCodigo]} actividadSeleccionadaId={null} onSelectActividad={vi.fn()} />);
+
+    expect(screen.getByText('3.4')).toHaveClass('cell-code', 'cell-code--calculado');
+  });
+
   it('dispara onSelectActividad al hacer clic en una tarjeta', () => {
     const onSelect = vi.fn();
     render(

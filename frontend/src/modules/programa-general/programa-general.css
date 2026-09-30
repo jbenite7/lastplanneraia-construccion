@@ -841,6 +841,15 @@
     display: inline-block;
   }
 
+  /* Código calculado (numeración WBS del cronograma), no asignado por nadie: atenuado y punteado
+     para que no se lea como un código guardado. */
+  .cell-code--calculado {
+    color: var(--ds-active-text-secondary);
+    font-weight: 500;
+    background: transparent;
+    border-style: dashed;
+  }
+
   .activity-cell-name,
   .cell-activity {
     display: flex;

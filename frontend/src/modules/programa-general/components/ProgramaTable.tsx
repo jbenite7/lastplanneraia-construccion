@@ -6,6 +6,7 @@ import {
   formatearCantidadPresupuesto,
 } from '../domain/modelo';
 import { formatearInicioRelativo } from '../domain/inicioRelativo';
+import { CodigoActividad } from './CodigoActividad';
 import { obtenerConfigEstado } from '../domain/presentacionEstados';
 
 export interface ProgramaTableProps {
@@ -147,7 +148,7 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
                       {act.unique_id}
                     </td>
                     <td>
-                      <code className="cell-code">{act.codigo_actividad || '-'}</code>
+                      <CodigoActividad actividad={act} />
                     </td>
                     <td>
                       <div className="activity-cell-name cell-activity">
@@ -221,7 +222,7 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
                       {act.unique_id}
                     </td>
                     <td>
-                      <code className="cell-code">{act.codigo_actividad || '-'}</code>
+                      <CodigoActividad actividad={act} />
                     </td>
                     <td>
                       <div className="activity-cell-name cell-activity">
