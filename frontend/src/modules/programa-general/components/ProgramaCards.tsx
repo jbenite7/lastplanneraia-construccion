@@ -26,6 +26,8 @@ export const ProgramaCards: React.FC<ProgramaCardsProps> = ({
         if (act.esCapitulo) {
           return (
             <div key={`cap-card-${act.unique_id}`} className="card-chapter-header">
+              <span className="card-chapter-id">{act.unique_id}</span>{' '}
+              <CodigoActividad actividad={act} />{' '}
               <i className="far fa-folder" aria-hidden="true"></i>{' '}
               {parsearTextoActividad(act.Actividad).titulo}
             </div>

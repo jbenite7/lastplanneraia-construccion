@@ -90,6 +90,20 @@ describe('ProgramaCards', () => {
     expect(screen.getByRole('button', { name: /LOCALIZACIÓN Y REPLANTEO/ }).getAttribute('aria-label')).not.toMatch(/</);
   });
 
+  it('la cabecera de capítulo muestra su ID y su código (WBS calculado si no hay guardado)', () => {
+    const capitulo: ActividadUI = {
+      ...(mockActividades.find((a) => a.esCapitulo) as ActividadUI),
+      unique_id: 4242,
+      codigo_actividad: '',
+      Id: '1.2',
+    };
+    render(<ProgramaCards actividades={[capitulo]} actividadSeleccionadaId={null} onSelectActividad={vi.fn()} />);
+
+    const codigo = screen.getByText('1.2');
+    expect(codigo).toHaveClass('cell-code', 'cell-code--calculado');
+    expect(codigo.closest('.card-chapter-header')).toHaveTextContent('4242');
+  });
+
   it('sin código guardado, la tarjeta muestra la numeración WBS como calculada', () => {
     const sinCodigo: ActividadUI = {
       ...(mockActividades.find((a) => !a.esCapitulo) as ActividadUI),

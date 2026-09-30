@@ -696,6 +696,19 @@
     cursor: pointer;
   }
 
+  /* ID y CÓD. del capítulo: relleno lateral corto para que no ensanchen sus columnas más que las
+     celdas de actividad. */
+  .chapter-heading-row td:nth-child(-n + 2),
+  .row-chapter td:nth-child(-n + 2) {
+    padding-inline: 6px;
+  }
+
+  .card-chapter-id {
+    font-family: var(--ds-font-mono);
+    font-weight: 600;
+    color: var(--ds-active-text-secondary);
+  }
+
   .chapter-cell-content {
     display: flex;
     align-items: center;
@@ -839,6 +852,8 @@
     border-radius: 4px;
     border: 1px solid var(--ds-active-border);
     display: inline-block;
+    /* Un código como «1.2.5.1» nunca se parte: si la columna es angosta, la columna crece. */
+    white-space: nowrap;
   }
 
   /* Código calculado (numeración WBS del cronograma), no asignado por nadie: atenuado y punteado

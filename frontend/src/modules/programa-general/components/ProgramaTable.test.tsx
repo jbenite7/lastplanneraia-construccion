@@ -206,7 +206,7 @@ describe('ProgramaTable', () => {
     expect(row102.className).toContain('active-editing');
   });
 
-  it('renderiza fila de capítulo ocupando colSpan={8} por defecto', () => {
+  it('renderiza fila de capítulo con ID, CÓD. y el nombre abarcando el resto de las 8 columnas', () => {
     render(
       <ProgramaTable
         actividades={mockActividades}
@@ -219,7 +219,22 @@ describe('ProgramaTable', () => {
     expect(screen.getByText('Capítulo')).toBeInTheDocument();
 
     const chapterCell = screen.getByText('1. Cimentación').closest('td');
-    expect(chapterCell).toHaveAttribute('colSpan', '8');
+    expect(chapterCell).toHaveAttribute('colSpan', '6');
+    const celdas = Array.from(chapterCell?.closest('tr')?.children ?? []);
+    expect(celdas).toHaveLength(3);
+    expect(celdas[0]).toHaveTextContent('1'); // ID = unique_id del capítulo
+  });
+
+  it('la fila de capítulo muestra su código: el guardado, o si falta su numeración WBS como calculada', () => {
+    const capitulo = mockActividades[0];
+    const conWbs: ActividadUI = { ...capitulo, unique_id: 700, codigo_actividad: '', Id: '1.2' };
+    const conCodigo: ActividadUI = { ...capitulo, unique_id: 701, Actividad: '2. Estructura', codigo_actividad: 'CAP-02', Id: '2' };
+    render(<ProgramaTable actividades={[conWbs, conCodigo]} actividadSeleccionadaId={null} onSelectActividad={vi.fn()} />);
+
+    expect(screen.getByText('1.2')).toHaveClass('cell-code', 'cell-code--calculado');
+    expect(screen.getByText('CAP-02')).not.toHaveClass('cell-code--calculado');
+    expect(screen.getByText('700')).toBeInTheDocument();
+    expect(screen.getByText('701')).toBeInTheDocument();
   });
 
   it('renderiza las 13 columnas completas cuando modo13Cols es true', () => {
@@ -249,9 +264,9 @@ describe('ProgramaTable', () => {
     expect(screen.getByRole('columnheader', { name: 'LIB. RESTRICCIONES' })).toHaveTextContent('RESTR. LIB.');
     expect(screen.getByText('ESTADO')).toBeInTheDocument();
 
-    // Capítulo con colSpan={13}
+    // Capítulo: ID + CÓD. + el nombre abarcando las 11 columnas restantes
     const chapterCell = screen.getByText('1. Cimentación').closest('td');
-    expect(chapterCell).toHaveAttribute('colSpan', '13');
+    expect(chapterCell).toHaveAttribute('colSpan', '11');
 
     // Celdas independientes en 13 cols
     expect(screen.getByText('En 33 sem')).toBeInTheDocument();
