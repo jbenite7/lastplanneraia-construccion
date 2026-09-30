@@ -100,7 +100,8 @@ Y el reset legado pisa adaptadores: el spacing de adaptadores va en `@layer lega
 ## Gates
 
 Antes de dar nada por verde, lee [[branch-preexisting-red-gates]]: hay rojos preexistentes que no
-son tuyos. Otras trampas del carril: [[audit-ve-color-en-comentarios]] (un gate que lee texto
+son tuyos. Antes de medir en el navegador, [[recarga-normal-sirve-la-hoja-css-vieja]]: las hojas
+con `?v=` no se vuelven a descargar al editarlas. Otras trampas del carril: [[audit-ve-color-en-comentarios]] (un gate que lee texto
 crudo mide el texto: un hex citado en un comentario rompe el presupuesto, y un test que
 cuenta menciones de un script no cuenta cargas),
 [[manifiesto-ds-exige-golden]] (un manifiesto no se crea en seco),

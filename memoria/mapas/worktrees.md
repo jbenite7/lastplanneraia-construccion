@@ -44,6 +44,8 @@ distintos: se mide en un árbol y se concluye sobre otro.
 - [[servir-worktree-stack-efimero]] y [[aislar-stack-docker-por-worktree]] — cómo darle identidad
   propia cuando de verdad hace falta.
 - [[variable-vacia-tapa-el-env]] — una variable inyectada vacía cuenta como definida.
+- [[env-enlazado-se-rompe-dentro-del-contenedor]] — el `.env` simbólico no se resuelve dentro del
+  contenedor; un enlace duro sí (actualizado el 2026-09-29).
 
 ## El área, en una tabla
 
