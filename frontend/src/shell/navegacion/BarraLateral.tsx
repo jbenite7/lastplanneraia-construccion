@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { ConmutadorTema } from '../ConmutadorTema';
 import { esBarraLateralFlotante } from '../modoBarraLateral';
+import { FlyoutSemanas, MODULOS_CON_SEMANAS, type MenuSemanasRiel } from './FlyoutSemanas';
 import { IconoBarraLateral } from './IconoBarraLateral';
 import { MarcaLockup } from './MarcaLockup';
 
@@ -79,6 +80,11 @@ type PropiedadesBarraLateral = {
   id?: string;
   ref?: Ref<HTMLElement>;
   alEjecutarAccion?: (item: ItemBarraLateral) => void;
+  /**
+   * Menús flotantes de semana (PG/PI/PS y «Semanas del Proyecto»). Sin esto el rail no pinta
+   * ningún flyout — p. ej. la pantalla standalone `/proyectos`, que no tiene semana activa.
+   */
+  menuSemanas?: MenuSemanasRiel;
   estado?: 'expanded' | 'collapsed';
   alAlternarEstado?: () => void;
   abiertoEnMovil?: boolean;
@@ -129,6 +135,7 @@ export function BarraLateral({
   id = 'app-shell-nav',
   ref,
   alEjecutarAccion,
+  menuSemanas,
   estado: estadoExterno,
   alAlternarEstado: alAlternarEstadoExterno,
   abiertoEnMovil: abiertoEnMovilExterno,
@@ -146,12 +153,33 @@ export function BarraLateral({
   const disparadorRef = useRef<HTMLButtonElement>(null);
   const asideRef = useRef<HTMLElement | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
-  // ¿El menú entra en el nav sin scroll? El nav conserva `overflow-y: auto` para los menús largos
+  // ¿El menú entra en el nav sin scroll? (ver `medir` abajo.) El nav conserva `overflow-y: auto` para los menús largos
   // (25-30 ítems, ver shell-runtime-react-layout.spec.mjs), pero ese overflow recorta las
   // etiquetas flotantes del riel colapsado, que salen por la derecha. El CSS suelta el recorte
   // solo si esto es `true` (data-menu-cabe, revisión visual 2026-09-29). Por defecto `true`: jsdom y
   // el primer render no miden nada y un menú que cabe es el caso normal en escritorio.
   const [menuCabe, setMenuCabe] = useState(true);
+  // Flyout de semana abierto (por hover o clic) y su temporizador de cierre. El periodo de gracia
+  // de 350 ms es el del legado: un trayecto diagonal hacia el panel cruza brevemente fuera del
+  // `<li>` y el cierre por `:hover` puro sería instantáneo.
+  const [flyoutAbierto, setFlyoutAbierto] = useState<string | null>(null);
+  const cierreFlyoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cancelarCierreFlyout = useCallback(() => {
+    if (cierreFlyoutRef.current !== null) clearTimeout(cierreFlyoutRef.current);
+    cierreFlyoutRef.current = null;
+  }, []);
+  const abrirFlyout = useCallback((itemId: string) => {
+    cancelarCierreFlyout();
+    setFlyoutAbierto(itemId);
+  }, [cancelarCierreFlyout]);
+  const programarCierreFlyout = useCallback((itemId: string) => {
+    cancelarCierreFlyout();
+    cierreFlyoutRef.current = setTimeout(() => {
+      setFlyoutAbierto((actual) => (actual === itemId ? null : actual));
+    }, 350);
+  }, [cancelarCierreFlyout]);
+  useEffect(() => cancelarCierreFlyout, [cancelarCierreFlyout]);
 
   const estado = barraAutonoma
     ? (flotante || colapsadoPropio ? 'collapsed' : 'expanded')
@@ -164,7 +192,19 @@ export function BarraLateral({
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return undefined;
-    const medir = () => setMenuCabe(nav.scrollHeight <= nav.clientHeight + 1);
+    // Se mide el borde inferior del último grupo EN FLUJO, no `nav.scrollHeight`: los flyouts de
+    // semana ocultos conservan layout y sobresalen por abajo, e inflaban el scrollHeight hasta
+    // marcar «no cabe» y devolver el `overflow: auto` que los recorta. `scrollTop` compensa un
+    // nav ya desplazado (si no, un menú largo scrolleado al final parecería que cabe).
+    const medir = () => {
+      const ultimo = nav.lastElementChild;
+      if (!ultimo) {
+        setMenuCabe(true);
+        return;
+      }
+      const limite = nav.getBoundingClientRect().top + nav.clientHeight;
+      setMenuCabe(ultimo.getBoundingClientRect().bottom + nav.scrollTop <= limite + 1);
+    };
     medir();
     window.addEventListener('resize', medir);
     // El alto del nav cambia con el de la ventana y con el pie; `resize` cubre lo primero y el
@@ -388,8 +428,23 @@ export function BarraLateral({
             <section className="aia-sidebar__group" aria-labelledby={`grupo-${grupo.id}`} key={grupo.id}>
               <h3 id={`grupo-${grupo.id}`}>{grupo.label}</h3>
               <ul>
-                {grupo.items.map((item) => (
-                  <li key={item.id}>
+                {grupo.items.map((item) => {
+                  const gestionSemanas = menuSemanas !== undefined && item.id === 'semanas-proyecto';
+                  const moduloSemanas = menuSemanas !== undefined && MODULOS_CON_SEMANAS.includes(item.id);
+                  const tieneFlyout = gestionSemanas || moduloSemanas;
+                  return (
+                  <li
+                    key={item.id}
+                    className={[tieneFlyout ? 'shell-has-week-menu' : '', flyoutAbierto === item.id ? 'shell-week-open' : ''].filter(Boolean).join(' ') || undefined}
+                    onMouseEnter={tieneFlyout ? () => abrirFlyout(item.id) : undefined}
+                    onMouseLeave={tieneFlyout ? () => programarCierreFlyout(item.id) : undefined}
+                    onKeyDown={tieneFlyout ? (evento) => {
+                      if (evento.key === 'Escape' && flyoutAbierto === item.id) {
+                        cancelarCierreFlyout();
+                        setFlyoutAbierto(null);
+                      }
+                    } : undefined}
+                  >
                     {item.href !== null ? (
                       <a
                         aria-current={item.id === activeId ? 'page' : undefined}
@@ -408,16 +463,36 @@ export function BarraLateral({
                         className="aia-sidebar__link"
                         data-destination-id={item.id}
                         data-sidebar-icon={item.icon ?? 'overview'}
-                        disabled={!item.action || !alEjecutarAccion}
-                        onClick={() => alEjecutarAccion?.(item)}
+                        aria-expanded={gestionSemanas ? flyoutAbierto === item.id : undefined}
+                        disabled={!item.action || (!alEjecutarAccion && !gestionSemanas)}
+                        onClick={() => {
+                          if (gestionSemanas) {
+                            // Abre y no alterna: el cursor ya lo abrió al pasar por encima y un clic
+                            // que lo cerrara castigaría a quien señala el ítem. Cierra el hover al
+                            // salir o Escape.
+                            abrirFlyout(item.id);
+                            return;
+                          }
+                          alEjecutarAccion?.(item);
+                        }}
                         type="button"
                       >
                         <IconoBarraLateral nombre={item.icon} />
                         <span className="aia-sidebar__label">{item.label}</span>
                       </button>
                     )}
+                    {tieneFlyout && menuSemanas && (
+                      <FlyoutSemanas
+                        destino={gestionSemanas ? null : item.href}
+                        gestion={gestionSemanas}
+                        marcarVigente={gestionSemanas || item.id === activeId}
+                        menu={menuSemanas}
+                        titulo={item.label}
+                      />
+                    )}
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </section>
           ))}

@@ -469,8 +469,18 @@
       min-height: 2.25rem;
     }
 
-    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"]#app-shell-nav[data-sidebar-state="collapsed"][data-menu-cabe="true"] .aia-sidebar__nav {
+    /* Sin filtrar por estado: los flyouts de semana (`.shell-week-flyout`) salen por la derecha
+       también con el riel DESPLEGADO, y el `overflow-y: auto` del nav los recortaría igual. */
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"]#app-shell-nav[data-menu-cabe="true"] .aia-sidebar__nav {
       overflow: visible;
+    }
+
+    /* Un <dialog> modal debería centrarse solo (`margin: auto` del navegador), pero en este árbol
+       de capas acaba en `margin: 0` y queda pegado arriba a la izquierda (medido el 2026-09-29 en
+       Programa General: rect 0,0). Solo escritorio: bajo 1200px `dialog.css` lo ancla abajo como
+       hoja inferior con su propio margen. */
+    .aia-dialog .shell-week-dialog {
+      margin: auto;
     }
   }
 
@@ -921,8 +931,13 @@
 
   .shell-week-dialog__actions {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--ds-space-3);
     justify-content: flex-end;
+  }
+
+  .shell-week-dialog__actions .aia-btn {
+    white-space: nowrap;
   }
 
   .shell-week-dialog__danger {

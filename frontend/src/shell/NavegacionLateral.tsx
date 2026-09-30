@@ -1,6 +1,7 @@
 import type { ReactNode, Ref } from 'react';
 import type { Sesion } from '../lib/api/esquemas/sesion';
 import { BarraLateral, type ItemBarraLateral } from './navegacion/BarraLateral';
+import type { MenuSemanasRiel } from './navegacion/FlyoutSemanas';
 
 /**
  * Encuentra la entrada del manifiesto cuyo `href` coincide EXACTAMENTE con la URL actual (spec
@@ -27,6 +28,8 @@ type PropiedadesNavegacionLateral = {
    *  `ref` como prop normal, sin `forwardRef`. */
   ref?: Ref<HTMLElement>;
   alEjecutarAccion?: (item: ItemBarraLateral) => void;
+  /** Flyouts de semana del riel; ver `BarraLateral`. */
+  menuSemanas?: MenuSemanasRiel;
   /** Estado del rail persistente en escritorio (Tarea 4). `AppShell` es quien lo gobierna. */
   estado?: 'expanded' | 'collapsed';
   alAlternarEstado?: () => void;
@@ -51,6 +54,7 @@ export function NavegacionLateral({
   id = 'app-shell-nav',
   ref,
   alEjecutarAccion,
+  menuSemanas,
   estado,
   alAlternarEstado,
   abiertoEnMovil,
@@ -71,6 +75,7 @@ export function NavegacionLateral({
       id={id}
       ref={ref}
       alEjecutarAccion={alEjecutarAccion}
+      menuSemanas={menuSemanas}
       estado={estado}
       alAlternarEstado={alAlternarEstado}
       abiertoEnMovil={abiertoEnMovil}

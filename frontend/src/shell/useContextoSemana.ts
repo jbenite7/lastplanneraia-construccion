@@ -20,7 +20,7 @@ export function useContextoSemana(csrfToken: string, recargar: () => Promise<voi
   const [error, setError] = useState<string | null>(null);
   const idDialogoCrear = useId();
 
-  async function seleccionar(semana: number) {
+  async function seleccionar(semana: number): Promise<boolean> {
     setError(null);
     setSeleccionando(true);
     try {
@@ -30,8 +30,10 @@ export function useContextoSemana(csrfToken: string, recargar: () => Promise<voi
         body: JSON.stringify({ semana }),
       });
       await recargar();
+      return true;
     } catch {
       setError('No pudimos cambiar de semana. Intenta de nuevo.');
+      return false;
     } finally {
       setSeleccionando(false);
     }

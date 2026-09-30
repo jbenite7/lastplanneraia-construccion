@@ -205,15 +205,25 @@ test('en escritorio los botones del riel miden 36 px (piso WCAG 2.5.8 = 24 px) y
   assert.ok(base.length > 0 && base.every((d) => d.valor === 'var(--ds-target-min)'), 'el token base de --ds-sidebar-item-min-height sigue siendo var(--ds-target-min) = 44px fuera del shell de escritorio');
 });
 
-test('el riel colapsado suelta el recorte de sus etiquetas solo cuando el menú cabe', () => {
+test('el riel suelta el recorte de etiquetas y flyouts, colapsado o desplegado, solo cuando el menú cabe', () => {
   const escritorio = reglasDeTexto(bloquesMedia(ADAPTADOR, '(min-width: 75rem)'));
-  const suelta = escritorio.find((r) => /\[data-sidebar-state="collapsed"\]\[data-menu-cabe="true"\] \.aia-sidebar__nav$/.test(r.selector));
-  assert.ok(suelta, 'falta la regla que suelta el overflow del nav colapsado cuando data-menu-cabe="true"');
+  const suelta = escritorio.find((r) => /\[data-menu-cabe="true"\] \.aia-sidebar__nav$/.test(r.selector));
+  assert.ok(suelta, 'falta la regla que suelta el overflow del nav cuando data-menu-cabe="true"');
   assert.equal(declara(suelta.cuerpo, 'overflow'), 'visible');
+  // Los flyouts de semana salen por la derecha también con el riel desplegado: la regla no puede
+  // limitarse al estado colapsado (pedido de Felipe, 2026-09-29).
+  assert.ok(!/data-sidebar-state/.test(suelta.selector), 'el overflow visible debe valer colapsado y desplegado, sin filtrar por data-sidebar-state');
   // No debe soltarse siempre: un menú largo (25-30 ítems) conserva su scroll propio
   // (tests/browser/shell-runtime-react-layout.spec.mjs).
   const incondicional = reglas(ADAPTADOR).filter((r) => /#app-shell-nav \.aia-sidebar__nav$/.test(r.selector) && declara(r.cuerpo, 'overflow') === 'visible');
   assert.equal(incondicional.length, 0, 'el overflow visible no puede ser incondicional en #app-shell-nav');
   const base = reglas(ADAPTADOR).find((r) => /#app-shell-nav \.aia-sidebar__nav$/.test(r.selector) && /overflow-y\s*:\s*auto/.test(r.cuerpo));
   assert.ok(base, 'el scroll propio del nav de React (overflow-y: auto) debe seguir siendo la base');
+});
+
+test('el modal de semanas se centra en escritorio con margin: auto sobre .aia-dialog .shell-week-dialog', () => {
+  const escritorio = reglasDeTexto(bloquesMedia(ADAPTADOR, '(min-width: 75rem)'));
+  const regla = escritorio.find((r) => r.selector.trim() === '.aia-dialog .shell-week-dialog');
+  assert.ok(regla, 'falta, dentro de `@media (min-width: 75rem)`, la regla que centra el <dialog> de semanas');
+  assert.equal(declara(regla.cuerpo, 'margin'), 'auto');
 });

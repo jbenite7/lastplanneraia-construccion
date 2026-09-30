@@ -536,10 +536,22 @@ test('en modo no autónomo (T01/AppShell), no arma su propio disparador ni velo'
 // Revisión visual de Programa General (Felipe, 2026-09-29): las etiquetas flotantes del riel
 // colapsado no se veían porque el nav recorta lo que sale por la derecha (overflow-y: auto, que
 // existe para los menús largos). `data-menu-cabe` le dice al CSS cuándo puede soltar ese recorte:
-// solo si el menú entra sin scroll. jsdom no calcula layout, así que las alturas se simulan.
-function simularAlturasNav(scrollHeight: number, clientHeight: number) {
-  vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(scrollHeight);
-  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(clientHeight);
+// solo si el menú entra sin scroll. jsdom no calcula layout, así que las medidas se simulan.
+//
+// Se mide el borde inferior del ÚLTIMO GRUPO en flujo contra el alto útil del nav, NO el
+// `scrollHeight`: los flyouts de semana están ocultos (`visibility: hidden`) pero conservan layout,
+// y los del final del menú sobresalen por abajo del nav, inflando el `scrollHeight` (medido el
+// 2026-09-29: el riel desplegado marcaba «no cabe» con 11 ítems). Eso volvía a poner el
+// `overflow-y: auto` que recorta esos mismos flyouts.
+function simularAlturasNav(bordeInferiorUltimoGrupo: number, altoUtilNav: number, scrollHeightInflado = 0) {
+  const rect = (top: number, bottom: number) => ({ top, bottom, left: 0, right: 0, width: 0, height: bottom - top, x: 0, y: top, toJSON: () => ({}) }) as DOMRect;
+  vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+    if (this.matches('nav.aia-sidebar__nav')) return rect(0, altoUtilNav);
+    if (this.matches('section.aia-sidebar__group:last-child')) return rect(0, bordeInferiorUltimoGrupo);
+    return rect(0, 0);
+  });
+  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(altoUtilNav);
+  vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(scrollHeightInflado || bordeInferiorUltimoGrupo);
 }
 
 function montarBarra() {
@@ -561,6 +573,12 @@ test('data-menu-cabe es "true" cuando el contenido del nav entra sin scroll', ()
   expect(container.querySelector('aside')).toHaveAttribute('data-menu-cabe', 'true');
 });
 
+test('data-menu-cabe sigue "true" aunque los flyouts ocultos inflen el scrollHeight del nav', () => {
+  simularAlturasNav(400, 500, 900);
+  const { container } = montarBarra();
+  expect(container.querySelector('aside')).toHaveAttribute('data-menu-cabe', 'true');
+});
+
 test('data-menu-cabe es "false" cuando el menú es más alto que el nav (queda el scroll propio)', () => {
   simularAlturasNav(900, 500);
   const { container } = montarBarra();
@@ -578,4 +596,159 @@ test('data-menu-cabe se recalcula al cambiar el tamaño de la ventana', () => {
     window.dispatchEvent(new Event('resize'));
   });
   expect(aside).toHaveAttribute('data-menu-cabe', 'false');
+});
+
+// --- Flyouts de semana (paridad con views/partials/shell_sidebar.php) ---------------------------
+// Programa General / Intermedia / Semanal despliegan al pasar el cursor la lista de semanas, y
+// «Semanas del Proyecto» despliega la misma lista más «+ Nueva semana» y la papelera de la última.
+
+const GRUPOS_SEMANAS = [
+  {
+    id: 'informacion',
+    label: 'Información',
+    items: [{ id: 'semanas-proyecto', label: 'Semanas del Proyecto', href: null, icon: 'calendar', action: true }],
+  },
+  {
+    id: 'obra',
+    label: 'Obra',
+    items: [
+      { id: 'programa-general', label: 'Programa General', href: '/programa-general', icon: 'program' },
+      { id: 'programacion-semanal', label: 'Programación Semanal', href: '/programacion-semanal', icon: 'calendar' },
+      { id: 'actualizar-cronograma', label: 'Actualizar Cronograma', href: '/programa-general-actualizar', icon: 'sync' },
+    ],
+  },
+];
+
+const SEMANA = {
+  current: 2,
+  options: [
+    { number: 1, startsOn: '2026-08-18', endsOn: '2026-08-24' },
+    { number: 2, startsOn: '2026-08-25', endsOn: '2026-08-31' },
+  ],
+  actions: { select: true, create: true, deleteLast: true },
+};
+
+function pintarConSemanas(sobreescribir: Partial<Parameters<typeof BarraLateral>[0]['menuSemanas'] & object> = {}) {
+  const menu = { semana: SEMANA, alElegir: vi.fn(), alCrear: vi.fn(), alEliminar: vi.fn(), ...sobreescribir };
+  render(
+    <BarraLateral
+      activeId="programa-general"
+      accountName="Ana"
+      groups={GRUPOS_SEMANAS}
+      showChangeProject={false}
+      menuSemanas={menu}
+      alEjecutarAccion={vi.fn()}
+    />,
+  );
+  return menu;
+}
+
+test('sin menuSemanas no se pinta ningún flyout', () => {
+  render(<BarraLateral activeId="programa-general" accountName="Ana" groups={GRUPOS_SEMANAS} showChangeProject={false} alEjecutarAccion={vi.fn()} />);
+
+  expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+});
+
+test('cada módulo con semanas lleva su flyout con título, semanas y fechas; la vigente solo en el módulo activo', () => {
+  pintarConSemanas();
+
+  const flyoutPG = screen.getByRole('menu', { name: 'Semanas de Programa General' });
+  expect(within(flyoutPG).getByText('Programa General')).toHaveClass('shell-week-flyout__head');
+  expect(within(flyoutPG).getByRole('menuitem', { name: /Semana 2/ })).toHaveAttribute('aria-current', 'true');
+  expect(within(flyoutPG).getByRole('menuitem', { name: /Semana 1/ })).not.toHaveAttribute('aria-current');
+  expect(within(flyoutPG).getByText('Del 2026-08-18 al 2026-08-24')).toBeInTheDocument();
+
+  const flyoutPS = screen.getByRole('menu', { name: 'Semanas de Programación Semanal' });
+  expect(within(flyoutPS).getByRole('menuitem', { name: /Semana 2/ })).not.toHaveAttribute('aria-current');
+  // «Actualizar Cronograma» no es un módulo con semanas.
+  expect(screen.queryByRole('menu', { name: /Actualizar Cronograma/ })).not.toBeInTheDocument();
+});
+
+test('elegir una semana en el flyout de un módulo la cambia y lleva a ese módulo', async () => {
+  const menu = pintarConSemanas();
+
+  const flyoutPS = screen.getByRole('menu', { name: 'Semanas de Programación Semanal' });
+  await userEvent.click(within(flyoutPS).getByRole('menuitem', { name: /Semana 1/ }));
+
+  expect(menu.alElegir).toHaveBeenCalledWith(1, '/programacion-semanal');
+});
+
+test('«Semanas del Proyecto» ofrece + Nueva semana, la lista y la papelera solo en la última semana', async () => {
+  const menu = pintarConSemanas();
+
+  const flyout = screen.getByRole('menu', { name: 'Semanas del Proyecto' });
+  await userEvent.click(within(flyout).getByRole('menuitem', { name: '+ Nueva semana' }));
+  expect(menu.alCrear).toHaveBeenCalledTimes(1);
+
+  await userEvent.click(within(flyout).getByRole('menuitem', { name: /Semana 1/ }));
+  expect(menu.alElegir).toHaveBeenCalledWith(1, null);
+
+  expect(within(flyout).getAllByRole('button', { name: /Eliminar Semana/ })).toHaveLength(1);
+  await userEvent.click(within(flyout).getByRole('button', { name: 'Eliminar Semana 2' }));
+  expect(menu.alEliminar).toHaveBeenCalledWith(2);
+});
+
+test('sin permisos del servidor no hay + Nueva semana ni papelera, y elegir semana queda deshabilitado', () => {
+  pintarConSemanas({ semana: { ...SEMANA, actions: { select: false, create: false, deleteLast: false } } });
+
+  const flyout = screen.getByRole('menu', { name: 'Semanas del Proyecto' });
+  expect(within(flyout).queryByRole('menuitem', { name: '+ Nueva semana' })).not.toBeInTheDocument();
+  expect(within(flyout).queryByRole('button', { name: /Eliminar Semana/ })).not.toBeInTheDocument();
+  expect(within(flyout).getByRole('menuitem', { name: /Semana 1/ })).toBeDisabled();
+});
+
+test('el flyout se abre al pasar el cursor y se cierra 350 ms después de salir (periodo de gracia)', () => {
+  vi.useFakeTimers();
+  try {
+    pintarConSemanas();
+    const li = screen.getByRole('link', { name: 'Programa General' }).closest('li') as HTMLElement;
+    expect(li).toHaveClass('shell-has-week-menu');
+    expect(li).not.toHaveClass('shell-week-open');
+
+    fireEvent.mouseEnter(li);
+    expect(li).toHaveClass('shell-week-open');
+
+    fireEvent.mouseLeave(li);
+    act(() => vi.advanceTimersByTime(300));
+    expect(li).toHaveClass('shell-week-open');
+    act(() => vi.advanceTimersByTime(60));
+    expect(li).not.toHaveClass('shell-week-open');
+
+    // Volver a entrar dentro de la gracia cancela el cierre.
+    fireEvent.mouseEnter(li);
+    fireEvent.mouseLeave(li);
+    act(() => vi.advanceTimersByTime(200));
+    fireEvent.mouseEnter(li);
+    act(() => vi.advanceTimersByTime(500));
+    expect(li).toHaveClass('shell-week-open');
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test('el botón «Semanas del Proyecto» abre el flyout (teclado/táctil) en vez de disparar la acción, y Escape lo cierra', async () => {
+  const alEjecutarAccion = vi.fn();
+  render(
+    <BarraLateral
+      activeId="programa-general"
+      accountName="Ana"
+      groups={GRUPOS_SEMANAS}
+      showChangeProject={false}
+      menuSemanas={{ semana: SEMANA, alElegir: vi.fn(), alCrear: vi.fn(), alEliminar: vi.fn() }}
+      alEjecutarAccion={alEjecutarAccion}
+    />,
+  );
+  const boton = screen.getByRole('button', { name: 'Semanas del Proyecto' });
+  const li = boton.closest('li') as HTMLElement;
+
+  await userEvent.click(boton);
+  expect(li).toHaveClass('shell-week-open');
+  expect(boton).toHaveAttribute('aria-expanded', 'true');
+  // Un segundo clic NO lo cierra: el cursor ya lo había abierto al pasar por encima.
+  await userEvent.click(boton);
+  expect(li).toHaveClass('shell-week-open');
+  await userEvent.keyboard('{Escape}');
+  expect(li).not.toHaveClass('shell-week-open');
+  expect(boton).toHaveAttribute('aria-expanded', 'false');
+  expect(alEjecutarAccion).not.toHaveBeenCalled();
 });

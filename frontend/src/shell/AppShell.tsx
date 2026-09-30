@@ -5,12 +5,14 @@ import { CajonContextualLps } from '../shared/lps/componentes/CajonContextualLps
 import { LpsDrawerProvider } from '../shared/lps/estado/LpsDrawerProvider';
 import { useLpsDrawer } from '../shared/lps/estado/useLpsDrawer';
 import { BarraContexto } from './BarraContexto';
-import { DialogosSemana } from './DialogosSemana';
+import { DialogosSemana, type DialogoSemana } from './DialogosSemana';
 import { LimiteErrorRuta } from './errores/LimiteErrorRuta';
 import { MenuCuenta } from './MenuCuenta';
 import { esBarraLateralFlotante, guardarEstadoRiel, leerEstadoRiel } from './modoBarraLateral';
 import { MarcaLockup } from './navegacion/MarcaLockup';
+import type { MenuSemanasRiel } from './navegacion/FlyoutSemanas';
 import { NavegacionLateral } from './NavegacionLateral';
+import { useContextoSemana } from './useContextoSemana';
 import { useTituloDocumento } from './useTituloDocumento';
 
 const SELECTOR_ENFOCABLES =
@@ -76,7 +78,8 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
   );
   const [abierto, setAbierto] = useState(false);
   const [colapsado, setColapsado] = useState(() => leerEstadoRiel() === 'collapsed');
-  const [dialogosSemanaAbiertos, setDialogosSemanaAbiertos] = useState(false);
+  const [dialogoSemana, setDialogoSemana] = useState<DialogoSemana | null>(null);
+  const { seleccionar, seleccionando, error: errorSemana } = useContextoSemana(sesion.csrfToken, recargar);
   const disparadorRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const contenidoRef = useRef<HTMLElement>(null);
@@ -183,6 +186,24 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
 
   const abrirDrawer = useCallback(() => setAbierto(true), []);
 
+  // Flyouts de semana del riel (PG/PI/PS y «Semanas del Proyecto»). Elegir una semana del flyout de
+  // otro módulo la cambia y lleva a ese módulo con navegación completa, igual que el legado
+  // (Intermedia y Semanal siguen siendo páginas PHP).
+  const menuSemanas: MenuSemanasRiel | undefined = sesion.week
+    ? {
+        semana: sesion.week,
+        ocupado: seleccionando,
+        error: errorSemana,
+        alElegir: (numero, destino) => {
+          void seleccionar(numero).then((cambio) => {
+            if (cambio && destino !== null && destino !== window.location.pathname) window.location.assign(destino);
+          });
+        },
+        alCrear: () => setDialogoSemana({ vista: 'crear' }),
+        alEliminar: (numero) => setDialogoSemana({ vista: 'eliminar', semana: numero }),
+      }
+    : undefined;
+
   return (
     <>
       <a className="aia-skip-link" href={`#${ID_PANEL_CONTENIDO}`} onClick={alSaltarAlContenido}>
@@ -217,9 +238,7 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
       <NavegacionLateral
         ref={navRef}
         sesion={sesion}
-        alEjecutarAccion={(item) => {
-          if (item.id === 'semanas-proyecto') setDialogosSemanaAbiertos(true);
-        }}
+        menuSemanas={menuSemanas}
         estado={colapsado ? 'collapsed' : 'expanded'}
         alAlternarEstado={() => setColapsado((valor) => {
           const siguiente = !valor;
@@ -272,8 +291,8 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0 
         </div>
       </LpsDrawerProvider>
       <DialogosSemana
-        abierto={dialogosSemanaAbiertos}
-        alCerrar={() => setDialogosSemanaAbiertos(false)}
+        dialogo={dialogoSemana}
+        alCerrar={() => setDialogoSemana(null)}
         csrfToken={sesion.csrfToken}
         recargar={recargar}
         semana={sesion.week}
