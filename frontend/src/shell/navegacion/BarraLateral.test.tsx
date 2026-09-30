@@ -870,3 +870,76 @@ test('descartarFlyout desde fuera oculta el flyout aunque el foco vuelva al íte
 
   expect(li).toHaveAttribute('data-flyout-descartado', 'true');
 });
+
+// --- Re-revisión (2026-09-29): Escape con el flyout visible solo por :focus-within ------------------
+test('Escape descarta el flyout aunque el estado ya se cerró por el cursor y siga visible por el foco', () => {
+  vi.useFakeTimers();
+  try {
+    const { boton, li } = montarConSemanas();
+    fireEvent.click(boton);
+    boton.focus();
+    fireEvent.mouseLeave(li);
+    act(() => vi.advanceTimersByTime(400));
+    expect(li).not.toHaveClass('shell-week-open');
+    expect(li).not.toHaveAttribute('data-flyout-descartado');
+
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+
+    expect(li).toHaveAttribute('data-flyout-descartado', 'true');
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test('Escape con el foco en un elemento del flyout devuelve el foco al ítem, no lo pierde', () => {
+  const { boton, li } = montarConSemanas();
+  fireEvent.mouseEnter(li);
+  const semana1 = within(li).getByRole('menuitem', { name: /Semana 1/ });
+  semana1.focus();
+  expect(semana1).toHaveFocus();
+
+  fireEvent.keyDown(document.body, { key: 'Escape' });
+
+  expect(boton).toHaveFocus();
+  expect(li).toHaveAttribute('data-flyout-descartado', 'true');
+});
+
+test('el descarte por Escape se levanta al salir el cursor si el foco no está en el ítem', () => {
+  const { li, fuera } = montarConSemanas();
+  fuera.focus();
+  fireEvent.mouseEnter(li);
+  fireEvent.keyDown(document.body, { key: 'Escape' });
+  expect(li).toHaveAttribute('data-flyout-descartado', 'true');
+
+  fireEvent.mouseLeave(li);
+
+  expect(li).not.toHaveAttribute('data-flyout-descartado');
+});
+
+test('el descarte por Escape se conserva al salir el cursor si el foco sigue dentro del ítem', () => {
+  const { boton, li } = montarConSemanas();
+  fireEvent.click(boton);
+  boton.focus();
+  fireEvent.keyDown(document.body, { key: 'Escape' });
+
+  fireEvent.mouseLeave(li);
+
+  expect(li).toHaveAttribute('data-flyout-descartado', 'true');
+});
+
+test('el Escape que cierra un flyout no llega a otros oyentes de Escape (p. ej. el drawer móvil)', () => {
+  const { li } = montarConSemanas();
+  const otro = vi.fn();
+  document.addEventListener('keydown', otro);
+  try {
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(otro).toHaveBeenCalledTimes(1); // sin flyout que cerrar, el Escape sigue su camino
+
+    otro.mockClear();
+    fireEvent.mouseEnter(li);
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(otro).not.toHaveBeenCalled(); // con flyout, lo consume el flyout
+  } finally {
+    document.removeEventListener('keydown', otro);
+  }
+});

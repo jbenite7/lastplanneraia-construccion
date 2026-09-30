@@ -222,11 +222,16 @@ export function AppShell({ sesion, recargar, cerrarSesion, generacionSesion = 0,
     }
     if (!habiaDialogoSemana.current) return;
     habiaDialogoSemana.current = false;
-    const disparador = navRef.current?.querySelector<HTMLElement>('[data-destination-id="semanas-proyecto"]');
-    if (!disparador) return;
     setDescartarFlyout((previo) => ({ id: 'semanas-proyecto', n: (previo?.n ?? 0) + 1 }));
-    disparador.focus();
   }, [dialogoSemana]);
+
+  // El foco va en un efecto APARTE, atado a la orden de descarte: los efectos de los hijos corren
+  // antes que los del padre, así que cuando esto se ejecuta `BarraLateral` ya fijó el descarte y el
+  // `focus()` no pasa un render con el flyout abierto.
+  useEffect(() => {
+    if (!descartarFlyout) return;
+    navRef.current?.querySelector<HTMLElement>(`[data-destination-id="${descartarFlyout.id}"]`)?.focus();
+  }, [descartarFlyout]);
 
   return (
     <>
