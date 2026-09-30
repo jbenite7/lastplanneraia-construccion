@@ -51,11 +51,37 @@ cero. No lo esta: el `.env` que la declara es ilegible desde dentro.
 Un enlace relativo tampoco sirve: el worktree vive en `<raiz>/.claude/worktrees/<nombre>`
 y cualquier `../` para alcanzar el `.env` de la raiz sale del directorio montado.
 
-**Lo que queda, entonces, es una copia** del `.env` dentro del worktree mientras el
-contenedor lo monte. `CLAUDE.md` avisa —con razon, medido el 2026-08-18 con seis copias
-viejas sueltas— que las copias se quedan desactualizadas en silencio. Sigue siendo cierto:
-la copia es el precio de poder verificar en navegador desde un worktree, no una mejora, y
-hay que borrarla al terminar.
+**Lo que quedaba, entonces, era una copia** del `.env` dentro del worktree mientras el
+contenedor lo montara. `CLAUDE.md` avisa —con razon, medido el 2026-08-18 con seis copias
+viejas sueltas— que las copias se quedan desactualizadas en silencio. Era cierto: la copia era
+el precio de poder verificar en navegador desde un worktree, no una mejora. **Ya no es lo
+unico que queda: ver la actualizacion de abajo.**
+
+## Actualizacion 2026-09-29: un enlace duro si funciona
+
+Medido al servir el worktree `fix-visual-pg` (PR #89): tras un `ln -s` que fallo por la razon
+de arriba, Felipe creo un **enlace duro** y la puerta de servicio abrio sesion con normalidad.
+
+```bash
+ln -f "<raiz>/.env" "<worktree>/.env"
+```
+
+Un enlace duro no guarda una ruta: **son dos nombres del mismo archivo**, asi que el contenedor
+lo lee como un archivo comun y no hay nada que resolver en el host. Y, a diferencia de la copia,
+**no envejece**: editar el `.env` de la raiz es editar el del worktree. Se comprueba con el inodo,
+que debe ser el mismo en ambos y con dos enlaces (`stat -f "%i %l" <ruta>`; ese dia, inodo
+`4117896` y `2` enlaces).
+
+- **Al retirar el worktree solo se va el nombre.** Tras `git worktree remove` el `.env` de la
+  raiz quedo con `1` enlace y el mismo inodo: el original no se toca.
+- **Lo crea Felipe, no un agente.** El hook de secretos frena cualquier comando que nombre el
+  `.env`, y con razon; el agente pide el comando y lo corre la persona.
+- **Un limite que no se midio, pero se comprueba en un segundo:** un editor que reemplace el
+  archivo en lugar de reescribirlo le da un inodo nuevo a la raiz y el enlace deja de
+  compartir contenido. Si `stat` da inodos distintos, es una copia con otro nombre.
+- **`CLAUDE.md` sigue diciendo `ln -s`.** Es archivo de reglas de Felipe y esta nota no lo toca:
+  para leer el `.env` desde `docker compose` en el host el simbolico sirve; para el contenedor
+  montado sobre el worktree, no.
 
 Relacionada: [[suite-estatica-miente-en-worktree-secundario]] y
 [[gate-que-mide-dos-arboles-a-la-vez]] (las dos tratan del mismo montaje, desde el lado
