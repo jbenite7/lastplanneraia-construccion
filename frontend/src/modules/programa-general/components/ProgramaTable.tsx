@@ -6,6 +6,7 @@ import {
   formatearCantidadPresupuesto,
 } from '../domain/modelo';
 import { formatearInicioRelativo } from '../domain/inicioRelativo';
+import { CodigoActividad } from './CodigoActividad';
 import { obtenerConfigEstado } from '../domain/presentacionEstados';
 
 export interface ProgramaTableProps {
@@ -89,7 +90,13 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
               const parsedCap = parsearTextoActividad(act.Actividad);
               return (
                 <tr key={`cap-${act.unique_id}`} className="row-chapter chapter-heading-row">
-                  <td colSpan={(modo13Cols ? COLUMNAS_13 : COLUMNAS_8).length}>
+                  {/* ID y CÓD. del capítulo en sus propias columnas (pedido de Felipe, 2026-09-29): el
+                      nombre abarca el resto, así la fila sigue leyéndose como encabezado de grupo. */}
+                  <td style={{ textAlign: 'center', color: 'var(--ds-text-muted)' }}>{act.unique_id}</td>
+                  <td>
+                    <CodigoActividad actividad={act} />
+                  </td>
+                  <td colSpan={(modo13Cols ? COLUMNAS_13 : COLUMNAS_8).length - 2}>
                     <div className="chapter-cell-content">
                       <span className="chapter-icon">
                         <i className="far fa-folder" aria-hidden="true"></i>
@@ -147,7 +154,7 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
                       {act.unique_id}
                     </td>
                     <td>
-                      <code className="cell-code">{act.codigo_actividad || '-'}</code>
+                      <CodigoActividad actividad={act} />
                     </td>
                     <td>
                       <div className="activity-cell-name cell-activity">
@@ -221,7 +228,7 @@ export const ProgramaTable: React.FC<ProgramaTableProps> = ({
                       {act.unique_id}
                     </td>
                     <td>
-                      <code className="cell-code">{act.codigo_actividad || '-'}</code>
+                      <CodigoActividad actividad={act} />
                     </td>
                     <td>
                       <div className="activity-cell-name cell-activity">

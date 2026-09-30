@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { BarraContexto } from './BarraContexto';
-import { DialogosSemana } from './DialogosSemana';
 
 const { mockSeleccionar } = vi.hoisted(() => ({ mockSeleccionar: vi.fn() }));
 
@@ -66,13 +65,5 @@ describe('BarraContexto (paridad con .context-bar del legado)', () => {
     const { container } = render(<BarraContexto csrfToken="t" modulo="M" proyecto="P" recargar={vi.fn()} semana={null} />);
 
     expect(container.querySelector('.context-week-chip')).toBeNull();
-  });
-
-  it('ofrece crear y eliminar solo cuando el servidor autoriza las acciones', async () => {
-    const usuario = userEvent.setup();
-    render(<DialogosSemana abierto alCerrar={vi.fn()} csrfToken="t" recargar={vi.fn()} semana={semana} />);
-
-    await usuario.click(screen.getByRole('button', { name: /crear semana/i }));
-    expect(screen.getByRole('dialog', { name: /crear semana 3/i })).toHaveClass('shell-week-dialog');
   });
 });

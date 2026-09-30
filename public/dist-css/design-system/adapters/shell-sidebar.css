@@ -158,9 +158,6 @@
   body.aia-shell--sidebar .shell-week-flyout [role="menuitem"]:first-of-type {
     margin-block-start: var(--ds-space-2);
   }
-  body.aia-shell--sidebar .shell-week-flyout [role="menuitem"]:last-child {
-    margin-block-end: var(--ds-space-2);
-  }
   body.aia-shell--sidebar .shell-week-flyout__delete {
     padding: var(--ds-space-1);
     margin-inline-end: var(--ds-space-2);
@@ -196,6 +193,13 @@
   }
   body.aia-shell--sidebar .aia-sidebar__link {
     background: transparent;
+  }
+  body.aia-shell--sidebar .aia-sidebar__link[aria-current="page"] {
+    color: var(--ds-active-nav-text);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--aia-green-light) 35%, transparent);
+  }
+  body.aia-shell--sidebar .aia-sidebar__link:hover:not([aria-disabled="true"]) {
+    color: var(--ds-active-nav-text);
   }
   .shell-week-dialog__copy,
   .shell-week-dialog__preview {
@@ -269,6 +273,20 @@
     overflow-y: auto;
     overflow-x: hidden;
   }
+  @media (min-width: 75rem) {
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] {
+      --ds-sidebar-item-min-height: 2.25rem;
+    }
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] :is(.aia-sidebar__toggle, .aia-sidebar__utility) {
+      min-height: 2.25rem;
+    }
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"]#app-shell-nav[data-menu-cabe="true"] .aia-sidebar__nav {
+      overflow: visible;
+    }
+    .aia-dialog .shell-week-dialog {
+      margin: auto;
+    }
+  }
   body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] .aia-sidebar__group ul {
     gap: 2px;
   }
@@ -325,12 +343,12 @@
     height: 1.25rem;
   }
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link .aia-icon {
-    color: var(--ds-active-text-secondary);
+    color: var(--ds-active-nav-text-muted);
     transition: color 150ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:hover .aia-icon,
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:focus-visible .aia-icon {
-    color: var(--ds-active-text-primary);
+    color: var(--ds-active-nav-text);
   }
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link[aria-current="page"] .aia-icon {
     color: inherit;
@@ -447,6 +465,7 @@
     width: max-content;
     min-width: 15rem;
     max-height: min(24rem, calc(100vh - var(--ds-space-8)));
+    padding-block-end: var(--ds-space-2);
     overflow-y: auto;
     border: var(--ds-border-width) solid var(--ds-active-border);
     border-radius: var(--ds-radius-control);
@@ -476,6 +495,13 @@
     pointer-events: auto;
     transition-delay: 0s;
   }
+  body.aia-shell--sidebar li.shell-has-week-menu.shell-has-week-menu[data-flyout-descartado="true"] .shell-week-flyout {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    translate: -4px -50%;
+    transition-delay: 0s;
+  }
   body.aia-shell--sidebar .shell-week-flyout__head {
     position: sticky;
     top: 0;
@@ -503,9 +529,6 @@
     text-align: start;
     white-space: nowrap;
     cursor: pointer;
-  }
-  body.aia-shell--sidebar .shell-week-flyout [role="menuitem"]:last-child {
-    margin-block-end: var(--ds-space-2);
   }
   body.aia-shell--sidebar .shell-week-flyout [role="menuitem"]:hover {
     background: var(--ds-active-surface);
@@ -610,8 +633,12 @@
   }
   .shell-week-dialog__actions {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--ds-space-3);
     justify-content: flex-end;
+  }
+  .shell-week-dialog__actions .aia-btn {
+    white-space: nowrap;
   }
   .shell-week-dialog__danger {
     background: var(--aia-alert-high);

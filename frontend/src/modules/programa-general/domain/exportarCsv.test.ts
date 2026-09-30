@@ -34,4 +34,15 @@ describe('generarContenidoCsv13Cols', () => {
 
     expect(semanasInicio).toEqual(['-9', '0', '3', '']);
   });
+
+  it('exporta el código guardado, o si falta la numeración WBS, o si falta el consecutivo', () => {
+    const conCodigo = { ...crearActividad(1, 0), codigo_actividad: 'EST-01', Id: '1.1', Consecutivo_en_Programa: '11' };
+    const soloWbs = { ...crearActividad(2, 0), codigo_actividad: '', Id: '1.2', Consecutivo_en_Programa: '12' };
+    const soloConsecutivo = { ...crearActividad(3, 0), codigo_actividad: '', Id: '', Consecutivo_en_Programa: '13' };
+
+    const contenido = generarContenidoCsv13Cols([conCodigo, soloWbs, soloConsecutivo]);
+    const codigos = contenido.replace(/^\uFEFF/, '').split('\r\n').slice(1).map((fila) => fila.split(',')[1]);
+
+    expect(codigos).toEqual(['EST-01', '1.2', '13']);
+  });
 });

@@ -1,4 +1,4 @@
-import { ActividadUI } from './modelo';
+import { ActividadUI, resolverCodigoActividad } from './modelo';
 
 export interface ConteosSenales {
   total: number;
@@ -49,7 +49,7 @@ export function filtrarActividades(
     if (termino === '') return true;
 
     const matchTexto = (act.Actividad ?? '').toLowerCase().includes(termino);
-    const matchCodigo = (act.codigo_actividad ?? '').toLowerCase().includes(termino);
+    const matchCodigo = resolverCodigoActividad(act).texto.toLowerCase().includes(termino);
     const matchResponsable = (act.Responsable_AIA ?? '').toLowerCase().includes(termino);
     const matchSubc = (act.Sub_Contratista ?? '').toLowerCase().includes(termino);
 

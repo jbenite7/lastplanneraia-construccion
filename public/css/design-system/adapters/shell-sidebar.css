@@ -208,10 +208,6 @@
     margin-block-start: var(--ds-space-2);
   }
 
-  body.aia-shell--sidebar .shell-week-flyout [role="menuitem"]:last-child {
-    margin-block-end: var(--ds-space-2);
-  }
-
   body.aia-shell--sidebar .shell-week-flyout__delete {
     padding: var(--ds-space-1);
     margin-inline-end: var(--ds-space-2);
@@ -275,6 +271,26 @@
      navegador. Guard: tests/design-system/theme-claro-tokens.test.mjs. */
   body.aia-shell--sidebar .aia-sidebar__link {
     background: transparent;
+  }
+
+  /* El `transparent` de arriba está en la capa `legacy-overrides` (la última de
+     `aia-design-system.css`), así que anula el relleno del ítem ACTIVO y el del HOVER de la base
+     (`components/navigation.css`). Pero el `color` de esos dos estados sigue viniendo de capas
+     inferiores y está pensado para leerse SOBRE ese relleno: `--ds-active-action-text` (casi
+     negro en oscuro) en el activo y `--ds-active-text-primary` (#18181b en claro) en el hover.
+     Resultado medido el 2026-09-29: activo oscuro sobre oscuro (1.21:1) y hover a 2.04:1 sobre el
+     verde. Se aplica en todo el shell lo que `project-selector-react.css` ya decidió para
+     «Tus proyectos» (y aprobó el golden canónico): el activo se marca con anillo, sin relleno, y
+     ambos estados llevan el color del RIEL, que no sigue el tema de la página. En colapsado el
+     anillo ya existe (más abajo); aquí se extiende al expandido.
+     Guard: tests/design-system/sidebar-legibilidad.test.mjs. */
+  body.aia-shell--sidebar .aia-sidebar__link[aria-current="page"] {
+    color: var(--ds-active-nav-text);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--aia-green-light) 35%, transparent);
+  }
+
+  body.aia-shell--sidebar .aia-sidebar__link:hover:not([aria-disabled="true"]) {
+    color: var(--ds-active-nav-text);
   }
 
   .shell-week-dialog__copy,
@@ -423,6 +439,47 @@
     overflow-x: hidden;
   }
 
+  /* Escritorio (≥1180px). Felipe, revisión visual 2026-09-29: los botones del riel deben caber en
+     pantalla sin scroll, y las etiquetas flotantes de cada opción (la píldora de «Expandir menú»)
+     tienen que verse en las demás. Es el diseño original de este bloque —«cero scroll +
+     flyouts»— que el shell React perdió al recuperar el scroll de arriba, y ese overflow recorta
+     las píldoras que salen por la derecha.
+
+     1) Compresión: 36px en vez de 44px, SOLO en escritorio y SOLO en el shell de la app. 36px
+        sigue por encima del piso de WCAG 2.5.8 (24px, AA); bajo 1180px el objetivo vuelve a
+        44px (DESIGN.md: «bajo 1180px el área táctil sube a 44px»). El token canónico
+        `--ds-target-min` (44px) no se toca: el laboratorio del design system lo exige
+        (tests/browser/design-system-lab-sidebar.mjs). Con 11 ítems el menú pasa de ~587px a
+        ~500px de contenido y entra en 746px de alto.
+     2) Flyouts: el overflow se suelta SOLO si `BarraLateral` mide que el menú cabe
+        (`data-menu-cabe="true"`). Un menú largo (25-30 ítems, otro rol) conserva su scroll propio
+        (tests/browser/shell-runtime-react-layout.spec.mjs); ahí las etiquetas siguen recortadas,
+        que es el mal menor frente a pintar el menú encima del pie.
+     Guard: tests/design-system/sidebar-legibilidad.test.mjs. */
+  @media (min-width: 75rem) {
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] {
+      --ds-sidebar-item-min-height: 2.25rem;
+    }
+
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] :is(.aia-sidebar__toggle, .aia-sidebar__utility) {
+      min-height: 2.25rem;
+    }
+
+    /* Sin filtrar por estado: los flyouts de semana (`.shell-week-flyout`) salen por la derecha
+       también con el riel DESPLEGADO, y el `overflow-y: auto` del nav los recortaría igual. */
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"]#app-shell-nav[data-menu-cabe="true"] .aia-sidebar__nav {
+      overflow: visible;
+    }
+
+    /* Un <dialog> modal debería centrarse solo (`margin: auto` del navegador), pero en este árbol
+       de capas acaba en `margin: 0` y queda pegado arriba a la izquierda (medido el 2026-09-29 en
+       Programa General: rect 0,0). Solo escritorio: bajo 1200px `dialog.css` lo ancla abajo como
+       hoja inferior con su propio margen. */
+    .aia-dialog .shell-week-dialog {
+      margin: auto;
+    }
+  }
+
 
   body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] .aia-sidebar__group ul {
     gap: 2px;
@@ -513,13 +570,13 @@
   }
 
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link .aia-icon {
-    color: var(--ds-active-text-secondary);
+    color: var(--ds-active-nav-text-muted);
     transition: color 150ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:hover .aia-icon,
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:focus-visible .aia-icon {
-    color: var(--ds-active-text-primary);
+    color: var(--ds-active-nav-text);
   }
 
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link[aria-current="page"] .aia-icon {
@@ -671,6 +728,9 @@
     width: max-content;
     min-width: 15rem;
     max-height: min(24rem, calc(100vh - var(--ds-space-8)));
+    /* El aire bajo el último renglón va aquí y no en `[role="menuitem"]:last-child`: con la papelera
+       el último hijo es el renglón, no un menuitem, y ese margen nunca se aplicaba. */
+    padding-block-end: var(--ds-space-2);
     overflow-y: auto;
     border: var(--ds-border-width) solid var(--ds-active-border);
     border-radius: var(--ds-radius-control);
@@ -706,6 +766,18 @@
     transition-delay: 0s;
   }
 
+  /* Descarte explícito (Escape, o foco devuelto tras cerrar un diálogo): el ítem sigue con el cursor
+     o el foco encima, así que `:hover` y `:focus-within` lo mostrarían. El atributo lo pone
+     BarraLateral y esta regla pesa más (clase duplicada) que las tres que lo abren. Se levanta al
+     volver a entrar con el cursor, al hacer clic o al sacar el foco del ítem. */
+  body.aia-shell--sidebar li.shell-has-week-menu.shell-has-week-menu[data-flyout-descartado="true"] .shell-week-flyout {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    translate: -4px -50%;
+    transition-delay: 0s;
+  }
+
   body.aia-shell--sidebar .shell-week-flyout__head {
     position: sticky;
     top: 0;
@@ -734,10 +806,6 @@
     text-align: start;
     white-space: nowrap;
     cursor: pointer;
-  }
-
-  body.aia-shell--sidebar .shell-week-flyout [role="menuitem"]:last-child {
-    margin-block-end: var(--ds-space-2);
   }
 
   body.aia-shell--sidebar .shell-week-flyout [role="menuitem"]:hover {
@@ -870,8 +938,13 @@
 
   .shell-week-dialog__actions {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--ds-space-3);
     justify-content: flex-end;
+  }
+
+  .shell-week-dialog__actions .aia-btn {
+    white-space: nowrap;
   }
 
   .shell-week-dialog__danger {

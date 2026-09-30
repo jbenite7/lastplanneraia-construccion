@@ -88,3 +88,20 @@ test('mientras cerrarSesion está en curso, el botón se deshabilita y muestra e
   liberar();
   await waitFor(() => expect(cerrarSesion).toHaveBeenCalledOnce());
 });
+
+// Revisión visual de Programa General (Felipe, 2026-09-29): en el riel colapsado la etiqueta de
+// texto se oculta y el botón «Cuenta» quedaba como un cuadro de 44 px vacío, «ni en claro ni en
+// oscuro». Mismo defecto que ya se corrigió en el botón de colapsar (BarraLateral, ronda 2 T9b):
+// un control del riel necesita un glifo propio, decorativo y con el contrato DOM del ícono canónico.
+test('el disparador de cuenta lleva un ícono decorativo propio (el texto se oculta en el riel colapsado)', () => {
+  render(<MenuCuenta cerrarSesion={cerrarSesionFalso()} nombre="Ana" />);
+
+  const disparador = screen.getByRole('button', { name: /cuenta · ana/i });
+  const icono = disparador.querySelector('span.aia-icon.aia-icon--user[data-aia-component="icon"]');
+
+  expect(icono).not.toBeNull();
+  expect(icono).toHaveAttribute('aria-hidden', 'true');
+  expect(icono?.querySelector('svg.aia-icon__glyph')).not.toBeNull();
+  // El nombre accesible sigue saliendo del aria-label, no del glifo.
+  expect(disparador).toHaveAttribute('aria-label', 'Cuenta · Ana');
+});

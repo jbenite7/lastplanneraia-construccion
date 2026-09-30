@@ -2,6 +2,17 @@
 
 @layer module {
 
+  /* Rampa tipográfica del módulo (Felipe, 2026-09-29: «los textos se ven muy pequeños»). Antes eran
+     76 `font-size` en px sueltos, la mayoría a 11 px y algunos hasta 8,5 px: por debajo del piso
+     duro de 11 px de DESIGN.md y de los 12 px que fijan los tokens de tabla (--ds-table-cell-font-size).
+     Tres pasos con nombre, en rem para que respeten el zoom del navegador; nada baja de 12 px.
+     Guard: tests/design-system/programa-general-legibilidad.test.mjs. */
+  body.pg-page {
+    --pg-type-meta: 0.75rem;     /* 12px: contadores, insignias, metadatos, leyendas */
+    --pg-type-dato: 0.8125rem;   /* 13px: el dato de la celda, chips, etiquetas, controles */
+    --pg-type-cuerpo: 0.875rem;  /* 14px: títulos de tarjeta y de panel, texto de lectura */
+  }
+
   body.pg-page {
     background: var(--ds-active-bg-page);
   }
@@ -68,7 +79,7 @@
   .badge-live-week,
   .badge-semana {
     font-family: var(--ds-font-mono);
-    font-size: 10.5px;
+    font-size: var(--pg-type-meta);
     font-weight: 600;
     padding: 2px 7px;
     border-radius: 4px;
@@ -100,7 +111,7 @@
     color: var(--ds-active-text-secondary);
     font-family: var(--ds-font-body);
     padding: 4px 10px;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     font-weight: 600;
     border-radius: 4px;
     cursor: pointer;
@@ -130,7 +141,7 @@
     font-family: var(--ds-font-display);
     padding: 5px 12px;
     border-radius: 6px;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     font-weight: 700;
     cursor: pointer;
     box-shadow: 0 2px 6px color-mix(in srgb, var(--ds-active-text-primary) 25%, transparent);
@@ -152,7 +163,7 @@
     font-family: var(--ds-font-body);
     padding: 5px 10px;
     border-radius: 6px;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -242,7 +253,7 @@
   }
 
   .signals-title {
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     font-weight: 700;
     text-transform: uppercase;
     color: var(--ds-active-text-secondary);
@@ -271,7 +282,7 @@
     left: 10px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     color: var(--ds-color-text-tertiary);
     pointer-events: none;
   }
@@ -285,7 +296,7 @@
     border: 1px solid var(--ds-active-border-control);
     border-radius: 6px;
     color: var(--ds-active-text-primary);
-    font-size: 11.5px;
+    font-size: var(--pg-type-dato);
     padding: 0 45px 0 28px;
     outline: none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -308,7 +319,7 @@
     color: var(--ds-color-text-tertiary);
     cursor: pointer;
     padding: 2px 6px;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     display: inline-flex;
     align-items: center;
   }
@@ -325,7 +336,7 @@
     top: 50%;
     transform: translateY(-50%);
     font-family: var(--ds-font-mono);
-    font-size: 9.5px;
+    font-size: var(--pg-type-meta);
     color: var(--ds-active-text-secondary);
     background: var(--ds-active-surface-raised);
     padding: 1px 4px;
@@ -336,7 +347,7 @@
 
   .signals-stats,
   .filters-stats {
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     color: var(--ds-color-text-tertiary);
     display: flex;
     align-items: center;
@@ -355,7 +366,7 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     color: var(--ds-color-text-tertiary);
   }
 
@@ -387,7 +398,7 @@
     align-items: center;
     gap: 6px;
     font-family: var(--ds-font-body);
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     font-weight: 600;
     cursor: pointer;
     border: 1px solid transparent;
@@ -425,7 +436,7 @@
   .chip-count,
   .signal-count {
     font-family: var(--ds-font-mono);
-    font-size: 9.5px;
+    font-size: var(--pg-type-meta);
     font-weight: 700;
     padding: 1px 5px;
     border-radius: 9999px;
@@ -543,14 +554,14 @@
     background-color: var(--ds-active-surface-raised);
     border: 1px solid var(--ds-active-border);
     border-radius: 6px;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
   }
 
   .active-filters-label {
     font-weight: 700;
     color: var(--ds-color-text-tertiary);
     text-transform: uppercase;
-    font-size: 10px;
+    font-size: var(--pg-type-meta);
     letter-spacing: 0.5px;
   }
 
@@ -576,7 +587,7 @@
     color: var(--ds-color-text-tertiary);
     display: inline-flex;
     align-items: center;
-    font-size: 10px;
+    font-size: var(--pg-type-meta);
   }
 
   .btn-remove-pill:hover,
@@ -589,7 +600,7 @@
     border: 1px solid var(--ds-active-border);
     border-radius: 4px;
     color: var(--ds-color-text-tertiary);
-    font-size: 10.5px;
+    font-size: var(--pg-type-meta);
     padding: 2px 6px;
     cursor: pointer;
     margin-left: auto;
@@ -633,24 +644,25 @@
     width: calc(100% - 1px);
     table-layout: fixed;
     border-collapse: collapse;
-    font-size: 12px;
+    font-size: var(--pg-type-dato);
     text-align: left;
   }
 
-  .programa-table-pro .pg-col-id { width: 2rem; }
-  .programa-table-pro .pg-col-codigo { width: 2.75rem; }
+  /* Anchos para texto de 13 px (rampa --pg-type-*): CÓD. cabe una numeración WBS de 5 niveles. */
+  .programa-table-pro .pg-col-id { width: 3rem; }
+  .programa-table-pro .pg-col-codigo { width: 6.5rem; }
   .programa-table-pro .pg-col-inicio,
-  .programa-table-pro .pg-col-fin { width: 5rem; }
+  .programa-table-pro .pg-col-fin { width: 5.75rem; }
   .programa-table-pro .pg-col-ppto { width: 6rem; }
   .programa-table-pro .pg-col-avance { width: 8rem; }
-  .programa-table-pro .pg-col-estado { width: 7.25rem; }
-  .programa-table-pro .pg-col-rc { width: 2.25rem; }
-  .programa-table-pro .pg-col-sem { width: 5.25rem; }
-  .programa-table-pro .pg-col-cantidad { width: 3rem; }
-  .programa-table-pro .pg-col-unidad { width: 2.5rem; }
+  .programa-table-pro .pg-col-estado { width: 8rem; }
+  .programa-table-pro .pg-col-rc { width: 2.75rem; }
+  .programa-table-pro .pg-col-sem { width: 5.75rem; }
+  .programa-table-pro .pg-col-cantidad { width: 3.5rem; }
+  .programa-table-pro .pg-col-unidad { width: 3rem; }
   .programa-table-pro .pg-col-real,
-  .programa-table-pro .pg-col-teorico { width: 3.5rem; }
-  .programa-table-pro .pg-col-restricciones { width: 4rem; }
+  .programa-table-pro .pg-col-teorico { width: 4.25rem; }
+  .programa-table-pro .pg-col-restricciones { width: 5.25rem; }
 
   .programa-table-pro thead {
     position: sticky;
@@ -663,7 +675,7 @@
     background-color: var(--ds-active-surface);
     color: var(--ds-active-text-secondary);
     font-family: var(--ds-font-display);
-    font-size: 9px;
+    font-size: var(--pg-type-meta);
     font-weight: 700;
     letter-spacing: 0.6px;
     text-transform: uppercase;
@@ -677,7 +689,7 @@
   }
 
   .col-sort-icon {
-    font-size: 9px;
+    font-size: var(--pg-type-meta);
     color: var(--ds-color-text-tertiary);
     margin-left: 3px;
   }
@@ -690,10 +702,23 @@
     border-bottom: 1px solid var(--ds-active-border-control);
     padding: 6px 12px;
     font-family: var(--ds-font-display);
-    font-size: 11.5px;
+    font-size: var(--pg-type-dato);
     font-weight: 700;
     color: var(--ds-active-text-primary);
     cursor: pointer;
+  }
+
+  /* ID y CÓD. del capítulo: relleno lateral corto para que no ensanchen sus columnas más que las
+     celdas de actividad. */
+  .chapter-heading-row td:nth-child(-n + 2),
+  .row-chapter td:nth-child(-n + 2) {
+    padding-inline: 6px;
+  }
+
+  .card-chapter-id {
+    font-family: var(--ds-font-mono);
+    font-weight: 600;
+    color: var(--ds-active-text-secondary);
   }
 
   .chapter-cell-content {
@@ -704,7 +729,7 @@
   }
 
   .chapter-icon {
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     color: var(--ds-active-action-primary);
   }
 
@@ -716,7 +741,7 @@
   .chapter-badge-count,
   .chapter-badge {
     font-family: var(--ds-font-mono);
-    font-size: 9.5px;
+    font-size: var(--pg-type-meta);
     font-weight: 600;
     padding: 1px 6px;
     border-radius: 4px;
@@ -731,7 +756,7 @@
     align-items: center;
     gap: 8px;
     font-family: var(--ds-font-mono);
-    font-size: 10.5px;
+    font-size: var(--pg-type-meta);
     color: var(--ds-active-text-secondary);
   }
 
@@ -824,14 +849,14 @@
   /* Celdas de Tabla */
   .cell-id {
     font-family: var(--ds-font-mono);
-    font-size: 10.5px;
+    font-size: var(--pg-type-meta);
     color: var(--ds-active-text-secondary);
     text-align: center;
   }
 
   .cell-code {
     font-family: var(--ds-font-mono);
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     font-weight: 600;
     color: var(--ds-active-text-primary);
     background: var(--ds-active-surface-raised);
@@ -839,6 +864,17 @@
     border-radius: 4px;
     border: 1px solid var(--ds-active-border);
     display: inline-block;
+    /* Un código como «1.2.5.1» nunca se parte: si la columna es angosta, la columna crece. */
+    white-space: nowrap;
+  }
+
+  /* Código calculado (numeración WBS del cronograma), no asignado por nadie: atenuado y punteado
+     para que no se lea como un código guardado. */
+  .cell-code--calculado {
+    color: var(--ds-active-text-secondary);
+    font-weight: 500;
+    background: transparent;
+    border-style: dashed;
   }
 
   .activity-cell-name,
@@ -870,7 +906,7 @@
   }
 
   .activity-subtitle {
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     color: var(--ds-active-text-secondary);
     line-height: 1.2;
     white-space: normal;
@@ -883,7 +919,7 @@
   .badge-rc {
     white-space: nowrap;
     font-family: var(--ds-font-display);
-    font-size: 8.5px;
+    font-size: var(--pg-type-meta);
     font-weight: 800;
     padding: 1px 4px;
     border-radius: 3px;
@@ -900,7 +936,7 @@
     border: none;
     color: var(--ds-active-text-secondary);
     cursor: pointer;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     padding: 1px 4px;
     border-radius: 3px;
     transition: color 0.15s;
@@ -912,7 +948,7 @@
 
   .cell-date {
     font-family: var(--ds-font-mono);
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     color: var(--ds-active-text-secondary);
     white-space: nowrap;
   }
@@ -925,12 +961,12 @@
 
   .cell-alert {
     margin-left: 4px;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
   }
 
   .cell-ppto {
     font-family: var(--ds-font-mono);
-    font-size: 11.5px;
+    font-size: var(--pg-type-dato);
     font-variant-numeric: tabular-nums;
     text-align: right;
     white-space: nowrap;
@@ -942,7 +978,7 @@
   }
 
   .ppto-unit {
-    font-size: 10px;
+    font-size: var(--pg-type-meta);
     color: var(--ds-color-text-tertiary);
     margin-left: 2px;
   }
@@ -965,7 +1001,7 @@
     justify-content: flex-end;
     gap: 4px;
     font-family: var(--ds-font-mono);
-    font-size: 11.5px;
+    font-size: var(--pg-type-dato);
   }
 
   .avance-real-val,
@@ -976,13 +1012,13 @@
 
   .avance-teor-val,
   .avance-teor {
-    font-size: 10px;
+    font-size: var(--pg-type-meta);
     color: var(--ds-active-text-secondary);
   }
 
   .avance-delta-badge,
   .avance-delta {
-    font-size: 9.5px;
+    font-size: var(--pg-type-meta);
     font-weight: 700;
     padding: 1px 4px;
     border-radius: 3px;
@@ -1023,7 +1059,7 @@
     align-items: center;
     gap: 4px;
     font-family: var(--ds-font-body);
-    font-size: 10.5px;
+    font-size: var(--pg-type-meta);
     font-weight: 600;
     padding: 2px 7px;
     border-radius: 9999px;
@@ -1043,7 +1079,7 @@
   }
 
   .card-chapter-header {
-    font-size: 13px;
+    font-size: var(--pg-type-cuerpo);
     font-weight: 700;
     color: var(--ds-active-action-primary);
     padding: 6px 10px;
@@ -1080,17 +1116,24 @@
   }
 
   .card-title {
-    font-size: 13px;
+    font-size: var(--pg-type-cuerpo);
     font-weight: 600;
     margin: 0;
     color: var(--ds-active-text-primary);
     line-height: 1.3;
   }
 
+  /* El subtítulo («Capítulo, obra») va en su propia línea, como en la tabla. */
+  .card-title .activity-subtitle {
+    display: block;
+    margin-block-start: var(--ds-space-1);
+    font-weight: 400;
+  }
+
   .card-metrics {
     display: flex;
     justify-content: space-between;
-    font-size: 11.5px;
+    font-size: var(--pg-type-dato);
     color: var(--ds-color-text-tertiary);
     border-top: 1px dashed var(--ds-active-border);
     padding-top: 8px;
@@ -1156,7 +1199,7 @@
 
   .drawer-breadcrumb {
     font-family: var(--ds-font-display);
-    font-size: 10.5px;
+    font-size: var(--pg-type-meta);
     font-weight: 600;
     color: var(--ds-color-text-tertiary);
     display: flex;
@@ -1179,7 +1222,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: var(--pg-type-cuerpo);
     transition: all 0.15s;
   }
 
@@ -1203,7 +1246,7 @@
 
   .drawer-act-title {
     font-family: var(--ds-font-display);
-    font-size: 14px;
+    font-size: var(--pg-type-cuerpo);
     font-weight: 700;
     line-height: 1.3;
     color: var(--ds-active-text-primary);
@@ -1211,13 +1254,13 @@
   }
 
   .drawer-act-subtitle {
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     color: var(--ds-color-text-tertiary);
     line-height: 1.2;
   }
 
   .drawer-act-code {
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     align-self: flex-start;
   }
 
@@ -1228,12 +1271,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
   }
 
   .seq-indicator {
     font-family: var(--ds-font-mono);
-    font-size: 10px;
+    font-size: var(--pg-type-meta);
     color: var(--ds-color-text-tertiary);
   }
 
@@ -1246,7 +1289,7 @@
     background: var(--ds-active-surface);
     border: 1px solid var(--ds-active-border);
     color: var(--ds-active-text-secondary);
-    font-size: 10.5px;
+    font-size: var(--pg-type-meta);
     font-weight: 600;
     padding: 2px 7px;
     border-radius: 4px;
@@ -1264,7 +1307,7 @@
 
   .seq-key {
     font-family: var(--ds-font-mono);
-    font-size: 9px;
+    font-size: var(--pg-type-meta);
     opacity: 0.6;
   }
 
@@ -1289,7 +1332,7 @@
 
   .pro-section-title {
     font-family: var(--ds-font-display);
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1306,7 +1349,7 @@
 
   .badge-optional-pill {
     font-family: var(--ds-font-mono);
-    font-size: 9.5px;
+    font-size: var(--pg-type-meta);
     font-weight: 600;
     padding: 1px 6px;
     border-radius: 9999px;
@@ -1322,7 +1365,7 @@
     border-left: 3px solid var(--ds-active-focus-ring);
     padding: 8px 10px;
     border-radius: 4px;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     line-height: 1.4;
     color: var(--ds-active-text-secondary);
     display: flex;
@@ -1332,7 +1375,7 @@
   .pro-help-callout i {
     color: var(--ds-active-focus-ring);
     margin-top: 2px;
-    font-size: 12px;
+    font-size: var(--pg-type-dato);
   }
 
   .form-grid-2col {
@@ -1349,7 +1392,7 @@
 
   .form-label {
     font-family: var(--ds-font-display);
-    font-size: 10px;
+    font-size: var(--pg-type-meta);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.3px;
@@ -1363,7 +1406,7 @@
     border: 1px solid var(--ds-active-border-control);
     border-radius: 4px;
     color: var(--ds-active-text-primary);
-    font-size: 11.5px;
+    font-size: var(--pg-type-dato);
     padding: 0 8px;
     outline: none;
     transition: all 0.15s ease;
@@ -1386,7 +1429,7 @@
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     color: var(--ds-color-text-tertiary);
     pointer-events: none;
   }
@@ -1408,14 +1451,14 @@
   }
 
   .gauge-metric-title {
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     font-weight: 600;
     color: var(--ds-active-text-secondary);
   }
 
   .gauge-delta-val {
     font-family: var(--ds-font-mono);
-    font-size: 12px;
+    font-size: var(--pg-type-dato);
     font-weight: 700;
   }
 
@@ -1454,26 +1497,26 @@
     display: flex;
     justify-content: space-between;
     margin-top: 4px;
-    font-size: 10px;
+    font-size: var(--pg-type-meta);
     color: var(--ds-color-text-tertiary);
   }
 
   .form-date-hint {
     display: block;
     margin-top: 2px;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     color: var(--ds-color-text-tertiary);
   }
 
   .drawer-schedule-meta {
     margin-top: 2px;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     color: var(--ds-color-text-tertiary);
   }
 
   .drawer-alert-overdue {
     margin-top: 4px;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     font-weight: 600;
   }
 
@@ -1495,7 +1538,7 @@
     border-radius: 4px;
     background: var(--ds-active-surface-raised);
     border: 1px solid var(--ds-active-border);
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     transition: background 0.12s ease;
   }
 
@@ -1512,12 +1555,12 @@
 
   .lean-res-detail {
     color: var(--ds-color-text-tertiary);
-    font-size: 10.5px;
+    font-size: var(--pg-type-meta);
   }
 
   .lean-pill {
     font-family: var(--ds-font-mono);
-    font-size: 9.5px;
+    font-size: var(--pg-type-meta);
     font-weight: 700;
     padding: 1px 6px;
     border-radius: 3px;
@@ -1525,31 +1568,31 @@
 
   .pill-liberado {
     background: var(--ds-active-state-tint-green);
-    color: var(--ds-active-state-solid-green-text);
+    color: var(--ds-color-state-success-text);
     border: 1px solid var(--ds-active-border);
   }
 
   .pill-gestion {
     background: var(--ds-active-state-tint-amber);
-    color: var(--ds-active-state-solid-amber-text);
+    color: var(--ds-color-state-warning-text);
     border: 1px solid var(--ds-active-border);
   }
 
   .pill-bloqueado {
     background: var(--ds-active-state-tint-red);
-    color: var(--ds-active-state-solid-red-text);
+    color: var(--ds-color-state-critical-text);
     border: 1px solid var(--ds-active-border);
   }
 
   .pill-no-aplica {
     background: var(--ds-active-state-tint-neutral);
-    color: var(--ds-active-state-solid-neutral-text);
+    color: var(--ds-active-text-primary);
     border: 1px solid var(--ds-active-border);
   }
 
   .drawer-empty-note {
     margin: 0;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     font-style: italic;
     color: var(--ds-color-text-tertiary);
   }
@@ -1569,7 +1612,7 @@
     background: var(--ds-active-surface-raised);
     border-left: 2px solid var(--ds-active-action-primary);
     border-radius: 2px;
-    font-size: 10.5px;
+    font-size: var(--pg-type-meta);
   }
 
   .timeline-item--vacio {
@@ -1579,7 +1622,7 @@
 
   .timeline-meta {
     font-family: var(--ds-font-mono);
-    font-size: 9.5px;
+    font-size: var(--pg-type-meta);
     color: var(--ds-color-text-tertiary);
     margin-bottom: 2px;
     display: flex;
@@ -1594,11 +1637,11 @@
   .btn-sos-trigger {
     background: var(--ds-active-state-tint-red);
     border: 1px solid var(--ds-active-border);
-    color: var(--ds-active-state-solid-red-text);
+    color: var(--ds-color-state-critical-text);
     padding: 6px 12px;
     border-radius: 4px;
     font-family: var(--ds-font-display);
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     font-weight: 700;
     cursor: pointer;
     display: flex;
@@ -1615,12 +1658,12 @@
 
   .drawer-sos-feedback {
     margin: 6px 0 0;
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     color: var(--ds-active-text-secondary);
   }
 
   .drawer-sos-feedback--error {
-    color: var(--ds-active-state-solid-red-text);
+    color: var(--ds-color-state-critical-text);
   }
 
   /* Drawer Footer */
@@ -1637,7 +1680,7 @@
     background: transparent;
     border: 1px solid var(--ds-active-border-control);
     color: var(--ds-color-text-tertiary);
-    font-size: 11px;
+    font-size: var(--pg-type-dato);
     font-weight: 600;
     padding: 6px 12px;
     border-radius: 4px;
@@ -1655,7 +1698,7 @@
     border: none;
     color: var(--ds-color-text-inverse);
     font-family: var(--ds-font-display);
-    font-size: 11.5px;
+    font-size: var(--pg-type-dato);
     font-weight: 700;
     padding: 6px 16px;
     border-radius: 4px;
@@ -1681,7 +1724,7 @@
     color: var(--ds-active-state-solid-green-text);
     font-family: var(--ds-font-display);
     font-weight: 700;
-    font-size: 12px;
+    font-size: var(--pg-type-dato);
     padding: 10px 18px;
     border-radius: 6px;
     box-shadow: var(--ds-shadow-md);
@@ -1696,14 +1739,14 @@
   .pg-error {
     padding: 24px;
     text-align: center;
-    font-size: 14px;
+    font-size: var(--pg-type-cuerpo);
     font-weight: 500;
   }
   .pg-loading {
     color: var(--ds-color-text-tertiary);
   }
   .pg-error {
-    color: var(--ds-active-state-solid-red-text);
+    color: var(--ds-color-state-critical-text);
     background: var(--ds-active-state-tint-red);
     border: 1px solid var(--ds-active-border);
     border-radius: 6px;

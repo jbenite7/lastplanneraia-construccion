@@ -9,6 +9,8 @@ import {
 } from 'react';
 import { ConmutadorTema } from '../ConmutadorTema';
 import { esBarraLateralFlotante } from '../modoBarraLateral';
+import { FlyoutSemanas, MODULOS_CON_SEMANAS, type MenuSemanasRiel } from './FlyoutSemanas';
+import { IconoBarraLateral } from './IconoBarraLateral';
 import { MarcaLockup } from './MarcaLockup';
 
 /**
@@ -54,32 +56,6 @@ function IconoColapsarMenu() {
   );
 }
 
-const GLIFOS_ICONO: Record<string, ReactNode> = {
-  calendar: <><rect height="15" rx="2" width="16" x="4" y="5" /><path d="M8 3v4M16 3v4M4 10h16" /></>,
-  chart: <><path d="M5 20V10M12 20V4M19 20v-7" /><path d="M3 20h18" /></>,
-  project: <><path d="M4 7h6l2 2h8v10H4z" /><path d="M4 7V5h6l2 2" /></>,
-  program: <><path d="M5 5h14v14H5z" /><path d="M8 9h8M8 13h5M8 17h3" /></>,
-  overview: <><rect height="6" rx="1" width="6" x="4" y="4" /><rect height="6" rx="1" width="6" x="14" y="4" /><rect height="6" rx="1" width="6" x="4" y="14" /><rect height="6" rx="1" width="6" x="14" y="14" /></>,
-  integration: <><circle cx="7" cy="12" r="3" /><circle cx="17" cy="7" r="3" /><circle cx="17" cy="17" r="3" /><path d="m9.5 10.5 5-2M9.5 13.5l5 2" /></>,
-  tasks: <><path d="M5 6h14M5 12h14M5 18h14" /><path d="m7 6 .01 0M7 12 .01 0M7 18 .01 0" /></>,
-  clipboard: <><path d="M8 5h8a2 2 0 0 1 2 2v13H6V7a2 2 0 0 1 2-2Z" /><path d="M9 5a3 3 0 0 1 6 0M9 11h6M9 15h4" /></>,
-  contract: <><path d="M6 3h9l3 3v15H6z" /><path d="M15 3v4h3M9 12h6M9 16h6" /></>,
-  user: <><circle cx="12" cy="8" r="3" /><path d="M5 20a7 7 0 0 1 14 0" /></>,
-  sync: <><path d="M20 12a8 8 0 1 1-2.34-5.66" /><path d="M20 3v4h-4" /></>,
-};
-
-/** Ícono decorativo con el mismo contrato DOM del componente PHP canónico. */
-function IconoBarraLateral({ nombre }: { nombre: string | null | undefined }) {
-  const icono = nombre ?? 'overview';
-  return (
-    <span className={`aia-icon aia-icon--${icono}`} data-aia-component="icon" aria-hidden="true">
-      <svg className="aia-icon__glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        {GLIFOS_ICONO[icono] ?? <circle cx="12" cy="12" r="7" />}
-      </svg>
-    </span>
-  );
-}
-
 type PropiedadesBarraLateral = {
   /** Id de la entrada activa (ya resuelta por quien arma `groups`, contra la URL vigente). */
   activeId: string;
@@ -104,6 +80,17 @@ type PropiedadesBarraLateral = {
   id?: string;
   ref?: Ref<HTMLElement>;
   alEjecutarAccion?: (item: ItemBarraLateral) => void;
+  /**
+   * Menús flotantes de semana (PG/PI/PS y «Semanas del Proyecto»). Sin esto el rail no pinta
+   * ningún flyout — p. ej. la pantalla standalone `/proyectos`, que no tiene semana activa.
+   */
+  menuSemanas?: MenuSemanasRiel;
+  /**
+   * Oculta el flyout de `id` aunque el cursor o el foco sigan sobre el ítem (lo pide quien acaba de
+   * devolverle el foco, p. ej. `AppShell` al cerrar un diálogo: sin esto el foco reabriría el
+   * flyout por `:focus-within`). Cada cambio de `n` es una orden nueva.
+   */
+  descartarFlyout?: { id: string; n: number } | null;
   estado?: 'expanded' | 'collapsed';
   alAlternarEstado?: () => void;
   abiertoEnMovil?: boolean;
@@ -154,6 +141,8 @@ export function BarraLateral({
   id = 'app-shell-nav',
   ref,
   alEjecutarAccion,
+  menuSemanas,
+  descartarFlyout,
   estado: estadoExterno,
   alAlternarEstado: alAlternarEstadoExterno,
   abiertoEnMovil: abiertoEnMovilExterno,
@@ -171,6 +160,111 @@ export function BarraLateral({
   const disparadorRef = useRef<HTMLButtonElement>(null);
   const asideRef = useRef<HTMLElement | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
+  // ¿El menú entra en el nav sin scroll? (ver `medir` abajo.) El nav conserva `overflow-y: auto` para los menús largos
+  // (25-30 ítems, ver shell-runtime-react-layout.spec.mjs), pero ese overflow recorta las
+  // etiquetas flotantes del riel colapsado, que salen por la derecha. El CSS suelta el recorte
+  // solo si esto es `true` (data-menu-cabe, revisión visual 2026-09-29). Por defecto `true`: jsdom y
+  // el primer render no miden nada y un menú que cabe es el caso normal en escritorio.
+  const [menuCabe, setMenuCabe] = useState(true);
+  // Flyout de semana abierto (por hover o clic) y su temporizador de cierre. El periodo de gracia
+  // de 350 ms es el del legado: un trayecto diagonal hacia el panel cruza brevemente fuera del
+  // `<li>` y el cierre por `:hover` puro sería instantáneo.
+  const [flyoutAbierto, setFlyoutAbierto] = useState<string | null>(null);
+  // «Descartado» = el usuario pidió cerrarlo (Escape) o quien lo devuelve el foco no quiere verlo.
+  // Quitar la clase `shell-week-open` NO alcanza en un navegador real: `:hover` y `:focus-within`
+  // (adapters/shell-sidebar.css) lo siguen mostrando, así que el descarte viaja como atributo que el
+  // CSS usa para OCULTARLO. Va también en una ref porque los manejadores de foco deben leer el valor
+  // más reciente aunque el efecto que lo fijó y el foco ocurran en el mismo commit.
+  const [flyoutDescartado, setFlyoutDescartado] = useState<string | null>(null);
+  const descartadoRef = useRef<string | null>(null);
+  const cierreFlyoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fijarDescartado = useCallback((itemId: string | null) => {
+    descartadoRef.current = itemId;
+    setFlyoutDescartado(itemId);
+  }, []);
+  const cancelarCierreFlyout = useCallback(() => {
+    if (cierreFlyoutRef.current !== null) clearTimeout(cierreFlyoutRef.current);
+    cierreFlyoutRef.current = null;
+  }, []);
+  // Cursor o clic: intención explícita de ver el flyout, así que levanta el descarte.
+  const abrirFlyout = useCallback((itemId: string) => {
+    cancelarCierreFlyout();
+    fijarDescartado(null);
+    setFlyoutAbierto(itemId);
+  }, [cancelarCierreFlyout, fijarDescartado]);
+  // Foco: abre, salvo que el ítem esté descartado (p. ej. foco devuelto tras cerrar un diálogo).
+  const abrirFlyoutPorFoco = useCallback((itemId: string) => {
+    if (descartadoRef.current === itemId) return;
+    cancelarCierreFlyout();
+    setFlyoutAbierto(itemId);
+  }, [cancelarCierreFlyout]);
+  const programarCierreFlyout = useCallback((itemId: string) => {
+    cancelarCierreFlyout();
+    cierreFlyoutRef.current = setTimeout(() => {
+      setFlyoutAbierto((actual) => (actual === itemId ? null : actual));
+    }, 350);
+  }, [cancelarCierreFlyout]);
+  useEffect(() => cancelarCierreFlyout, [cancelarCierreFlyout]);
+
+  // ¿A qué ítem con flyout pertenece un nodo? Se compara el atributo en vez de interpolarlo en un
+  // selector: un id con comillas o barras haría que `querySelector` lanzara dentro del oyente.
+  const itemDeFlyoutDe = useCallback((nodo: Element | null): { li: Element; id: string } | null => {
+    const li = nodo?.closest('li.shell-has-week-menu') ?? null;
+    const destino = li ? Array.from(li.querySelectorAll('[data-destination-id]')).find((el) => !el.closest('.shell-week-flyout')) : undefined;
+    const id = destino?.getAttribute('data-destination-id');
+    return li && id ? { li, id } : null;
+  }, []);
+
+  // Escape descarta el flyout y un toque/clic fuera del ítem lo cierra. Escape se escucha en el
+  // documento y en fase de CAPTURA por tres razones: un flyout abierto solo por hover no tiene el
+  // foco dentro (el teclado nunca llegaría al `<li>`); uno abierto por clic sigue visible por
+  // `:focus-within` aunque el cursor ya se fue y el estado se cerró; y, si había algo que cerrar, el
+  // Escape se consume (`stopPropagation`) para que no cierre además el drawer móvil (el oyente de
+  // ese drawer va en fase de burbuja, después).
+  const hayFlyouts = menuSemanas !== undefined;
+  useEffect(() => {
+    if (!hayFlyouts) return undefined;
+    function alTeclado(evento: KeyboardEvent) {
+      if (evento.key !== 'Escape') return;
+      const activo = document.activeElement instanceof Element ? document.activeElement : null;
+      const conFoco = itemDeFlyoutDe(activo);
+      const objetivo = flyoutAbierto ?? conFoco?.id ?? null;
+      if (objetivo === null) return;
+      evento.stopPropagation();
+      cancelarCierreFlyout();
+      fijarDescartado(objetivo);
+      setFlyoutAbierto(null);
+      // Un elemento del flyout con el foco quedaría `visibility: hidden` y el navegador soltaría el
+      // foco a `body`: se devuelve al ítem que lo abre.
+      if (conFoco && activo?.closest('.shell-week-flyout')) {
+        const disparador = Array.from(conFoco.li.querySelectorAll<HTMLElement>('[data-destination-id]')).find((el) => !el.closest('.shell-week-flyout'));
+        disparador?.focus();
+      }
+    }
+    document.addEventListener('keydown', alTeclado, true);
+    return () => document.removeEventListener('keydown', alTeclado, true);
+  }, [hayFlyouts, flyoutAbierto, itemDeFlyoutDe, cancelarCierreFlyout, fijarDescartado]);
+
+  useEffect(() => {
+    if (flyoutAbierto === null) return undefined;
+    const id = flyoutAbierto;
+    function alPuntero(evento: PointerEvent) {
+      const propio = itemDeFlyoutDe(evento.target instanceof Element ? evento.target : null);
+      if (propio?.id === id) return;
+      cancelarCierreFlyout();
+      setFlyoutAbierto(null);
+    }
+    document.addEventListener('pointerdown', alPuntero);
+    return () => document.removeEventListener('pointerdown', alPuntero);
+  }, [flyoutAbierto, itemDeFlyoutDe, cancelarCierreFlyout]);
+
+  useEffect(() => {
+    if (!descartarFlyout) return;
+    cancelarCierreFlyout();
+    fijarDescartado(descartarFlyout.id);
+    setFlyoutAbierto(null);
+  }, [descartarFlyout, cancelarCierreFlyout, fijarDescartado]);
 
   const estado = barraAutonoma
     ? (flotante || colapsadoPropio ? 'collapsed' : 'expanded')
@@ -179,6 +273,34 @@ export function BarraLateral({
     ? () => setColapsadoPropio((valor) => !valor)
     : alAlternarEstadoExterno;
   const abierto = barraAutonoma ? abiertoPropio : Boolean(abiertoEnMovilExterno);
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return undefined;
+    // Se mide el borde inferior del último grupo EN FLUJO, no `nav.scrollHeight`: los flyouts de
+    // semana ocultos conservan layout y sobresalen por abajo, e inflaban el scrollHeight hasta
+    // marcar «no cabe» y devolver el `overflow: auto` que los recorta. `scrollTop` compensa un
+    // nav ya desplazado (si no, un menú largo scrolleado al final parecería que cabe).
+    const medir = () => {
+      const ultimo = nav.lastElementChild;
+      if (!ultimo) {
+        setMenuCabe(true);
+        return;
+      }
+      const limite = nav.getBoundingClientRect().top + nav.clientHeight;
+      setMenuCabe(ultimo.getBoundingClientRect().bottom + nav.scrollTop <= limite + 1);
+    };
+    medir();
+    window.addEventListener('resize', medir);
+    // El alto del nav cambia con el de la ventana y con el pie; `resize` cubre lo primero y el
+    // observador lo segundo (p. ej. el bloque de semana del encabezado al cargar).
+    const observador = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(medir);
+    observador?.observe(nav);
+    return () => {
+      window.removeEventListener('resize', medir);
+      observador?.disconnect();
+    };
+  }, [groups, estado]);
 
   // Ronda de arreglo 1 (Tarea 8, hallazgo Important): al dejar de ser flotante hay que cerrar el
   // drawer propio, igual que `AppShell.tsx:127-129` hace para el suyo. Sin este cierre,
@@ -337,6 +459,7 @@ export function BarraLateral({
         aria-label="Aplicación"
         data-shell-pattern="sidebar"
         data-sidebar-state={estado}
+        data-menu-cabe={menuCabe ? 'true' : 'false'}
         data-shell-drawer-open={abierto ? 'true' : undefined}
         // Ronda de arreglo 1 (Tarea 9b, hallazgo Important del revisor): bajo 1180px, cerrado,
         // el `<aside>` solo se saca de la vista con `transform` (`shell-sidebar.css`) — sin
@@ -390,8 +513,31 @@ export function BarraLateral({
             <section className="aia-sidebar__group" aria-labelledby={`grupo-${grupo.id}`} key={grupo.id}>
               <h3 id={`grupo-${grupo.id}`}>{grupo.label}</h3>
               <ul>
-                {grupo.items.map((item) => (
-                  <li key={item.id}>
+                {grupo.items.map((item) => {
+                  const gestionSemanas = menuSemanas !== undefined && item.id === 'semanas-proyecto';
+                  const moduloSemanas = menuSemanas !== undefined && MODULOS_CON_SEMANAS.includes(item.id);
+                  const tieneFlyout = gestionSemanas || moduloSemanas;
+                  return (
+                  <li
+                    key={item.id}
+                    className={[tieneFlyout ? 'shell-has-week-menu' : '', flyoutAbierto === item.id ? 'shell-week-open' : ''].filter(Boolean).join(' ') || undefined}
+                    data-flyout-descartado={tieneFlyout && flyoutDescartado === item.id ? 'true' : undefined}
+                    onMouseEnter={tieneFlyout ? () => abrirFlyout(item.id) : undefined}
+                    onMouseLeave={tieneFlyout ? (evento) => {
+                      // Un descarte por Escape solo se conserva mientras el foco siga dentro del ítem
+                      // (ahí `:focus-within` lo volvería a mostrar); si no, se levanta para que la
+                      // próxima visita, con el cursor o con Tab, sí lo abra.
+                      if (descartadoRef.current === item.id && !evento.currentTarget.contains(document.activeElement)) fijarDescartado(null);
+                      programarCierreFlyout(item.id);
+                    } : undefined}
+                    onFocus={tieneFlyout ? () => abrirFlyoutPorFoco(item.id) : undefined}
+                    onBlur={tieneFlyout ? (evento) => {
+                      // El foco que se mueve DENTRO del ítem (al flyout) no lo cierra; el que sale, sí.
+                      if (evento.relatedTarget instanceof Node && evento.currentTarget.contains(evento.relatedTarget)) return;
+                      if (descartadoRef.current === item.id) fijarDescartado(null);
+                      programarCierreFlyout(item.id);
+                    } : undefined}
+                  >
                     {item.href !== null ? (
                       <a
                         aria-current={item.id === activeId ? 'page' : undefined}
@@ -410,16 +556,36 @@ export function BarraLateral({
                         className="aia-sidebar__link"
                         data-destination-id={item.id}
                         data-sidebar-icon={item.icon ?? 'overview'}
-                        disabled={!item.action || !alEjecutarAccion}
-                        onClick={() => alEjecutarAccion?.(item)}
+                        aria-expanded={gestionSemanas ? flyoutAbierto === item.id : undefined}
+                        disabled={!item.action || (!alEjecutarAccion && !gestionSemanas)}
+                        onClick={() => {
+                          if (gestionSemanas) {
+                            // Abre y no alterna: el cursor ya lo abrió al pasar por encima y un clic
+                            // que lo cerrara castigaría a quien señala el ítem. Cierra el hover al
+                            // salir o Escape.
+                            abrirFlyout(item.id);
+                            return;
+                          }
+                          alEjecutarAccion?.(item);
+                        }}
                         type="button"
                       >
                         <IconoBarraLateral nombre={item.icon} />
                         <span className="aia-sidebar__label">{item.label}</span>
                       </button>
                     )}
+                    {tieneFlyout && menuSemanas && (
+                      <FlyoutSemanas
+                        destino={gestionSemanas ? null : item.href}
+                        gestion={gestionSemanas}
+                        marcarVigente={gestionSemanas || item.id === activeId}
+                        menu={menuSemanas}
+                        titulo={item.label}
+                      />
+                    )}
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </section>
           ))}
