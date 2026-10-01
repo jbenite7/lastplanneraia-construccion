@@ -898,6 +898,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - en rama · docs/s05-rediseno-spec (falta publicar en main)
 - **Encargo para Codex — mockup del rediseño de Programa General** (abierto): 0 de 0 hechas · `2026-09-28-s05-rediseno-encargo-mockup.md`
 
+### S05-SOS · S05 — Los dos fallos críticos del SOS (abierto)
+
+- Sin plan todavía.
+
 ### Sin spec
 
 - **Sidebar canónico del laboratorio** (cerrado): 0 de 0 hechas · `2026-07-20-sidebar-canonico-laboratorio.md`
