@@ -875,3 +875,18 @@ dependen del drawer”.
 Ninguna. Envío server-side real, más niveles de reply, historial cerrado, preferencias de
 notificación, autoescalamiento o una nueva identidad de actor requieren specs y autorización
 separadas.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de T02:** rutas `/api/lps/comments`, `/api/lps/comments/add`, `/api/lps/crisis`, `/api/lps/crisis/register`, `/api/lps/crisis/close`, `/api/notifications/unread`, `/api/notifications/read`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/contexto-lps-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[escalamientos-y-crisis]].
+- **Lugar en la cola:** primera tanda de la cola: el módulo ya está en React y su verificación va antes que la de los módulos por migrar.

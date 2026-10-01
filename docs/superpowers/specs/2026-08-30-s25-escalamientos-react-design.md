@@ -1129,3 +1129,18 @@ y no bloquean esta entrega porque el spec conserva el comportamiento seguro y ob
 Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
 
 - De `2026-08-03-usabilidad-altas-y-medias` (Task 11): **no reproducir H-26** — ningún error de JS de escalamientos falla en silencio; todo error llega a la interfaz con el vocabulario de errores de T01.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S25:** rutas `/dashboard/escalamientos`, `/api/lps/escalamientos`, `/api/lps/comments`, `/api/lps/comments/add`, `/api/lps/crisis/register`, `/api/lps/crisis/close`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/escalamientos-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[escalamientos-y-crisis]].
+- **Lugar en la cola:** requisito de cierre: el módulo no se da por cerrado sin su sprint verificado y su ficha.

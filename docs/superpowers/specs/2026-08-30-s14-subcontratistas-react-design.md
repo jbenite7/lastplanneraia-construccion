@@ -1151,3 +1151,18 @@ distinto, debe detenerse, aportar evidencia y enmendar esta spec antes de cambia
 Invocar superpowers:writing-plans para
 docs/superpowers/plans/2026-08-30-s14-subcontratistas-react.md, autorrevisarlo, actualizar el atlas y
 continuar S15. No implementar S14 en esta sesion.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S14:** rutas `/subcontratistas`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/subcontratistas-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[subcontratistas]].
+- **Lugar en la cola:** requisito de cierre: el módulo no se da por cerrado sin su sprint verificado y su ficha.

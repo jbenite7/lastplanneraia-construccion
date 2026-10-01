@@ -1320,3 +1320,18 @@ Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anterior
 
 - De `2026-08-03-usabilidad-altas-y-medias`: **no reproducir H-07** (cabeceras del PDC ilegibles o indistinguibles) ni **H-17/H-20** (el tour del plan de compras se tapa a sí mismo). Cada uno con su comprobación en la suite de la spec.
 - De `2026-08-04-biblia-t3-pdc` (Tasks 2–6): los escenarios de presupuesto y maestro de insumos, paquetes de contratación, plan con fechas y seguimiento, y las deudas de datos conocidas de `docs/pdc-v2.md` son **escenarios de aceptación** de esta spec, con prueba ejecutable para los críticos. `docs/flujos/compras-v2.md` sigue siendo el consolidado.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S12:** rutas `/plan-compras`, `/plan-compras/ensamble/importar`, `/plan-compras/ensamble/maestro`, `/plan-compras/ensamble/presupuesto`, `/plan-compras/ensamble/comparar`, `/plan-compras/ensamble/paquetes`, `/plan-compras/ensamble/plan`, `/plan-compras/ensamble/plan/pasos`, `/plan-compras/seguimiento/avance`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/plan-compras-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[plan-de-compras]].
+- **Lugar en la cola:** requisito de cierre: el módulo no se da por cerrado sin su sprint verificado y su ficha.

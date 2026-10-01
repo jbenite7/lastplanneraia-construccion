@@ -803,3 +803,18 @@ exacta de todos los criterios. No implementar en esta sesión.
 Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
 
 - De `2026-08-03-usabilidad-altas-y-medias` (Tasks 12 y 21): **no reproducir H-34** (contraste del chip de BI por debajo de AA) ni **H-16** (las pestañas de BI ocultan módulos). El chip y las pestañas son primitivas de este marco, así que el criterio vive aquí y lo heredan S17–S24.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de T03:** rutas `/bi/control-tower`, `/bi/programa-general`, `/bi/intermedia`, `/bi/semanal`, `/bi/pdc`, `/bi/contratistas`, `/bi/responsables`, `/bi/curva-s`, `/api/bi/context`, `/api/bi/projects`, `/api/bi/weeks`, `/api/bi/filter-options`, `/api/bi/lineage`, `/api/bi/control-tower/metricas/{metricKey}`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/marco-bi-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[torre-de-control-bi]].
+- **Lugar en la cola:** requisito de cierre: el módulo no se da por cerrado sin su sprint verificado y su ficha.

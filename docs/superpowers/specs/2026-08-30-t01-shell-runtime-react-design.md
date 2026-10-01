@@ -486,3 +486,18 @@ Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anterior
 
 - De `2026-08-03-usabilidad-altas-y-medias` (Tasks 13 y 23): **no reproducir H-19** (superficies sin encabezado de página: el shell lo pone siempre) ni **H-36/H-25** («Quitar filtro» sin objetivo claro y sin contador de filtros activos: la barra de filtros del shell los trae de serie).
 - De `2026-08-28-paridad-shell-react` (Tasks 1 y 12): la matriz de paridad ejecutable y la política de promoción con rollback quedan aquí, no en aquel plan.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de T01:** rutas `/app`, `/api/session`, `/api/auth/logout`, `/session/touch`, `/context/week`, `/context/clear-week`, `/api/context/weeks/create`, `/api/context/weeks/delete-last`, `/runtime/frontend-config.js`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/shell-runtime-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[nucleo-y-runtime]].
+- **Lugar en la cola:** primera tanda de la cola: el módulo ya está en React y su verificación va antes que la de los módulos por migrar.

@@ -1221,3 +1221,18 @@ búsqueda de consumidores. No implementar antes de cerrar y autorrevisar ese pla
 Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
 
 - De `2026-07-31-cierre-de-diseno-impeccable` (Task 2): la versión React de Actualizar Cronograma **no reproduce ningún hex fuera de tokens** de `public/js/modules/programa_actualizar/hot_actualizar.js`; el gate estático del design system lo comprueba sobre los archivos nuevos.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S06:** rutas `/programa-general-actualizar`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/actualizar-cronograma-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[cronograma]].
+- **Lugar en la cola:** requisito de cierre: el módulo no se da por cerrado sin su sprint verificado y su ficha.

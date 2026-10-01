@@ -1126,3 +1126,18 @@ Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anterior
 
 - De `2026-08-28-paridad-shell-react` (Task 8): las primitivas React del sistema visual aprobado.
 - De `2026-08-24-p3-design-system-contrato-y-control` (DS-F1 a DS-F3): el contrato y su control se redefinen sobre React, no por adaptadores PHP; cada tabla (Handsontable, DataTables, legacyCards) la reemplaza el spec S de su módulo.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S26:** rutas `/internal/design-system`, `/api/internal/design-system/catalog`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/design-system-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[laboratorio-design-system]].
+- **Lugar en la cola:** requisito de cierre: el módulo no se da por cerrado sin su sprint verificado y su ficha.

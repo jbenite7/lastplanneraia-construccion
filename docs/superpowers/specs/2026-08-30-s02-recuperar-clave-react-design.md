@@ -584,3 +584,19 @@ La spec fue auditada y autorrevisada sin decisiones funcionales pendientes. Se i
 `docs/superpowers/plans/2026-08-30-s02-recuperar-clave-react.md`; consume solo el incremento T01 de
 BrowserRouter/corte que S02 necesita, asume S01 ejecutado y mantiene toda verificación sin DML. Esta
 documentación no autoriza implementación, commit, publicación ni cambios de datos.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S02:** rutas `/password/forgot`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/recuperar-clave-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[autenticacion]].
+- **Lugar en la cola:** primera tanda de la cola: el módulo ya está en React y su verificación va antes que la de los módulos por migrar.
+- **Dónde viven sus tareas:** en `docs/superpowers/plans/2026-09-30-verificacion-integral-modulos-migrados.md`, porque el plan de esta spec está cerrado (decisión de Felipe del 2026-09-30).

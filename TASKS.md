@@ -20,7 +20,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 | hecha | 564 |
 | en progreso | 3 |
 | pendiente | 154 |
-| sin señal | 148 |
+| sin señal | 208 |
 | descartada | 48 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -246,7 +246,9 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### Wiki v2 — visual, etiquetada, misma metodología (cerrado)
 
+- en rama · otra rama (falta publicar en main)
 - **Plan — Wiki v2 visual y etiquetada** (cerrado): 0 de 0 hechas · `2026-08-18-wiki-v2-visual.md`
+  - en rama · otra rama (falta publicar en main)
 
 ### El coloreado en cascada por severidad — diseño del diagnóstico (cerrado)
 
@@ -384,7 +386,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### S05 — Programa General en React (vigente)
 
-- **S05 Programa General React** (vigente): 12 de 13 hechas · `2026-08-30-s05-programa-general-react.md`
+- **S05 Programa General React** (vigente): 12 de 15 hechas · `2026-08-30-s05-programa-general-react.md`
   - hecha · 1 · Add the scoped context, shared restriction catalog and action policy
   - hecha · 2 · Freeze S05 HTTP contracts and upgrade the shared client
   - hecha · 3 · Normalize legacy rows and present server states/restriction alerts
@@ -398,6 +400,8 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - hecha · 11 · Prove the pilot with intercepted browser, accessibility and design-system gates
   - hecha · 12 · Promote canonical GET/HEAD with a reversible method-aware cut
   - hecha · 13 · Retire VIEW-34 exclusively and run the complete no-DML closure
+  - sin señal · 14 · Sprint de verificación integral (protocolo común)
+  - sin señal · 15 · Ficha de S05 en la wiki
 - **S05 — Programa General en React** (vigente): 8 de 8 hechas · `2026-09-23-s05-programa-general-react.md`
   - hecha · 1 · Backend PHP — Context Endpoint y Asignaciones en Update
   - hecha · 2 · Frontend — Esquemas Zod y Cliente API Tipado
@@ -422,7 +426,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### S06 — Actualizar Cronograma en React (vigente)
 
-- **S06 Actualizar Cronograma React** (vigente): 0 de 14 hechas · `2026-08-30-s06-actualizar-cronograma-react.md`
+- **S06 Actualizar Cronograma React** (vigente): 0 de 16 hechas · `2026-08-30-s06-actualizar-cronograma-react.md`
   - pendiente · 1 · Context resolver, action policy and endpoint
   - pendiente · 2 · Strict Zod contracts and S06 HTTP gateway
   - pendiente · 3 · Domain normalization, filters and validation
@@ -437,10 +441,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 12 · Draft-only delete and complete recovery states
   - pendiente · 13 · Intercepted pilot QA, RBAC, accessibility and visual candidates
   - pendiente · 14 · Approved visual baseline, canonical cut and legacy retirement
+  - sin señal · 15 · Sprint de verificación integral (protocolo común)
+  - sin señal · 16 · Ficha de S06 en la wiki
 
 ### S07 — Programación Intermedia en React (vigente)
 
-- **S07 Programación Intermedia React** (vigente): 0 de 14 hechas · `2026-08-30-s07-programacion-intermedia-react.md`
+- **S07 Programación Intermedia React** (vigente): 0 de 16 hechas · `2026-08-30-s07-programacion-intermedia-react.md`
   - pendiente · 1 · Characterize restrictions, states and effective actions
   - pendiente · 2 · Project-scoped context and activities contracts
   - pendiente · 3 · Strict Zod schemas, gateway and normalized domain
@@ -455,10 +461,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 12 · Integrate the shared T02 drawer with PI context
   - pendiente · 13 · Intercepted RBAC, responsive, a11y and visual approval gate
   - pendiente · 14 · Canonical SPA cut, manifests and exclusive legacy retirement
+  - sin señal · 15 · Sprint de verificación integral (protocolo común)
+  - sin señal · 16 · Ficha de S07 en la wiki
 
 ### S08 — Programación Semanal en React (vigente)
 
-- **S08 Programación Semanal React** (vigente): 0 de 16 hechas · `2026-08-30-s08-programacion-semanal-react.md`
+- **S08 Programación Semanal React** (vigente): 0 de 18 hechas · `2026-08-30-s08-programacion-semanal-react.md`
   - pendiente · 1 · Characterize states, projections, quantities and effective actions
   - pendiente · 2 · Add project-scoped context and activities contracts
   - pendiente · 3 · Add strict Zod schemas, gateway and normalized domain
@@ -475,10 +483,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 14 · Integrate T02 drawer and harden recovery states
   - pendiente · 15 · Prove RBAC, responsive, accessibility and dark/light behavior
   - pendiente · 16 · Cut the canonical route and retire only exclusive legacy pieces
+  - sin señal · 17 · Sprint de verificación integral (protocolo común)
+  - sin señal · 18 · Ficha de S08 en la wiki
 
 ### S09 — Causas de No Programación en React (vigente)
 
-- **S09 Causas de No Programación React** (vigente): 0 de 10 hechas · `2026-08-30-s09-cnp-react.md`
+- **S09 Causas de No Programación React** (vigente): 0 de 12 hechas · `2026-08-30-s09-cnp-react.md`
   - pendiente · 1 · Characterize priorities, catalogs, versions and effective actions
   - pendiente · 2 · Add the scoped context contract
   - pendiente · 3 · Add the normalized activities contract
@@ -489,10 +499,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 8 · Implement transactional reprogramming
   - pendiente · 9 · Prove RBAC, recovery, responsive, accessibility and dark/light behavior
   - sin señal · 10 · Cut the canonical route and retire only exclusive legacy pieces
+  - sin señal · 11 · Sprint de verificación integral (protocolo común)
+  - sin señal · 12 · Ficha de S09 en la wiki
 
 ### S10 — Causas de No Cumplimiento en React (vigente)
 
-- **S10 Causas de No Cumplimiento React** (vigente): 0 de 9 hechas · `2026-08-30-s10-cnc-react.md`
+- **S10 Causas de No Cumplimiento React** (vigente): 0 de 11 hechas · `2026-08-30-s10-cnc-react.md`
   - pendiente · 1 · Characterize population, quantities, priority, diagnosis, catalog, version and actions
   - pendiente · 2 · Add the scoped context contract
   - pendiente · 3 · Add the normalized activities contract
@@ -502,10 +514,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 7 · Implement narrow classification mutation and editable table/cards
   - sin señal · 8 · Prove RBAC, isolation, recovery, responsive, accessibility and dark/light behavior
   - sin señal · 9 · Cut the canonical route and retire only exclusive legacy pieces
+  - sin señal · 10 · Sprint de verificación integral (protocolo común)
+  - sin señal · 11 · Ficha de S10 en la wiki
 
 ### S11 — Calificacion Integral de Contratistas en React (vigente)
 
-- **S11 Calificación Integral de Contratistas React** (vigente): 0 de 10 hechas · `2026-08-30-s11-cic-react.md`
+- **S11 Calificación Integral de Contratistas React** (vigente): 0 de 12 hechas · `2026-08-30-s11-cic-react.md`
   - pendiente · 1 · Characterize catalog, answers, scoring, integral, cadence and actions
   - pendiente · 2 · Add the pure scoped context contract
   - pendiente · 3 · Add the pure providers/projection contract
@@ -516,10 +530,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 8 · Build the questionnaire editor and save recovery
   - sin señal · 9 · Prove RBAC, T01 cadence, isolation, responsive, accessibility and themes
   - pendiente · 10 · Cut the canonical route and retire exclusive legacy pieces
+  - sin señal · 11 · Sprint de verificación integral (protocolo común)
+  - sin señal · 12 · Ficha de S11 en la wiki
 
 ### S12 — Plan de Compras v2 en la SPA React principal (vigente)
 
-- **S12 Plan de Compras v2 React** (vigente): 0 de 13 hechas · `2026-08-30-s12-plan-compras-react.md`
+- **S12 Plan de Compras v2 React** (vigente): 0 de 15 hechas · `2026-08-30-s12-plan-compras-react.md`
   - pendiente · 1 · Freeze the route, catalog and source invariants
   - pendiente · 2 · Add the server-effective context contract
   - pendiente · 3 · Build the common client, schemas, routes and shared primitives
@@ -533,10 +549,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 11 · Port tracking, expirations and cash flow
   - pendiente · 12 · Integrate all routes, responsive parity, themes, help and RBAC
   - pendiente · 13 · Cut canonical routes and retire the separate island
+  - sin señal · 14 · Sprint de verificación integral (protocolo común)
+  - sin señal · 15 · Ficha de S12 en la wiki
 
 ### S13 — Profesionales en React (vigente)
 
-- **S13 Profesionales React** (vigente): 0 de 10 hechas · `2026-08-30-s13-profesionales-react.md`
+- **S13 Profesionales React** (vigente): 0 de 12 hechas · `2026-08-30-s13-profesionales-react.md`
   - sin señal · 1 · Characterize catalog, normalization, locks, dependencies and action policy
   - sin señal · 2 · Add pure scoped context and list contracts
   - sin señal · 3 · Add strict Zod schemas, gateway, domain helpers and CSV primitive
@@ -547,10 +565,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 8 · Add explicit synchronization without changing admin consumers
   - sin señal · 9 · Complete CSV, BI, RBAC, responsive, accessibility and theme evidence
   - sin señal · 10 · Cut the canonical route and retire exclusive legacy pieces
+  - sin señal · 11 · Sprint de verificación integral (protocolo común)
+  - sin señal · 12 · Ficha de S13 en la wiki
 
 ### S14 — Subcontratistas e Interesados Externos en React (vigente)
 
-- **S14 Subcontratistas React** (vigente): 0 de 10 hechas · `2026-08-30-s14-subcontratistas-react.md`
+- **S14 Subcontratistas React** (vigente): 0 de 12 hechas · `2026-08-30-s14-subcontratistas-react.md`
   - sin señal · 1 · Characterize dual mode, normalization, token lists, dependencies and policy
   - sin señal · 2 · Add pure scoped context and list contracts
   - sin señal · 3 · Add strict Zod schemas, gateway, validation, queue and CSV reuse
@@ -561,10 +581,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 8 · Add dependency-safe delete and active operational projections
   - sin señal · 9 · Complete CSV, BI, RBAC, accessibility, themes and viewport evidence
   - sin señal · 10 · Cut the canonical route and retire exclusive legacy pieces
+  - sin señal · 11 · Sprint de verificación integral (protocolo común)
+  - sin señal · 12 · Ficha de S14 en la wiki
 
 ### S15 — Control de Cambios en React (vigente)
 
-- **S15 Control de Cambios React** (vigente): 0 de 10 hechas · `2026-08-30-s15-control-cambios-react.md`
+- **S15 Control de Cambios React** (vigente): 0 de 12 hechas · `2026-08-30-s15-control-cambios-react.md`
   - sin señal · 1 · Freeze catalogs, persisted codecs and validation rules
   - sin señal · 2 · Add server-authoritative context and pure scoped list
   - sin señal · 3 · Build strict frontend schemas, domain helpers and gateway
@@ -575,10 +597,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 8 · Adapt Consolidado ODC behind a fakeable exporter
   - sin señal · 9 · Prove responsive, RBAC, documents, themes and accessibility without DML
   - sin señal · 10 · Cut the canonical route, retire exclusive legacy and rehearse rollback
+  - sin señal · 11 · Sprint de verificación integral (protocolo común)
+  - sin señal · 12 · Ficha de S15 en la wiki
 
 ### S16 — Indicadores LPS en React (vigente)
 
-- **S16 Indicadores React** (vigente): 0 de 8 hechas · `2026-08-30-s16-indicadores-react.md`
+- **S16 Indicadores React** (vigente): 0 de 10 hechas · `2026-08-30-s16-indicadores-react.md`
   - sin señal · 1 · Unify permission and publish a validated context
   - sin señal · 2 · Characterize and implement the pure generation service
   - sin señal · 3 · Adapt generation transport to strict JSON, CSRF and session scope
@@ -587,10 +611,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 6 · Prove host states, themes, accessibility and five viewports
   - sin señal · 7 · Migrate and classify generation consumers without using them as S16 evidence
   - sin señal · 8 · Cut canonical route, retire VIEW-27 and rehearse rollback
+  - sin señal · 9 · Sprint de verificación integral (protocolo común)
+  - sin señal · 10 · Ficha de S16 en la wiki
 
 ### S17 — Resumen Ejecutivo de Control Tower en React (vigente)
 
-- **S17 BI Control Tower React** (vigente): 0 de 10 hechas · `2026-08-30-s17-bi-control-tower-react.md`
+- **S17 BI Control Tower React** (vigente): 0 de 12 hechas · `2026-08-30-s17-bi-control-tower-react.md`
   - sin señal · 1 · Freeze the measured legacy and approved S17 contract
   - sin señal · 2 · Build the first reusable T03 access, scope and query slice
   - sin señal · 3 · Build the project snapshot, priority and headline domain
@@ -601,10 +627,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 8 · Finish the T03 frame, responsive layout, themes and accessibility
   - sin señal · 9 · Prove the safe browser matrix and cut the canonical route
   - sin señal · 10 · Prove compatibility, rollback and the deferred retirement gate
+  - sin señal · 11 · Sprint de verificación integral (protocolo común)
+  - sin señal · 12 · Ficha de S17 en la wiki
 
 ### S18 — Hoja BI Programa General en React (vigente)
 
-- **S18 BI Programa General React** (vigente): 0 de 11 hechas · `2026-08-30-s18-bi-programa-general-react.md`
+- **S18 BI Programa General React** (vigente): 0 de 13 hechas · `2026-08-30-s18-bi-programa-general-react.md`
   - pendiente · 1 · Lock S18 access, project scope and canonical query
   - pendiente · 2 · Characterize and freeze the seven current HTTP contracts
   - pendiente · 3 · Extract forecast, progress and execution-series domain seams
@@ -616,10 +644,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 9 · Preserve causal evidence and prepare the S21 transition
   - pendiente · 10 · Cut the SPA route and verify responsive, themes and accessibility
   - pendiente · 11 · Prove rollback and defer shared legacy retirement
+  - sin señal · 12 · Sprint de verificación integral (protocolo común)
+  - sin señal · 13 · Ficha de S18 en la wiki
 
 ### S19 — Hoja BI Curva S en React (vigente)
 
-- **S19 BI Curva S React** (vigente): 0 de 10 hechas · `2026-08-30-s19-bi-curva-s-react.md`
+- **S19 BI Curva S React** (vigente): 0 de 12 hechas · `2026-08-30-s19-bi-curva-s-react.md`
   - pendiente · 1 · Lock access, project scope and terminal-period semantics
   - pendiente · 2 · Characterize the existing GET and freeze compatibility
   - pendiente · 3 · Build the inclusive weighted base curve
@@ -630,10 +660,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 8 · Add responsive point history and cutoff detail drawer
   - pendiente · 9 · Complete states, concurrency, route cut and browser evidence
   - pendiente · 10 · Prove coexistence, rollback and deferred legacy retirement
+  - sin señal · 11 · Sprint de verificación integral (protocolo común)
+  - sin señal · 12 · Ficha de S19 en la wiki
 
 ### S20 — Hoja BI Intermedia en React (vigente)
 
-- **S20 BI Intermedia React** (vigente): 0 de 11 hechas · `2026-08-30-s20-bi-intermedia-react.md`
+- **S20 BI Intermedia React** (vigente): 0 de 13 hechas · `2026-08-30-s20-bi-intermedia-react.md`
   - pendiente · 1 · Lock access, project scope and one-cutoff query semantics
   - pendiente · 2 · Characterize legacy/pilot payloads and build one canonical read envelope
   - pendiente · 3 · Project the actionable restriction list, orphan rule and N4 order
@@ -645,10 +677,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 9 · Complete states, responsive craft, dark/light and accessibility
   - pendiente · 10 · Cut the page route and prove behavior with fully intercepted browser scenarios
   - pendiente · 11 · Retire the pilot safely, prove rollback and close the vertical
+  - sin señal · 12 · Sprint de verificación integral (protocolo común)
+  - sin señal · 13 · Ficha de S20 en la wiki
 
 ### S21 — Hoja BI Programacion Semanal en React (vigente)
 
-- **S21 BI Programacion Semanal React** (vigente): 0 de 12 hechas · `2026-08-30-s21-bi-semanal-react.md`
+- **S21 BI Programacion Semanal React** (vigente): 0 de 14 hechas · `2026-08-30-s21-bi-semanal-react.md`
   - sin señal · 1 · Lock access, scope and real project-week semantics
   - sin señal · 2 · Characterize existing GETs and freeze compatibility
   - sin señal · 3 · Build truthful PAC, comparison and history
@@ -661,10 +695,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 10 · Complete theme, accessibility, lineage and safe errors
   - sin señal · 11 · Cut the SPA route and prove the surface without mutation
   - sin señal · 12 · Prove coexistence, code-only rollback and untouched boundaries
+  - sin señal · 13 · Sprint de verificación integral (protocolo común)
+  - sin señal · 14 · Ficha de S21 en la wiki
 
 ### S22 — Hoja BI Plan de Compras en React (vigente)
 
-- **S22 BI Plan de Compras React** (vigente): 0 de 12 hechas · `2026-08-30-s22-bi-pdc-react.md`
+- **S22 BI Plan de Compras React** (vigente): 0 de 14 hechas · `2026-08-30-s22-bi-pdc-react.md`
   - sin señal · 1 · Lock sheet access, project scope and cutoff authority
   - sin señal · 2 · Define schedule, progress evidence and stable ordering
   - sin señal · 3 · Build scoped coverage, responsibility, duration and planning gaps
@@ -677,10 +713,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 10 · Integrate route/sidebar, tokens, responsive themes and accessibility
   - sin señal · 11 · Cut the page behind the existing route and verify behavior in browser
   - sin señal · 12 · Run focused-to-broad verification and prepare closure evidence
+  - sin señal · 13 · Sprint de verificación integral (protocolo común)
+  - sin señal · 14 · Ficha de S22 en la wiki
 
 ### S23 — Hoja BI Proveedores en React (vigente)
 
-- **S23 BI Proveedores React** (vigente): 0 de 12 hechas · `2026-08-30-s23-bi-contratistas-react.md`
+- **S23 BI Proveedores React** (vigente): 0 de 14 hechas · `2026-08-30-s23-bi-contratistas-react.md`
   - sin señal · 1 · Lock shared sheet admission, project scope and real periods
   - sin señal · 2 · Make component, completeness, integral and decision policies executable
   - sin señal · 3 · Adapt the S11 population, stable identity and prior evaluation
@@ -693,10 +731,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 10 · Integrate shared sidebar/route, responsive themes and accessibility
   - sin señal · 11 · Cut the existing page route and verify in browser
   - sin señal · 12 · Run focused-to-broad verification and prepare closure evidence
+  - sin señal · 13 · Sprint de verificación integral (protocolo común)
+  - sin señal · 14 · Ficha de S23 en la wiki
 
 ### S24 — Hoja BI Responsables en React (vigente)
 
-- **S24 BI Responsables React** (vigente): 0 de 12 hechas · `2026-08-30-s24-bi-responsables-react.md`
+- **S24 BI Responsables React** (vigente): 0 de 14 hechas · `2026-08-30-s24-bi-responsables-react.md`
   - pendiente · 1 · Lock sheet admission, viewer scope and project period
   - pendiente · 2 · Adapt S13 identity and S21 population without cip authority
   - pendiente · 3 · Make fulfillment completeness and support signal executable
@@ -709,10 +749,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 10 · Integrate route/sidebar, themes and accessibility
   - sin señal · 11 · Pass D61 reconciliation, cut the page route and verify real behavior
   - sin señal · 12 · Run focused-to-broad verification and prepare closure evidence
+  - sin señal · 13 · Sprint de verificación integral (protocolo común)
+  - sin señal · 14 · Ficha de S24 en la wiki
 
 ### S25 — Escalamientos en React (vigente)
 
-- **S25 Escalamientos React** (vigente): 0 de 12 hechas · `2026-08-30-s25-escalamientos-react.md`
+- **S25 Escalamientos React** (vigente): 0 de 14 hechas · `2026-08-30-s25-escalamientos-react.md`
   - pendiente · 1 · Lock access, scope, global-week semantics and navigation declaration
   - pendiente · 2 · Build the scoped active-alert read model and hierarchy
   - pendiente · 3 · Expose GET /api/lps/escalamientos with a typed contract
@@ -725,10 +767,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 10 · Integrate route/sidebar, preserve notification ownership and cut VIEW-12
   - sin señal · 11 · Run focused-to-broad contracts and integrity audits
   - sin señal · 12 · Verify intercepted browser behavior and prepare closure
+  - sin señal · 13 · Sprint de verificación integral (protocolo común)
+  - sin señal · 14 · Ficha de S25 en la wiki
 
 ### S26 — Design System en React (vigente)
 
-- **S26 Design System React** (vigente): 0 de 12 hechas · `2026-08-30-s26-design-system-react.md`
+- **S26 Design System React** (vigente): 0 de 14 hechas · `2026-08-30-s26-design-system-react.md`
   - pendiente · 1 · Lock the environment, capability and page-frontier contract
   - sin señal · 2 · Add fail-closed source contracts and a SHA-bound adapter census
   - pendiente · 3 · Compose the canonical catalog without collapsing approvals
@@ -741,10 +785,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 10 · Close theme, responsive, accessibility, performance and evidence contracts
   - pendiente · 11 · Cut the protected page to React, promote 1.2.0 and retire exclusive legacy sources
   - sin señal · 12 · Run the intercepted browser matrix and prepare repository closure
+  - sin señal · 13 · Sprint de verificación integral (protocolo común)
+  - sin señal · 14 · Ficha de S26 en la wiki
 
 ### S27 — Landing redirect de `/dashboard` (vigente)
 
-- **S27 Dashboard Landing Redirect** (vigente): 0 de 8 hechas · `2026-08-30-s27-dashboard-landing-redirect.md`
+- **S27 Dashboard Landing Redirect** (vigente): 0 de 10 hechas · `2026-08-30-s27-dashboard-landing-redirect.md`
   - pendiente · 1 · Freeze the route and non-rendering boundary
   - pendiente · 2 · Extract the pure landing decision
   - pendiente · 3 · Wire canonical roles and preserve the service contract
@@ -753,10 +799,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 6 · Classify the route as non-rendering coverage
   - sin señal · 7 · Run scoped-read and compatibility regressions
   - pendiente · 8 · Cut over, document closure and prepare the repository gate
+  - sin señal · 9 · Sprint de verificación integral (protocolo común)
+  - sin señal · 10 · Ficha de S27 en la wiki
 
 ### T01 — Shell y runtime React (vigente)
 
-- **T01 Shell and React Runtime** (vigente): 0 de 11 hechas · `2026-08-30-t01-shell-runtime-react.md`
+- **T01 Shell and React Runtime** (vigente): 0 de 13 hechas · `2026-08-30-t01-shell-runtime-react.md`
   - sin señal · 1 · Freeze baseline, route ownership and real callers
   - sin señal · 2 · Complete the sole client and canonical bootstrap
   - sin señal · 3 · Make navigation server-authoritative and preserve exclusions
@@ -768,10 +816,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - sin señal · 9 · Prove coexistence, deep links and route-map rollback
   - sin señal · 10 · Close T01-A and publish the platform contract
   - sin señal · 11 · Retire VIEW-26, VIEW-29 and VIEW-30 only at T01-R
+  - sin señal · 12 · Sprint de verificación integral (protocolo común)
+  - sin señal · 13 · Ficha de T01 en la wiki
 
 ### T02 — Contexto LPS, drawer y notificaciones compartidas (vigente)
 
-- **T02 Contexto LPS React** (vigente): 1 de 12 hechas · `2026-08-30-t02-contexto-lps-react.md`
+- **T02 Contexto LPS React** (vigente): 1 de 14 hechas · `2026-08-30-t02-contexto-lps-react.md`
   - hecha · 1 · Freeze ownership, routes and callers
   - pendiente · 2 · Extend the common transport only where T01 left a proven gap
   - pendiente · 3 · Port restrictions, ITR, severity, diagnosis and digest as pure TypeScript
@@ -784,10 +834,12 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 10 · Prove the four-consumer seam without DML
   - sin señal · 11 · Close and publish T02-A
   - sin señal · 12 · Execute T02-R after the last consumer
+  - sin señal · 13 · Sprint de verificación integral (protocolo común)
+  - sin señal · 14 · Ficha de T02 en la wiki
 
 ### T03 — Marco compartido de Control Tower BI en React (vigente)
 
-- **T03 Marco BI React** (vigente): 0 de 12 hechas · `2026-08-30-t03-marco-bi-react.md`
+- **T03 Marco BI React** (vigente): 0 de 14 hechas · `2026-08-30-t03-marco-bi-react.md`
   - pendiente · 1 · Freeze ownership, measured behavior and caller census
   - pendiente · 2 · Extend the common transport only for a proven T01 gap
   - pendiente · 3 · Implement the sheet manifest, canvases and access policy
@@ -800,10 +852,14 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
   - pendiente · 10 · Prove safety and the eight-leaf consumer seam
   - sin señal · 11 · Verify, close and publish T03-A
   - sin señal · 12 · Execute T03-R after all eight sheets close
+  - sin señal · 13 · Sprint de verificación integral (protocolo común)
+  - sin señal · 14 · Ficha de T03 en la wiki
 
 ### Duraciones de contratación por obra — diseño v1.0 (cerrado)
 
+- en rama · fix/pdc-duraciones-pasos (falta publicar en main)
 - **Duraciones de contratación por obra** (cerrado): 6 de 6 hechas · `2026-09-01-duraciones-por-obra.md`
+  - en rama · fix/pdc-duraciones-pasos (falta publicar en main)
 
 ### ROADMAP-01 · Especificación Maestra: Gobernanza y Priorización del Roadmap LPS AIA (vigente)
 
@@ -839,6 +895,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### S05-REDISENO · S05 — Rediseño de Programa General (ronda sobre `main`) (abierto)
 
+- en rama · docs/s05-rediseno-spec (falta publicar en main)
 - **Encargo para Codex — mockup del rediseño de Programa General** (abierto): 0 de 0 hechas · `2026-09-28-s05-rediseno-encargo-mockup.md`
 
 ### Sin spec
@@ -880,6 +937,15 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - **Informe de sprint S05 ronda 1.2** (abierto): 0 de 0 hechas · `2026-09-24-s05-ronda-1-2-informe.md`
 - **Informe de sprint S05-DEUDA** (abierto): 0 de 0 hechas · `2026-09-26-s05-deuda-cierre-informe.md`
 - **Informe del mockup S05 · Programa General** (vigente): 0 de 0 hechas · `2026-09-28-s05-rediseno-mockup-informe.md`
+- **Verificación integral de los módulos ya migrados (S01 a S04)** (abierto): 0 de 8 hechas · `2026-09-30-verificacion-integral-modulos-migrados.md`
+  - sin señal · 1 · Sprint de verificación integral de S01 Login
+  - sin señal · 2 · Ficha de S01 en la wiki
+  - sin señal · 3 · Sprint de verificación integral de S02 Recuperar clave
+  - sin señal · 4 · Ficha de S02 en la wiki
+  - sin señal · 5 · Sprint de verificación integral de S03 Restablecer clave
+  - sin señal · 6 · Ficha de S03 en la wiki
+  - sin señal · 7 · Sprint de verificación integral de S04 Selector de proyectos
+  - sin señal · 8 · Ficha de S04 en la wiki
 - goal abierto · Goal — BI Control Tower / Programa General (Radar y Cronograma) · `goals/bi-control-tower-gemini/goal.md`
 - goal abierto · Núcleo y gobernanza del Design System AIA · `goals/design-system-nucleo-gobernanza/goal.md`
 - goal abierto · organizar-la-casa · `goals/organizar-la-casa/goal.md`
