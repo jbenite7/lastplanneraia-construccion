@@ -11,7 +11,7 @@ function jsonOk(cuerpo: unknown): Response {
 
 function contextoActividad(): LpsActivityContext {
   return {
-    target: { consecutivo: 1, modulo: 'PI' },
+    target: { consecutivo: 1, modulo: 'PI', semana: 1 },
     module: 'PI',
     activity: {
       id: 1,

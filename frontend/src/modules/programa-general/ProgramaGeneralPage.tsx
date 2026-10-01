@@ -260,7 +260,7 @@ export const ProgramaGeneralPage: React.FC<PropiedadesProgramaGeneral> = ({ alCa
     if (!contexto.csrf_drawer) throw new Error('Falta el token de seguridad del cajón LPS. Recarga la página.');
     let respuesta: Awaited<ReturnType<typeof api.declararSos>>;
     try {
-      respuesta = await api.declararSos({ unique_id: uniqueId, csrfToken: contexto.csrf_drawer });
+      respuesta = await api.declararSos({ unique_id: uniqueId, semana: contexto.semana.numero, csrfToken: contexto.csrf_drawer });
     } catch (err: unknown) {
       throw new Error(mensajeErrorSos(err));
     }

@@ -97,7 +97,7 @@ const escenariosPg: EscenarioLps[] = [
       moduloProvider: 'PG',
       estado: { state: 'en-curso', label: 'En curso', phase: null, actions: ['Registrar avance'] },
       activityId: 5001,
-      target: { consecutivo: 5001, modulo: 'PG' },
+      target: { consecutivo: 5001, modulo: 'PG', semana: 1 },
     }),
   },
   {
@@ -109,7 +109,7 @@ const escenariosPg: EscenarioLps[] = [
       moduloProvider: 'PG',
       estado: { state: 'debe-iniciar', label: 'Debe iniciar esta semana', phase: null, actions: [] },
       activityId: 5002,
-      target: { consecutivo: 5002, modulo: 'PG' },
+      target: { consecutivo: 5002, modulo: 'PG', semana: 1 },
     }),
   },
 ];
@@ -149,7 +149,7 @@ const escenariosPi: EscenarioLps[] = [
       moduloProvider: 'PI',
       estado: { state: 'actividad-futura', label: 'Actividad futura', phase: null, actions: [] },
       activityId: 5101,
-      target: { consecutivo: 5101, modulo: 'PI' },
+      target: { consecutivo: 5101, modulo: 'PI', semana: 1 },
     }),
   },
   {
@@ -161,7 +161,7 @@ const escenariosPi: EscenarioLps[] = [
       moduloProvider: 'PI',
       estado: { state: 'en-curso', label: 'En curso', phase: null, actions: ['Resolver predecesora'] },
       activityId: 5102,
-      target: { consecutivo: 5102, modulo: 'PI' },
+      target: { consecutivo: 5102, modulo: 'PI', semana: 1 },
     }),
   },
   {
@@ -173,7 +173,7 @@ const escenariosPi: EscenarioLps[] = [
       moduloProvider: 'PI',
       estado: { state: 'en-curso', label: 'En curso', phase: null, actions: [] },
       activityId: 5103,
-      target: { consecutivo: 5103, modulo: 'PI' },
+      target: { consecutivo: 5103, modulo: 'PI', semana: 1 },
     }),
   },
 ];
@@ -204,7 +204,7 @@ const escenariosPs: EscenarioLps[] = [
       moduloProvider: 'PS',
       estado: { state: 'ps-en-curso', label: 'En curso', phase: 'programacion', actions: [] },
       activityId: 5201,
-      target: { consecutivo: 5201, modulo: 'PS' },
+      target: { consecutivo: 5201, modulo: 'PS', semana: 1 },
     }),
   },
   {
@@ -216,7 +216,7 @@ const escenariosPs: EscenarioLps[] = [
       moduloProvider: 'PS',
       estado: { state: 'ps-pendiente-calificar', label: 'Pendiente de calificación', phase: 'calificacion', actions: [] },
       activityId: 5202,
-      target: { consecutivo: 5202, modulo: 'PS' },
+      target: { consecutivo: 5202, modulo: 'PS', semana: 1 },
     }),
   },
 ];

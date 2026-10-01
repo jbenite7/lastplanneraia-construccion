@@ -26,7 +26,7 @@ function respuestaHilo(overrides: Partial<{ comments: unknown[]; target: unknown
 
 function contextoActividad(overrides: Partial<LpsActivityContext> = {}): LpsActivityContext {
   return {
-    target: { consecutivo: 101, modulo: 'PG' },
+    target: { consecutivo: 101, modulo: 'PG', semana: 1 },
     module: 'PG',
     activity: {
       id: 101,
@@ -107,10 +107,10 @@ test('cambiar de target aborta la lectura previa (AC-031/032): una respuesta tar
     <HarnessLps>
       {(api) => (
         <>
-          <button type="button" onClick={() => api.abrir(contextoActividad({ target: { consecutivo: 101, modulo: 'PG' } }))}>
+          <button type="button" onClick={() => api.abrir(contextoActividad({ target: { consecutivo: 101, modulo: 'PG', semana: 1 } }))}>
             Abrir 101
           </button>
-          <button type="button" onClick={() => api.abrir(contextoActividad({ target: { consecutivo: 202, modulo: 'PG' }, activity: { ...contextoActividad().activity, id: 202, label: 'Actividad 202' } }))}>
+          <button type="button" onClick={() => api.abrir(contextoActividad({ target: { consecutivo: 202, modulo: 'PG', semana: 1 }, activity: { ...contextoActividad().activity, id: 202, label: 'Actividad 202' } }))}>
             Abrir 202
           </button>
         </>

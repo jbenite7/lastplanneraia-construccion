@@ -3,6 +3,7 @@ import {
   EsquemaComentarioRaiz,
   EsquemaCrisisAlert,
   EsquemaTarget,
+  queryDeTarget,
 } from './esquemas';
 
 // --- target: unión discriminada por kind -----------------------------------
@@ -129,4 +130,18 @@ test('un comentario que trae usuario_id (forma legada) no rompe la forma React: 
     respuestas: [],
   });
   expect(resultado.success).toBe(true);
+});
+
+// --- queryDeTarget: la semana viaja con la actividad ------------------------
+
+test('queryDeTarget con una actividad pone la semana, incluida la 0 de Pre-Construcción', () => {
+  const query = queryDeTarget({ consecutivo: 3, modulo: 'PG', semana: 7 });
+  expect(query.get('semana')).toBe('7');
+  expect(queryDeTarget({ consecutivo: 3, modulo: 'PG', semana: 0 }).get('semana')).toBe('0');
+});
+
+test('queryDeTarget con una alerta no pone semana', () => {
+  const query = queryDeTarget({ alertaId: 9 });
+  expect(query.get('alerta_id')).toBe('9');
+  expect(query.has('semana')).toBe(false);
 });
