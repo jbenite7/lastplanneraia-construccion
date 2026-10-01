@@ -238,6 +238,24 @@ window.LPSContextualDrawer = (function() {
     };
   }
 
+  /**
+   * Dice al servidor sobre que semana actua la llamada. Si la fila trae una alerta, la alerta fija
+   * la semana (escalamiento_id); si no, se manda la semana que se esta viendo, y solo cuando existe
+   * y es mayor que 0: ni un 0 de relleno ni una semana inventada cuando falta semana_PHP.
+   * Sirve para URLSearchParams y FormData; un escalamiento_id ya presente no se duplica.
+   */
+  function appendTargetWeek(params, rowData) {
+    if (params.has('escalamiento_id')) return params;
+    const alertaId = rowData && (rowData.escalamiento_id || rowData.alerta_id);
+    if (alertaId) {
+      params.append('escalamiento_id', alertaId);
+      return params;
+    }
+    const semana = getSessionContext().semana;
+    if (Number.isInteger(semana) && semana > 0) params.append('semana', semana);
+    return params;
+  }
+
   function bindEvents() {
     const overlay = document.getElementById('lps_drawer_overlay');
     const drawer = document.getElementById('lps_drawer');
@@ -880,7 +898,10 @@ window.LPSContextualDrawer = (function() {
     const requestConsecutivo = activeConsecutivo;
     commentsRequestController = requestController;
 
-    fetch(`/api/lps/comments?consecutivo=${requestConsecutivo}`, { signal: requestController.signal })
+    const commentsParams = new URLSearchParams({ consecutivo: requestConsecutivo });
+    appendTargetWeek(commentsParams, getActiveRowData());
+
+    fetch(`/api/lps/comments?${commentsParams.toString()}`, { signal: requestController.signal })
       .then(async res => {
         let response = null;
         try {
@@ -1055,6 +1076,7 @@ window.LPSContextualDrawer = (function() {
     formData.append('comentario', comentario);
     if (activeParentId) formData.append('parent_id', activeParentId);
     if (activeAlertaId) formData.append('escalamiento_id', activeAlertaId);
+    appendTargetWeek(formData, getActiveRowData());
     if (menciones.length > 0) formData.append('menciones', JSON.stringify({ roles: menciones }));
     formData.append('_csrf_token', lpsDrawerCsrfToken());
 
@@ -1208,6 +1230,7 @@ window.LPSContextualDrawer = (function() {
       const moduloDeLaFila = ['PG', 'PI', 'PS'].includes(rowData.modulo) ? rowData.modulo : null;
       formData.append('modulo', moduloDeLaFila || (activeModuleKey === 'programa-general' ? 'PG' : (activeModuleKey === 'programacion-intermedia' ? 'PI' : 'PS')));
       formData.append('trigger', `SOS-${rolSuperior.substring(0, 3).toUpperCase()}`);
+      appendTargetWeek(formData, rowData);
       formData.append('_csrf_token', lpsDrawerCsrfToken());
 
       fetch('/api/lps/crisis/register', {
