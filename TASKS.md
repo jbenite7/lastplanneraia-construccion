@@ -20,7 +20,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 | hecha | 564 |
 | en progreso | 3 |
 | pendiente | 154 |
-| sin señal | 208 |
+| sin señal | 216 |
 | descartada | 48 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -900,7 +900,15 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### S05-SOS · S05 — Los dos fallos críticos del SOS (abierto)
 
-- Sin plan todavía.
+- **S05-SOS — La semana y el id de la alerta** (abierto): 0 de 8 hechas · `2026-09-30-s05-sos-semana-y-alerta.md`
+  - sin señal · 0 · Preparación y línea base
+  - sin señal · 1 · `Database::insertedId()`
+  - sin señal · 2 · Los tres escritores usan `insertedId()` y el registro revierte con id 0
+  - sin señal · 3 · El resolvedor verifica la semana
+  - sin señal · 4 · El controlador lee `semana` y `escalamiento_id`
+  - sin señal · 5 · El cajón legado manda la semana
+  - sin señal · 6 · React manda la semana y no disfraza el error de contrato
+  - sin señal · 7 · Verificación integral y cierre
 
 ### Sin spec
 
@@ -2352,6 +2360,24 @@ estado por defecto mientras Felipe no reparta.
   `?: lastInsertId()` inalcanzable de `ProfesionalesApiController.php:290` y
   `SubcontratistasApiController.php:224`. Sin efecto visible hoy; **depende de que S05-SOS esté en
   `main`**. Decisión de alcance de Felipe del 2026-09-30. Responsable: pendiente.
+- [ ] 2026-10-01 — **`decision-log` filtra el nombre de una tabla y `createAction` es código
+  muerto.** Verificado el 2026-09-30 en la base local:
+  - **`general_decision_log` no existe.** El guard lanza «Tabla no clasificada en el schema:
+    general_decision_log» (`TableScopeCatalog.php:83`). `GeneralApiController::decisionLog`
+    responde 400 con `$e->getMessage()` (`GeneralApiController.php:1603`), así que el navegador
+    recibe el nombre interno de la tabla. El registro de decisiones de «Actualizar cronograma» se
+    pierde en silencio: `decision_logger.js` solo lo anota en la consola. La ficha de Programa
+    General ya marcaba la ruta como «siempre falla».
+  - **`bi_action_queue` tampoco existe, y `ActionRecommendationService::createAction()` no tiene
+    llamadores.**
+  - Las dos se declaran con `AUTO_INCREMENT`, así que **no** caen en la trampa de `lastInsertId()`.
+  - **Decidir:** aplicar `database/patches/20260622_create_decision_log.sql`, que es un cambio de
+    esquema con gate, respaldo y restauración, o retirar la ruta y el registrador. Recomendación:
+    dentro de S06, dueña de esa pantalla. Borrar `createAction` en una limpieza aparte.
+  - Si las tablas existen en producción: pendiente del 2026-10-01; requiere `/visto-prod` y que
+    Felipe corra la consulta.
+
+  Responsable: pendiente.
 
 **Lo que siguió vivo al cerrar cuatro planes huérfanos, 2026-09-28.** Los planes se cerraron porque
 sus specs ya estaban cerradas o derogadas (decisión de la sesión de infraestructura por delegación de
