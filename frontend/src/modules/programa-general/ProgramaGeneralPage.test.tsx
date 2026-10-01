@@ -276,7 +276,7 @@ describe('ProgramaGeneralPage', () => {
     );
     const llamadasAntes = mockObtenerActividades.mock.calls.length;
     fireEvent.click(screen.getByRole('button', { name: /Declarar Crisis SOS/i }));
-    await waitFor(() => expect(mockDeclararSos).toHaveBeenCalledWith({ unique_id: 101, csrfToken: 'csrf-drawer' }));
+    await waitFor(() => expect(mockDeclararSos).toHaveBeenCalledWith({ unique_id: 101, semana: 34, csrfToken: 'csrf-drawer' }));
     await waitFor(() => expect(mockObtenerActividades.mock.calls.length).toBeGreaterThan(llamadasAntes));
     expect(await screen.findByRole('button', { name: /Alerta SOS LPS Activa/i })).toBeDisabled();
   });

@@ -15,6 +15,7 @@ final readonly class LpsTargetRequest
         public ?string $module = null,
         public ?int $alertId = null,
         public ?int $escalamientoId = null,
+        public ?int $week = null,
     ) {
     }
 }

@@ -221,7 +221,7 @@ class LpsService
             [$sql, $params] = $this->db->insertProjectId($sql, $proyectoId, $params);
             $this->db->query($sql, $params);
 
-            return (int) $this->db->lastInsertId();
+            return $this->db->insertedId();
         } catch (Throwable $e) {
             error_log("Error al agregar comentario en drawer: " . $e->getMessage());
             return 0;

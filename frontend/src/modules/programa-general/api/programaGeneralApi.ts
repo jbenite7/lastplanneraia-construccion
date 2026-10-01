@@ -35,6 +35,8 @@ export interface ActualizarEjecucionPayload {
 
 export interface DeclararSosPayload {
   unique_id: number;
+  /** Semana del contexto de la pantalla: el servidor la verifica contra la actividad. */
+  semana: number;
   /** Token de la clave `lps_drawer` (`contexto.csrf_drawer`); los de guardado o del shell dan 403. */
   csrfToken: string;
 }
@@ -131,7 +133,7 @@ export function programaGeneralApi(cliente: ClienteHttpPg = defaultCliente) {
       return registrarCrisis({
         trigger: 'MANUAL',
         csrfToken: payload.csrfToken,
-        target: { consecutivo: payload.unique_id, modulo: 'PG' },
+        target: { consecutivo: payload.unique_id, modulo: 'PG', semana: payload.semana },
       });
     },
 

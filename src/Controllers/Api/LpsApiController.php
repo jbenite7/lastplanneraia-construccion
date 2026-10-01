@@ -27,6 +27,8 @@ use Throwable;
 
 class LpsApiController
 {
+    private const SEMANA_INVALIDA = 'Debe ser un entero mayor o igual a 0.';
+
     private $db;
 
     public function __construct()
@@ -95,7 +97,6 @@ class LpsApiController
         $alertaIdRaw = $_GET['alerta_id'] ?? null;
         $consecutivoRaw = $_GET['consecutivo'] ?? null;
         $modulo = (isset($_GET['modulo']) && $_GET['modulo'] !== '') ? strtoupper(trim((string) $_GET['modulo'])) : null;
-        $escalamientoId = !empty($_GET['escalamiento_id']) ? filter_var($_GET['escalamiento_id'], FILTER_VALIDATE_INT) : null;
         $isPureLegacy = $alertaIdRaw === null && $modulo === null;
 
         if ($isPureLegacy) {
@@ -106,7 +107,12 @@ class LpsApiController
             }
         }
 
-        $request = $this->buildTargetRequest($consecutivoRaw, $modulo, $alertaIdRaw, $escalamientoId);
+        $hints = $this->readSemanaYEscalamiento($_GET);
+        if ($hints === null) {
+            return;
+        }
+
+        $request = $this->buildTargetRequest($consecutivoRaw, $modulo, $alertaIdRaw, $hints['escalamientoId'], $hints['semana']);
 
         try {
             $target = $this->buildTargetResolver($scope, $context['dbPrefix'])->resolve($request);
@@ -196,7 +202,6 @@ class LpsApiController
         $modulo = (isset($_POST['modulo']) && $_POST['modulo'] !== '') ? strtoupper(trim((string) $_POST['modulo'])) : null;
         $comentario = trim($_POST['comentario'] ?? '');
         $parentId = !empty($_POST['parent_id']) ? filter_var($_POST['parent_id'], FILTER_VALIDATE_INT) : null;
-        $escalamientoId = !empty($_POST['escalamiento_id']) ? filter_var($_POST['escalamiento_id'], FILTER_VALIDATE_INT) : null;
         $mencionesRaw = !empty($_POST['menciones']) ? json_decode((string) $_POST['menciones'], true) : null;
         $isPureLegacy = $alertaIdRaw === null && $modulo === null;
 
@@ -211,7 +216,12 @@ class LpsApiController
             return;
         }
 
-        $request = $this->buildTargetRequest($consecutivoRaw, $modulo, $alertaIdRaw, $escalamientoId);
+        $hints = $this->readSemanaYEscalamiento($_POST);
+        if ($hints === null) {
+            return;
+        }
+
+        $request = $this->buildTargetRequest($consecutivoRaw, $modulo, $alertaIdRaw, $hints['escalamientoId'], $hints['semana']);
 
         try {
             $target = $this->buildTargetResolver($scope, $context['dbPrefix'])->resolve($request);
@@ -258,7 +268,59 @@ class LpsApiController
         }
     }
 
-    private function buildTargetRequest(mixed $consecutivoRaw, ?string $modulo, mixed $alertaIdRaw, int|false|null $escalamientoId): LpsTargetRequest
+    /**
+     * Lee `semana` y `escalamiento_id` de la entrada y los valida; si alguno viene y es inválido,
+     * responde 422 con sus campos y devuelve null (el llamador corta). Ambos son opcionales: el
+     * resolvedor decide si falta alguno. Nunca `empty()`: el 0 es una semana válida.
+     *
+     * @param array<string, mixed> $source $_GET o $_POST
+     * @return array{semana: int|null, escalamientoId: int|null}|null
+     */
+    private function readSemanaYEscalamiento(array $source): ?array
+    {
+        $semana = $this->parseSemana($source['semana'] ?? null);
+        $escalamientoId = $this->parseEscalamientoId($source['escalamiento_id'] ?? null);
+
+        $fields = [];
+        if ($semana === false) {
+            $fields['semana'] = self::SEMANA_INVALIDA;
+        }
+        if ($escalamientoId === false) {
+            $fields['escalamiento_id'] = 'Debe ser un entero positivo.';
+        }
+        if ($fields !== []) {
+            $this->renderApiError(LpsApiError::validationFailed($fields));
+
+            return null;
+        }
+
+        return ['semana' => $semana, 'escalamientoId' => $escalamientoId];
+    }
+
+    /**
+     * Semana que propone el cliente (el servidor la verifica en el resolvedor). `null` si no viene
+     * o viene vacía, `false` si no es un entero mayor o igual a 0, el entero en otro caso.
+     */
+    private function parseSemana(mixed $raw): int|false|null
+    {
+        if ($raw === null || $raw === '') {
+            return null;
+        }
+
+        return filter_var($raw, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+    }
+
+    /** `null` si no viene o viene vacío, `false` si no es un entero positivo. */
+    private function parseEscalamientoId(mixed $raw): int|false|null
+    {
+        if ($raw === null || $raw === '') {
+            return null;
+        }
+
+        return filter_var($raw, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    }
+
+    private function buildTargetRequest(mixed $consecutivoRaw, ?string $modulo, mixed $alertaIdRaw, int|false|null $escalamientoId, ?int $semana = null): LpsTargetRequest
     {
         $consecutivo = $consecutivoRaw !== null ? filter_var($consecutivoRaw, FILTER_VALIDATE_INT) : null;
         $alertaId = $alertaIdRaw !== null ? filter_var($alertaIdRaw, FILTER_VALIDATE_INT) : null;
@@ -268,6 +330,7 @@ class LpsApiController
             module: $modulo,
             alertId: ($alertaId !== null && $alertaId !== false && $alertaId > 0) ? (int) $alertaId : null,
             escalamientoId: ($escalamientoId !== null && $escalamientoId !== false) ? (int) $escalamientoId : null,
+            week: $semana,
         );
     }
 
@@ -390,7 +453,12 @@ class LpsApiController
         $alertaIdRaw = $_POST['alerta_id'] ?? null;
         $consecutivoRaw = $_POST['consecutivo'] ?? null;
         $modulo = (isset($_POST['modulo']) && $_POST['modulo'] !== '') ? strtoupper(trim((string) $_POST['modulo'])) : null;
-        $request = $this->buildTargetRequest($consecutivoRaw, $modulo, $alertaIdRaw, null);
+        $hints = $this->readSemanaYEscalamiento($_POST);
+        if ($hints === null) {
+            return;
+        }
+
+        $request = $this->buildTargetRequest($consecutivoRaw, $modulo, $alertaIdRaw, $hints['escalamientoId'], $hints['semana']);
 
         try {
             $target = $this->buildTargetResolver($scope, $context['dbPrefix'])->resolve($request);

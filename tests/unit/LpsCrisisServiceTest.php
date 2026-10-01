@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\Services\Lps\LpsAlertRecord;
+use App\Services\Lps\LpsApiError;
+use App\Services\Lps\LpsTargetException;
 use App\Services\Lps\LpsCrisisRepository;
 use App\Services\Lps\LpsCrisisService;
 use App\Services\Lps\LpsCrisisTrigger;
@@ -38,14 +40,14 @@ final class LpsCrisisServiceTest extends TestCase
     }
 
     /** @param list<LpsAlertRecord> $activeSeed */
-    private function repository(array $activeSeed = [], bool $closeReturns = true): LpsCrisisRepository
+    private function repository(array $activeSeed = [], bool $closeReturns = true, ?int $insertReturns = null): LpsCrisisRepository
     {
-        return new class ($activeSeed, $closeReturns) implements LpsCrisisRepository {
+        return new class ($activeSeed, $closeReturns, $insertReturns) implements LpsCrisisRepository {
             /** @var list<string> */
             public array $calls = [];
             private int $nextId = 5000;
 
-            public function __construct(private array $active, private bool $closeReturns)
+            public function __construct(private array $active, private bool $closeReturns, private ?int $insertReturns = null)
             {
             }
 
@@ -80,7 +82,7 @@ final class LpsCrisisServiceTest extends TestCase
             {
                 $this->calls[] = 'insertAlert';
 
-                return $this->nextId++;
+                return $this->insertReturns ?? $this->nextId++;
             }
 
             public function setCrisisFlag(int $projectId, int $activityId, int $week, bool $active): void
@@ -112,6 +114,23 @@ final class LpsCrisisServiceTest extends TestCase
             ['beginTransaction', 'findActiveByTarget', 'insertAlert', 'setCrisisFlag:on', 'commit'],
             $repo->calls,
         );
+    }
+
+    public function testRegistroConIdNoPositivoRevierteYLanza(): void
+    {
+        $repo = $this->repository([], true, 0);
+        $service = new LpsCrisisService($repo);
+
+        try {
+            $service->register($this->target(), LpsCrisisTrigger::MANUAL);
+            self::fail('Se esperaba LpsTargetException.');
+        } catch (LpsTargetException $e) {
+            self::assertSame(LpsApiError::serviceUnavailable()->code, $e->apiError()->code);
+        }
+
+        self::assertContains('rollBack', $repo->calls);
+        self::assertNotContains('commit', $repo->calls);
+        self::assertNotContains('setCrisisFlag:on', $repo->calls);
     }
 
     public function testRegistrarConAlertaYaActivaEsIdempotenteYNoInserta(): void

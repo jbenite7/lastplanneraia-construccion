@@ -179,13 +179,14 @@ describe('programaGeneralApi & esquemas', () => {
     vi.stubGlobal('fetch', fetchFalso);
     try {
       const api = programaGeneralApi({ get: vi.fn(), postForm: vi.fn() } as any);
-      const res = await api.declararSos({ unique_id: 101, csrfToken: 'token-drawer' });
+      const res = await api.declararSos({ unique_id: 101, semana: 33, csrfToken: 'token-drawer' });
       expect(res.data).toEqual({ alertId: 9, wasActive: false });
       const [ruta, opciones] = fetchFalso.mock.calls[0];
       expect(String(ruta)).toBe('/api/lps/crisis/register');
       const cuerpo = opciones.body as URLSearchParams;
       expect(cuerpo.get('modulo')).toBe('PG');
       expect(cuerpo.get('consecutivo')).toBe('101');
+      expect(cuerpo.get('semana')).toBe('33');
       expect(cuerpo.get('trigger')).toBe('MANUAL');
       expect(cuerpo.get('_csrf_token')).toBe('token-drawer');
     } finally {

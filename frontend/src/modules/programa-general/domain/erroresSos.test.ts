@@ -17,10 +17,17 @@ describe('mensajeErrorSos', () => {
     expect(texto).toMatch(/permiso|token de seguridad/i);
   });
 
-  it('401 y la respuesta 200 con forma inesperada (sesión expirada del legado) hablan de la sesión', () => {
+  it('401 y SESION_LEGADO hablan de la sesión', () => {
     expect(mensajeErrorSos(http(401, '/api/lps/crisis/register respondió 401'))).toMatch(/sesión/i);
+    const legado = new ApiError('Sesión expirada', { tipo: 'http', status: 200, codigo: 'SESION_LEGADO' });
+    expect(mensajeErrorSos(legado)).toMatch(/sesión venció/i);
+  });
+
+  it('una forma inválida con 200 es un error del sistema, no una sesión vencida', () => {
     const forma = new ApiError('/api/lps/crisis/register devolvió una forma inesperada — ok: …', { tipo: 'forma_invalida', status: 200, codigo: 'INVALID_SHAPE' });
-    expect(mensajeErrorSos(forma)).toMatch(/sesión/i);
+    expect(mensajeErrorSos(forma)).toBe(
+      'Error del sistema: la respuesta del servidor no se pudo leer. Recarga la página para ver si la crisis quedó registrada antes de repetirla.',
+    );
   });
 
   it('5xx y red tienen su propio texto', () => {

@@ -21,7 +21,7 @@ test('registrarCrisis por consecutivo+modulo envía trigger + csrf en form-urlen
   const resultado = await registrarCrisis({
     trigger: 'MANUAL',
     csrfToken: 'a'.repeat(64),
-    target: { consecutivo: 3, modulo: 'PG' },
+    target: { consecutivo: 3, modulo: 'PG', semana: 12 },
   });
 
   expect(resultado.data).toEqual({ alertId: 9, wasActive: false });
@@ -32,6 +32,7 @@ test('registrarCrisis por consecutivo+modulo envía trigger + csrf en form-urlen
   expect(cuerpo.get('trigger')).toBe('MANUAL');
   expect(cuerpo.get('consecutivo')).toBe('3');
   expect(cuerpo.get('modulo')).toBe('PG');
+  expect(cuerpo.get('semana')).toBe('12');
   expect(cuerpo.get('_csrf_token')).toBe('a'.repeat(64));
 });
 
@@ -67,7 +68,7 @@ test.each(['MANUAL', 'SOS-RES', 'SOS-DIR', 'SOS-COO', 'SOS-GER'] as const)(
     }), { status: 200 })));
 
     await expect(
-      registrarCrisis({ trigger, csrfToken: 'a'.repeat(64), target: { consecutivo: 3, modulo: 'PG' } }),
+      registrarCrisis({ trigger, csrfToken: 'a'.repeat(64), target: { consecutivo: 3, modulo: 'PG', semana: 1 } }),
     ).resolves.toBeDefined();
 
     vi.unstubAllGlobals();
@@ -87,7 +88,7 @@ test('un 422 VALIDATION_FAILED con trigger inválido en fields propaga como ApiE
     // @ts-expect-error — se prueba deliberadamente un trigger fuera del tipo, como si viniera de un caller no confiable
     trigger: 'AUTO-DESCONOCIDO',
     csrfToken: 'a'.repeat(64),
-    target: { consecutivo: 3, modulo: 'PG' },
+    target: { consecutivo: 3, modulo: 'PG', semana: 1 },
   }).catch((causa: unknown) => causa);
 
   expect(error).toBeInstanceOf(ApiError);
@@ -187,4 +188,22 @@ test('abort en cerrarCrisis rechaza con ApiError tipo abortado, sin reintento', 
   expect(error).toBeInstanceOf(ApiError);
   expect((error as ApiError).tipo).toBe('abortado');
   expect(fetchFalso).toHaveBeenCalledTimes(1);
+});
+
+test('una respuesta 200 {respuesta:ERROR, mensaje} del guardia legado lanza ApiError SESION_LEGADO', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(
+    JSON.stringify({ respuesta: 'ERROR', mensaje: 'Sesión expirada' }),
+    { status: 200 },
+  )));
+
+  const error = await registrarCrisis({
+    trigger: 'MANUAL',
+    csrfToken: 'a'.repeat(64),
+    target: { consecutivo: 3, modulo: 'PG', semana: 1 },
+  }).catch((e: unknown) => e);
+
+  expect(error).toBeInstanceOf(ApiError);
+  expect((error as ApiError).codigo).toBe('SESION_LEGADO');
+  expect((error as ApiError).tipo).toBe('http');
+  expect((error as ApiError).status).toBe(200);
 });

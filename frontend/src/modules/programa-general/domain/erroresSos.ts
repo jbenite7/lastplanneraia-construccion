@@ -14,14 +14,20 @@ const GENERICO = 'No se pudo registrar la crisis SOS. Inténtalo de nuevo.';
 export function mensajeErrorSos(error: unknown): string {
   if (!(error instanceof ApiError)) return GENERICO;
 
+  const SESION_VENCIDA =
+    'Tu sesión venció o el proyecto ya no está activo: la crisis no se registró. Recarga la página e inténtalo de nuevo.';
+  // Antes de la rama `http`: el mensaje del guardia legado no es para mostrarlo tal cual.
+  if (error.codigo === 'SESION_LEGADO') return SESION_VENCIDA;
+
   const mensajeTecnico = /^\/api\//.test(error.message) || error.message.trim() === '';
   if (error.tipo === 'http' && !mensajeTecnico) return error.message;
 
   if (error.tipo === 'red') {
     return 'Sin conexión con el servidor: la crisis no se registró. Revisa la conexión e inténtalo de nuevo.';
   }
-  if (error.status === 401 || (error.tipo === 'forma_invalida' && error.status === 200)) {
-    return 'Tu sesión venció o el proyecto ya no está activo: la crisis no se registró. Recarga la página e inténtalo de nuevo.';
+  if (error.status === 401) return SESION_VENCIDA;
+  if (error.tipo === 'forma_invalida' && error.status === 200) {
+    return 'Error del sistema: la respuesta del servidor no se pudo leer. Recarga la página para ver si la crisis quedó registrada antes de repetirla.';
   }
   if (error.status === 403) {
     return 'No se pudo registrar la crisis: no tienes permiso para declararla o el token de seguridad venció. Recarga la página e inténtalo de nuevo.';

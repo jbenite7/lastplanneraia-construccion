@@ -123,7 +123,7 @@ export type ComentarioRaiz = z.infer<typeof EsquemaComentarioRaiz>;
  * duplicado literal en `hilo.ts` y `crisis.ts` (mismo cuerpo, mismo nombre de función); se extrae
  * aquí — encargo del controlador de la Tarea 8 — antes de que un tercer llamador lo triplicara.
  */
-export type TargetHiloParams = { consecutivo: number; modulo: Modulo } | { alertaId: number };
+export type TargetHiloParams = { consecutivo: number; modulo: Modulo; semana: number } | { alertaId: number };
 
 /**
  * Serializa un target a los mismos `URLSearchParams` que espera tanto `GET /api/lps/comments`
@@ -138,6 +138,8 @@ export function queryDeTarget(target: TargetHiloParams): URLSearchParams {
   } else {
     query.set('consecutivo', String(target.consecutivo));
     query.set('modulo', EsquemaModulo.parse(target.modulo));
+    // La semana la propone el cliente y el servidor la verifica; la 0 (Pre-Construcción) es válida.
+    query.set('semana', String(target.semana));
   }
   return query;
 }

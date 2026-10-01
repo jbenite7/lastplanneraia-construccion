@@ -37,6 +37,11 @@ final class LpsCrisisService
                 ? $existing->id
                 : $this->repository->insertAlert($target->projectId, $target->activityId, $target->module, $target->week, $trigger);
 
+            // Un id no positivo significa que la alerta no quedó registrada: no se confirma nada.
+            if (!$wasActive && $alertId <= 0) {
+                throw new LpsTargetException(LpsApiError::serviceUnavailable());
+            }
+
             $this->repository->setCrisisFlag($target->projectId, $target->activityId, $target->week, true);
             $this->repository->commit();
 

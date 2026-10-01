@@ -141,7 +141,7 @@ afirmar(($data['respuesta'] ?? null) === 'ERROR', 'GET comments sin consecutivo 
 // Sección 2: lectura pura con consecutivo inexistente — SELECT sin filas, sin DML
 // ---------------------------------------------------------------------------
 
-[$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=999999999', null, $jar);
+[$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=999999999&semana=1', null, $jar);
 afirmar($code === 200, "GET comments consecutivo inexistente debería responder HTTP 200 (fue $code)");
 afirmar(($data['respuesta'] ?? null) === 'OK', 'GET comments consecutivo inexistente sigue respondiendo OK (lectura pura sin filas)');
 afirmar(is_array($data['data'] ?? null), 'GET comments consecutivo inexistente trae "data" como arreglo');
@@ -177,7 +177,7 @@ foreach ($mutacionesSinCsrf as [$ruta, $payload]) {
 // para 'PDC Sandbox E2E' (ID 990100) — fixture ya sembrada, no se crea nada aquí.
 const ACTIVIDAD_PG_SEMBRADA = 3;
 
-[$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=' . ACTIVIDAD_PG_SEMBRADA . '&modulo=PG', null, $jar);
+[$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=' . ACTIVIDAD_PG_SEMBRADA . '&modulo=PG&semana=1', null, $jar);
 afirmar($code === 200, "GET comments consecutivo+modulo típico debería responder HTTP 200 (fue $code)");
 afirmar(($data['respuesta'] ?? null) === 'OK', 'GET comments consecutivo+modulo trae respuesta=OK');
 afirmar(($data['ok'] ?? null) === true, 'GET comments aditivo trae ok=true (T02-AC-080)');
@@ -186,10 +186,39 @@ afirmar(is_array($data['comments'] ?? null), 'GET comments aditivo trae "comment
 afirmar(is_array($data['target'] ?? null), 'GET comments aditivo trae "target" (T02-AC-081)');
 afirmar(($data['target']['kind'] ?? null) === 'activity', 'target.kind es "activity" para consecutivo+modulo');
 afirmar(($data['target']['module'] ?? null) === 'PG', 'target.module refleja el módulo resuelto');
-afirmar(($data['target']['week'] ?? null) === 1, 'target.week viene del servidor (Semana=1 sembrada), no de la sesión');
+afirmar(($data['target']['week'] ?? null) === 1, 'target.week es la semana enviada (semana=1), verificada por el servidor contra la fila sembrada');
 afirmar(is_array($data['actions'] ?? null), 'GET comments aditivo trae "actions" (T02-AC-081)');
 afirmar(($data['actions']['read'] ?? null) === true, 'actions.read es true para test.R con permiso de ver');
 afirmar(!array_key_exists('crisisAlert', $data), 'un target de actividad (no alerta) no trae "crisisAlert"');
+
+// S05-SOS 1.2: la semana la propone el cliente y el servidor la verifica. Semana 2 no tiene fila
+// para la actividad sembrada (Semana=1); sin semana ni escalamiento_id no hay de dónde sacarla;
+// "2a" y "-1" se rechazan antes de llegar al resolvedor.
+[$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=' . ACTIVIDAD_PG_SEMBRADA . '&modulo=PG&semana=2', null, $jar);
+afirmar($code === 404, "GET comments con semana=2 (sin fila) debería responder HTTP 404 (fue $code)");
+afirmar(($data['error']['code'] ?? null) === 'LPS_TARGET_NOT_FOUND', 'semana sin fila trae error.code=LPS_TARGET_NOT_FOUND');
+
+[$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=' . ACTIVIDAD_PG_SEMBRADA . '&modulo=PG', null, $jar);
+afirmar($code === 422, "GET comments sin semana ni escalamiento_id debería responder HTTP 422 (fue $code)");
+afirmar(($data['error']['code'] ?? null) === 'VALIDATION_FAILED', 'sin semana trae error.code=VALIDATION_FAILED');
+afirmar(array_key_exists('semana', $data['error']['fields'] ?? []), 'sin semana señala el campo "semana" en error.fields');
+
+foreach (['2a', '-1'] as $semanaMala) {
+    [$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=' . ACTIVIDAD_PG_SEMBRADA . '&modulo=PG&semana=' . urlencode($semanaMala), null, $jar);
+    afirmar($code === 422, "GET comments con semana={$semanaMala} debería responder HTTP 422 (fue $code)");
+    afirmar(($data['error']['code'] ?? null) === 'VALIDATION_FAILED', "semana={$semanaMala} trae error.code=VALIDATION_FAILED");
+    afirmar(array_key_exists('semana', $data['error']['fields'] ?? []), "semana={$semanaMala} señala el campo \"semana\"");
+}
+
+// escalamiento_id malformado no se descarta en silencio: 422 con su campo, antes de resolver.
+[$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=' . ACTIVIDAD_PG_SEMBRADA . '&modulo=PG&semana=1&escalamiento_id=abc', null, $jar);
+afirmar($code === 422, "GET comments con escalamiento_id=abc debería responder HTTP 422 (fue $code)");
+afirmar(array_key_exists('escalamiento_id', $data['error']['fields'] ?? []), 'escalamiento_id=abc señala el campo "escalamiento_id" en comments');
+
+// Un parámetro ausente no es 0: semana=0 (Pre-Construcción) se acepta como entrada válida y llega
+// al resolvedor, que responde 404 porque la actividad sembrada no existe en la semana 0.
+[$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=' . ACTIVIDAD_PG_SEMBRADA . '&modulo=PG&semana=0', null, $jar);
+afirmar($code === 404, "GET comments con semana=0 es válida y sin fila responde HTTP 404, no 422 (fue $code)");
 
 [$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=' . ACTIVIDAD_PG_SEMBRADA . '&modulo=ZZ', null, $jar);
 $capturas['422_validation_failed'] = ['ruta' => '/api/lps/comments', 'codigo' => $code, 'raw' => $ultimoCuerpo];
@@ -198,7 +227,7 @@ afirmar(($data['error']['code'] ?? null) === 'VALIDATION_FAILED', 'módulo invá
 
 // El 404 tal como lo recibe el cajón React (medido en la revisión del #44): actividad inexistente
 // con módulo — lectura pura, SELECT sin filas.
-[$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=999999999&modulo=PS', null, $jar);
+[$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=999999999&modulo=PS&semana=1', null, $jar);
 $capturas['404_lps_target_not_found'] = ['ruta' => '/api/lps/comments', 'codigo' => $code, 'raw' => $ultimoCuerpo];
 afirmar($code === 404, "GET comments con consecutivo+modulo inexistentes debería responder HTTP 404 (fue $code)");
 afirmar(($data['error']['code'] ?? null) === 'LPS_TARGET_NOT_FOUND', 'actividad inexistente con módulo trae error.code=LPS_TARGET_NOT_FOUND');
@@ -229,6 +258,7 @@ if (!preg_match('/<meta name="lps-drawer-csrf-token" content="([a-f0-9]{64})"/',
     [$code, $data] = jsonReq(BASE . '/api/lps/comments/add', [
         'consecutivo' => (string) ACTIVIDAD_PG_SEMBRADA,
         'modulo' => 'PG',
+        'semana' => '1',
         'comentario' => 'censo t02 — actor sin fila profesionales',
         '_csrf_token' => $csrfToken,
     ], $jar);
@@ -236,6 +266,28 @@ if (!preg_match('/<meta name="lps-drawer-csrf-token" content="([a-f0-9]{64})"/',
     afirmar($code === 409, "POST comments/add con actor sin fila profesionales debería responder HTTP 409 (fue $code, sin DML)");
     afirmar(($data['error']['code'] ?? null) === 'PROFILE_REQUIRED', 'actor incompatible trae error.code=PROFILE_REQUIRED (T02-AC-099/100)');
     afirmar(($data['ok'] ?? null) === false, 'PROFILE_REQUIRED trae ok=false');
+
+    // Semana malformada en comments/add: 422 con su campo, sin tocar el repositorio.
+    [$code, $data] = jsonReq(BASE . '/api/lps/comments/add', [
+        'consecutivo' => (string) ACTIVIDAD_PG_SEMBRADA,
+        'modulo' => 'PG',
+        'semana' => '2a',
+        'comentario' => 'censo t02 — semana malformada',
+        '_csrf_token' => $csrfToken,
+    ], $jar);
+    afirmar($code === 422, "POST comments/add con semana=2a debería responder HTTP 422 (fue $code)");
+    afirmar(array_key_exists('semana', $data['error']['fields'] ?? []), 'comments/add con semana=2a señala el campo "semana"');
+
+    [$code, $data] = jsonReq(BASE . '/api/lps/comments/add', [
+        'consecutivo' => (string) ACTIVIDAD_PG_SEMBRADA,
+        'modulo' => 'PG',
+        'semana' => '1',
+        'escalamiento_id' => 'abc',
+        'comentario' => 'censo t02 — escalamiento malformado',
+        '_csrf_token' => $csrfToken,
+    ], $jar);
+    afirmar($code === 422, "POST comments/add con escalamiento_id=abc debería responder HTTP 422 (fue $code)");
+    afirmar(array_key_exists('escalamiento_id', $data['error']['fields'] ?? []), 'comments/add con escalamiento_id=abc señala el campo "escalamiento_id"');
 
     // Camino legacy puro (sin modulo/alerta_id): conserva el mensaje literal histórico aunque
     // ahora también traiga ok/error de forma aditiva (D-T02-08).
@@ -254,16 +306,17 @@ if (!preg_match('/<meta name="lps-drawer-csrf-token" content="([a-f0-9]{64})"/',
 }
 
 // ---------------------------------------------------------------------------
-// Sección 3c (T02 Tarea 6, AC-105..129): crisis/register y crisis/close — validación tipada que
+// Sección 3c (T02 Tarea 6, AC-105..129; S05-SOS 1.2 añade los casos de semana y escalamiento_id): crisis/register y crisis/close — validación tipada que
 // falla ANTES de tocar el repositorio de escritura (sin DML: `trigger`/`justificacion` inválidos
 // se rechazan antes de resolver el target, y un target inexistente sólo dispara un SELECT).
 //
-// D E L I B E R A D O: esta sección NO prueba el camino de éxito de crisis/register. A diferencia
-// de comments/add, `actions.notifyNext` (la puerta de registro) NO exige actor compatible con
-// `profesionales` (D-T02-09) — sólo capacidad de edición, que test.R sí tiene. Un
-// consecutivo+modulo+trigger válidos aquí SÍ escribiría en la base (INSERT + 2 UPDATE), violando
-// la restricción global "sin DDL/DML". Ese camino queda cubierto sólo a nivel unitario, con dobles,
-// en tests/unit/LpsCrisisServiceTest.php — ver también task-6-report.md.
+// El camino de éxito de crisis/register SÍ se prueba (S05-SOS 1.2), pero solo con una alerta
+// temporal que la propia prueba siembra, restaura (banderas `alerta_crisis`) y borra en `finally`
+// (ver más abajo). A diferencia de comments/add, `actions.notifyNext` NO exige actor compatible con
+// `profesionales` (D-T02-09) — sólo capacidad de edición, que test.R sí tiene —, así que un
+// consecutivo+modulo+semana válidos sin alerta previa SÍ escribirían (INSERT + 2 UPDATE): por eso
+// los casos que usan esa ruta con datos válidos viven dentro del bloque con alerta temporal, donde
+// el registro es idempotente. El resto de la sección falla antes de resolver o con un SELECT sin filas.
 // ---------------------------------------------------------------------------
 
 if (isset($csrfToken)) {
@@ -310,6 +363,104 @@ if (isset($csrfToken)) {
     ], $jar);
     afirmar($code === 404, "POST crisis/close con alerta_id inexistente debería responder HTTP 404 (fue $code, sin DML: SELECT sin filas)");
     afirmar(($data['error']['code'] ?? null) === 'LPS_TARGET_NOT_FOUND', 'alerta inexistente en crisis/close trae error.code=LPS_TARGET_NOT_FOUND');
+
+    // S05-SOS 1.2: crisis/register también exige la semana, y la valida igual que comments.
+    foreach ([
+        'sin semana' => [],
+        'semana=2a' => ['semana' => '2a'],
+        'semana=-1' => ['semana' => '-1'],
+    ] as $etiqueta => $extra) {
+        [$code, $data] = jsonReq(BASE . '/api/lps/crisis/register', [
+            'consecutivo' => (string) ACTIVIDAD_PG_SEMBRADA,
+            'modulo' => 'PG',
+            'trigger' => 'MANUAL',
+            '_csrf_token' => $csrfToken,
+        ] + $extra, $jar);
+        afirmar($code === 422, "POST crisis/register {$etiqueta} debería responder HTTP 422 (fue $code, sin DML)");
+        afirmar(array_key_exists('semana', $data['error']['fields'] ?? []), "crisis/register {$etiqueta} señala el campo \"semana\"");
+    }
+
+    [$code, $data] = jsonReq(BASE . '/api/lps/crisis/register', [
+        'consecutivo' => (string) ACTIVIDAD_PG_SEMBRADA,
+        'modulo' => 'PG',
+        'semana' => '2',
+        'trigger' => 'MANUAL',
+        '_csrf_token' => $csrfToken,
+    ], $jar);
+    afirmar($code === 404, "POST crisis/register con semana=2 (sin fila) debería responder HTTP 404 (fue $code, sin DML)");
+
+    // crisis/register con escalamiento_id: la semana sale de la alerta persistida. Es el único caso
+    // que escribe (la alerta ya está activa, así que el registro es idempotente: no inserta otra,
+    // pero sí marca alerta_crisis). La prueba crea su alerta, restaura las banderas que tocó y la
+    // borra al final. Todo en el proyecto sembrado.
+    require_once __DIR__ . '/../vendor/autoload.php';
+    require_once __DIR__ . '/support/ScopeFixture.php';
+    $dbCrisis = \Database::getInstance();
+    $proyectoSembrado = 990100;
+    $semanaAlerta = 1;
+    $tablaAlertas = \TableResolver::resolveByPrefix((string) ($_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: ''), 'lps_escalamientos');
+    $tablaCons = \TableResolver::resolveByPrefix((string) ($_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: ''), 'programa_consolidado');
+    $tablaSemanal = \TableResolver::resolveByPrefix((string) ($_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: ''), 'programacion_semanal');
+    $enProyecto = static fn (callable $f) => \ScopeFixture::enProyecto($dbCrisis, $proyectoSembrado, $f);
+    $banderas = $enProyecto(static fn () => [
+        $tablaCons => $dbCrisis->queryWithProject("SELECT alerta_crisis FROM `{$tablaCons}` WHERE unique_id = ? AND Semana = ?", [ACTIVIDAD_PG_SEMBRADA, $semanaAlerta], $proyectoSembrado)->fetchAll(PDO::FETCH_COLUMN),
+        $tablaSemanal => $dbCrisis->queryWithProject("SELECT alerta_crisis FROM `{$tablaSemanal}` WHERE unique_id = ? AND Semana = ?", [ACTIVIDAD_PG_SEMBRADA, $semanaAlerta], $proyectoSembrado)->fetchAll(PDO::FETCH_COLUMN),
+    ]);
+    $alertaId = 0;
+    try {
+        $alertaId = $enProyecto(function () use ($dbCrisis, $tablaAlertas, $proyectoSembrado, $semanaAlerta) {
+            $sql = "INSERT INTO `{$tablaAlertas}`
+                     (proyecto_id, semana, unique_id, consecutivo_en_programa, modulo, trigger_origen, nivel_actual, estado)
+                     VALUES (?, ?, ?, ?, 'PG', 'MANUAL', 1, 'Activo')";
+            [$sql, $params] = $dbCrisis->insertProjectId($sql, $proyectoSembrado, [$proyectoSembrado, $semanaAlerta, ACTIVIDAD_PG_SEMBRADA, ACTIVIDAD_PG_SEMBRADA]);
+            $dbCrisis->query($sql, $params);
+            return $dbCrisis->insertedId();
+        });
+        afirmar($alertaId > 0, 'la prueba pudo sembrar su alerta temporal');
+
+        [$code, $data] = jsonReq(BASE . '/api/lps/crisis/register', [
+            'consecutivo' => (string) ACTIVIDAD_PG_SEMBRADA,
+            'escalamiento_id' => (string) $alertaId,
+            'trigger' => 'MANUAL',
+            '_csrf_token' => $csrfToken,
+        ], $jar);
+        afirmar($code === 200, "POST crisis/register con escalamiento_id (sin semana) debería responder HTTP 200 (fue $code)");
+        afirmar(($data['target']['week'] ?? null) === $semanaAlerta, 'con escalamiento_id la semana del target es la de la alerta');
+        afirmar(($data['data']['alertId'] ?? null) === $alertaId && ($data['data']['wasActive'] ?? null) === true, 'registra sobre la alerta sembrada, sin crear otra');
+
+        // escalamiento_id malformado: se rechaza ANTES de resolver (dentro del bloque con alerta
+        // temporal porque, si se descartara en silencio, el registro escribiría).
+        [$code, $data] = jsonReq(BASE . '/api/lps/crisis/register', [
+            'consecutivo' => (string) ACTIVIDAD_PG_SEMBRADA,
+            'modulo' => 'PG',
+            'semana' => '1',
+            'escalamiento_id' => 'abc',
+            'trigger' => 'MANUAL',
+            '_csrf_token' => $csrfToken,
+        ], $jar);
+        afirmar($code === 422, "POST crisis/register con escalamiento_id=abc debería responder HTTP 422 (fue $code)");
+        afirmar(array_key_exists('escalamiento_id', $data['error']['fields'] ?? []), 'escalamiento_id=abc señala el campo "escalamiento_id" en crisis/register');
+
+        [$code, $data] = jsonReq(BASE . '/api/lps/crisis/register', [
+            'consecutivo' => (string) ACTIVIDAD_PG_SEMBRADA,
+            'escalamiento_id' => (string) $alertaId,
+            'semana' => '2',
+            'trigger' => 'MANUAL',
+            '_csrf_token' => $csrfToken,
+        ], $jar);
+        afirmar($code === 404, "POST crisis/register con escalamiento_id y semana distinta debería responder HTTP 404 (fue $code)");
+        afirmar(($data['error']['code'] ?? null) === 'LPS_TARGET_NOT_FOUND', 'semana distinta a la de la alerta trae LPS_TARGET_NOT_FOUND');
+    } finally {
+        $enProyecto(function () use ($dbCrisis, $tablaAlertas, $tablaCons, $tablaSemanal, $proyectoSembrado, $alertaId, $banderas, $semanaAlerta) {
+            if ($alertaId > 0) {
+                $dbCrisis->queryWithProject("DELETE FROM `{$tablaAlertas}` WHERE proyecto_id = ? AND id = ?", [$proyectoSembrado, $alertaId], $proyectoSembrado);
+            }
+            foreach ([$tablaCons, $tablaSemanal] as $tabla) {
+                $valores = $banderas[$tabla];
+                $dbCrisis->queryWithProject("UPDATE `{$tabla}` SET alerta_crisis = ? WHERE unique_id = ? AND Semana = ?", [(int) ($valores[0] ?? 0), ACTIVIDAD_PG_SEMBRADA, $semanaAlerta], $proyectoSembrado);
+            }
+        });
+    }
 } else {
     $fallos++;
     echo "FALLO: sección 3c no pudo obtener el token CSRF real (bloque de sección 3b falló antes)\n";

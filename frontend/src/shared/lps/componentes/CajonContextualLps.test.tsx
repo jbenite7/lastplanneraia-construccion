@@ -26,7 +26,7 @@ function respuestaHilo(overrides: Partial<{ comments: unknown[] }> = {}) {
 
 function contextoActividad(overrides: Partial<LpsActivityContext> = {}): LpsActivityContext {
   return {
-    target: { consecutivo: 101, modulo: 'PG' },
+    target: { consecutivo: 101, modulo: 'PG', semana: 1 },
     module: 'PG',
     activity: {
       id: 101,

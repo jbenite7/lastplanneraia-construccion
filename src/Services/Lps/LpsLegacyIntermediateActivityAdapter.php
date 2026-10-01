@@ -23,19 +23,19 @@ final class LpsLegacyIntermediateActivityAdapter implements LpsActivityTargetAda
         return 'PI';
     }
 
-    public function resolveWeek(int $projectId, int $activityId): ?int
+    public function existsInWeek(int $projectId, int $activityId, int $week): bool
     {
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $this->dbPrefix)) {
-            return null;
+            return false;
         }
 
         $table = TableResolver::resolveByPrefix($this->dbPrefix, 'programa_consolidado');
         $row = $this->db->queryWithProject(
-            "SELECT Semana FROM `{$table}` WHERE project_id = ? AND unique_id = ? AND Titulo = 0 LIMIT 1",
-            [$projectId, $activityId],
+            "SELECT 1 FROM `{$table}` WHERE project_id = ? AND unique_id = ? AND Semana = ? AND Titulo = 0 LIMIT 1",
+            [$projectId, $activityId, $week],
             $projectId,
         )->fetch(PDO::FETCH_ASSOC);
 
-        return $row ? (int) $row['Semana'] : null;
+        return $row !== false;
     }
 }

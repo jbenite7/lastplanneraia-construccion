@@ -34,7 +34,7 @@ test('obtenerHilo por consecutivo+modulo pide GET con esos query params', async 
   const fetchFalso = vi.fn().mockResolvedValue(new Response(JSON.stringify(respuestaHiloTipica()), { status: 200 }));
   vi.stubGlobal('fetch', fetchFalso);
 
-  const resultado = await obtenerHilo({ consecutivo: 3, modulo: 'PG' });
+  const resultado = await obtenerHilo({ consecutivo: 3, modulo: 'PG', semana: 1 });
 
   expect(resultado.target).toEqual({ kind: 'activity', activityId: 3, module: 'PG', week: 1 });
   expect(resultado.comments).toHaveLength(1);
@@ -65,7 +65,7 @@ test('obtenerHilo por alertaId pide alerta_id en vez de consecutivo/modulo', asy
 test('obtenerHilo sin crisisAlert (target de actividad) deja crisisAlert undefined, no null inventado', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(respuestaHiloTipica()), { status: 200 })));
 
-  const resultado = await obtenerHilo({ consecutivo: 3, modulo: 'PG' });
+  const resultado = await obtenerHilo({ consecutivo: 3, modulo: 'PG', semana: 1 });
 
   expect(resultado.crisisAlert).toBeUndefined();
 });
@@ -77,7 +77,7 @@ test('un target ausente en la respuesta falla como ApiError de forma inválida, 
     new Response(JSON.stringify(respuestaHiloTipica({ target: undefined })), { status: 200 }),
   ));
 
-  const error = await obtenerHilo({ consecutivo: 3, modulo: 'PG' }).catch((causa: unknown) => causa);
+  const error = await obtenerHilo({ consecutivo: 3, modulo: 'PG', semana: 1 }).catch((causa: unknown) => causa);
 
   expect(error).toBeInstanceOf(ApiError);
   expect((error as ApiError).tipo).toBe('forma_invalida');
@@ -99,7 +99,7 @@ test('un 404 LPS_TARGET_NOT_FOUND propaga como ApiError con código, sin esquema
 test('un abort en obtenerHilo rechaza con ApiError tipo abortado', async () => {
   vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new DOMException('The operation was aborted.', 'AbortError')));
 
-  const error = await obtenerHilo({ consecutivo: 3, modulo: 'PG' }, { signal: new AbortController().signal })
+  const error = await obtenerHilo({ consecutivo: 3, modulo: 'PG', semana: 1 }, { signal: new AbortController().signal })
     .catch((causa: unknown) => causa);
 
   expect(error).toBeInstanceOf(ApiError);
@@ -122,7 +122,7 @@ test('agregarComentario envía form-urlencoded con consecutivo+modulo+comentario
   const resultado = await agregarComentario({
     comentario: 'censo t02',
     csrfToken: 'a'.repeat(64),
-    target: { consecutivo: 3, modulo: 'PG' },
+    target: { consecutivo: 3, modulo: 'PG', semana: 1 },
   });
 
   expect(resultado.data.commentId).toBe(55);
@@ -171,7 +171,7 @@ test('agregarComentario incluye parent_id y menciones sólo cuando se pasan', as
   await agregarComentario({
     comentario: 'respuesta',
     csrfToken: 'a'.repeat(64),
-    target: { consecutivo: 3, modulo: 'PG' },
+    target: { consecutivo: 3, modulo: 'PG', semana: 1 },
     parentId: 1,
     menciones: { roles: ['R'] },
   });
@@ -192,7 +192,7 @@ test('un 409 PROFILE_REQUIRED al comentar propaga como ApiError, sin reintento a
   const error = await agregarComentario({
     comentario: 'x',
     csrfToken: 'a'.repeat(64),
-    target: { consecutivo: 3, modulo: 'PG' },
+    target: { consecutivo: 3, modulo: 'PG', semana: 1 },
   }).catch((causa: unknown) => causa);
 
   expect(error).toBeInstanceOf(ApiError);

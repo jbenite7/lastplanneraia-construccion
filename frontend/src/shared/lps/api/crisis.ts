@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { pedir } from '../../../lib/api/cliente';
+import { ApiError, pedir } from '../../../lib/api/cliente';
 import { EsquemaMeta, EsquemaTarget, queryDeTarget } from './esquemas';
 import type { TargetHiloParams } from './hilo';
 
@@ -22,6 +22,14 @@ const EsquemaRespuestaRegistrarCrisis = z.object({
 });
 export type RespuestaRegistrarCrisis = z.infer<typeof EsquemaRespuestaRegistrarCrisis>;
 
+/** Sesión vencida del guardia legado: llega como 200 con `{ respuesta: 'ERROR', mensaje }`. */
+const EsquemaRespuestaSesionLegado = z.object({
+  respuesta: z.literal('ERROR'),
+  mensaje: z.string(),
+});
+
+const EsquemaRegistrarOSesionLegado = z.union([EsquemaRespuestaRegistrarCrisis, EsquemaRespuestaSesionLegado]);
+
 const EsquemaRespuestaCerrarCrisis = z.object({
   respuesta: z.literal('OK'),
   ok: z.literal(true),
@@ -42,7 +50,7 @@ export interface RegistrarCrisisParams {
  * `actions.notifyNext` es idempotente (T02-AC-111): registrar sobre una alerta ya activa no
  * cambia de nivel — `data.wasActive` es la única señal de si ya existía.
  */
-export function registrarCrisis(
+export async function registrarCrisis(
   params: RegistrarCrisisParams,
   opciones: RequestInit = {},
 ): Promise<RespuestaRegistrarCrisis> {
@@ -55,11 +63,16 @@ export function registrarCrisis(
   cuerpo.set('trigger', params.trigger);
   cuerpo.set('_csrf_token', params.csrfToken);
 
-  return pedir('/api/lps/crisis/register', EsquemaRespuestaRegistrarCrisis, {
+  const respuesta = await pedir('/api/lps/crisis/register', EsquemaRegistrarOSesionLegado, {
     ...opciones,
     method: 'POST',
     body: cuerpo,
   });
+
+  if (respuesta.respuesta === 'ERROR') {
+    throw new ApiError(respuesta.mensaje, { tipo: 'http', status: 200, codigo: 'SESION_LEGADO' });
+  }
+  return respuesta;
 }
 
 export interface CerrarCrisisParams {
