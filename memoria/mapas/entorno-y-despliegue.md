@@ -48,6 +48,9 @@ Detalle que muerde aparte: la ruta del repo **contiene un espacio**
 
 ## Producción
 
+**No se despliega hasta terminar la migración a React:** [[sin-deploy-hasta-terminar-migracion-react]].
+Cerrar un sprint o fusionar un PR no abre la pregunta del deploy.
+
 [[produccion-deploy]] tiene el procedimiento real: SSH a SiteGround y `git pull --ff-only origin
 main`, con llave dedicada. Producción va muy por detrás de `main`, así que un despliegue completo
 no es un trámite.

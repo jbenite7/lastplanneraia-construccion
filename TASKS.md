@@ -17,10 +17,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 564 |
+| hecha | 572 |
 | en progreso | 3 |
 | pendiente | 154 |
-| sin señal | 216 |
+| sin señal | 208 |
 | descartada | 48 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -898,18 +898,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - en rama · docs/s05-rediseno-spec (falta publicar en main)
 - **Encargo para Codex — mockup del rediseño de Programa General** (abierto): 0 de 0 hechas · `2026-09-28-s05-rediseno-encargo-mockup.md`
 
-### S05-SOS · S05 — Los dos fallos críticos del SOS (abierto)
+### S05-SOS · S05 — Los dos fallos críticos del SOS (cerrado)
 
-- **Informe de sprint S05-SOS — la semana y el id de la alerta** (abierto): 0 de 0 hechas · `2026-09-30-s05-sos-semana-y-alerta-informe.md`
-- **S05-SOS — La semana y el id de la alerta** (abierto): 0 de 8 hechas · `2026-09-30-s05-sos-semana-y-alerta.md`
-  - sin señal · 0 · Preparación y línea base
-  - sin señal · 1 · `Database::insertedId()`
-  - sin señal · 2 · Los tres escritores usan `insertedId()` y el registro revierte con id 0
-  - sin señal · 3 · El resolvedor verifica la semana
-  - sin señal · 4 · El controlador lee `semana` y `escalamiento_id`
-  - sin señal · 5 · El cajón legado manda la semana
-  - sin señal · 6 · React manda la semana y no disfraza el error de contrato
-  - sin señal · 7 · Verificación integral y cierre
+- **Informe de sprint S05-SOS — la semana y el id de la alerta** (cerrado): 0 de 0 hechas · `2026-09-30-s05-sos-semana-y-alerta-informe.md`
+- **S05-SOS — La semana y el id de la alerta** (cerrado): 8 de 8 hechas · `2026-09-30-s05-sos-semana-y-alerta.md`
 
 ### Sin spec
 

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: abierto
+estado: cerrado
 id: S05-SOS
 fecha: 2026-09-30
 superficie: programa-general

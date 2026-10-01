@@ -8,7 +8,7 @@ fecha: 2026-10-01
 sprint: S05-SOS
 ejecutor: claude
 rama: fix/s05-sos-semana-y-alerta
-estado: abierto
+estado: cerrado
 ---
 
 # Informe de sprint S05-SOS — la semana y el id de la alerta
