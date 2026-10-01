@@ -124,6 +124,8 @@ Hay rojos que ya estaban ahí. Lee primero:
 - [[tests-browser-allowlist]] — un test nuevo en `tests/browser/` no se commitea si no lo
   registras en `.gitignore`.
 - [[manifiesto-ds-exige-golden]] — un manifiesto exige un golden real con `sha256` que case.
+- [[el-bundle-de-react-versionado-no-se-recompila-solo]] — `public/app` se versiona: cambiar
+  `frontend/src` sin `npm run build` deja la pantalla servida vieja, y vitest y tsc no lo ven.
 - [[pdc-e2e-sandbox]] — los e2e del PDC van contra el proyecto 990100.
 - [[no-enriquecer-daporto-para-medir]] — no toques el proyecto 73 para tener una línea base ancha.
 - [[sesion-cae-en-el-panel]] — caídas de sesión que son del panel, no de la aplicación.

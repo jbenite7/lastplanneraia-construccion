@@ -900,6 +900,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### S05-SOS · S05 — Los dos fallos críticos del SOS (abierto)
 
+- **Informe de sprint S05-SOS — la semana y el id de la alerta** (abierto): 0 de 0 hechas · `2026-09-30-s05-sos-semana-y-alerta-informe.md`
 - **S05-SOS — La semana y el id de la alerta** (abierto): 0 de 8 hechas · `2026-09-30-s05-sos-semana-y-alerta.md`
   - sin señal · 0 · Preparación y línea base
   - sin señal · 1 · `Database::insertedId()`
@@ -2360,6 +2361,17 @@ estado por defecto mientras Felipe no reparta.
   `?: lastInsertId()` inalcanzable de `ProfesionalesApiController.php:290` y
   `SubcontratistasApiController.php:224`. Sin efecto visible hoy; **depende de que S05-SOS esté en
   `main`**. Decisión de alcance de Felipe del 2026-09-30. Responsable: pendiente.
+- [ ] 2026-10-01 — **Lo que dejó el sprint del arreglo del SOS** (rama `fix/s05-sos-semana-y-alerta`). Responsable: pendiente.
+  - **Gate de frescura del bundle:** `public/app` se versiona y nada comprueba que corresponda a
+    `frontend/src` (trampa `el-bundle-de-react-versionado-no-se-recompila-solo`).
+  - **`LpsDrawerProvider.tsx:315` y `:333-335`** pasan `causa.message` al estado sin
+    `mensajeErrorSos`: con `SESION_LEGADO` se vería el texto crudo del guardia. Ninguna pantalla de
+    producción monta ese cajón hoy.
+  - **Producción, solo lectura:** contar en `lps_escalamientos` las filas con `unique_id` NULL o 0.
+    Si existen, S25 vería su hilo vacío y su SOS respondería 404. Requiere el visto de producción.
+  - **Menores:** un `alerta_id` igual a `"0"` en `lps_drawer.js:249` viajaría como
+    `escalamiento_id=0` (sin fuente conocida); variable `__comment_fetch_log` sin uso en
+    `tests/browser/lps-drawer-fetch-lifecycle.mjs:208`; orden de los `use` en `LpsCrisisServiceTest`.
 - [ ] 2026-10-01 — **`decision-log` filtra el nombre de una tabla y `createAction` es código
   muerto.** Verificado el 2026-09-30 en la base local:
   - **`general_decision_log` no existe.** El guard lanza «Tabla no clasificada en el schema:
