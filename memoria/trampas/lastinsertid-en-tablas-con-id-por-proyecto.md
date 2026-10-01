@@ -22,5 +22,21 @@ migración es historia, y el código manda (ver [[datos]]). La fila de la prueba
 
 **Cómo no caer:** antes de usar `lastInsertId()`, mirar si la tabla está en `PROJECT_SCOPED_IDS`.
 Si está, el id hay que obtenerlo de lo que asignó la capa de datos, nunca de `lastInsertId()`.
-El arreglo del SOS está en la spec `docs/superpowers/specs/2026-09-30-s05-sos-semana-y-alerta-design.md`;
-los demás `lastInsertId()` sobre esas tablas quedan por barrer.
+El arreglo del SOS está en la spec `docs/superpowers/specs/2026-09-30-s05-sos-semana-y-alerta-design.md`.
+
+**Barrido del 2026-09-30** (`git grep lastInsertId` en `src/` y `admin/src`, sobre `a691d7f0`). De
+18 llamadas (sin contar la definición, `Database.php:365`), siete caen en tablas del mapa y once en
+tablas fuera de él. `admin/` usa la misma
+clase `\Database`, así que la trampa también le aplica. Esquema confirmado ese día en local y en
+producción (`dbhif4pdimjtxe`): las doce tablas del mapa sin `AUTO_INCREMENT`.
+
+| Dónde | Tabla | Efecto hoy |
+|---|---|---|
+| `LpsLegacyCrisisRepository.php:82`, `LpsLegacyThreadRepository.php:121` | `lps_escalamientos`, `lps_drawer_comentarios` | Los cubre la spec del SOS |
+| `LpsService.php:224` | `lps_drawer_comentarios` | Ninguno: `escalarAlertasActivas()` está dormido y descarta el retorno. **La spec no lo nombra** |
+| `ProjectProfessionalsSyncService.php:100` y `:157` | `profesionales` | Latente: el id 0 queda en memoria y ningún `UPDATE` del mismo pase lo usa |
+| `ProfesionalesApiController.php:290`, `SubcontratistasApiController.php:224` | `profesionales`, `subcontratistas` | Ninguno: el `?: lastInsertId()` no se alcanza, porque un `SELECT` por correo único encuentra la fila |
+
+Propuesta, no decisión: que `Database` exponga el id que asignó `rewriteInsert` (por ejemplo,
+`insertedId()`), promovido solo tras un `execute()` con filas afectadas y con caída a
+`lastInsertId()` cuando la capa no asignó nada.
