@@ -5,6 +5,9 @@ estado: abierto
 fecha: 2026-09-30
 areas: [lps, datos, qa]
 ejecutor: claude
+aprobado_por: felipe
+aprobado_el: 2026-10-01
+sello: "ninguno — aprobado en el chat de Claude («Apruebo el plan 2026-09-30-s05-sos-semana-y-alerta»); el repo no usa P-NNN ni .flujo.json"
 spec: docs/superpowers/specs/2026-09-30-s05-sos-semana-y-alerta-design.md
 fuente: docs/superpowers/plans/2026-09-30-s05-sos-semana-y-alerta.md
 resumen: "Plan del arreglo de los dos fallos críticos del SOS: la semana viaja desde la pantalla y el servidor la verifica, y el id de alertas y comentarios sale de Database::insertedId() en vez de lastInsertId()."
@@ -58,6 +61,10 @@ aprobada por Felipe el 2026-09-30, sin sello). Léela entera antes de la tarea 0
   por esquema, con el código `SESION_LEGADO`. No se interpreta el texto de un mensaje.
 
 ## Restricciones globales
+
+- **Felipe aprobó el plan en el chat el 2026-10-01**, sin sello. Autoriza ejecutar las tareas 0 a 7
+  tal como están escritas. Si algo de fondo no cumple la spec, se vuelve al paso 03 y no se
+  parchea hacia adelante.
 
 - **Cambio deliberado del contrato T02.** D-T02-02 decía que la semana nunca viene del cliente.
   La spec 1.2 lo cambia: el cliente la propone y el servidor la verifica. Se actualizan a
