@@ -424,6 +424,20 @@ final class LpsTargetResolverTest extends TestCase
         }
     }
 
+    public function testEscalamientoConModuloFueraDelEnumEsValidationFailedConCampoModuloYNoTargetNotFound(): void
+    {
+        $alert = new LpsAlertRecord(30, self::PROJECT_ID, 500, 'PS', 9, 1, true);
+
+        try {
+            $this->resolver(psActivities: [500 => [9]], alerts: [30 => $alert])
+                ->resolve(new LpsTargetRequest(activityId: 500, module: 'XX', escalamientoId: 30));
+            self::fail('Debía lanzar VALIDATION_FAILED.');
+        } catch (LpsTargetException $exception) {
+            self::assertSame('VALIDATION_FAILED', $exception->apiError()->code);
+            self::assertSame(['modulo' => 'Debe ser PG, PI o PS.'], $exception->apiError()->fields);
+        }
+    }
+
     public function testEscalamientoSinModuloTomaElModuloDeLaAlerta(): void
     {
         $alert = new LpsAlertRecord(30, self::PROJECT_ID, 500, 'PS', 9, 1, true);

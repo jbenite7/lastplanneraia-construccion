@@ -52,7 +52,7 @@ test('404 real: el cajón LPS reconoce LPS_TARGET_NOT_FOUND y muestra «no dispo
       const valor = fibra.memoizedProps?.value;
       if (valor && typeof valor.abrir === 'function' && typeof valor.cerrar === 'function' && 'estado' in valor) {
         valor.abrir({
-          target: { consecutivo: 999999999, modulo: 'PS' },
+          target: { consecutivo: 999999999, modulo: 'PS', semana: 1 },
           module: 'PS',
           activity: {
             id: 999999999,
