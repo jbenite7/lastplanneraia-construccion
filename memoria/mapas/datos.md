@@ -36,6 +36,7 @@ SQL dinámico nuevo. El acceso va por `src/Core/Database.php`, con prepared stat
 - [[el-healthcheck-de-db-responde-al-servidor-temporal]] — verde contra el servidor equivocado.
 - [[stack-principal-migraciones-pdc-pendientes]] — replayar migraciones PDC contra HEAD tiene coste.
 - [[mojibake-es-dato-no-codigo]] — se persiguió en el código y estaba en la base.
+- [[lastinsertid-en-tablas-con-id-por-proyecto]] — devuelve 0 sin fallar; el id lo asigna la capa de datos.
 - [[fixture-huerfano-de-programa-consolidado]] y
   [[fijar-un-dato-de-la-base-en-un-test-lo-podre]] — sembrar mal es sembrar deuda.
 
