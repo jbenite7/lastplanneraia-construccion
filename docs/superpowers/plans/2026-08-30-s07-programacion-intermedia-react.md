@@ -973,8 +973,8 @@ export const descargarCorteIntermedio: (week: number, csrf: string) => Promise<R
 
 ## Task 15: Sprint de verificación integral (protocolo común)
 
-> Propuesta del 2026-09-30, pendiente del visto de Felipe; se exige solo cuando el protocolo pase
-> a vigente. Protocolo: `docs/qa/protocolo-verificacion-integral.md`.
+> Aprobado por Felipe en el chat el 2026-09-30: requisito de cierre del módulo.
+> Protocolo: `docs/qa/protocolo-verificacion-integral.md`.
 
 - [ ] Mapa de S07 en tres frentes (pantalla, servidor y base de datos, reglas y flujos), cada objeto con `archivo:línea`.
 - [ ] Entorno: rama servida con `LPS_CODE_ROOT`, `.env` por enlace duro hecho por Felipe, dependencias dentro del contenedor y respaldo de la base de desarrollo antes de escribir.

@@ -1,17 +1,18 @@
 ---
 capa: fuente
 tipo: contrato
-estado: abierto
+estado: vigente
 fecha: 2026-09-30
 areas: [qa, lps, arquitectura]
 fuente: docs/qa/protocolo-verificacion-integral.md
-resumen: "Protocolo común de verificación integral por módulo: mapa, prueba y depuración en navegador, restauración y ficha en la wiki. Propuesta del 2026-09-30, pendiente del visto de Felipe."
+resumen: "Protocolo común de verificación integral por módulo: mapa, prueba y depuración en navegador, restauración y ficha en la wiki. Vigente desde el 2026-09-30 por aprobación de Felipe en el chat."
 ---
 
 # Protocolo de verificación integral por módulo
 
-**Estado: propuesta, pendiente del visto de Felipe.** Una propuesta no es una decisión aprobada:
-mientras este documento diga `estado: abierto`, ninguna spec ni plan lo exige todavía.
+**Estado: vigente desde el 2026-09-30.** Felipe lo aprobó ese día en el chat. Desde entonces es
+requisito de cierre de cada módulo de la migración: un módulo no se da por cerrado sin su sprint
+de verificación integral y su ficha en la wiki.
 
 Pedido de Felipe del 2026-09-30: replicar en cada módulo lo que se hizo con Programa General
 (mapa completo, prueba y depuración en navegador de todas sus funciones, lógica de negocio y
