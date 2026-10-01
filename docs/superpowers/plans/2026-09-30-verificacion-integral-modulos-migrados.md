@@ -10,8 +10,8 @@ resumen: "Sprint de verificación integral y ficha en la wiki para los módulos 
 
 # Verificación integral de los módulos ya migrados (S01 a S04)
 
-> Propuesta del 2026-09-30, pendiente del visto de Felipe; se exige solo cuando el protocolo
-> `docs/qa/protocolo-verificacion-integral.md` pase a vigente.
+> Aprobado por Felipe en el chat el 2026-09-30: requisito de cierre de cada módulo.
+> Protocolo: `docs/qa/protocolo-verificacion-integral.md`.
 
 **Por qué es un plan aparte.** Los planes de S01, S02, S03 y S04 están cerrados. Añadirles
 tareas hacía que `TASKS.md` las contara como hechas, y reabrirlos hacía que contara como

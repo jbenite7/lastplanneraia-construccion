@@ -1151,8 +1151,8 @@ atlas y continuar S19. No implementar S18 en esta sesion.
 
 ## Verificación integral y ficha en la wiki
 
-> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
-> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+> Aprobado por Felipe en el chat el 2026-09-30: el protocolo está vigente y esta sección es
+> requisito de cierre del módulo.
 
 - **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
   prueba de escritura con restauración, roles, cierre).
