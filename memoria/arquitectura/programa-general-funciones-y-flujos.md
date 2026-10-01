@@ -171,7 +171,7 @@ deshacen desde la aplicación: SOS y «Actualizar Ejecución». Trampas del ento
 | # | Gravedad | Fallo |
 |---|---|---|
 | 1 | Crítico | El SOS se registra en otra semana (viendo la 2 quedó en la 1) |
-| 2 | Crítico | Un SOS exitoso se muestra como «Tu sesión venció… la crisis no se registró» (el servidor devuelve `alertId: 0`) |
+| 2 | Crítico | Un SOS exitoso se muestra como «Tu sesión venció… la crisis no se registró» (el servidor devuelve `alertId: 0`: `lastInsertId()` sobre una tabla con id por proyecto, ver [[lastinsertid-en-tablas-con-id-por-proyecto]]) |
 | 3 | Alto | «Plazo vencido» se calcula contra el 23/08/2026 fijo |
 | 4 | Alto | El corte XLSX se genera, pero el navegador bloquea la pestaña y nadie lo recibe |
 | 5 | Alto | La semana confirmada solo se bloquea en pantalla; por la API se edita |
