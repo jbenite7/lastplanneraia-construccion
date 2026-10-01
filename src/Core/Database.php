@@ -56,6 +56,12 @@ class Database
      */
     private ?int $currentProjectId = null;
 
+    /** Id que `rewriteInsert()` asignó al INSERT en curso; aún no confirmado por el motor. */
+    private ?int $pendingInsertedId = null;
+
+    /** Id del último INSERT que sí insertó fila con id asignado por la capa de datos. */
+    private ?int $lastAssignedId = null;
+
     private function __construct()
     {
         $host = $_ENV['DB_HOST'] ?? $_SERVER['DB_HOST'] ?? getenv('DB_HOST') ?? 'localhost';
@@ -122,14 +128,20 @@ class Database
             $projectId = $scope instanceof \App\Security\DataScope\ProjectScope
                 ? $scope->projectId()
                 : null;
+            $this->pendingInsertedId = null;
             [$guardedSql, $guardedParams] = $this->rewriteGlobalTableQuery(
                 $guarded->sql,
                 $guarded->params,
                 $projectId,
                 $guarded->tables,
             );
+            $isInsert = $this->isInsertStatement($guardedSql);
             $stmt = $this->pdo->prepare($guardedSql);
             $stmt->execute($guardedParams);
+            if ($isInsert) {
+                $this->lastAssignedId = $this->promoteAssignedId($this->pendingInsertedId, $stmt->rowCount());
+                $this->pendingInsertedId = null;
+            }
 
             return $stmt;
         } catch (PDOException $e) {
@@ -367,6 +379,28 @@ class Database
         return $this->pdo->lastInsertId();
     }
 
+    /**
+     * Id del último INSERT: el que la capa de datos asignó por proyecto (las tablas de
+     * PROJECT_SCOPED_IDS no tienen AUTO_INCREMENT y `lastInsertId()` devuelve 0 en ellas)
+     * o, si no asignó ninguno, el de `lastInsertId()`. Un INSERT posterior sin fila o sin id
+     * asignado lo borra; SELECT, UPDATE y DELETE no lo tocan.
+     */
+    public function insertedId(): int
+    {
+        return $this->lastAssignedId ?? (int) $this->pdo->lastInsertId();
+    }
+
+    /** Un INSERT que no insertó fila (INSERT IGNORE) no deja id pendiente que promover. */
+    private function promoteAssignedId(?int $pendingId, int $rowCount): ?int
+    {
+        return $pendingId !== null && $rowCount > 0 ? $pendingId : null;
+    }
+
+    private function isInsertStatement(string $sql): bool
+    {
+        return (bool) preg_match('/^\s*(?:\/\*.*?\*\/\s*)*INSERT\b/is', $sql);
+    }
+
     public function beginTransaction()
     {
         return $this->pdo->beginTransaction();
@@ -404,6 +438,9 @@ class Database
             return new DatabasePreparedStatement($this, (string) $sql);
         }
 
+        if ($this->isInsertStatement((string) $sql)) {
+            $this->lastAssignedId = null;
+        }
         if (!$this->usesGlobalTables()) {
             $sql = $this->rewriteLegacyArchiveTables($sql);
         }
@@ -523,6 +560,7 @@ class Database
             $legacyColumn = $this->legacyIdCompanion($table, $idColumn);
             if ($legacyColumn === null || !in_array($legacyColumn, $columns, true)) {
                 $nextId = $this->nextProjectScopedId($table, $idColumn, $projectId);
+                $this->pendingInsertedId = $nextId;
                 $prependColumns[] = $idColumn;
                 $prependValues[] = $nextId;
             }
