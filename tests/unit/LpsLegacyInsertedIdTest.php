@@ -23,7 +23,7 @@ final class LpsLegacyInsertedIdTest extends TestCase
     private const PREFIX = 'test';
 
     private Database $db;
-    private int $consecutivo;
+    private int $actividad;
     private int $semana;
 
     protected function setUp(): void
@@ -33,9 +33,20 @@ final class LpsLegacyInsertedIdTest extends TestCase
         $this->db->dataScope()->bind(new ProjectScope(self::PROJECT_ID, 'test.A', 'A'));
         $this->db->beginTransaction();
 
-        $this->consecutivo = (int) $this->db->query('SELECT Consecutivo FROM programa LIMIT 1')->fetchColumn();
-        $this->semana = (int) $this->db->query('SELECT Semana FROM semanas_activas LIMIT 1')->fetchColumn();
-        self::assertGreaterThan(0, $this->consecutivo, 'El proyecto 73 no tiene programa sembrado.');
+        // Los escritores ponen este mismo numero en `unique_id` y en `consecutivo_en_programa`, y ambas
+        // columnas tienen FK a `programa`: hace falta una actividad cuyo unique_id exista tambien como
+        // Consecutivo. Sin ORDER BY el LIMIT 1 elegia una fila distinta segun el motor y fallaba a ratos.
+        $this->actividad = (int) $this->db->query(
+            'SELECT a.unique_id FROM programa a JOIN programa b ON b.project_id = a.project_id AND b.Consecutivo = a.unique_id '
+            . 'WHERE a.project_id = ? ORDER BY a.unique_id LIMIT 1',
+            [self::PROJECT_ID],
+        )->fetchColumn();
+        $this->semana = (int) $this->db->query(
+            'SELECT Semana FROM semanas_activas WHERE project_id = ? ORDER BY Semana LIMIT 1',
+            [self::PROJECT_ID],
+        )->fetchColumn();
+        self::assertGreaterThan(0, $this->actividad, 'Falta en programa del proyecto 73 una fila cuyo unique_id exista tambien como Consecutivo.');
+        self::assertGreaterThan(0, $this->semana, 'Falta una semana en semanas_activas del proyecto 73.');
     }
 
     protected function tearDown(): void
@@ -58,7 +69,7 @@ final class LpsLegacyInsertedIdTest extends TestCase
     {
         $repo = new LpsLegacyCrisisRepository($this->db, self::PREFIX);
 
-        $id = $repo->insertAlert(self::PROJECT_ID, $this->consecutivo, 'PG', $this->semana, 'test');
+        $id = $repo->insertAlert(self::PROJECT_ID, $this->actividad, 'PG', $this->semana, 'test');
 
         self::assertGreaterThan(0, $id);
         self::assertSame(1, $this->filas('lps_escalamientos', $id));
@@ -68,7 +79,7 @@ final class LpsLegacyInsertedIdTest extends TestCase
     {
         $repo = new LpsLegacyThreadRepository($this->db, self::PREFIX);
 
-        $id = $repo->insert(self::PROJECT_ID, $this->consecutivo, $this->semana, $this->profesionalId(), 'zz-test-insertedid', null, null, null);
+        $id = $repo->insert(self::PROJECT_ID, $this->actividad, $this->semana, $this->profesionalId(), 'zz-test-insertedid', null, null, null);
 
         self::assertGreaterThan(0, $id);
         self::assertSame(1, $this->filas('lps_drawer_comentarios', $id));
@@ -78,7 +89,7 @@ final class LpsLegacyInsertedIdTest extends TestCase
     {
         $service = new LpsService();
 
-        $id = $service->addActivityComment(self::PREFIX, self::PROJECT_ID, $this->consecutivo, $this->semana, $this->profesionalId(), 'zz-test-insertedid');
+        $id = $service->addActivityComment(self::PREFIX, self::PROJECT_ID, $this->actividad, $this->semana, $this->profesionalId(), 'zz-test-insertedid');
 
         self::assertGreaterThan(0, $id);
         self::assertSame(1, $this->filas('lps_drawer_comentarios', $id));
