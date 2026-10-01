@@ -210,6 +210,11 @@ foreach (['2a', '-1'] as $semanaMala) {
     afirmar(array_key_exists('semana', $data['error']['fields'] ?? []), "semana={$semanaMala} señala el campo \"semana\"");
 }
 
+// escalamiento_id malformado no se descarta en silencio: 422 con su campo, antes de resolver.
+[$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=' . ACTIVIDAD_PG_SEMBRADA . '&modulo=PG&semana=1&escalamiento_id=abc', null, $jar);
+afirmar($code === 422, "GET comments con escalamiento_id=abc debería responder HTTP 422 (fue $code)");
+afirmar(array_key_exists('escalamiento_id', $data['error']['fields'] ?? []), 'escalamiento_id=abc señala el campo "escalamiento_id" en comments');
+
 // Un parámetro ausente no es 0: semana=0 (Pre-Construcción) se acepta como entrada válida y llega
 // al resolvedor, que responde 404 porque la actividad sembrada no existe en la semana 0.
 [$code, $data] = jsonReq(BASE . '/api/lps/comments?consecutivo=' . ACTIVIDAD_PG_SEMBRADA . '&modulo=PG&semana=0', null, $jar);
@@ -262,6 +267,28 @@ if (!preg_match('/<meta name="lps-drawer-csrf-token" content="([a-f0-9]{64})"/',
     afirmar(($data['error']['code'] ?? null) === 'PROFILE_REQUIRED', 'actor incompatible trae error.code=PROFILE_REQUIRED (T02-AC-099/100)');
     afirmar(($data['ok'] ?? null) === false, 'PROFILE_REQUIRED trae ok=false');
 
+    // Semana malformada en comments/add: 422 con su campo, sin tocar el repositorio.
+    [$code, $data] = jsonReq(BASE . '/api/lps/comments/add', [
+        'consecutivo' => (string) ACTIVIDAD_PG_SEMBRADA,
+        'modulo' => 'PG',
+        'semana' => '2a',
+        'comentario' => 'censo t02 — semana malformada',
+        '_csrf_token' => $csrfToken,
+    ], $jar);
+    afirmar($code === 422, "POST comments/add con semana=2a debería responder HTTP 422 (fue $code)");
+    afirmar(array_key_exists('semana', $data['error']['fields'] ?? []), 'comments/add con semana=2a señala el campo "semana"');
+
+    [$code, $data] = jsonReq(BASE . '/api/lps/comments/add', [
+        'consecutivo' => (string) ACTIVIDAD_PG_SEMBRADA,
+        'modulo' => 'PG',
+        'semana' => '1',
+        'escalamiento_id' => 'abc',
+        'comentario' => 'censo t02 — escalamiento malformado',
+        '_csrf_token' => $csrfToken,
+    ], $jar);
+    afirmar($code === 422, "POST comments/add con escalamiento_id=abc debería responder HTTP 422 (fue $code)");
+    afirmar(array_key_exists('escalamiento_id', $data['error']['fields'] ?? []), 'comments/add con escalamiento_id=abc señala el campo "escalamiento_id"');
+
     // Camino legacy puro (sin modulo/alerta_id): conserva el mensaje literal histórico aunque
     // ahora también traiga ok/error de forma aditiva (D-T02-08).
     [$code, $data] = jsonReq(BASE . '/api/lps/comments/add', [
@@ -283,12 +310,13 @@ if (!preg_match('/<meta name="lps-drawer-csrf-token" content="([a-f0-9]{64})"/',
 // falla ANTES de tocar el repositorio de escritura (sin DML: `trigger`/`justificacion` inválidos
 // se rechazan antes de resolver el target, y un target inexistente sólo dispara un SELECT).
 //
-// D E L I B E R A D O: esta sección NO prueba el camino de éxito de crisis/register. A diferencia
-// de comments/add, `actions.notifyNext` (la puerta de registro) NO exige actor compatible con
-// `profesionales` (D-T02-09) — sólo capacidad de edición, que test.R sí tiene. Un
-// consecutivo+modulo+trigger válidos aquí SÍ escribiría en la base (INSERT + 2 UPDATE), violando
-// la restricción global "sin DDL/DML". Ese camino queda cubierto sólo a nivel unitario, con dobles,
-// en tests/unit/LpsCrisisServiceTest.php — ver también task-6-report.md.
+// El camino de éxito de crisis/register SÍ se prueba (S05-SOS 1.2), pero solo con una alerta
+// temporal que la propia prueba siembra, restaura (banderas `alerta_crisis`) y borra en `finally`
+// (ver más abajo). A diferencia de comments/add, `actions.notifyNext` NO exige actor compatible con
+// `profesionales` (D-T02-09) — sólo capacidad de edición, que test.R sí tiene —, así que un
+// consecutivo+modulo+semana válidos sin alerta previa SÍ escribirían (INSERT + 2 UPDATE): por eso
+// los casos que usan esa ruta con datos válidos viven dentro del bloque con alerta temporal, donde
+// el registro es idempotente. El resto de la sección falla antes de resolver o con un SELECT sin filas.
 // ---------------------------------------------------------------------------
 
 if (isset($csrfToken)) {
@@ -399,6 +427,19 @@ if (isset($csrfToken)) {
         afirmar($code === 200, "POST crisis/register con escalamiento_id (sin semana) debería responder HTTP 200 (fue $code)");
         afirmar(($data['target']['week'] ?? null) === $semanaAlerta, 'con escalamiento_id la semana del target es la de la alerta');
         afirmar(($data['data']['alertId'] ?? null) === $alertaId && ($data['data']['wasActive'] ?? null) === true, 'registra sobre la alerta sembrada, sin crear otra');
+
+        // escalamiento_id malformado: se rechaza ANTES de resolver (dentro del bloque con alerta
+        // temporal porque, si se descartara en silencio, el registro escribiría).
+        [$code, $data] = jsonReq(BASE . '/api/lps/crisis/register', [
+            'consecutivo' => (string) ACTIVIDAD_PG_SEMBRADA,
+            'modulo' => 'PG',
+            'semana' => '1',
+            'escalamiento_id' => 'abc',
+            'trigger' => 'MANUAL',
+            '_csrf_token' => $csrfToken,
+        ], $jar);
+        afirmar($code === 422, "POST crisis/register con escalamiento_id=abc debería responder HTTP 422 (fue $code)");
+        afirmar(array_key_exists('escalamiento_id', $data['error']['fields'] ?? []), 'escalamiento_id=abc señala el campo "escalamiento_id" en crisis/register');
 
         [$code, $data] = jsonReq(BASE . '/api/lps/crisis/register', [
             'consecutivo' => (string) ACTIVIDAD_PG_SEMBRADA,
