@@ -8,6 +8,9 @@ superficie: programa-general
 rutas: ["/programa-general", "/api/lps/crisis/register", "/api/lps/comments", "/api/lps/comments/add"]
 depende_de: [S05, T02]
 version: 1.2
+aprobado_por: felipe
+aprobado_el: 2026-09-30
+sello: "ninguno — /aprobar S05-SOS escrito en el chat de Claude; el hook no avisó sello escrito"
 areas: [lps, qa, datos]
 fuente: "prueba en navegador de Programa General del 2026-09-30 (memoria/arquitectura/programa-general-funciones-y-flujos.md, sección 7), decisión de Felipe del mismo día de abrir el arreglo ya, paso 02 de verificación del 2026-09-30, y barrido de lastInsertId del mismo día (memoria/trampas/lastinsertid-en-tablas-con-id-por-proyecto.md)"
 resumen: "Arreglo de los dos fallos críticos del SOS de Programa General: la crisis y los comentarios caen en otra semana, y un SOS registrado se muestra como fallo porque el id de la alerta vuelve como 0."
@@ -15,9 +18,11 @@ resumen: "Arreglo de los dos fallos críticos del SOS de Programa General: la cr
 
 # S05 — Los dos fallos críticos del SOS
 
-**Estado: propuesta, pendiente del visto de Felipe.** Felipe decidió el 2026-09-30 abrir el
-arreglo ya; esta spec describe qué se arregla y cómo se comprueba, y no autoriza implementación
-hasta su aprobación.
+> **Aprobada por Felipe en el chat el 2026-09-30, versión 1.2** («/aprobar S05-SOS»). **Sin
+> sello:** el hook no avisó que lo escribiera, así que no hay sello ni huella. Se registra como
+> S05 (2026-09-24) y su deuda (2026-09-26). Si una compuerta exige el sello, se genera con
+> `/aprobar S05-SOS` en una sesión donde el comando lo escriba. Pasos 01 y 02 cerrados; sigue el
+> plan (paso 03). La aprobación no autoriza implementar: eso lo da la aprobación del plan.
 
 **Versión 1.1 (2026-09-30).** El paso 02 cerró los vacíos y corrigió la causa del segundo fallo:
 la 1.0 lo atribuía a un `AUTO_INCREMENT` perdido en la base local y proponía restaurarlo. Es
