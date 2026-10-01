@@ -79,7 +79,7 @@ final class LpsLegacyCrisisRepository implements LpsCrisisRepository
         [$sql, $params] = $this->db->insertProjectId($sql, $projectId, [$projectId, $week, $activityId, $activityId, $module, $trigger]);
         $this->db->query($sql, $params);
 
-        return (int) $this->db->lastInsertId();
+        return $this->db->insertedId();
     }
 
     public function setCrisisFlag(int $projectId, int $activityId, int $week, bool $active): void

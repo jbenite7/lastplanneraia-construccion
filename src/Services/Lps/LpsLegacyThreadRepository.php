@@ -118,7 +118,7 @@ final class LpsLegacyThreadRepository implements LpsThreadRepository
             [$sql, $params] = $this->db->insertProjectId($sql, $projectId, $params);
             $this->db->query($sql, $params);
 
-            return (int) $this->db->lastInsertId();
+            return $this->db->insertedId();
         } catch (Throwable $e) {
             error_log('LpsLegacyThreadRepository::insert — ' . $e->getMessage());
 
