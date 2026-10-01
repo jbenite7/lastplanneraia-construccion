@@ -17,10 +17,10 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 | Estado | Tareas |
 |---|---|
-| hecha | 572 |
+| hecha | 564 |
 | en progreso | 3 |
 | pendiente | 154 |
-| sin señal | 200 |
+| sin señal | 208 |
 | descartada | 48 |
 
 ### Diseño: stack del módulo Plan de Compras (PDC v2) (cerrado)
@@ -246,7 +246,9 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### Wiki v2 — visual, etiquetada, misma metodología (cerrado)
 
+- en rama · otra rama (falta publicar en main)
 - **Plan — Wiki v2 visual y etiquetada** (cerrado): 0 de 0 hechas · `2026-08-18-wiki-v2-visual.md`
+  - en rama · otra rama (falta publicar en main)
 
 ### El coloreado en cascada por severidad — diseño del diagnóstico (cerrado)
 
@@ -367,20 +369,20 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### S01 — Login React (vigente)
 
-- **S01 Login React** (cerrado): 16 de 16 hechas · `2026-08-30-s01-login-react.md`
+- **S01 Login React** (cerrado): 14 de 14 hechas · `2026-08-30-s01-login-react.md`
 - **S01 · Paridad visual del login React** (cerrado): 8 de 8 hechas · `2026-09-16-s01-paridad-visual.md`
 
 ### S02 — Recuperar contraseña en React (cerrado)
 
-- **S02 Password Recovery React** (cerrado): 12 de 12 hechas · `2026-08-30-s02-recuperar-clave-react.md`
+- **S02 Password Recovery React** (cerrado): 10 de 10 hechas · `2026-08-30-s02-recuperar-clave-react.md`
 
 ### S03 — Restablecer contraseña en React (cerrado)
 
-- **S03 Password Reset React** (cerrado): 12 de 12 hechas · `2026-08-30-s03-restablecer-clave-react.md`
+- **S03 Password Reset React** (cerrado): 10 de 10 hechas · `2026-08-30-s03-restablecer-clave-react.md`
 
 ### S04 — Selector de proyectos en React (vigente)
 
-- **S04 Project Selector React** (cerrado): 12 de 12 hechas · `2026-08-30-s04-selector-proyectos-react.md`
+- **S04 Project Selector React** (cerrado): 10 de 10 hechas · `2026-08-30-s04-selector-proyectos-react.md`
 
 ### S05 — Programa General en React (vigente)
 
@@ -855,7 +857,9 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### Duraciones de contratación por obra — diseño v1.0 (cerrado)
 
+- en rama · fix/pdc-duraciones-pasos (falta publicar en main)
 - **Duraciones de contratación por obra** (cerrado): 6 de 6 hechas · `2026-09-01-duraciones-por-obra.md`
+  - en rama · fix/pdc-duraciones-pasos (falta publicar en main)
 
 ### ROADMAP-01 · Especificación Maestra: Gobernanza y Priorización del Roadmap LPS AIA (vigente)
 
@@ -891,6 +895,7 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 
 ### S05-REDISENO · S05 — Rediseño de Programa General (ronda sobre `main`) (abierto)
 
+- en rama · docs/s05-rediseno-spec (falta publicar en main)
 - **Encargo para Codex — mockup del rediseño de Programa General** (abierto): 0 de 0 hechas · `2026-09-28-s05-rediseno-encargo-mockup.md`
 
 ### Sin spec
@@ -932,6 +937,15 @@ Consolidado de specs, planes y tareas. Git manda: las casillas de un plan no cue
 - **Informe de sprint S05 ronda 1.2** (abierto): 0 de 0 hechas · `2026-09-24-s05-ronda-1-2-informe.md`
 - **Informe de sprint S05-DEUDA** (abierto): 0 de 0 hechas · `2026-09-26-s05-deuda-cierre-informe.md`
 - **Informe del mockup S05 · Programa General** (vigente): 0 de 0 hechas · `2026-09-28-s05-rediseno-mockup-informe.md`
+- **Verificación integral de los módulos ya migrados (S01 a S04)** (abierto): 0 de 8 hechas · `2026-09-30-verificacion-integral-modulos-migrados.md`
+  - sin señal · 1 · Sprint de verificación integral de S01 Login
+  - sin señal · 2 · Ficha de S01 en la wiki
+  - sin señal · 3 · Sprint de verificación integral de S02 Recuperar clave
+  - sin señal · 4 · Ficha de S02 en la wiki
+  - sin señal · 5 · Sprint de verificación integral de S03 Restablecer clave
+  - sin señal · 6 · Ficha de S03 en la wiki
+  - sin señal · 7 · Sprint de verificación integral de S04 Selector de proyectos
+  - sin señal · 8 · Ficha de S04 en la wiki
 - goal abierto · Goal — BI Control Tower / Programa General (Radar y Cronograma) · `goals/bi-control-tower-gemini/goal.md`
 - goal abierto · Núcleo y gobernanza del Design System AIA · `goals/design-system-nucleo-gobernanza/goal.md`
 - goal abierto · organizar-la-casa · `goals/organizar-la-casa/goal.md`

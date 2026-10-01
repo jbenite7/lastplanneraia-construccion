@@ -599,3 +599,4 @@ documentación no autoriza implementación, commit, publicación ni cambios de d
 - **Ficha en la wiki:** `memoria/arquitectura/recuperar-clave-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
   desde [[autenticacion]].
 - **Lugar en la cola:** primera tanda de la cola: el módulo ya está en React y su verificación va antes que la de los módulos por migrar.
+- **Dónde viven sus tareas:** en `docs/superpowers/plans/2026-09-30-verificacion-integral-modulos-migrados.md`, porque el plan de esta spec está cerrado (decisión de Felipe del 2026-09-30).
