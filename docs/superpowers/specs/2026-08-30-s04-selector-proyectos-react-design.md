@@ -645,3 +645,18 @@ piloto antes del canónico y no implementar ninguna superficie S05+.
 Por decisión de Felipe del 2026-09-17, los pendientes reales de planes anteriores al programa que tocaban esta superficie pasan a ser criterios de aceptación de esta spec, en vez de arreglarse sobre el PHP que se retira. Ronda 1.1 de esta spec.
 
 - De `2026-08-28-paridad-shell-react` (Task 2): selección de proyecto por ID y errores JSON estables. Ya lo cubren las Tareas 2–3 del plan de esta spec; se anota para que el plan derogado no parezca dejar deuda.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S04:** rutas `/proyectos`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/selector-proyectos-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[selector-de-proyectos]].
+- **Lugar en la cola:** primera tanda de la cola: el módulo ya está en React y su verificación va antes que la de los módulos por migrar.

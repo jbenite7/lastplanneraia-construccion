@@ -465,3 +465,18 @@ autoriza implementación, commit, publicación ni cambios de datos.
 no ha empezado a correr: el corte no está en producción. El detalle —commits, rulings que cambiaron el
 plan, defectos encontrados, goldens aprobados y lo que bloquea el merge— vive en la sección `## Cierre`
 del plan.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S01:** rutas `/`, `/login`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/login-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[autenticacion]].
+- **Lugar en la cola:** primera tanda de la cola: el módulo ya está en React y su verificación va antes que la de los módulos por migrar.

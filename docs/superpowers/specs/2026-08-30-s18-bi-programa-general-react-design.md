@@ -1148,3 +1148,18 @@ enmendar esta spec. No se inventa la nueva semantica.
 Invocar superpowers:writing-plans para
 docs/superpowers/plans/2026-08-30-s18-bi-programa-general-react.md, autorrevisarlo, actualizar el
 atlas y continuar S19. No implementar S18 en esta sesion.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S18:** rutas `/bi/programa-general`, `/api/bi/report/programa-general`, `/api/bi/report/programa-general/compliance-detail`, `/api/bi/report/programa-general/progress-detail`, `/api/bi/report/programa-general/delay-detail`, `/api/bi/report/programa-general/radar-detail`, `/api/bi/report/programa-general/cnp-detail`, `/api/bi/report/programa-general/cnc-detail`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/bi-programa-general-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[torre-de-control-bi]].
+- **Lugar en la cola:** requisito de cierre: el módulo no se da por cerrado sin su sprint verificado y su ficha.

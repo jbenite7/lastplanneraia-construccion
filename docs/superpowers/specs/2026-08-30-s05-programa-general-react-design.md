@@ -1509,3 +1509,19 @@ Invocar `superpowers:writing-plans` y producir el plan S05 por entregas vertical
 fronteras; lectura responsive; edición individual; operaciones; drawer; corte y retiro. El plan debe
 nombrar archivos, pruebas y comandos exactos, empezar cada comportamiento con prueba fallando, usar
 fakes/intercepts para toda mutación, y no implementar ni abrir S06 hasta terminar su autorrevisión.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S05:** rutas `/programa-general`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/programa-general-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[programa-general]].
+- **Lugar en la cola:** primera tanda de la cola: el módulo ya está en React y su verificación va antes que la de los módulos por migrar.
+- **Avance:** mapa y prueba en navegador hechos el 2026-09-30, con 19 fallos confirmados; ficha en [[programa-general-funciones-y-flujos]]. Faltan la restauración de los datos de prueba y el sprint de corrección.

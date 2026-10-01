@@ -986,3 +986,18 @@ datos históricos se presentan como diagnóstico/histórico y no exigen autocorr
 Invocar `superpowers:writing-plans` para escribir
 `docs/superpowers/plans/2026-08-30-s10-cnc-react.md`, autorrevisarlo contra los 34 criterios y no
 implementar hasta que el programa documental cierre el plan correspondiente.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S10:** rutas `/programacion-semanal/cnc`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/cnc-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[submodulo-cnc]].
+- **Lugar en la cola:** requisito de cierre: el módulo no se da por cerrado sin su sprint verificado y su ficha.

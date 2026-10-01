@@ -1534,6 +1534,24 @@ git rev-parse HEAD
 
 Record that SHA. Branch closeout must re-run the repository gate on the committed SHA before PR/publication; local green does not authorize push, merge or deploy.
 
+### Task 11: Sprint de verificación integral (protocolo común)
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe; se exige solo cuando el protocolo pase
+> a vigente. Protocolo: `docs/qa/protocolo-verificacion-integral.md`.
+
+- [ ] Mapa de S03 en tres frentes (pantalla, servidor y base de datos, reglas y flujos), cada objeto con `archivo:línea`.
+- [ ] Entorno: rama servida con `LPS_CODE_ROOT`, `.env` por enlace duro hecho por Felipe, dependencias dentro del contenedor y respaldo de la base de desarrollo antes de escribir.
+- [ ] Prueba de lectura en navegador de cada objeto: consola y red sin errores, dos temas, 1920, 1180 y 390 px, teclado y foco.
+- [ ] Prueba de escritura de cada acción, una a la vez: foto antes y después, comparación campo por campo y restauración; lo que no se deshaga desde la aplicación se consulta a Felipe antes.
+- [ ] Roles: una cuenta con permiso y una sin él, en pantalla y directo a la API.
+- [ ] Cierre: restauración dirigida (con `/visto-prod` de Felipe), contenedor devuelto a la raíz y hallazgos clasificados (bloqueantes a un sprint de corrección, deuda a `TASKS.md`).
+
+### Task 12: Ficha de S03 en la wiki
+
+- [ ] Escribir `memoria/arquitectura/restablecer-clave-funciones-y-flujos.md` con las secciones de la ficha de Programa General: qué es y quién lo usa, objetos de la pantalla, funciones del servidor, reglas de negocio, flujos de punta a punta, protocolos (permisos y verificación), estado de la verificación y brechas.
+- [ ] Enlazarla desde [[autenticacion]] y anotar su línea en `memoria/log.md`.
+- [ ] `npm run test:wiki:forma` con código de salida 0.
+
 ## Observable Parity Traceability
 
 | Capability | Plan evidence |

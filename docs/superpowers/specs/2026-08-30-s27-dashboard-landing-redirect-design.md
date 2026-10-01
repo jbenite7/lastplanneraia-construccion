@@ -600,3 +600,18 @@ bloqueante: ningún criterio puede faltar, duplicarse o aparecer sólo en prosa.
 Ninguna. Cualquier propuesta futura de convertir `/dashboard` en una pantalla, cambiar el destino
 por rol/área, exponer el árbol al cliente o alterar el fallback de errores es producto nuevo y exige
 una spec distinta.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S27:** rutas `/dashboard`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/dashboard-landing-redirect-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[nucleo-y-runtime]].
+- **Lugar en la cola:** requisito de cierre: el módulo no se da por cerrado sin su sprint verificado y su ficha.

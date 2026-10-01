@@ -582,3 +582,18 @@ La spec fue auditada y autorrevisada sin decisiones funcionales pendientes. Se i
 el incremento method-aware T01, prueba contratos PHP con fakes y conserva el gate absoluto de cero
 DML durante esta migración documental. Esta documentación no autoriza implementación, commit,
 publicación ni cambios de datos.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S03:** rutas `/password/reset`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/restablecer-clave-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[autenticacion]].
+- **Lugar en la cola:** primera tanda de la cola: el módulo ya está en React y su verificación va antes que la de los módulos por migrar.

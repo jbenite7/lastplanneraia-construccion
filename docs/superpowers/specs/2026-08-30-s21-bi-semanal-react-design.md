@@ -1234,3 +1234,18 @@ tramo, se aporta evidencia y se enmienda esta spec. No se inventa dato ni se toc
 Invocar `superpowers:writing-plans` para
 `docs/superpowers/plans/2026-08-30-s21-bi-semanal-react.md`, autorrevisarlo, actualizar el atlas y
 continuar S22. No implementar S21 en esta sesion.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S21:** rutas `/bi/semanal`, `/api/bi/report/semanal`, `/api/bi/report/programa-general/cnp-detail`, `/api/bi/report/programa-general/cnc-detail`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/bi-semanal-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[torre-de-control-bi]].
+- **Lugar en la cola:** requisito de cierre: el módulo no se da por cerrado sin su sprint verificado y su ficha.

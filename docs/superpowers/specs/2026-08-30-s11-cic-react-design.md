@@ -1327,3 +1327,18 @@ Invocar `superpowers:writing-plans` y producir
 `docs/superpowers/plans/2026-08-30-s11-cic-react.md` con tareas TDD, archivos exactos, contratos PHP,
 Zod, pruebas interceptadas, checkpoints verticales y corte reversible. No implementar hasta que el
 programa documental autorice la fase de ejecucion.
+
+## Verificación integral y ficha en la wiki
+
+> Propuesta del 2026-09-30, pendiente del visto de Felipe. Una propuesta no es una decisión
+> aprobada: mientras el protocolo siga en `estado: abierto`, esta sección no se exige.
+
+- **Protocolo:** `docs/qa/protocolo-verificacion-integral.md` (mapa, entorno, prueba de lectura,
+  prueba de escritura con restauración, roles, cierre).
+- **Alcance de S11:** rutas `/programacion-semanal/cic`, y cada objeto que
+  esta spec define o toca: pantallas, submódulos, tablas y columnas, modales, diálogos, popups,
+  tooltips, menús, riel lateral, botones, enlaces, campos, chips, avisos y estados de carga, vacío
+  y error; con sus llamadas al servidor, tablas de la base, reglas de negocio y flujos.
+- **Ficha en la wiki:** `memoria/arquitectura/cic-funciones-y-flujos.md`, con la estructura de la ficha de Programa General, enlazada
+  desde [[submodulo-cic]].
+- **Lugar en la cola:** requisito de cierre: el módulo no se da por cerrado sin su sprint verificado y su ficha.
