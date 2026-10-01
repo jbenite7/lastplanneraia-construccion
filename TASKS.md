@@ -2344,6 +2344,15 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] 2026-09-30 — **Migrar los `lastInsertId()` que quedaron fuera del arreglo del SOS.** Sobre
+  tablas con id por proyecto, `lastInsertId()` devuelve 0 (trampa
+  `memoria/trampas/lastinsertid-en-tablas-con-id-por-proyecto.md`). La spec S05-SOS 1.2 crea
+  `Database::insertedId()` y la usa en alertas y comentarios. Quedan
+  `ProjectProfessionalsSyncService.php:100` y `:157`, que guardan un id 0 que hoy nadie usa, y el
+  `?: lastInsertId()` inalcanzable de `ProfesionalesApiController.php:290` y
+  `SubcontratistasApiController.php:224`. Sin efecto visible hoy; **depende de que S05-SOS esté en
+  `main`**. Decisión de alcance de Felipe del 2026-09-30. Responsable: pendiente.
+
 **Lo que siguió vivo al cerrar cuatro planes huérfanos, 2026-09-28.** Los planes se cerraron porque
 sus specs ya estaban cerradas o derogadas (decisión de la sesión de infraestructura por delegación de
 Felipe, no de Felipe); lo que seguía abierto pasa aquí. Responsable y fecha: pendiente, en todos.
