@@ -12,7 +12,7 @@ use TableResolver;
  * no distingue PG de PI con una columna propia: las dos vistas leen la misma tabla, sólo cambia
  * el recorte de semanas que arma cada módulo. Mientras eso no tenga una decisión de producto
  * propia, PG e PI validan idéntico: la actividad (`unique_id`, `Titulo = 0`) existe en el
- * proyecto y su `Semana` persistida es la autoritativa.
+ * proyecto y existe en la `Semana` que propone el cliente (el servidor la verifica, S05-SOS 1.2).
  */
 final class LpsLegacyGeneralActivityAdapter implements LpsActivityTargetAdapter
 {
@@ -25,19 +25,19 @@ final class LpsLegacyGeneralActivityAdapter implements LpsActivityTargetAdapter
         return 'PG';
     }
 
-    public function resolveWeek(int $projectId, int $activityId): ?int
+    public function existsInWeek(int $projectId, int $activityId, int $week): bool
     {
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $this->dbPrefix)) {
-            return null;
+            return false;
         }
 
         $table = TableResolver::resolveByPrefix($this->dbPrefix, 'programa_consolidado');
         $row = $this->db->queryWithProject(
-            "SELECT Semana FROM `{$table}` WHERE project_id = ? AND unique_id = ? AND Titulo = 0 LIMIT 1",
-            [$projectId, $activityId],
+            "SELECT 1 FROM `{$table}` WHERE project_id = ? AND unique_id = ? AND Semana = ? AND Titulo = 0 LIMIT 1",
+            [$projectId, $activityId, $week],
             $projectId,
         )->fetch(PDO::FETCH_ASSOC);
 
-        return $row ? (int) $row['Semana'] : null;
+        return $row !== false;
     }
 }

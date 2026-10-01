@@ -30,7 +30,7 @@ final class LpsTargetResolverTest extends TestCase
         return new ProjectScope(self::PROJECT_ID, 'test.R', 'R');
     }
 
-    /** @param array<string, array<int, int>> $activities module => [activityId => week] */
+    /** @param array<int, list<int>> $activities activityId => semanas en las que existe */
     private function adapter(string $module, array $activities): LpsActivityTargetAdapter
     {
         return new class ($module, $activities) implements LpsActivityTargetAdapter {
@@ -48,9 +48,9 @@ final class LpsTargetResolverTest extends TestCase
                 return $this->module;
             }
 
-            public function resolveWeek(int $projectId, int $activityId): ?int
+            public function existsInWeek(int $projectId, int $activityId, int $week): bool
             {
-                $this->calls[] = [$projectId, $activityId];
+                $this->calls[] = [$projectId, $activityId, $week];
 
                 if ($projectId !== LpsTargetResolverTest::PROJECT_ID) {
                     // Spy: si algún día el resolver deja de mandar el project_id correcto, esto
@@ -58,7 +58,7 @@ final class LpsTargetResolverTest extends TestCase
                     throw new \RuntimeException('El adapter recibió un project_id ajeno al scope.');
                 }
 
-                return $this->activities[$activityId] ?? null;
+                return in_array($week, $this->activities[$activityId] ?? [], true);
             }
         };
     }
@@ -110,8 +110,8 @@ final class LpsTargetResolverTest extends TestCase
 
     public function testResuelveTargetDeActividadPG(): void
     {
-        $target = $this->resolver(pgActivities: [4102 => 14])
-            ->resolve(new LpsTargetRequest(activityId: 4102, module: 'PG'));
+        $target = $this->resolver(pgActivities: [4102 => [14]])
+            ->resolve(new LpsTargetRequest(activityId: 4102, module: 'PG', week: 14));
 
         self::assertSame(LpsTarget::KIND_ACTIVITY, $target->kind);
         self::assertSame('PG', $target->module);
@@ -122,8 +122,8 @@ final class LpsTargetResolverTest extends TestCase
 
     public function testResuelveTargetDeActividadPI(): void
     {
-        $target = $this->resolver(piActivities: [55 => 9])
-            ->resolve(new LpsTargetRequest(activityId: 55, module: 'PI'));
+        $target = $this->resolver(piActivities: [55 => [9]])
+            ->resolve(new LpsTargetRequest(activityId: 55, module: 'PI', week: 9));
 
         self::assertSame('PI', $target->module);
         self::assertSame(9, $target->week);
@@ -131,8 +131,8 @@ final class LpsTargetResolverTest extends TestCase
 
     public function testResuelveTargetDeActividadPS(): void
     {
-        $target = $this->resolver(psActivities: [900 => 20])
-            ->resolve(new LpsTargetRequest(activityId: 900, module: 'PS'));
+        $target = $this->resolver(psActivities: [900 => [20]])
+            ->resolve(new LpsTargetRequest(activityId: 900, module: 'PS', week: 20));
 
         self::assertSame('PS', $target->module);
         self::assertSame(20, $target->week);
@@ -189,7 +189,7 @@ final class LpsTargetResolverTest extends TestCase
         $this->expectException(LpsTargetException::class);
 
         try {
-            $this->resolver(pgActivities: [1 => 1])->resolve(new LpsTargetRequest(activityId: 0, module: 'PG'));
+            $this->resolver(pgActivities: [1 => [1]])->resolve(new LpsTargetRequest(activityId: 0, module: 'PG', week: 1));
         } catch (LpsTargetException $exception) {
             self::assertSame(422, $exception->apiError()->httpStatus);
             throw $exception;
@@ -227,7 +227,7 @@ final class LpsTargetResolverTest extends TestCase
         $this->expectException(LpsTargetException::class);
 
         try {
-            $this->resolver(pgActivities: [1 => 1])->resolve(new LpsTargetRequest(activityId: 999, module: 'PG'));
+            $this->resolver(pgActivities: [1 => [1]])->resolve(new LpsTargetRequest(activityId: 999, module: 'PG', week: 1));
         } catch (LpsTargetException $exception) {
             self::assertSame('LPS_TARGET_NOT_FOUND', $exception->apiError()->code);
             self::assertSame(404, $exception->apiError()->httpStatus);
@@ -253,8 +253,8 @@ final class LpsTargetResolverTest extends TestCase
 
     public function testSemanaCeroEsValidaParaPreConstruccionYNoSeConfundeConInexistente(): void
     {
-        $target = $this->resolver(pgActivities: [77 => 0])
-            ->resolve(new LpsTargetRequest(activityId: 77, module: 'PG'));
+        $target = $this->resolver(pgActivities: [77 => [0]])
+            ->resolve(new LpsTargetRequest(activityId: 77, module: 'PG', week: 0));
 
         self::assertSame(0, $target->week);
     }
@@ -263,8 +263,8 @@ final class LpsTargetResolverTest extends TestCase
 
     public function testConsecutivoLegacySinModuloSeResuelveProbandoLosAdaptadoresEnOrden(): void
     {
-        $target = $this->resolver(psActivities: [500 => 6])
-            ->resolve(new LpsTargetRequest(activityId: 500));
+        $target = $this->resolver(psActivities: [500 => [6]])
+            ->resolve(new LpsTargetRequest(activityId: 500, week: 6));
 
         self::assertSame('PS', $target->module);
         self::assertSame(6, $target->week);
@@ -276,7 +276,7 @@ final class LpsTargetResolverTest extends TestCase
         $this->expectException(LpsTargetException::class);
 
         try {
-            $this->resolver()->resolve(new LpsTargetRequest(activityId: 12345));
+            $this->resolver()->resolve(new LpsTargetRequest(activityId: 12345, week: 3));
         } catch (LpsTargetException $exception) {
             self::assertSame('LPS_TARGET_NOT_FOUND', $exception->apiError()->code);
             throw $exception;
@@ -289,8 +289,8 @@ final class LpsTargetResolverTest extends TestCase
     {
         $alert = new LpsAlertRecord(30, self::PROJECT_ID, 500, 'PS', 6, 1, true);
 
-        $target = $this->resolver(psActivities: [500 => 6], alerts: [30 => $alert])
-            ->resolve(new LpsTargetRequest(activityId: 500, module: 'PS', escalamientoId: 30));
+        $target = $this->resolver(psActivities: [500 => [6]], alerts: [30 => $alert])
+            ->resolve(new LpsTargetRequest(activityId: 500, module: 'PS', escalamientoId: 30, week: 6));
 
         self::assertSame(30, $target->escalamientoId);
     }
@@ -302,8 +302,8 @@ final class LpsTargetResolverTest extends TestCase
         $this->expectException(LpsTargetException::class);
 
         try {
-            $this->resolver(psActivities: [500 => 6], alerts: [30 => $alert])
-                ->resolve(new LpsTargetRequest(activityId: 500, module: 'PS', escalamientoId: 30));
+            $this->resolver(psActivities: [500 => [6]], alerts: [30 => $alert])
+                ->resolve(new LpsTargetRequest(activityId: 500, module: 'PS', escalamientoId: 30, week: 6));
         } catch (LpsTargetException $exception) {
             self::assertSame('LPS_TARGET_NOT_FOUND', $exception->apiError()->code);
             throw $exception;
@@ -317,8 +317,8 @@ final class LpsTargetResolverTest extends TestCase
         $this->expectException(LpsTargetException::class);
 
         try {
-            $this->resolver(psActivities: [500 => 6], alerts: [30 => $alert])
-                ->resolve(new LpsTargetRequest(activityId: 500, module: 'PS', escalamientoId: 30));
+            $this->resolver(psActivities: [500 => [6]], alerts: [30 => $alert])
+                ->resolve(new LpsTargetRequest(activityId: 500, module: 'PS', escalamientoId: 30, week: 6));
         } catch (LpsTargetException $exception) {
             self::assertSame('LPS_TARGET_NOT_FOUND', $exception->apiError()->code);
             throw $exception;
@@ -352,15 +352,115 @@ final class LpsTargetResolverTest extends TestCase
 
     public function testCadaConsultaDeActividadRecibeElProjectIdDelScope(): void
     {
-        $adapterPg = $this->adapter('PG', [4102 => 14]);
+        $adapterPg = $this->adapter('PG', [4102 => [14]]);
         $resolver = new LpsTargetResolver(
             $this->scope(),
             $this->alertRepository([]),
             [$adapterPg, $this->adapter('PI', []), $this->adapter('PS', [])],
         );
 
-        $resolver->resolve(new LpsTargetRequest(activityId: 4102, module: 'PG'));
+        $resolver->resolve(new LpsTargetRequest(activityId: 4102, module: 'PG', week: 14));
 
-        self::assertSame([[self::PROJECT_ID, 4102]], $adapterPg->calls);
+        self::assertSame([[self::PROJECT_ID, 4102, 14]], $adapterPg->calls);
+    }
+
+    // --- S05-SOS 1.2: el cliente propone la semana y el servidor la verifica ---
+
+    public function testSemanaEnviadaQueExisteResuelveEsaSemana(): void
+    {
+        $target = $this->resolver(pgActivities: [4102 => [1, 2]])
+            ->resolve(new LpsTargetRequest(activityId: 4102, module: 'PG', week: 2));
+
+        self::assertSame(2, $target->week);
+    }
+
+    public function testSemanaEnviadaSinFilaEsTargetNotFound(): void
+    {
+        try {
+            $this->resolver(pgActivities: [4102 => [1, 2]])
+                ->resolve(new LpsTargetRequest(activityId: 4102, module: 'PG', week: 3));
+            self::fail('Debía lanzar TARGET_NOT_FOUND.');
+        } catch (LpsTargetException $exception) {
+            self::assertSame('LPS_TARGET_NOT_FOUND', $exception->apiError()->code);
+        }
+    }
+
+    public function testSinSemanaNiEscalamientoEsValidationFailedConCampoSemana(): void
+    {
+        try {
+            $this->resolver(pgActivities: [4102 => [1]])
+                ->resolve(new LpsTargetRequest(activityId: 4102, module: 'PG'));
+            self::fail('Debía lanzar VALIDATION_FAILED.');
+        } catch (LpsTargetException $exception) {
+            self::assertSame('VALIDATION_FAILED', $exception->apiError()->code);
+            self::assertSame(
+                ['semana' => 'Requerida: la semana que se está viendo.'],
+                $exception->apiError()->fields,
+            );
+        }
+    }
+
+    public function testEscalamientoFijaLaSemanaDeLaAlerta(): void
+    {
+        $alert = new LpsAlertRecord(30, self::PROJECT_ID, 500, 'PS', 9, 1, true);
+
+        $target = $this->resolver(psActivities: [500 => [6, 9]], alerts: [30 => $alert])
+            ->resolve(new LpsTargetRequest(activityId: 500, module: 'PS', escalamientoId: 30));
+
+        self::assertSame(9, $target->week);
+        self::assertSame(30, $target->escalamientoId);
+    }
+
+    public function testEscalamientoConSemanaDistintaEsTargetNotFound(): void
+    {
+        $alert = new LpsAlertRecord(30, self::PROJECT_ID, 500, 'PS', 9, 1, true);
+
+        try {
+            $this->resolver(psActivities: [500 => [6, 9]], alerts: [30 => $alert])
+                ->resolve(new LpsTargetRequest(activityId: 500, module: 'PS', escalamientoId: 30, week: 6));
+            self::fail('Debía lanzar TARGET_NOT_FOUND.');
+        } catch (LpsTargetException $exception) {
+            self::assertSame('LPS_TARGET_NOT_FOUND', $exception->apiError()->code);
+        }
+    }
+
+    public function testEscalamientoSinModuloTomaElModuloDeLaAlerta(): void
+    {
+        $alert = new LpsAlertRecord(30, self::PROJECT_ID, 500, 'PS', 9, 1, true);
+
+        $target = $this->resolver(alerts: [30 => $alert])
+            ->resolve(new LpsTargetRequest(activityId: 500, escalamientoId: 30));
+
+        self::assertSame('PS', $target->module);
+        self::assertSame(9, $target->week);
+    }
+
+    public function testSemanaCeroEnviadaEsValidaSiExiste(): void
+    {
+        $target = $this->resolver(pgActivities: [77 => [0, 4]])
+            ->resolve(new LpsTargetRequest(activityId: 77, module: 'PG', week: 0));
+
+        self::assertSame(0, $target->week);
+    }
+
+    public function testSemanaCeroEnviadaSinFilaEnCeroEsTargetNotFound(): void
+    {
+        try {
+            $this->resolver(pgActivities: [77 => [4]])
+                ->resolve(new LpsTargetRequest(activityId: 77, module: 'PG', week: 0));
+            self::fail('Debía lanzar TARGET_NOT_FOUND.');
+        } catch (LpsTargetException $exception) {
+            self::assertSame('LPS_TARGET_NOT_FOUND', $exception->apiError()->code);
+        }
+    }
+
+    public function testLegadoSinModuloConSemanaEligeElModuloDondeExiste(): void
+    {
+        $target = $this->resolver(pgActivities: [500 => [2]], psActivities: [500 => [6]])
+            ->resolve(new LpsTargetRequest(activityId: 500, week: 6));
+
+        self::assertSame('PS', $target->module);
+        self::assertSame(6, $target->week);
+        self::assertTrue($target->isLegacy);
     }
 }

@@ -7,8 +7,9 @@ namespace App\Services\Lps;
 /**
  * Target LPS inmutable y server-authoritative (D-T02-02, T02-AC-011..020). Sólo dos formas:
  * actividad (consecutivo + módulo PG/PI/PS) o alerta (alerta_id). El navegador nunca aporta
- * proyecto, semana o actor de autoridad: éstos siempre vienen resueltos por el resolver desde
- * ProjectScope y desde el adapter/alerta que corresponda.
+ * proyecto ni actor de autoridad: vienen resueltos desde ProjectScope. La semana la propone el
+ * cliente y el servidor la verifica contra el adapter, o la toma de la alerta (S05-SOS 1.2; esto
+ * reemplaza a propósito D-T02-02).
  */
 final readonly class LpsTarget
 {
