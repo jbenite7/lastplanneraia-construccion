@@ -68,7 +68,7 @@ final class LpsLegacyInsertedIdTest extends TestCase
     {
         $repo = new LpsLegacyThreadRepository($this->db, self::PREFIX);
 
-        $id = $repo->insert(self::PROJECT_ID, $this->consecutivo, $this->semana, $this->usuarioId(), 'zz-test-insertedid', null, null, null);
+        $id = $repo->insert(self::PROJECT_ID, $this->consecutivo, $this->semana, $this->profesionalId(), 'zz-test-insertedid', null, null, null);
 
         self::assertGreaterThan(0, $id);
         self::assertSame(1, $this->filas('lps_drawer_comentarios', $id));
@@ -78,16 +78,24 @@ final class LpsLegacyInsertedIdTest extends TestCase
     {
         $service = new LpsService();
 
-        $id = $service->addActivityComment(self::PREFIX, self::PROJECT_ID, $this->consecutivo, $this->semana, $this->usuarioId(), 'zz-test-insertedid');
+        $id = $service->addActivityComment(self::PREFIX, self::PROJECT_ID, $this->consecutivo, $this->semana, $this->profesionalId(), 'zz-test-insertedid');
 
         self::assertGreaterThan(0, $id);
         self::assertSame(1, $this->filas('lps_drawer_comentarios', $id));
     }
 
-    private function usuarioId(): int
+    /** `lps_drawer_comentarios.usuario_id` referencia `profesionales(project_id, id)`, no `general_usuarios`. */
+    private function profesionalId(): int
     {
-        $id = (int) $this->db->query('SELECT Id FROM general_usuarios LIMIT 1')->fetchColumn();
-        self::assertGreaterThan(0, $id, 'No hay usuarios sembrados.');
+        $id = (int) $this->db->query('SELECT id FROM profesionales WHERE project_id = ? LIMIT 1', [self::PROJECT_ID])->fetchColumn();
+        if ($id === 0) {
+            $this->db->query(
+                'INSERT INTO profesionales (project_id, nombre, email, cargo, activo) VALUES (?, ?, ?, ?, 1)',
+                [self::PROJECT_ID, 'zz-test-profesional', 'zz-test-profesional@example.invalid', 'zz-test'],
+            );
+            $id = $this->db->insertedId();
+        }
+        self::assertGreaterThan(0, $id, 'No se pudo obtener ni crear un profesional del proyecto.');
 
         return $id;
     }

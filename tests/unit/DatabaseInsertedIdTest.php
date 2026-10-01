@@ -148,10 +148,19 @@ final class DatabaseInsertedIdTest extends TestCase
         self::assertNotSame($anterior, $this->db->insertedId());
     }
 
+    /** Un paquete existente o, si la base no tiene ninguno (CI), uno creado dentro de la transacción. */
     private function paqueteId(): int
     {
         $id = (int) $this->db->query('SELECT id FROM general_paquetes_contratacion LIMIT 1')->fetchColumn();
-        self::assertGreaterThan(0, $id, 'No hay paquetes de contratación sembrados.');
+        if ($id === 0) {
+            $this->db->query(
+                'INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, modalidad_contratacion, activo, creado_por, created_at)
+                 VALUES (?, ?, ?, ?, 1, ?, NOW())',
+                ['zz-test-paquete', 'zz-test-paquete', 'a_todo_costo', 'contrato', 'test'],
+            );
+            $id = (int) $this->db->lastInsertId();
+        }
+        self::assertGreaterThan(0, $id, 'No se pudo obtener ni crear un paquete de contratación.');
 
         return $id;
     }
