@@ -114,7 +114,17 @@ final class LpsTargetResolver
             }
 
             $week = $alert->week;
-            $module ??= $alert->module;
+
+            if ($module === null) {
+                $module = $alert->module;
+            } elseif ($module !== $alert->module) {
+                // PG y PI comparten tabla: una alerta de uno se abre desde el otro. Pero un módulo
+                // distinto al de la alerta debe tener fila propia en esa semana.
+                $adapter = $this->activityAdapters[$module] ?? null;
+                if ($adapter === null || !$adapter->existsInWeek($this->scope->projectId(), $activityId, $week)) {
+                    throw new LpsTargetException(LpsApiError::targetNotFound());
+                }
+            }
         } elseif ($requestedWeek === null) {
             throw new LpsTargetException(LpsApiError::validationFailed([
                 'semana' => 'Requerida: la semana que se está viendo.',

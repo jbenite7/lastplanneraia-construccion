@@ -34,7 +34,7 @@ final class LpsTargetResolverTest extends TestCase
     private function adapter(string $module, array $activities): LpsActivityTargetAdapter
     {
         return new class ($module, $activities) implements LpsActivityTargetAdapter {
-            /** @var array<int, true> */
+            /** @var list<array{0: int, 1: int, 2: int}> tuplas [proyecto, actividad, semana] */
             public array $calls = [];
 
             public function __construct(
@@ -462,5 +462,41 @@ final class LpsTargetResolverTest extends TestCase
         self::assertSame('PS', $target->module);
         self::assertSame(6, $target->week);
         self::assertTrue($target->isLegacy);
+    }
+
+    public function testSemanaNegativaEsValidationFailedConCampoSemana(): void
+    {
+        try {
+            $this->resolver(pgActivities: [4102 => [1]])
+                ->resolve(new LpsTargetRequest(activityId: 4102, module: 'PG', week: -1));
+            self::fail('Debía lanzar VALIDATION_FAILED.');
+        } catch (LpsTargetException $exception) {
+            self::assertSame('VALIDATION_FAILED', $exception->apiError()->code);
+            self::assertArrayHasKey('semana', $exception->apiError()->fields);
+        }
+    }
+
+    public function testEscalamientoConModuloDistintoSinFilaEsTargetNotFound(): void
+    {
+        $alert = new LpsAlertRecord(30, self::PROJECT_ID, 500, 'PS', 9, 1, true);
+
+        try {
+            $this->resolver(psActivities: [500 => [9]], alerts: [30 => $alert])
+                ->resolve(new LpsTargetRequest(activityId: 500, module: 'PG', escalamientoId: 30));
+            self::fail('Debía lanzar TARGET_NOT_FOUND.');
+        } catch (LpsTargetException $exception) {
+            self::assertSame('LPS_TARGET_NOT_FOUND', $exception->apiError()->code);
+        }
+    }
+
+    public function testEscalamientoConModuloDistintoConFilaSeAcepta(): void
+    {
+        $alert = new LpsAlertRecord(30, self::PROJECT_ID, 500, 'PG', 9, 1, true);
+
+        $target = $this->resolver(piActivities: [500 => [9]], alerts: [30 => $alert])
+            ->resolve(new LpsTargetRequest(activityId: 500, module: 'PI', escalamientoId: 30));
+
+        self::assertSame('PI', $target->module);
+        self::assertSame(9, $target->week);
     }
 }
