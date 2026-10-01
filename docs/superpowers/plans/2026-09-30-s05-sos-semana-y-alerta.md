@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: abierto
+estado: cerrado
 fecha: 2026-09-30
 areas: [lps, datos, qa]
 ejecutor: claude
@@ -291,3 +291,12 @@ y el código de `ApiError` `'SESION_LEGADO'`.
   `memoria/log.md`. `npm run test:wiki` sin hallazgos de forma.
 - [ ] Informe de cierre con salidas reales, SHA verificado y pendientes con fecha. Sin push ni
   merge.
+
+## Cierre
+
+Integrado en `main` el 2026-10-01 con el PR #100 (merge `2bebf864`, cabeza `5b98c5f5`). El CI del PR
+cumplió la condición declarada: los 13 `G_*` de `light` en `success`, los tres gates de laboratorio y
+teclado de `dark` en `success` y el resto omitido como en `main`. Antes de pasar, el CI pidió dos
+correcciones de pruebas que dependían de datos locales (`2abbe409`, `f6873b59`). Tareas, decisiones,
+verificación y la prueba en navegador con Da Porto están en
+`docs/superpowers/plans/2026-09-30-s05-sos-semana-y-alerta-informe.md`; la deuda, en `TASKS.md`.

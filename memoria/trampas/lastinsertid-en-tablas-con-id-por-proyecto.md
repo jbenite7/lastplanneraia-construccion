@@ -37,7 +37,7 @@ producción (`dbhif4pdimjtxe`): las doce tablas del mapa sin `AUTO_INCREMENT`.
 | `ProjectProfessionalsSyncService.php:100` y `:157` | `profesionales` | Latente: el id 0 queda en memoria y ningún `UPDATE` del mismo pase lo usa |
 | `ProfesionalesApiController.php:290`, `SubcontratistasApiController.php:224` | `profesionales`, `subcontratistas` | Ninguno: el `?: lastInsertId()` no se alcanza, porque un `SELECT` por correo único encuentra la fila |
 
-**El arreglo ya existe, en la rama `fix/s05-sos-semana-y-alerta` (2026-10-01, pendiente de `main`):**
+**El arreglo está en `main` desde el 2026-10-01 (PR #100, merge `2bebf864`):**
 `Database::insertedId()` devuelve el id que asignó `rewriteInsert`, solo tras un INSERT con filas
 afectadas, y cae a `lastInsertId()` cuando la capa no asignó nada. Un INSERT que lanza, uno por
 `prepare()` o uno con id propio lo borran; un `SELECT` no. Lo usan las alertas, los comentarios y
