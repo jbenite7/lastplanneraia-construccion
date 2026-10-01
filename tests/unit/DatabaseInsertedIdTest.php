@@ -115,7 +115,8 @@ final class DatabaseInsertedIdTest extends TestCase
     public function testInsertIgnoreSinFilasNoDejaId(): void
     {
         $this->insertEscalamiento();
-        self::assertGreaterThan(0, $this->db->insertedId());
+        $reescrito = $this->db->insertedId();
+        self::assertGreaterThan(0, $reescrito);
 
         // INSERT IGNORE con una consecutiva inexistente: la FK se degrada a aviso y no entra fila.
         $this->db->query(
@@ -123,7 +124,28 @@ final class DatabaseInsertedIdTest extends TestCase
             [73, 1, 999999999, 'PG', 'test'],
         );
 
-        self::assertSame(0, $this->db->insertedId());
+        self::assertNotSame($reescrito, $this->db->insertedId());
+        self::assertSame((int) $this->db->lastInsertId(), $this->db->insertedId());
+    }
+
+    public function testInsertQueFallaNoDejaElIdDelAnterior(): void
+    {
+        $this->insertEscalamiento();
+        $anterior = $this->db->insertedId();
+        self::assertGreaterThan(0, $anterior);
+
+        try {
+            // Viola la FK a programa: execute() lanza PDOException.
+            $this->db->query(
+                'INSERT INTO lps_escalamientos (proyecto_id, semana, consecutivo_en_programa, modulo, trigger_origen) VALUES (?, ?, ?, ?, ?)',
+                [73, 1, 999999999, 'PG', 'test'],
+            );
+            self::fail('Se esperaba una PDOException por la FK.');
+        } catch (\PDOException) {
+            // esperado
+        }
+
+        self::assertNotSame($anterior, $this->db->insertedId());
     }
 
     private function paqueteId(): int

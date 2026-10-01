@@ -136,6 +136,10 @@ class Database
                 $guarded->tables,
             );
             $isInsert = $this->isInsertStatement($guardedSql);
+            if ($isInsert) {
+                // Si execute() lanza, el id de un INSERT anterior no puede sobrevivir.
+                $this->lastAssignedId = null;
+            }
             $stmt = $this->pdo->prepare($guardedSql);
             $stmt->execute($guardedParams);
             if ($isInsert) {
