@@ -2372,6 +2372,19 @@ estado por defecto mientras Felipe no reparta.
   - **Menores:** un `alerta_id` igual a `"0"` en `lps_drawer.js:249` viajaría como
     `escalamiento_id=0` (sin fuente conocida); variable `__comment_fetch_log` sin uso en
     `tests/browser/lps-drawer-fetch-lifecycle.mjs:208`; orden de los `use` en `LpsCrisisServiceTest`.
+- [ ] 2026-10-01 — **Diagnosticar dos supuestos de las llaves foráneas del cajón LPS** (encontrados
+  al corregir el CI del PR #100; ninguno lo introdujo el sprint). Hacerlo después de integrar el
+  PR. Responsable: pendiente.
+  - **`usuario_id` de los comentarios.** La llave `fk_ldc__profesionales__usuario_id` apunta a
+    `profesionales(project_id, id)`, pero `LpsApiController` manda el usuario de la sesión. Si en
+    un proyecto el id del usuario no coincide con un profesional del proyecto, el comentario viola
+    la llave; el repositorio la traga y la API responde «servicio no disponible». Verificar qué id
+    llega en producción y si hay comentarios fallidos.
+  - **El mismo número en `unique_id` y en `consecutivo_en_programa`.** `insertAlert`,
+    `LpsLegacyThreadRepository::insert` y `addActivityComment` escriben el id de la actividad en
+    las dos columnas, cada una con llave a `programa`. Solo funciona si en esa actividad
+    `unique_id = Consecutivo`. Medir en producción, con solo lectura y el visto de producción,
+    cuántas actividades no cumplen esa igualdad.
 - [ ] 2026-10-01 — **`decision-log` filtra el nombre de una tabla y `createAction` es código
   muerto.** Verificado el 2026-09-30 en la base local:
   - **`general_decision_log` no existe.** El guard lanza «Tabla no clasificada en el schema:
