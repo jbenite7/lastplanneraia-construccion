@@ -18,6 +18,9 @@ y [[programa-general-actualizar-es-otra-herramienta]].
 
 **Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]] y el catálogo completo en [[mapa-de-modulos-y-submodulos]].
 
+**Ficha objeto por objeto.** Funciones, flujos, protocolos de permisos y de verificación, y lo
+medido en navegador el 2026-09-30: [[programa-general-funciones-y-flujos]].
+
 ## Servido hoy
 
 GET y HEAD /programa-general y /app/programa-general llegan al shell React por
