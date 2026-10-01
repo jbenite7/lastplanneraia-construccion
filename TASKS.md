@@ -2360,6 +2360,24 @@ estado por defecto mientras Felipe no reparta.
   `?: lastInsertId()` inalcanzable de `ProfesionalesApiController.php:290` y
   `SubcontratistasApiController.php:224`. Sin efecto visible hoy; **depende de que S05-SOS esté en
   `main`**. Decisión de alcance de Felipe del 2026-09-30. Responsable: pendiente.
+- [ ] 2026-10-01 — **`decision-log` filtra el nombre de una tabla y `createAction` es código
+  muerto.** Verificado el 2026-09-30 en la base local:
+  - **`general_decision_log` no existe.** El guard lanza «Tabla no clasificada en el schema:
+    general_decision_log» (`TableScopeCatalog.php:83`). `GeneralApiController::decisionLog`
+    responde 400 con `$e->getMessage()` (`GeneralApiController.php:1603`), así que el navegador
+    recibe el nombre interno de la tabla. El registro de decisiones de «Actualizar cronograma» se
+    pierde en silencio: `decision_logger.js` solo lo anota en la consola. La ficha de Programa
+    General ya marcaba la ruta como «siempre falla».
+  - **`bi_action_queue` tampoco existe, y `ActionRecommendationService::createAction()` no tiene
+    llamadores.**
+  - Las dos se declaran con `AUTO_INCREMENT`, así que **no** caen en la trampa de `lastInsertId()`.
+  - **Decidir:** aplicar `database/patches/20260622_create_decision_log.sql`, que es un cambio de
+    esquema con gate, respaldo y restauración, o retirar la ruta y el registrador. Recomendación:
+    dentro de S06, dueña de esa pantalla. Borrar `createAction` en una limpieza aparte.
+  - Si las tablas existen en producción: pendiente del 2026-10-01; requiere `/visto-prod` y que
+    Felipe corra la consulta.
+
+  Responsable: pendiente.
 
 **Lo que siguió vivo al cerrar cuatro planes huérfanos, 2026-09-28.** Los planes se cerraron porque
 sus specs ya estaban cerradas o derogadas (decisión de la sesión de infraestructura por delegación de
