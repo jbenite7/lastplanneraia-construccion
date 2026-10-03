@@ -15,10 +15,10 @@ jobs:
     if: ${{ vars.TABLERO_CI == '1' }}
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: jbenite7/tablero-specs
           token: ${{ secrets.TABLERO_MOTOR_TOKEN }}
